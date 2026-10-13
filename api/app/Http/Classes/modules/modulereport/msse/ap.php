@@ -37,9 +37,9 @@ class ap
   private $reporter;
   private $reportheader;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -54,7 +54,7 @@ class ap
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
-      
+
     ]);
 
     return array('col1' => $col1);
@@ -123,7 +123,7 @@ class ap
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('PAYABLE SETUP', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '18', 'B', '', '');
     $str .= $this->reporter->col('DOCUMENT # :', '100', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', 'B', '', '');
     $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '100', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '13', '', '', '') . '<br />';
@@ -153,10 +153,10 @@ class ap
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->printline();
-    
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('ACCT.#', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('ACCOUNT NAME', '350', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('REFERENCE&nbsp#', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
@@ -203,8 +203,6 @@ class ap
       if ($this->reporter->linecounter == $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
-
-        
       }
     }
 
@@ -268,13 +266,13 @@ class ap
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
-    
+
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . strtoupper($headerdata[0]->name), '', 'L');
 
     $this->reportheader->getheader($params);
 
-    
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', 18);

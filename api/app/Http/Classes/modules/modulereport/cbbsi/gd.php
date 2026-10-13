@@ -35,9 +35,9 @@ class gd
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -116,10 +116,10 @@ class gd
     $str .= $this->reporter->beginreport();
 
     $str .= $this->reporter->begintable('800');
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->letterhead($center, $username);
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->endtable();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center, $username);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
     $str .= '<br/><br/>';
 
     $str .= $this->reporter->begintable('800');

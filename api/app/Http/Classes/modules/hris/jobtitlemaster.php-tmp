@@ -41,7 +41,7 @@ class jobtitlemaster {
 	public $showcreatebtn    = true;
 	private $reporter;
 
-	public function __construct() {
+	public function __construct($params = null) {
 		$this->btnClass      = new buttonClass;
 		$this->fieldClass    = new txtfieldClass;
 		$this->tabClass      = new tabClass;

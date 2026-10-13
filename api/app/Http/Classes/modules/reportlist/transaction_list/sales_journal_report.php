@@ -29,12 +29,12 @@ class sales_journal_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -3030,14 +3030,14 @@ class sales_journal_report
             $str .= $this->reporter->col(number_format($data->ext, 2), '125', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col($data->status, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
             break;
-          case 22://eipi
+          case 22: //eipi
             $str .= $this->reporter->col($data->dateid, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-            $str .= $this->reporter->col($data->supplier.'-'.$data->shipto, '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->supplier . '-' . $data->shipto, '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col($data->docno, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col($data->ourref, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col(number_format($data->ext, 2), '125', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col($data->status, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-          break;
+            break;
           default:
             $str .= $this->reporter->col($data->dateid, '125', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col($data->supplier, '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -3846,7 +3846,7 @@ class sales_journal_report
         $str .= $this->reporter->col('AMOUNT', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('STATUS', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
         break;
-      case 22://eipi
+      case 22: //eipi
         $str .= $this->reporter->col('DATE', '125', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('CUSTOMER NAME', '300', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('DOCUMENT NO.', '125', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');

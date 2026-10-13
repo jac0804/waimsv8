@@ -35,9 +35,9 @@ class kr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -94,7 +94,7 @@ class kr
     left join client on client.client = head.client
     left join client as ag on ag.clientid=head2.agentid
     where head.trno='$trno' order by postdate,dateid, docno";
-    
+
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   }
@@ -306,7 +306,7 @@ class kr
     PDF::MultiCell(80, 0, "Address: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(470, 0, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 1, '',  '');
- 
+
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 0, "Tel No: ", '', 'L', false, 0, '',  '');
@@ -432,7 +432,7 @@ class kr
     PDF::MultiCell(220, 0, $params['params']['dataparams']['approved'], 'B', 'L', false, 0);
     PDF::MultiCell(13, 0, '', '', '', false, 0);
     PDF::MultiCell(220, 0, '', 'B', 'L');
-    
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 }

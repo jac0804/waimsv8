@@ -34,9 +34,9 @@ class rr
   private $othersClass;
   private $logger;
   private $reporter;
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -49,23 +49,23 @@ class rr
   {
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $ispurchases = $this->companysetup->getispurchases($config['params']);
-    if($systemtype=='FAMS' && $ispurchases) {
-      $fields = ['radioprint', 'plbyitemlookup','prepared', 'approved', 'received', 'print'];
-    }else{
+    if ($systemtype == 'FAMS' && $ispurchases) {
+      $fields = ['radioprint', 'plbyitemlookup', 'prepared', 'approved', 'received', 'print'];
+    } else {
       $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
     }
     $col1 = $this->fieldClass->create($fields);
-    if($systemtype=='FAMS'  && $ispurchases){
-    data_set($col1, 'radioprint.options', [
-      ['label' => 'Default', 'value' => 'PDFM', 'color' => 'red'],
-      ['label' => 'Print label by item', 'value' => 'default', 'color' => 'blue']
-    ]);
-   }else{
-    data_set($col1, 'radioprint.options', [
-      ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
-    ]);
-   }
+    if ($systemtype == 'FAMS'  && $ispurchases) {
+      data_set($col1, 'radioprint.options', [
+        ['label' => 'Default', 'value' => 'PDFM', 'color' => 'red'],
+        ['label' => 'Print label by item', 'value' => 'default', 'color' => 'blue']
+      ]);
+    } else {
+      data_set($col1, 'radioprint.options', [
+        ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
+        // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
+      ]);
+    }
     return array('col1' => $col1);
   }
 
@@ -76,7 +76,7 @@ class rr
 
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $ispurchases = $this->companysetup->getispurchases($config['params']);
-    if($systemtype=='FAMS' && $ispurchases){
+    if ($systemtype == 'FAMS' && $ispurchases) {
       $paramstr = "select
       'PDFM' as print,
       '' as barcode,
@@ -85,7 +85,7 @@ class rr
       '' as prepared,
       '' as approved,
       '' as received ";
-    }else{
+    } else {
       $paramstr = "select
       'PDFM' as print, 
       '' as prepared,
@@ -130,20 +130,19 @@ class rr
   {
     $systemtype = $this->companysetup->getsystemtype($params['params']);
     $ispurchases = $this->companysetup->getispurchases($params['params']);
-    if($systemtype=='FAMS' && $ispurchases){
-     if($params['params']['dataparams']['print'] == "PDFM") {//Default
-      return $this->default_RR_PDF($params, $data);
-     }else{
+    if ($systemtype == 'FAMS' && $ispurchases) {
+      if ($params['params']['dataparams']['print'] == "PDFM") { //Default
+        return $this->default_RR_PDF($params, $data);
+      } else {
         return $this->print_label_by_item_layout($params, $data);
       }
-    }else{
+    } else {
       if ($params['params']['dataparams']['print'] == "default") {
         return $this->default_RR_layout($params, $data);
       } else if ($params['params']['dataparams']['print'] == "PDFM") {
         return $this->default_RR_PDF($params, $data);
       }
     }
-    
   }
 
   public function default_header($params, $data)
@@ -502,19 +501,19 @@ class rr
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 
- 
-public function print_label_by_item($params, $data)
-{
-  $str = "";
-  $font =  "Arial";
-  $fontsize = "11";
-  $border = "1px solid ";
-  $layoutsize = '480';
+
+  public function print_label_by_item($params, $data)
+  {
+    $str = "";
+    $font =  "Arial";
+    $fontsize = "11";
+    $border = "1px solid ";
+    $layoutsize = '480';
 
 
-  $str .= '<br><br>';
+    $str .= '<br><br>';
     $trno = $params['params']['dataid'];
-    $barcode=$params['params']['dataparams']['barcode'];
+    $barcode = $params['params']['dataparams']['barcode'];
 
     $qry = "select item.itemname as itemdesc,fa.barcode,s.trno  from rrfams as rr
     left join lastock as s on s.trno=rr.trno and s.line=rr.line
@@ -526,10 +525,10 @@ public function print_label_by_item($params, $data)
     left join item on item.itemid=s.itemid
     left join item as fa on fa.itemid=rr.itemid where s.trno=$trno and fa.barcode='" . $barcode . "' ";
     $dateres = $this->coreFunctions->opentable($qry);
- 
+
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col( QrCode::size(120)->generate($dateres[0]->barcode), '100', null, false, $border, '', 'L', $font, '13', '', '', '');
+    $str .= $this->reporter->col(QrCode::size(120)->generate($dateres[0]->barcode), '100', null, false, $border, '', 'L', $font, '13', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -553,45 +552,43 @@ public function print_label_by_item($params, $data)
 
     $str .= "</div>";
     $str .= "</div>";
-  return $str;
-}
+    return $str;
+  }
 
 
-public function print_label_by_item_layout($params, $data){
-  
-  $barcode=$params['params']['dataparams']['barcode'];
-  if(!empty($barcode )){
-    return $this->print_label_by_item($params, $data);
-  }else{
-    return $this->no_barcode_detected($params, $data);
-  } 
-}
+  public function print_label_by_item_layout($params, $data)
+  {
+
+    $barcode = $params['params']['dataparams']['barcode'];
+    if (!empty($barcode)) {
+      return $this->print_label_by_item($params, $data);
+    } else {
+      return $this->no_barcode_detected($params, $data);
+    }
+  }
 
 
-public function no_barcode_detected($params, $data)
-{
-  $this->modulename = app('App\Http\Classes\modules\purchase\rr')->modulename;
+  public function no_barcode_detected($params, $data)
+  {
+    $this->modulename = app('App\Http\Classes\modules\purchase\rr')->modulename;
 
-  $center = $params['params']['center'];
-  $username = $params['params']['user'];
+    $center = $params['params']['center'];
+    $username = $params['params']['user'];
 
-  $str = "";
-  $font =  "Century Gothic";
-  $border = "1px solid ";
+    $str = "";
+    $font =  "Century Gothic";
+    $border = "1px solid ";
 
-  $str .= $this->reporter->begintable('800');
-  $str .= $this->reporter->letterhead($center, $username);
-  $str .= $this->reporter->endtable();
-  $str .= '<br><br>';
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->letterhead($center, $username);
+    $str .= $this->reporter->endtable();
+    $str .= '<br><br>';
 
-  $str .= $this->reporter->begintable('800');
-  $str .= $this->reporter->startrow();
-  $str .= $this->reporter->col('Please select barcode.', '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
-  $str .= $this->reporter->endrow();
-  $str .= $this->reporter->endtable();
-  return $str;
-}
-
-
-
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Please select barcode.', '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    return $str;
+  }
 }

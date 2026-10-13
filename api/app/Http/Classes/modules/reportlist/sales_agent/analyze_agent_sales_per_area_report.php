@@ -31,12 +31,12 @@ class analyze_agent_sales_per_area_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1200'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -275,7 +275,7 @@ class analyze_agent_sales_per_area_report
 
         $center = $config['params']['center'];
         $headerdata = $this->coreFunctions->opentable("select code, name, address from center where code='$center'");
-        
+
         $str = '';
 
         $str .= $this->reporter->begintable($layoutsize);

@@ -47,10 +47,10 @@ class pendingchangeshiftapplication
         'disapproveddate2'
     ];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -214,7 +214,12 @@ class pendingchangeshiftapplication
             $labelsupervisor = "FOR HEAD DEPT. APPROVER";
         }
 
-        $query = "select cs.line, client.client,client.clientname, date(cs.dateid) as dateid, cs.empid,emp.email,cl.clientname as contact,
+        $createdate = ' date(cs.dateid) as dateid,';
+        if ($companyid == 53 || $companyid == 44) {
+            $createdate = ' date(cs.createdate) as dateid,';
+        }
+
+        $query = "select cs.line, client.client,client.clientname, $createdate  cs.empid,emp.email,cl.clientname as contact,
         date_format(cs.schedin, '%Y-%m-%d %h:%i %p') as schedin,date_format(cs.schedout, '%Y-%m-%d %h:%i %p') as schedout,
         cs.rem,cs.disapproved_remarks as remarkslast,cs.disapproved_remarks2 as rem2,cs.status,cs.status2,
         date_format(tm.schedin, '%Y-%m-%d %h:%i %p') as orgschedin,date_format(tm.schedout, '%Y-%m-%d %h:%i %p') as orgschedout,cs.orgdaytype,cs.daytype,p.doc,
@@ -460,7 +465,7 @@ class pendingchangeshiftapplication
                                 }
 
                                 // $result = $this->linkemail->createChangeSchedEmail($params);
-                                $result = $this->linkemail->weblink($params,$config);
+                                $result = $this->linkemail->weblink($params, $config);
                                 if (!$result['status']) {
                                     return ['status' => false, 'msg' => '' . $result['msg']];
                                 }

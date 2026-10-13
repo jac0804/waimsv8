@@ -32,10 +32,10 @@ class entryapprovetrqty
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -58,7 +58,8 @@ class entryapprovetrqty
     $uom = 4;
     $rem = 5;
     $wh = 6;
-    $tab = [$this->gridname => ['gridcolumns' => ['itemname', 'rrqty', 'reqqty', 'qa', 'uom',  'rem', 'wh']]]; //'action',
+    $loc = 7;
+    $tab = [$this->gridname => ['gridcolumns' => ['itemname', 'rrqty', 'reqqty', 'qa', 'uom',  'rem', 'wh', 'loc']]]; //'action',
 
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
@@ -69,6 +70,7 @@ class entryapprovetrqty
     $obj[0][$this->gridname]['columns'][$uom]['style'] = "width:80px;whiteSpace: normal;min-width:80px;max-width:80px;";
     $obj[0][$this->gridname]['columns'][$rrqty]['style'] = "width:100px;whiteSpace: normal;min-width:100px;max-width:100px;";
     $obj[0][$this->gridname]['columns'][$reqqty]['style'] = "width:100px;whiteSpace: normal;min-width:100px;max-width:100px;";
+    $obj[0][$this->gridname]['columns'][$loc]['style'] = "width:150px;whiteSpace: normal;min-width:150px;max-width:150px;";
 
     $obj[0][$this->gridname]['columns'][$itemname]['type'] = 'input';
     $obj[0][$this->gridname]['columns'][$uom]['type'] = 'input';
@@ -76,6 +78,8 @@ class entryapprovetrqty
 
     $obj[0][$this->gridname]['columns'][$itemname]['label'] = 'Itemname';
     $obj[0][$this->gridname]['columns'][$rrqty]['label'] = 'Approve Qty';
+    $obj[0][$this->gridname]['columns'][$loc]['label'] = 'Location';
+
 
     $obj[0][$this->gridname]['columns'][$itemname]['readonly'] = true;
     $obj[0][$this->gridname]['columns'][$reqqty]['readonly'] = true;
@@ -83,6 +87,8 @@ class entryapprovetrqty
     $obj[0][$this->gridname]['columns'][$uom]['readonly'] = true;
     $obj[0][$this->gridname]['columns'][$rem]['readonly'] = true;
     $obj[0][$this->gridname]['columns'][$wh]['readonly'] = true;
+    $obj[0][$this->gridname]['columns'][$loc]['readonly'] = true;
+
     return $obj;
   }
 

@@ -35,9 +35,9 @@ class pv
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -61,7 +61,7 @@ class pv
         ['label' => 'BIR Form 2307 (New)', 'value' => '3', 'color' => 'blue']
       ]
     );
-   
+
     return array('col1' => $col1);
   }
 
@@ -234,7 +234,7 @@ class pv
 
   public function PDF_DEFAULT_CCVOUCHER_LAYOUT1($data, $params)
   {
- 
+
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
     $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
@@ -473,7 +473,7 @@ class pv
         $y2 = $year;
         break;
     }
-  
+
     PDF::SetFont($font, '', 16);
     PDF::MultiCell(50, 10, '', 'L', 'C', false, 0);
     PDF::MultiCell(100, 10, '', '', 'L', false, 0);
@@ -509,7 +509,7 @@ class pv
 
     //4th row -> from
 
-  
+
     PDF::MultiCell(780, 18, '', 'LR', '', false);
 
 
@@ -1612,7 +1612,6 @@ class pv
             } //end if
             $finalarrs[$key]['month'] = $y['month'];
           }
-          
         } //end for each
         if (empty($result1)) {
           $returnarr[0]['payee'] = '';
@@ -1858,9 +1857,9 @@ class pv
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
-  
+
     $str .= $this->reporter->endtable();
-   
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Prepared By : ', '266', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', '', '', '');
@@ -2871,7 +2870,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('For BIR&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspBCS/<br/>Use Only&nbsp&nbsp&nbspItem:', '10', null, false, '2px solid ', '', 'L', 'Century Gothic', '10', '', '', '');
-   
+
     $str .= $this->reporter->col('<img src ="' . $birlogo . '" alt="BIR" width="60px" height ="60px">', '10', null, false, '2px solid ', '', 'R', 'Century Gothic', '15', 'B', '', '1px');
     $str .= $this->reporter->col('Republic of the Philippines<br />Department of Finance<br />Bureau of Internal Revenue', '60', null, false, '2px solid ', '', 'C', 'Century Gothic', '11', '', '', '');
     $str .= $this->reporter->col('', '90', null, false, '2px solid ', '', 'C', 'Century Gothic', '11', '', '', '');
@@ -2880,7 +2879,7 @@ class pv
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-  
+
     $str .= $this->reporter->col('<img src ="' . $bir . '">', '135', null, false, '2px solid ', 'LRTB', 'C', 'Century Gothic', '11', '', '', '');
     $str .= $this->reporter->col('', '55', null, false, '2px solid ', 'TB', 'L', 'Century Gothic', '11', 'B', '', '');
     $str .= $this->reporter->col('Certificate of Creditable Tax <br> Withheld At Source', '450', null, false, '2px solid ', 'RTB', 'C', 'Century Gothic', '16', 'B', '', '');
@@ -3007,7 +3006,7 @@ class pv
     $str .= $this->reporter->col('2', '20', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
 
     $str .= $this->reporter->col('Tax Payer Identification Number (TIN)', '150', null, false, '2px solid ', '', 'L', 'Century Gothic', '10', '', '', '3px');
-  
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['tin']) ? $data['head'][0]['tin'] : ''), '400', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 
@@ -3053,7 +3052,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
-   
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['payee']) ? $data['head'][0]['payee'] : ''), '760', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 
@@ -3079,7 +3078,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
-  
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['address']) ? $data['head'][0]['address'] : ''), '620', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
     $str .= $this->reporter->col('', '10', null, false, '2px solid ', 'R', 'C', 'Century Gothic', '10', '', '', '');
@@ -3108,7 +3107,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
- 
+
 
     $str .= $this->reporter->col('', '760', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '10px');
 
@@ -3130,7 +3129,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Part II-Payor Information', '800', null, false, '2px solid ', 'TLBR', 'C', 'Century Gothic', '10', 'B', '', '');
-   
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -3150,7 +3149,7 @@ class pv
     $str .= $this->reporter->col('6', '20', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
 
     $str .= $this->reporter->col('Tax Payer Identification Number (TIN)', '150', null, false, '2px solid ', '', 'L', 'Century Gothic', '10', '', '', '3px');
- 
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['tin']) ? $data['head'][0]['tin'] : ''), '400', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 
@@ -3176,7 +3175,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
- 
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['payee']) ? $data['head'][0]['payee'] : ''), '760', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 
@@ -3202,7 +3201,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
-    
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['address']) ? $data['head'][0]['address'] : ''), '620', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
     $str .= $this->reporter->col('', '10', null, false, '2px solid ', 'R', 'C', 'Century Gothic', '10', '', '', '');
@@ -3226,7 +3225,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Part III-Details of Monthly Income Payments and Taxes Withheld', '800', null, false, '2px solid ', 'TLBR', 'C', 'Century Gothic', '10', 'B', '', '');
-   
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -3488,7 +3487,7 @@ class pv
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Signature over Printed Name of Payor/Payor`s Authorized Representative/Tax Agent
             <br/>(Indicate Title/Designation and TIN)', '800', null, false, '2px solid ', 'LRB', 'C', 'Century Gothic', '10', '', '', '');
-   
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -3546,7 +3545,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('CONFORME:', '800', null, false, '2px solid ', 'TLBR', 'C', 'Century Gothic', '10', 'B', '', '');
-  
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -3595,7 +3594,7 @@ class pv
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Signature over Printed Name of Payee/Payee`s Authorized Representative/Tax Agent
             <br/>(Indicate Title/Designation and TIN)', '800', null, false, '2px solid ', 'LRB', 'C', 'Century Gothic', '10', '', '', '');
-   
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 

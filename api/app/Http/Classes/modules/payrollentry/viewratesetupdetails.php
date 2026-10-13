@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Classes\modules\payrollentry;
 
 use Illuminate\Http\Request;
@@ -16,7 +17,8 @@ use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use App\Http\Classes\lookup\enrollmentlookup;
 
-class viewratesetupdetails {
+class viewratesetupdetails
+{
   private $fieldClass;
   private $tabClass;
   public $modulename = 'DETAILS';
@@ -26,28 +28,32 @@ class viewratesetupdetails {
   private $table = 'ratesetup';
   private $othersClass;
   public $style = 'width:100%;';
-  private $fields = ['dateid','dateeffect','dateend','remarks','basicrate', 'type'];
+  private $fields = ['dateid', 'dateeffect', 'dateend', 'remarks', 'basicrate', 'type'];
   public $showclosebtn = false;
   private $enrollmentlookup;
 
- 
 
-  public function __construct() {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+
+  public function __construct($params = null)
+  {
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
     $this->enrollmentlookup = new enrollmentlookup;
   }
 
-  public function getAttrib(){
-    $attrib = array('load'=>0
-                    );
+  public function getAttrib()
+  {
+    $attrib = array(
+      'load' => 0
+    );
     return $attrib;
   }
 
-  public function createTab($config){
+  public function createTab($config)
+  {
     $empname = 0;
     $dateid = 1;
     $dateeffect = 2;
@@ -56,8 +62,8 @@ class viewratesetupdetails {
     $type = 5;
     $remarks = 6;
 
-    $tab = [$this->gridname=>['gridcolumns'=>['empname', 'dateid','dateeffect','dateend','basicrate', 'type','remarks']]];
-    
+    $tab = [$this->gridname => ['gridcolumns' => ['empname', 'dateid', 'dateeffect', 'dateend', 'basicrate', 'type', 'remarks']]];
+
     $stockbuttons = [];
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
@@ -82,7 +88,7 @@ class viewratesetupdetails {
     $obj[0][$this->gridname]['columns'][$dateeffect]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
     $obj[0][$this->gridname]['columns'][$dateend]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
     $obj[0][$this->gridname]['columns'][$basicrate]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
-    
+
     $obj[0][$this->gridname]['columns'][$type]['style'] = 'width:80px;whiteSpace: normal;min-width:80px; text-align: center';
     $obj[0][$this->gridname]['columns'][$type]['align'] = 'center';
 
@@ -92,14 +98,16 @@ class viewratesetupdetails {
   }
 
 
-  public function createtabbutton($config) {
+  public function createtabbutton($config)
+  {
     $tbuttons = [];
     $obj = $this->tabClass->createtabbutton($tbuttons);
 
     return $obj;
   }
 
-  private function selectqry() {
+  private function selectqry()
+  {
     $qry = "rs.trno, 
       date(rs.dateid) as dateid,
       date(rs.dateeffect) as dateeffect,
@@ -111,48 +119,17 @@ class viewratesetupdetails {
     return $qry;
   }
 
-  public function loaddata($config) {
+  public function loaddata($config)
+  {
     $empid = $config['params']['tableid'];
     $select = $this->selectqry();
-    $select = $select.",'' as bgcolor ";
-    $qry = "select ".$select.",
+    $select = $select . ",'' as bgcolor ";
+    $qry = "select " . $select . ",
     concat(e.emplast, ', ', e.empfirst, ' ', e.empmiddle) as empname
-    from ".$this->table." as rs
+    from " . $this->table . " as rs
     left join employee as e on e.empid=rs.empid
     where rs.empid=? order by trno desc";
-    $data = $this->coreFunctions->opentable($qry,[$empid]);
+    $data = $this->coreFunctions->opentable($qry, [$empid]);
     return $data;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 } //end class

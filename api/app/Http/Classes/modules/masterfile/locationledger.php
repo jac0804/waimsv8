@@ -39,7 +39,15 @@ class locationledger
   private $tablenum;
 
   private $fields = [
-    'line', 'code', 'name', 'emeter', 'wmeter', 'semeter', 'area', 'phase', 'section'
+    'line',
+    'code',
+    'name',
+    'emeter',
+    'wmeter',
+    'semeter',
+    'area',
+    'phase',
+    'section'
   ];
   private $except = ['clientid', 'client'];
   private $blnfields = [];
@@ -49,11 +57,11 @@ class locationledger
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -170,7 +178,8 @@ class locationledger
   public function createHeadField($config)
   {
     $fields = [
-      'client', 'name',
+      'client',
+      'name',
     ];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.class', 'csclient sbccsenablealways');
@@ -180,12 +189,14 @@ class locationledger
     data_set($col1, 'client.lookupclass', 'lookuplocationledger_mms');
 
     $fields = [
-      'emeter', 'wmeter',
+      'emeter',
+      'wmeter',
     ];
     $col2 = $this->fieldClass->create($fields);
 
     $fields = [
-      'semeter', 'area',
+      'semeter',
+      'area',
     ];
     $col3 = $this->fieldClass->create($fields);
     data_set($col3, 'area.type', 'input');

@@ -33,10 +33,10 @@ class entrybooks
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -53,7 +53,14 @@ class entrybooks
   {
     $tab = [$this->gridname => [
       'gridcolumns' => [
-        'action', 'barcode', 'description', 'isqty', 'uom', 'isamt', 'disc', 'ext'
+        'action',
+        'barcode',
+        'description',
+        'isqty',
+        'uom',
+        'isamt',
+        'disc',
+        'ext'
       ],
     ]];
     $stockbuttons = ['save', 'delete'];
@@ -214,7 +221,7 @@ class entrybooks
     $data = [];
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($data['line'] != 0) {
       if ($this->coreFunctions->sbcupdate($this->table, $data, ['trno' => $data['trno'], 'line' => $data['line'], 'cline' => $data['cline']]) == 1) {

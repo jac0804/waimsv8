@@ -29,12 +29,12 @@ class sales_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -235,8 +235,8 @@ class sales_report
 
             break;
 
-            // left join gldetail as crdetail on ar.trno = crdetail.refx
-            // left join glhead as crhead on crhead.trno = crdetail.trno
+          // left join gldetail as crdetail on ar.trno = crdetail.refx
+          // left join glhead as crhead on crhead.trno = crdetail.trno
           case 'unposted': // unposted
             $query = "select agent.clientname as agentname, date(head.dateid) as dateid, head.docno, head.clientname, 
             item.itemname, sum(stock.isqty) as qty, stock.uom, stock.rebate, stock.amt, sum(stock.ext) as ext, stock.cost, 
@@ -305,7 +305,6 @@ class sales_report
             item.itemname,  stock.uom, stock.rebate, stock.amt, stock.cost, date(crhead.dateid), refund
             order by agentname, clientname";
             break;
-
         }
         break;
 
@@ -503,7 +502,7 @@ class sales_report
         }
         break;
     }
-      // var_dump($query);
+    // var_dump($query);
     $data = $this->coreFunctions->opentable($query);
     return $data;
   }

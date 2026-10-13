@@ -68,11 +68,11 @@ class batchsetup
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -390,10 +390,13 @@ class batchsetup
             when (b.paymode = 'w' or b.paymode = 'p' or b.paymode = 'l') and right(b.batch, 2) = '03' then 'W3'
             when (b.paymode = 'w' or b.paymode = 'p' or b.paymode = 'l') and right(b.batch, 2) = '04' then 'W4'
             when (b.paymode = 'w' or b.paymode = 'p' or b.paymode = 'l') and right(b.batch, 2) = '05' then 'W5'
+            when (b.paymode = 'w' or b.paymode = 'p' or b.paymode = 'l') and right(b.batch, 2) = '08' then 'W8'
             when (b.paymode = 's') and right(b.batch, 2) = '02' then '1st Half'
             when (b.paymode = 's') and right(b.batch, 2) = '04' then '2nd Half'
             when (b.paymode = 'm') and right(b.batch, 2) = '04' then '2nd Half'
             when (b.paymode = 's') and right(b.batch, 2) = '06' then '3rd Half'
+            when (b.paymode = 's') and right(b.batch, 2) = '08' then '4th Half'
+            else ''
           end as paymodetype,
           b.annualtax, b.tax, b.adjustm, b.custcode, b.allow, b.pgroup, is13, b.13start, b.13end, pay.paygroup as tpaygroupname, pay.code as paycode, b.divid, ifnull(d.divname,'') as divname, b.branchid, ifnull(br.clientname,'') as branchname
         ";

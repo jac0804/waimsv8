@@ -35,9 +35,9 @@ class mr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -67,7 +67,7 @@ class mr
 
   public function report_default_query($trno)
   {
-   
+
     $query = "
     select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
     right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
@@ -366,7 +366,7 @@ class mr
     $countarr = 0;
 
     for ($i = 0; $i < count($data); $i++) {
-    
+
       $maxrow = 1;
 
       $qty = number_format($data[$i]['qty'], 2);
@@ -434,7 +434,7 @@ class mr
     PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['received'], '', 'L');
 
-    
+
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }

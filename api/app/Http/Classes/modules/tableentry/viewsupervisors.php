@@ -31,10 +31,10 @@ class viewsupervisors
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -136,7 +136,7 @@ class viewsupervisors
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         $this->coreFunctions->sbcupdate($this->table, $data2, ['trno' => $data[$key]['trno'], 'line' => $data[$key]['line'], 'clientid' => $data[$key]['clientid']]);
       }
@@ -282,14 +282,14 @@ class viewsupervisors
   }
 
   public function save($config)
-  { 
+  {
     $companyid = $config['params']['companyid'];
     $dateTables = [$this->table];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = [];
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['line'] == 0) {
       $data['trno'] = $config['params']['sourcerow']['line'];

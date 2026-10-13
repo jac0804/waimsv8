@@ -32,12 +32,12 @@ class employment_status_entry_or_change
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '900'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -126,10 +126,11 @@ class employment_status_entry_or_change
     //   $filter1 .= " and dept.clientid = $deptid";
     // }
 
-    if ($deptname !=''){
-    if ($deptid != 0) {
-      $filter1 .= " and dept.clientid = $deptid";
-    }}
+    if ($deptname != '') {
+      if ($deptid != 0) {
+        $filter1 .= " and dept.clientid = $deptid";
+      }
+    }
 
     $query = "SELECT head.trno, head.docno, head.empid, date(head.dateid) as dateid,
       concat(emp.empfirst, ' ', emp.empmiddle, ' ', emp.emplast) as empname,
@@ -200,10 +201,11 @@ class employment_status_entry_or_change
     // if ($deptid != 0) {
     //   $filter1 .= " and dept.clientid = $deptid";
     // }
-    if ($deptname !=''){
+    if ($deptname != '') {
       if ($deptid != 0) {
         $filter1 .= " and dept.clientid = $deptid";
-    }}
+      }
+    }
 
     $query = "select head.trno, head.docno, head.empid, date(head.dateid) as dateid,
       concat(emp.empfirst, ' ', emp.empmiddle, ' ', emp.emplast) as empname,
@@ -788,7 +790,7 @@ class employment_status_entry_or_change
         $str .= $this->reporter->endtable();
       }
 
-  
+
       if ($this->reporter->linecounter >= $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();

@@ -24,7 +24,7 @@ class entryserialin {
 	private $fields      = ['serial', 'chassis', 'color'];
 	public $showclosebtn = true;
 
-	public function __construct() {
+	public function __construct($params = null) {
 		$this->fieldClass    = new txtfieldClass;
 		$this->tabClass      = new tabClass;
 		$this->companysetup  = new companysetup;

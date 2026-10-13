@@ -29,12 +29,12 @@ class detailed_customer_receivables
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1300'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -43,25 +43,24 @@ class detailed_customer_receivables
     $companyid = $config['params']['companyid'];
     // $companyid = 5;
     switch ($companyid) {
-     
+
       case 10: //afti
       case 12: //afti usd
-        $fields = ['radioprint', 'start', 'end', 'dclientname','dbranchname','collectorname'];
-        
+        $fields = ['radioprint', 'start', 'end', 'dclientname', 'dbranchname', 'collectorname'];
+
         break;
       default:
         $fields = ['radioprint', 'start', 'end', 'dclientname', 'dbranchname', 'collectorname', 'contra'];
-        
+
         break;
-     
     }
 
     $col1 = $this->fieldClass->create($fields);
 
     data_set($col1, 'contra.lookupclass', 'AR');
-    
 
-    
+
+
     data_set($col1, 'dclientname.lookupclass', 'lookupclient_rep');
     data_set($col1, 'dclientname.label', 'Customer');
 
@@ -154,7 +153,7 @@ class detailed_customer_receivables
     }
 
     // if ($contra != "") {
-      $filter .= " and coa.acnoid in (5141,5396) ";
+    $filter .= " and coa.acnoid in (5141,5396) ";
     // }
 
     if ($tagging == '0') {
@@ -475,18 +474,17 @@ class detailed_customer_receivables
           $invamt = $data->db;
           $str .= $this->reporter->col(number_format($data->db, 2), '70', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
           $str .= $this->reporter->col(number_format(floatval($deposit), 2), '70', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-          
         }
-        
-        
-        $outstanding = $data->balance;// + $retention;
+
+
+        $outstanding = $data->balance; // + $retention;
         $str .= $this->reporter->col(number_format($outstanding, 2), '70', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
         if ($data->alias == 'AR1') {
           $str .= $this->reporter->col($data->elapse, '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-        }else{
+        } else {
           $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
         }
-        
+
         // 0 to 30
         $str .= $this->reporter->col(($a <> 0 ? number_format($a, 2) : '-'), '70', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
 
@@ -499,9 +497,9 @@ class detailed_customer_receivables
         // 91 ++
         $str .= $this->reporter->col(($d <> 0 ? number_format($d, 2) : '-'), '70', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
 
-        if ($data->alias == 'AR6') {         
+        if ($data->alias == 'AR6') {
           $str .= $this->reporter->col(number_format($retention, 2), '70', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-        }else{
+        } else {
           $str .= $this->reporter->col('0.00', '70', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
         }
 
@@ -520,7 +518,7 @@ class detailed_customer_receivables
       }
     }
 
-    
+
 
     // $str .= $this->reporter->endtable();
     // $str .= $this->reporter->begintable();
@@ -533,7 +531,7 @@ class detailed_customer_receivables
     $str .= $this->reporter->col('', '70', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '70', null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col(number_format($totinv, 2), '70', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col(number_format($totdp, 2), '70', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');    
+    $str .= $this->reporter->col(number_format($totdp, 2), '70', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col(number_format($totamt, 2), '70', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '50', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col(number_format($tota, 2), '70', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');

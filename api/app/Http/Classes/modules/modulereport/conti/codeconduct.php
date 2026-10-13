@@ -35,9 +35,9 @@ class codeconduct
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -45,16 +45,18 @@ class codeconduct
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter(){
-    $fields = ['radioprint', 'prepared','approved', 'received','print'];
-    $col1 = $this->fieldClass->create($fields);           
+  public function createreportfilter()
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
     ]);
-    return array('col1'=>$col1);
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable("select 
       'PDFM' as print,
       '' as approved,
@@ -63,9 +65,10 @@ class codeconduct
     ");
   }
 
-  public function report_default_query($filters){
+  public function report_default_query($filters)
+  {
     $trno = $filters['params']['dataid'];
-    $query="
+    $query = "
     select head.artid as trno, head.code, head.description,
     d1a, d1b, d2a, d2b, d3a, d3b, d4a, d4b, d5a, d5b, 
     section, detail.description as section_desc
@@ -77,15 +80,17 @@ class codeconduct
     return $result;
   }
 
-  public function reportplotting($params, $data) {
-    if($params['params']['dataparams']['print'] == "default") {
+  public function reportplotting($params, $data)
+  {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_codeconduct_layout($params, $data);
-    } else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_codeconduct_PDF($params, $data);
     }
   }
 
-  public function default_header($params, $data) {
+  public function default_header($params, $data)
+  {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
@@ -99,20 +104,20 @@ class codeconduct
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
     $str .= $this->reporter->begintable('800');
-      $str .= $this->reporter->startrow();
-        $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center .'&nbsp'  .'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
+    $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= '<br><br>';
 
@@ -151,13 +156,14 @@ class codeconduct
     return $str;
   }
 
-  public function default_codeconduct_layout($params, $data){
+  public function default_codeconduct_layout($params, $data)
+  {
     $companyid = $params['params']['companyid'];
     $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
     $str = '';
     $font = "Century Gothic ";
     $fontsize = "11";
@@ -166,7 +172,7 @@ class codeconduct
     $page = 35;
     $str .= $this->reporter->beginreport();
     $str .= $this->default_header($params, $data);
-    
+
     $str .= $this->reporter->begintable('800');
     for ($i = 0; $i < count($data); $i++) {
       $str .= $this->reporter->addline();
@@ -185,13 +191,13 @@ class codeconduct
       $str .= $this->reporter->col($data[$i]['d5b'], '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '2px');
       $str .= $this->reporter->endrow();
 
-      if($this->reporter->linecounter==$page){
+      if ($this->reporter->linecounter == $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
-        $str .= $this->default_header($params,$data);
+        $str .= $this->default_header($params, $data);
         $str .= $this->reporter->begintable('800');
         // $str .= $this->reporter->printline();
-        $page=$page + $count;
+        $page = $page + $count;
       }
     }
     $str .= $this->reporter->endtable();
@@ -272,7 +278,7 @@ class codeconduct
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -334,22 +340,22 @@ class codeconduct
       //   $max_height = $max_height + 15;
       // }
       $maxrow = 1;
-      $arr_section = $this->reporter->fixcolumn([$data[$i]['section']],'16',0);
-      $arr_sectiondesc = $this->reporter->fixcolumn([$data[$i]['section_desc']],'16',0);
-      $arr_d1a = $this->reporter->fixcolumn([$data[$i]['d1a']],'13',0);
-      $arr_d1b = $this->reporter->fixcolumn([$data[$i]['d1b']],'13',0);
-      $arr_d2a = $this->reporter->fixcolumn([$data[$i]['d2a']],'13',0);
-      $arr_d2b = $this->reporter->fixcolumn([$data[$i]['d2b']],'13',0);
-      $arr_d3a = $this->reporter->fixcolumn([$data[$i]['d3a']],'13',0);
-      $arr_d3b = $this->reporter->fixcolumn([$data[$i]['d3b']],'13',0);
-      $arr_d4a = $this->reporter->fixcolumn([$data[$i]['d4a']],'13',0);
-      $arr_d4b = $this->reporter->fixcolumn([$data[$i]['d4b']],'13',0);
-      $arr_d5a = $this->reporter->fixcolumn([$data[$i]['d5a']],'13',0);
-      $arr_d5b = $this->reporter->fixcolumn([$data[$i]['d5b']],'13',0);
+      $arr_section = $this->reporter->fixcolumn([$data[$i]['section']], '16', 0);
+      $arr_sectiondesc = $this->reporter->fixcolumn([$data[$i]['section_desc']], '16', 0);
+      $arr_d1a = $this->reporter->fixcolumn([$data[$i]['d1a']], '13', 0);
+      $arr_d1b = $this->reporter->fixcolumn([$data[$i]['d1b']], '13', 0);
+      $arr_d2a = $this->reporter->fixcolumn([$data[$i]['d2a']], '13', 0);
+      $arr_d2b = $this->reporter->fixcolumn([$data[$i]['d2b']], '13', 0);
+      $arr_d3a = $this->reporter->fixcolumn([$data[$i]['d3a']], '13', 0);
+      $arr_d3b = $this->reporter->fixcolumn([$data[$i]['d3b']], '13', 0);
+      $arr_d4a = $this->reporter->fixcolumn([$data[$i]['d4a']], '13', 0);
+      $arr_d4b = $this->reporter->fixcolumn([$data[$i]['d4b']], '13', 0);
+      $arr_d5a = $this->reporter->fixcolumn([$data[$i]['d5a']], '13', 0);
+      $arr_d5b = $this->reporter->fixcolumn([$data[$i]['d5b']], '13', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_section, $arr_sectiondesc, $arr_d1a, $arr_d1b, $arr_d2a, $arr_d2b, $arr_d3a, $arr_d3b, $arr_d4a, $arr_d4b, $arr_d5a, $arr_d5b]);
 
-      for($r = 0; $r < $maxrow; $r++) {
+      for ($r = 0; $r < $maxrow; $r++) {
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(50, 0, (isset($arr_section[$r]) ? $arr_section[$r] : ''), '', 'L', 0, 0, '', '');
         PDF::MultiCell(75, 0, (isset($arr_sectiondesc[$r]) ? $arr_sectiondesc[$r] : ''), '', 'L', 0, 0, '', '');
@@ -405,5 +411,4 @@ class codeconduct
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

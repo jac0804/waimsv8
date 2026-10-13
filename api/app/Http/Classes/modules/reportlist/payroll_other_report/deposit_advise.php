@@ -35,12 +35,12 @@ class deposit_advise
   // layoutsize: reportWidth
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '700'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -128,23 +128,24 @@ class deposit_advise
     $bank     = $config['params']['dataparams']['bank'];
     $val     = $config['params']['dataparams']['val'];
 
-    switch ($companyid){
+    switch ($companyid) {
       case 62:
-        switch ($val){
+        switch ($val) {
           case '1':
-          case '3':
             return $this->reportDefaultLayout_onesky_cash($config);
-          break;
+            break;
+          case '2':
+            return $this->reportDefaultLayout_onesky($config);
           default:
             return $this->reportDefaultLayout_onesky($config);
-          break;
+            break;
         }
         break;
       case 66:
-          return $this->reportDefaultLayout_MD($config);
+        return $this->reportDefaultLayout_MD($config);
         break;
       default:
-          return $this->reportDefaultLayout($config);
+        return $this->reportDefaultLayout($config);
         break;
     }
   }
@@ -175,27 +176,27 @@ class deposit_advise
     // if ($divid != 0 && $divid != "") {
     //   $filter2 .= " and emp.divid = $divid";
     // }
-    if ($deptname !=''){
-        if ($deptid != 0) {
-          $filter1 .= " and emp.deptid  = $deptid";
-    }}
+    if ($deptname != '') {
+      if ($deptid != 0) {
+        $filter1 .= " and emp.deptid  = $deptid";
+      }
+    }
     if ($divname != '') {
-        if ($divid != 0) {
-            $filter2 .= " and emp.divid = $divid";
-    }}
+      if ($divid != 0) {
+        $filter2 .= " and emp.divid = $divid";
+      }
+    }
 
     if ($config['params']['companyid'] == 62) {
-      if($bank != ""){
-        switch ($val){
+      if ($bank != "") {
+        switch ($val) {
           case '1':
-            $filter2 .= " and emp.atm = 0";
-          break;
+            $filter2 .= " and (emp.atm = 0 or (emp.atm = 1 and emp.bankacct = ''))";
+            break;
+
           case '2':
             $filter2 .= " and emp.atm = 1 and emp.bankacct <> ''";
-          break;
-          case '3':
-            $filter2 .= " and emp.atm = 1 and emp.bankacct = ''";
-          break;
+            break;
         }
       }
       $filterdef = "";
@@ -222,7 +223,6 @@ class deposit_advise
     where  p.batchid = " . $batch . " and emp.level in $emplvl $filter $filter1 $filter2 $filter3 
     $filterdef
     order by e.clientname";
-    // var_dump($query);
     return $this->coreFunctions->opentable($query);
   }
 
@@ -302,13 +302,7 @@ class deposit_advise
     $str .= $this->reporter->col('BANK TYPE : ' . $bankheader, NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-    
-    switch ($bank){
-      case 'ATM':
-        break;
-      case 'CASH':
-        break;
-    }
+
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('C O D E', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
@@ -455,13 +449,7 @@ class deposit_advise
     $str .= $this->reporter->col('BANK TYPE : ' . $bankheader, NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-    
-    switch ($bank){
-      case 'ATM':
-        break;
-      case 'CASH':
-        break;
-    }
+
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('C O D E', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');

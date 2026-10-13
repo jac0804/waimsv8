@@ -38,10 +38,10 @@ class en_quartersetup
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -113,12 +113,12 @@ class en_quartersetup
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         if ($data[$key]['line'] == 0) {
           $check = $this->checkQuarter($data2, 'new');
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data2['code'];
+            $msg .= "\n Duplicate entry for " . $data2['code'];
           } else {
             $line = $this->coreFunctions->insertGetId($this->table, $data2);
             $this->logger->sbcmasterlog($data[$key]['line'], $config, ' CREATE - ' . $data[$key]['code']);
@@ -128,7 +128,7 @@ class en_quartersetup
           $check = $this->checkQuarter($data2);
           unset($data2['line']);
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data2['code'];
+            $msg .= "\n Duplicate entry for " . $data2['code'];
           } else {
             $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data2['editby'] = $config['params']['user'];
@@ -138,7 +138,7 @@ class en_quartersetup
       } // end if
     } // foreach
     $returndata = $this->loaddata($config);
-    return ['status' => true, 'msg' => 'All saved successfully.'.$msg, 'data' => $returndata];
+    return ['status' => true, 'msg' => 'All saved successfully.' . $msg, 'data' => $returndata];
   } // end function 
 
   public function save($config)
@@ -149,12 +149,12 @@ class en_quartersetup
     $dateTables = [$this->table];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['line'] == 0) {
       $check = $this->checkQuarter($data, 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$data['code'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $data['code'], 'row' => []];
       } else {
         $line = $this->coreFunctions->insertGetId($this->table, $data);
         if ($line != 0) {
@@ -170,7 +170,7 @@ class en_quartersetup
       $check = $this->checkQuarter($data);
       unset($data['line']);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$data['code'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $data['code'], 'row' => []];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
@@ -186,9 +186,9 @@ class en_quartersetup
 
   public function checkQuarter($data, $type = 'update')
   {
-    $qry = "select line as value from en_quartersetup where code='".$data['code']."'";
+    $qry = "select line as value from en_quartersetup where code='" . $data['code'] . "'";
     if ($type == 'update') {
-      $qry = "select line as value from en_quartersetup where code='".$data['code']."' and line<>".$data['line'];
+      $qry = "select line as value from en_quartersetup where code='" . $data['code'] . "' and line<>" . $data['line'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check != '') return true;
@@ -251,8 +251,8 @@ class en_quartersetup
   {
     $row = $config['params']['row'];
     $qry = "select value from (
-      select trno as value from en_glhead where quarterid=".$row['line']." union all
-      select trno as value from en_gehead where quarterid=".$row['line']."
+      select trno as value from en_glhead where quarterid=" . $row['line'] . " union all
+      select trno as value from en_gehead where quarterid=" . $row['line'] . "
     ) as v";
     $check = $this->coreFunctions->opentable($qry);
     if (!empty($check)) return ['status' => false, 'msg' => 'Unable to delete, already has reference...'];
@@ -304,7 +304,8 @@ class en_quartersetup
   public function reportparamsdata($config)
   {
     return $this->coreFunctions->opentable(
-      "select 'PDFM' as print, '' as prepared, '' as approved, '' as received");
+      "select 'PDFM' as print, '' as prepared, '' as approved, '' as received"
+    );
   }
 
   private function report_default_query($config)

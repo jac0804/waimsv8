@@ -46,7 +46,7 @@ class qs
   public $hqty = 'iss';
   public $damt = 'isamt';
   public $hamt = 'amt';
-  public $fields = ['trno', 'docno', 'dateid',  'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur',  'wh', 'address', 'agent', 'branch', 'deptid', 'position', 'agentcno', 'industry', 'shipid', 'billid', 'deldate', 'tax', 'vattype', 'shipcontactid', 'billcontactid', 'industryid', 'revisionref', 'projid','probability'];
+  public $fields = ['trno', 'docno', 'dateid',  'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur',  'wh', 'address', 'agent', 'branch', 'deptid', 'position', 'agentcno', 'industry', 'shipid', 'billid', 'deldate', 'tax', 'vattype', 'shipcontactid', 'billcontactid', 'industryid', 'revisionref', 'projid', 'probability'];
   public $except = ['trno', 'dateid', 'due', 'deldate'];
   public $showfilteroption = true;
   public $showfilter = true;
@@ -60,11 +60,11 @@ class qs
   private $reporter;
   private $helpClass;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -504,7 +504,7 @@ class qs
     data_set($col2, 'agentcno.class', 'sbccsreadonly');
 
     if ($companyid == 10 || $companyid == 12) {
-      $fields = ['dbranchname', 'ddeptname', 'yourref', ['cur', 'forex'], 'revisionref', 'projid','probability'];
+      $fields = ['dbranchname', 'ddeptname', 'yourref', ['cur', 'forex'], 'revisionref', 'projid', 'probability'];
       $col3 = $this->fieldClass->create($fields);
       data_set($col3, 'dbranchname.required', true);
       data_set($col3, 'ddeptname.required', true);
@@ -965,17 +965,16 @@ class qs
 
     //$prob = $this->coreFunctions->datareader("select probability as value from qscalllogs where trno =? and endtime is not null order by line desc limit 1", [$trno]);
     $prob =  $this->coreFunctions->getfieldvalue($this->head, "probability", "trno=?", [$trno]);
-    if ($prob == '0%' || $prob == '0' || $prob == '') { 
+    if ($prob == '0%' || $prob == '0' || $prob == '') {
       return ['status' => false, 'msg' => 'Posting failed. Please check probability.'];
       // $stock = $this->openstock($trno,$config);
       // foreach ($stock as $key => $value) {
       //   $this->coreFunctions->execqry('update ' . $this->stock . ' set void=1 where trno=? and line=?', 'update', [$stock[$key]->trno, $stock[$key]->line]);
       //   $this->coreFunctions->execqry('update ' . $this->sstock . ' set void=1 where trno=? and line=?', 'update', [$stock[$key]->trno, $stock[$key]->line]);
       // }      
-    } 
-    else {
+    } else {
       //$probline = $this->coreFunctions->datareader("select line as value from qscalllogs where trno =? and endtime is not null order by line desc limit 1", [$trno]);
-      $this->coreFunctions->execqry("update ".$this->head." set probability = '100%' where trno=? ", 'update', [$trno]);
+      $this->coreFunctions->execqry("update " . $this->head . " set probability = '100%' where trno=? ", 'update', [$trno]);
     }
 
     $ship = $this->coreFunctions->getfieldvalue("headinfotrans", "isshipmentnotif", "trno=?", [$trno]);
@@ -1900,7 +1899,7 @@ class qs
     }
 
     foreach ($data as $key => $value) {
-       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

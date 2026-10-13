@@ -35,12 +35,12 @@ class employee_advance_balances
   // layoutsize: reportWidth
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '900'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -116,14 +116,16 @@ class employee_advance_balances
     }
 
     if ($deptname != '') {
-        if ($deptid != 0) {
-            $filter .= " and emp.deptid = $deptid";
-    }}
-    
+      if ($deptid != 0) {
+        $filter .= " and emp.deptid = $deptid";
+      }
+    }
+
     if ($divname != '') {
-        if ($divid != 0) {
-            $filter .= " and emp.divid = $divid";
-    }}
+      if ($divid != 0) {
+        $filter .= " and emp.divid = $divid";
+      }
+    }
 
 
     $emplvl = $this->othersClass->checksecuritylevel($config);

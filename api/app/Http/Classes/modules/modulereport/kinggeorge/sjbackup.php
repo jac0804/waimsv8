@@ -32,10 +32,10 @@ class sj
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -65,7 +65,7 @@ class sj
   public function reportparamsdata($config)
   {
     $status = 2;
-    
+
     return $this->coreFunctions->opentable(
       "select
       'PDFM' as print,
@@ -681,6 +681,5 @@ class sj
     PDF::MultiCell(100, 0, '', $border, 'L', false, 0, '', '', false, 1);
     PDF::MultiCell(50, 0, '', $border, 'R', false, 0, '', '', false, 1);
     PDF::MultiCell(100, 0, '', $border, 'R', false, 1, '', '', false, 0);
-
   }
 }

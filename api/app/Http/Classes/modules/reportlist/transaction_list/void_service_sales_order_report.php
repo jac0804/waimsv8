@@ -32,12 +32,12 @@ class void_service_sales_order_report
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -141,7 +141,7 @@ class void_service_sales_order_report
 
   public function default_QUERY_POSTED($config)
   {
-     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $client     = $config['params']['dataparams']['client'];
     $clientid = $config['params']['dataparams']['clientid'];

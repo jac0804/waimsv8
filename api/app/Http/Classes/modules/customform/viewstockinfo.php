@@ -31,10 +31,10 @@ class viewstockinfo
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -257,11 +257,11 @@ class viewstockinfo
     $trno = $config['params']['dataparams']['trno'];
     $line = $config['params']['dataparams']['line'];
 
-    $dateTables = ['pwstock','stockinfotrans','stockinfo'];
+    $dateTables = ['pwstock', 'stockinfotrans', 'stockinfo'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if ($config['params']['doc'] == 'PW') {
-       $isqty = $config['params']['dataparams']['isqty3'] - $this->othersClass->sanitizekeyfieldFast("qty", $config['params']['dataparams']['isqty'], $lookups);
+      $isqty = $config['params']['dataparams']['isqty3'] - $this->othersClass->sanitizekeyfieldFast("qty", $config['params']['dataparams']['isqty'], $lookups);
 
       $data = [
         'isqty2' => $this->othersClass->sanitizekeyfieldFast("qty", $config['params']['dataparams']['isqty'], $lookups),

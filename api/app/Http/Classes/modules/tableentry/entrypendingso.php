@@ -48,10 +48,10 @@ class entrypendingso
     private $reportheader;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -402,7 +402,7 @@ class entrypendingso
 
 
                     foreach ($head as $key2 => $val) {
-                        $head[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $head[$key2],$lookups);
+                        $head[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $head[$key2], $lookups);
                     }
                     $head['createdate'] = $date;
                     $head['createby'] = $config['params']['user'];

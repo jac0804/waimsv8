@@ -31,9 +31,9 @@ class  beneficiaries
   public $tablelogs_del = 'del_transnum_log';
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->tabClass = new tabClass;
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -170,7 +170,7 @@ class  beneficiaries
     $dateTables = [$this->table];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();

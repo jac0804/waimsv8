@@ -38,9 +38,9 @@ class cr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -792,7 +792,6 @@ class cr
               PDF::SetFont($fontbold, '', 12);
 
               PDF::Cell(398, 0, strtoupper($client), 'B', 1, 'L', false, '', 1, false, 'T', 'M');
-    
             } elseif ($charcount >= $max) { // mas matas o equal sa max na 56  yung clientname
               $cutLimit = 56;
               if ($charcount > $cutLimit) {
@@ -817,7 +816,7 @@ class cr
           } elseif ($line[0] == 'addr' && $line[1] == 'addr2') {
             // Address line
             $address = (isset($data[0]['address']) ? $data[0]['address'] : '');
-         
+
             $client    = (isset($data[0]['clientname']) ? $data[0]['clientname'] : '');
             $tin    = (isset($data[0]['tin']) ? $data[0]['tin'] : '');
             $charcount = strlen($client);

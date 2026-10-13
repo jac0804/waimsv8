@@ -34,9 +34,9 @@ class ar
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -44,27 +44,31 @@ class ar
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter($config){
-    $fields = ['radioprint','prepared','approved','received','print'];
+  public function createreportfilter($config)
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
       // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
     ]);
-    return array('col1'=>$col1);
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable(
       "select 
       'PDFM' as print,
       '' as prepared,
       '' as approved,
       '' as received
-    ");
+    "
+    );
   }
 
-  public function report_default_query($config){
+  public function report_default_query($config)
+  {
     $trno = $config['params']['dataid'];
     $query = "
       select head.rem, detail.rem as remarks, 
@@ -96,60 +100,62 @@ class ar
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
-  }//end fn
+  } //end fn
 
-  public function reportplotting($params, $data) {
-    if($params['params']['dataparams']['print'] == "default") {
+  public function reportplotting($params, $data)
+  {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_ar_layout($params, $data);
-    } else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_AR_PDF($params, $data);
     }
   }
 
-  public function rpt_ar_header_default($params,$data){
+  public function rpt_ar_header_default($params, $data)
+  {
     $str = '';
     $border = "1px solid";
     $font = "Century Gothic";
     $fontsize = "11";
 
     $companyid = $params['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency',$params['params']);
+    $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
     $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->letterhead($center,$username);
+    $str .= $this->reporter->letterhead($center, $username);
     $str .= $this->reporter->endtable();
     $str .= '<br/><br/>';
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-    $str .= $this->reporter->col('RECEIVABLE SETUP','600',null,false,$border,'','L',$font,'18','B','','');
-    $str .= $this->reporter->col('DOCUMENT # :','100',null,false,$border,'','L',$font, $fontsize,'B','','');
-    $str .= $this->reporter->col((isset($data[0]['docno'])? $data[0]['docno']:''),'100',null,false,$border,'B','L',$font, $fontsize,'','','').'<br />';
+    $str .= $this->reporter->col('RECEIVABLE SETUP', '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
+    $str .= $this->reporter->col('DOCUMENT # :', '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '100', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '') . '<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('CUSTOMER : ','80',null,false,$border,'','L',$font, $fontsize,'B','30px','4px');
-    $str .= $this->reporter->col((isset($data[0]['clientname'])? $data[0]['clientname']:''),'520',null,false,$border,'B','L',$font, $fontsize,'','30px','4px');
-    $str .= $this->reporter->col('DATE : ','40',null,false,$border,'','L',$font, $fontsize,'B','','');
-    $str .= $this->reporter->col((isset($data[0]['dateid'])? $data[0]['dateid']:''),'160',null,false,$border,'B','R',$font, $fontsize,'','','');
+    $str .= $this->reporter->col('CUSTOMER : ', '80', null, false, $border, '', 'L', $font, $fontsize, 'B', '30px', '4px');
+    $str .= $this->reporter->col((isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '520', null, false, $border, 'B', 'L', $font, $fontsize, '', '30px', '4px');
+    $str .= $this->reporter->col('DATE : ', '40', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col((isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '160', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('ADDRESS : ','80',null,false,$border,'','L',$font, $fontsize,'B','30px','4px');
-    $str .= $this->reporter->col((isset($data[0]['address'])? $data[0]['address']:''),'520',null,false,$border,'B','L',$font, $fontsize,'','30px','4px');
-    $str .= $this->reporter->col('REF. :','40',null,false,$border,'','L',$font, $fontsize,'B','','');
-    $str .= $this->reporter->col((isset($data[0]['yourref'])? $data[0]['yourref']:''),'160',null,false,$border,'B','R',$font, $fontsize,'','','');
+    $str .= $this->reporter->col('ADDRESS : ', '80', null, false, $border, '', 'L', $font, $fontsize, 'B', '30px', '4px');
+    $str .= $this->reporter->col((isset($data[0]['address']) ? $data[0]['address'] : ''), '520', null, false, $border, 'B', 'L', $font, $fontsize, '', '30px', '4px');
+    $str .= $this->reporter->col('REF. :', '40', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col((isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '160', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->startrow(null,null,false,$border,'','R',$font,'10','','','4px');
+    $str .= $this->reporter->startrow(null, null, false, $border, '', 'R', $font, '10', '', '', '4px');
     $str .= $this->reporter->pagenumber('Page');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -159,20 +165,21 @@ class ar
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-    $str .= $this->reporter->col('ACCT.#','75',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
-    $str .= $this->reporter->col('ACCOUNT NAME','350',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
-    $str .= $this->reporter->col('REFERENCE&nbsp#','75',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
-    $str .= $this->reporter->col('DATE','75',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
-    $str .= $this->reporter->col('DEBIT','75',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
-    $str .= $this->reporter->col('CREDIT','75',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
-    $str .= $this->reporter->col('CLIENT','75',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
+    $str .= $this->reporter->col('ACCT.#', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
+    $str .= $this->reporter->col('ACCOUNT NAME', '350', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
+    $str .= $this->reporter->col('REFERENCE&nbsp#', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
+    $str .= $this->reporter->col('DATE', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
+    $str .= $this->reporter->col('DEBIT', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
+    $str .= $this->reporter->col('CREDIT', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
+    $str .= $this->reporter->col('CLIENT', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
 
 
 
     return $str;
   }
 
-  public function default_ar_layout($params,$data){
+  public function default_ar_layout($params, $data)
+  {
 
     $companyid = $params['params']['companyid'];
     $decimal = $this->companysetup->getdecimal('currency', $params['params']);
@@ -181,103 +188,103 @@ class ar
     $username = $params['params']['user'];
 
     $str = '';
-    $count=35;
-    $page=35;
+    $count = 35;
+    $page = 35;
     $border = "1px solid";
     $font = "Century Gothic";
     $fontsize = "11";
 
     $str .= $this->reporter->beginreport();
-    $str .= $this->rpt_ar_header_default($params,$data);
-    $totaldb=0;
-    $totalcr=0;
-    for($i=0;$i<count($data);$i++){
+    $str .= $this->rpt_ar_header_default($params, $data);
+    $totaldb = 0;
+    $totalcr = 0;
+    for ($i = 0; $i < count($data); $i++) {
 
-      $debit=number_format($data[$i]['db'],$decimal);
+      $debit = number_format($data[$i]['db'], $decimal);
       $debit = $debit < 0 ? '-' : $debit;
-      $credit=number_format($data[$i]['cr'],$decimal);
+      $credit = number_format($data[$i]['cr'], $decimal);
       $credit = $credit < 0 ? '-' : $credit;
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col($data[$i]['acno'],'75',null,false,$border,'','C',$font, $fontsize,'','','2px');
-    $str .= $this->reporter->col($data[$i]['acnoname'],'350',null,false,$border,'','L',$font, $fontsize,'','','2px');
-    $str .= $this->reporter->col($data[$i]['ref'],'75',null,false,$border,'','C',$font, $fontsize,'','','2px');
-    $str .= $this->reporter->col($data[$i]['postdate'],'75',null,false,$border,'','C',$font, $fontsize,'','','2px');
-    $str .= $this->reporter->col($debit,'75',null,false,$border,'','R',$font, $fontsize,'','','2px');
-    $str .= $this->reporter->col($credit,'75',null,false,$border,'','R',$font, $fontsize,'','','2px');
-    $str .= $this->reporter->col($data[$i]['client'],'75',null,false,$border,'','C',$font, $fontsize,'','','2px');
-    $totaldb=$totaldb+$data[$i]['db'];
-    $totalcr=$totalcr+$data[$i]['cr'];
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col($data[$i]['acno'], '75', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
+      $str .= $this->reporter->col($data[$i]['acnoname'], '350', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
+      $str .= $this->reporter->col($data[$i]['ref'], '75', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
+      $str .= $this->reporter->col($data[$i]['postdate'], '75', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
+      $str .= $this->reporter->col($debit, '75', null, false, $border, '', 'R', $font, $fontsize, '', '', '2px');
+      $str .= $this->reporter->col($credit, '75', null, false, $border, '', 'R', $font, $fontsize, '', '', '2px');
+      $str .= $this->reporter->col($data[$i]['client'], '75', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
+      $totaldb = $totaldb + $data[$i]['db'];
+      $totalcr = $totalcr + $data[$i]['cr'];
 
 
 
-    if($this->reporter->linecounter==$page){
-      $str .= $this->reporter->endtable();
-      $str .= $this->reporter->page_break();
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
 
-    $loggeduser = $username;
-    $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col(strtoupper($loggeduser).' '.date('m/d/Y h:i:s a',time()) . '&nbsp;&nbsp;&nbsp;RSSC','600',null,false,$border,'','L',$font, $fontsize,'','','');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();   
-      
-    $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->startrow();
-    //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-    $str .= $this->reporter->col('RECEIVABLE SETUP','600',null,false,$border,'','L',$font,'18','B','','');
-    $str .= $this->reporter->col('DOCUMENT # :','100',null,false,$border,'','L',$font, $fontsize,'B','','');
-    $str .= $this->reporter->col((isset($data[0]['docno'])? $data[0]['docno']:''),'100',null,false,$border,'B','L',$font, $fontsize,'','','').'<br />';
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
-    $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('CUSTOMER : ','80',null,false,$border,'','L',$font, $fontsize,'B','30px','4px');
-    $str .= $this->reporter->col((isset($data[0]['clientname'])? $data[0]['clientname']:''),'520',null,false,$border,'B','L',$font, $fontsize,'','30px','4px');
-    $str .= $this->reporter->col('DATE : ','40',null,false,$border,'','L',$font, $fontsize,'B','','');
-    $str .= $this->reporter->col((isset($data[0]['dateid'])? $data[0]['dateid']:''),'160',null,false,$border,'B','R',$font, $fontsize,'','','');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
-    $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('ADDRESS : ','80',null,false,$border,'','L',$font, $fontsize,'B','30px','4px');
-    $str .= $this->reporter->col((isset($data[0]['address'])? $data[0]['address']:''),'520',null,false,$border,'B','L',$font, $fontsize,'','30px','4px');
-    $str .= $this->reporter->col('REF. :','40',null,false,$border,'','L',$font, $fontsize,'B','','');
-    $str .= $this->reporter->col((isset($data[0]['yourref'])? $data[0]['yourref']:''),'160',null,false,$border,'B','R',$font, $fontsize,'','','');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
+        $loggeduser = $username;
+        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col(strtoupper($loggeduser) . ' ' . date('m/d/Y h:i:s a', time()) . '&nbsp;&nbsp;&nbsp;RSSC', '600', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
 
-    $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->startrow(null,null,false,$border,'','R',$font,'10','','','4px');
-    $str .= $this->reporter->pagenumber('Page');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
+        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->startrow();
+        //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+        $str .= $this->reporter->col('RECEIVABLE SETUP', '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
+        $str .= $this->reporter->col('DOCUMENT # :', '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '100', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '') . '<br />';
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('CUSTOMER : ', '80', null, false, $border, '', 'L', $font, $fontsize, 'B', '30px', '4px');
+        $str .= $this->reporter->col((isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '520', null, false, $border, 'B', 'L', $font, $fontsize, '', '30px', '4px');
+        $str .= $this->reporter->col('DATE : ', '40', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col((isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '160', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('ADDRESS : ', '80', null, false, $border, '', 'L', $font, $fontsize, 'B', '30px', '4px');
+        $str .= $this->reporter->col((isset($data[0]['address']) ? $data[0]['address'] : ''), '520', null, false, $border, 'B', 'L', $font, $fontsize, '', '30px', '4px');
+        $str .= $this->reporter->col('REF. :', '40', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col((isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '160', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
 
-    //($w=null,$h=null, $bg=false,  $b=false, $al='',  $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-    $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->startrow();
-    //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-    $str .= $this->reporter->col('ACCT.#','75',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
-    $str .= $this->reporter->col('ACCOUNT NAME','350',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
-    $str .= $this->reporter->col('REFERENCE #','75',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
-    $str .= $this->reporter->col('DATE','75',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
-    $str .= $this->reporter->col('DEBIT','75',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
-    $str .= $this->reporter->col('CREDIT','75',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
-    $str .= $this->reporter->col('CLIENT','75',null,false,$border,'B','C',$font, $fontsize,'B','30px','8px');
-    $str .= $this->reporter->endrow();
-         $str .= $this->reporter->printline();
-    $page=$page + $count;
+        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->startrow(null, null, false, $border, '', 'R', $font, '10', '', '', '4px');
+        $str .= $this->reporter->pagenumber('Page');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        //($w=null,$h=null, $bg=false,  $b=false, $al='',  $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->startrow();
+        //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+        $str .= $this->reporter->col('ACCT.#', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
+        $str .= $this->reporter->col('ACCOUNT NAME', '350', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
+        $str .= $this->reporter->col('REFERENCE #', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
+        $str .= $this->reporter->col('DATE', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
+        $str .= $this->reporter->col('DEBIT', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
+        $str .= $this->reporter->col('CREDIT', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
+        $str .= $this->reporter->col('CLIENT', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->printline();
+        $page = $page + $count;
+      }
     }
-    }       
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('','75',null,false,'1px dotted ','T','C',$font, $fontsize,'B','','2px');
-    $str .= $this->reporter->col('','75',null,false,'1px dotted ','T','C',$font, $fontsize,'B','','2px');
-    $str .= $this->reporter->col('','75',null,false,'1px dotted ','T','C',$font, $fontsize,'B','','2px');
-    $str .= $this->reporter->col('GRAND TOTAL :','350',null,false,'1px dotted ','T','R',$font, $fontsize,'B','30px','2px');
-    $str .= $this->reporter->col(number_format($totaldb,2),'75',null,false,'1px dotted ','T','R',$font, $fontsize,'B','','2px');
-    $str .= $this->reporter->col(number_format($totalcr,2),'75',null,false,'1px dotted ','T','R',$font, $fontsize,'B','','2px');
-    $str .= $this->reporter->col('','75',null,false,'1px dotted ','T','C',$font, $fontsize,'B','30px','8px');
+    $str .= $this->reporter->col('', '75', null, false, '1px dotted ', 'T', 'C', $font, $fontsize, 'B', '', '2px');
+    $str .= $this->reporter->col('', '75', null, false, '1px dotted ', 'T', 'C', $font, $fontsize, 'B', '', '2px');
+    $str .= $this->reporter->col('', '75', null, false, '1px dotted ', 'T', 'C', $font, $fontsize, 'B', '', '2px');
+    $str .= $this->reporter->col('GRAND TOTAL :', '350', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B', '30px', '2px');
+    $str .= $this->reporter->col(number_format($totaldb, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B', '', '2px');
+    $str .= $this->reporter->col(number_format($totalcr, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B', '', '2px');
+    $str .= $this->reporter->col('', '75', null, false, '1px dotted ', 'T', 'C', $font, $fontsize, 'B', '30px', '8px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -287,18 +294,18 @@ class ar
     $str .= '<br/><br/>';
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Prepared By : ','266',null,false,$border,'','L',$font, $fontsize,'','','');
-    $str .= $this->reporter->col('Approved By :','266',null,false,$border,'','C',$font, $fontsize,'','','');
-    $str .= $this->reporter->col('Received By :','266',null,false,$border,'','R',$font, $fontsize,'','','');
+    $str .= $this->reporter->col('Prepared By : ', '266', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('Approved By :', '266', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('Received By :', '266', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= '<br/>';
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col($params['params']['dataparams']["prepared"],'266',null,false,$border,'','L',$font, $fontsize,'B','','');
-    $str .= $this->reporter->col($params['params']['dataparams']["approved"],'266',null,false,$border,'','C',$font, $fontsize,'B','','');
-    $str .= $this->reporter->col($params['params']['dataparams']["received"],'266',null,false,$border,'','R',$font, $fontsize,'B','','');
+    $str .= $this->reporter->col($params['params']['dataparams']["prepared"], '266', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col($params['params']['dataparams']["approved"], '266', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col($params['params']['dataparams']["received"], '266', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -307,7 +314,7 @@ class ar
 
     $str .= $this->reporter->endreport();
     return $str;
-  }//end fn
+  } //end fn
 
   public function default_AR_header_PDF($params, $data)
   {
@@ -342,11 +349,11 @@ class ar
     // write2DBarcode(code, type, x, y, width, height, style, align)
 
     PDF::SetFont($font, '', 9);
-    PDF::MultiCell(0, 0, $username.' - '.date_format(date_create($current_timestamp),'m/d/Y H:i:s').'  '.strtoupper($headerdata[0]->name), '', 'L');
+    PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . strtoupper($headerdata[0]->name), '', 'L');
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -431,23 +438,23 @@ class ar
         $acnoname = $data[$i]['acnoname'];
         $ref = $data[$i]['ref'];
         $postdate = $data[$i]['postdate'];
-        $debit = number_format($data[$i]['db'],$decimalcurr);
-        $credit = number_format($data[$i]['cr'],$decimalcurr);
+        $debit = number_format($data[$i]['db'], $decimalcurr);
+        $credit = number_format($data[$i]['cr'], $decimalcurr);
         $client = $data[$i]['client'];
         $debit = $debit < 0 ? '-' : $debit;
         $credit = $credit < 0 ? '-' : $credit;
 
-        $arr_acno = $this->reporter->fixcolumn([$acno],'16',0);
-        $arr_acnoname = $this->reporter->fixcolumn([$acnoname],'100',0);
-        $arr_ref = $this->reporter->fixcolumn([$ref],'16',0);
-        $arr_postdate = $this->reporter->fixcolumn([$postdate],'16',0);
-        $arr_debit = $this->reporter->fixcolumn([$debit],'13',0);
-        $arr_credit = $this->reporter->fixcolumn([$credit],'13',0);
-        $arr_client = $this->reporter->fixcolumn([$client],'16',0);
+        $arr_acno = $this->reporter->fixcolumn([$acno], '16', 0);
+        $arr_acnoname = $this->reporter->fixcolumn([$acnoname], '100', 0);
+        $arr_ref = $this->reporter->fixcolumn([$ref], '16', 0);
+        $arr_postdate = $this->reporter->fixcolumn([$postdate], '16', 0);
+        $arr_debit = $this->reporter->fixcolumn([$debit], '13', 0);
+        $arr_credit = $this->reporter->fixcolumn([$credit], '13', 0);
+        $arr_client = $this->reporter->fixcolumn([$client], '16', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_client]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(90, 0, (isset($arr_acno[$r]) ? $arr_acno[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
           PDF::MultiCell(160, 0, (isset($arr_acnoname[$r]) ? $arr_acnoname[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -464,11 +471,10 @@ class ar
           $this->default_AR_header_PDF($params, $data);
           $page += $count;
         }
+      }
     }
-    
-  }
-  PDF::SetFont($font, '', 5);
-  PDF::MultiCell(705, 0, '', 'T');
+    PDF::SetFont($font, '', 5);
+    PDF::MultiCell(705, 0, '', 'T');
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(430, 0, 'GRAND TOTAL: ', '', 'R', false, 0);
@@ -495,5 +501,4 @@ class ar
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

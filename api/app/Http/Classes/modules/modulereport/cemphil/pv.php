@@ -34,10 +34,10 @@ class pv
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -61,7 +61,7 @@ class pv
         ['label' => 'BIR Form 2307 (New)', 'value' => '3', 'color' => 'blue']
       ]
     );
-    
+
     return array('col1' => $col1);
   }
 
@@ -84,7 +84,7 @@ class pv
 
   public function reportplotting($config, $data)
   {
-    
+
     if ($config['params']['dataparams']['print'] == "default") {
       switch ($config['params']['dataparams']['reporttype']) {
         case 0: // VOUCHER
@@ -111,11 +111,11 @@ class pv
     return $str;
   }
 
-  
+
 
   public function report_default_query($filters)
   {
-    
+
     ini_set('memory_limit', '-1');
     ini_set('max_execution_time', 0);
     $trno = $filters['params']['dataid'];
@@ -227,7 +227,6 @@ class pv
             } //end if
             $finalarrs[$key]['month'] = $y['month'];
           }
-          
         } //end for each
         if (empty($result1)) {
           $returnarr[0]['payee'] = '';
@@ -310,21 +309,21 @@ class pv
     PDF::SetMargins(40, 40);
 
     PDF::SetFont($font, '');
-  
-      PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s'), '', 'L');
+
+    PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s'), '', 'L');
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n", '', 'C');
 
 
-    PDF::SetFont($fontbold, '', $fontsize+7);
+    PDF::SetFont($fontbold, '', $fontsize + 7);
     PDF::MultiCell(720, 0, $this->modulename, '', 'C', 0, 1);
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(620, 0, "APV #: ", '', 'R', 0, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(100, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'R', 0,1);
+    PDF::MultiCell(100, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'R', 0, 1);
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 0, "Supplier: ", '', 'L', 0, 0, '',  '');
@@ -333,8 +332,7 @@ class pv
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 0, "DATE: ", '', 'R', 0, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(100, 0, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'R', 0,1);
-
+    PDF::MultiCell(100, 0, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'R', 0, 1);
   }
 
   public function PDF_DEFAULT_CCVOUCHER_LAYOUT1($data, $params)
@@ -359,45 +357,45 @@ class pv
 
     PDF::setFontSpacing(4);
 
-    $col1=70;
-    $col2=350;
-    $col3=90;
-    $col4=90;
-    $col5=120;
-    
+    $col1 = 70;
+    $col2 = 350;
+    $col3 = 90;
+    $col4 = 90;
+    $col5 = 120;
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell($col1, 0, 'COST', 'TL', 'C', 0, 0);
     PDF::MultiCell($col2, 0, 'ACCOUNTING ENTRY', 'TL', 'C', 0, 0);
     PDF::MultiCell($col3, 0, 'DEBIT', 'TL', 'C', 0, 0);
-    PDF::MultiCell($col4, 0, 'CREDIT', 'TL', 'C', 0,0);
-    PDF::MultiCell($col5, 0, 'REMARKS', 'TLR', 'C', 0,1);
+    PDF::MultiCell($col4, 0, 'CREDIT', 'TL', 'C', 0, 0);
+    PDF::MultiCell($col5, 0, 'REMARKS', 'TLR', 'C', 0, 1);
 
     PDF::MultiCell($col1, 0, 'CENTER', 'BL', 'C', 0, 0);
     PDF::MultiCell($col2, 0, '', 'BL', 'C', 0, 0);
     PDF::MultiCell($col3, 0, '', 'BL', 'C', 0, 0);
-    PDF::MultiCell($col4, 0, '', 'BL', 'C', 0,0);
-    PDF::MultiCell($col5, 0, '', 'BLR', 'C', 0,1);
+    PDF::MultiCell($col4, 0, '', 'BL', 'C', 0, 0);
+    PDF::MultiCell($col5, 0, '', 'BLR', 'C', 0, 1);
 
 
     $totaldb = 0;
     $totalcr = 0;
     $acname = "";
-    $costcenter="";
+    $costcenter = "";
     PDF::setFontSpacing(0);
     if (!empty($data)) {
       for ($i = 0; $i < count($data); $i++) {
 
         $maxrow = 1;
 
-        if($data[$i]['db']<=0){
+        if ($data[$i]['db'] <= 0) {
           $debit = '-';
-        }else{
+        } else {
           $debit = number_format($data[$i]['db'], 2);
         }
-        if($data[$i]['cr']<=0){
+        if ($data[$i]['cr'] <= 0) {
           $credit = '-';
-        }else{
-          $credit = number_format($data[$i]['cr'], 2);  
+        } else {
+          $credit = number_format($data[$i]['cr'], 2);
         }
 
         $rem = $acname = $data[$i]['rem'];
@@ -411,37 +409,36 @@ class pv
         $arr_rem = $this->reporter->fixcolumn([$rem], '20', 0);
 
 
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_costcenter, $arr_acctentry, $arr_debit,$arr_credit,$arr_rem]);
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_costcenter, $arr_acctentry, $arr_debit, $arr_credit, $arr_rem]);
         for ($r = 0; $r < $maxrow; $r++) {
-  
+
           PDF::SetFont($font, '', $fontsize);
-          PDF::MultiCell($col1, 0, ' '.(isset($arr_costcenter[$r]) ? $arr_costcenter[$r] : ''), 'BL', 'C', 0, 0);
-          PDF::MultiCell($col2, 0, ' '.(isset($arr_acctentry[$r]) ? $arr_acctentry[$r] : ''), 'BL', 'L', 0, 0);
-          PDF::MultiCell($col3, 0, ' '.(isset($arr_debit[$r]) ? $arr_debit[$r] : ''), 'BL', 'R', 0, 0);
-          PDF::MultiCell($col4, 0, ' '.(isset($arr_credit[$r]) ? $arr_credit[$r] : ''), 'BL', 'R', 0,0);
-          PDF::MultiCell($col5, 0, ' '.(isset($arr_rem[$r]) ? $arr_rem[$r] : ''), 'BLR', 'L', 0,1);
+          PDF::MultiCell($col1, 0, ' ' . (isset($arr_costcenter[$r]) ? $arr_costcenter[$r] : ''), 'BL', 'C', 0, 0);
+          PDF::MultiCell($col2, 0, ' ' . (isset($arr_acctentry[$r]) ? $arr_acctentry[$r] : ''), 'BL', 'L', 0, 0);
+          PDF::MultiCell($col3, 0, ' ' . (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), 'BL', 'R', 0, 0);
+          PDF::MultiCell($col4, 0, ' ' . (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), 'BL', 'R', 0, 0);
+          PDF::MultiCell($col5, 0, ' ' . (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), 'BLR', 'L', 0, 1);
         }
 
         $totaldb += $data[$i]['db'];
         $totalcr += $data[$i]['cr'];
 
         if (PDF::getY() > 950) {
-            
+
           PDF::MultiCell(720, 0, '', '', '', 0, 1);
           PDF::MultiCell(720, 0, '', '', '', 0, 1);
           PDF::SetFont($fontbold, '', $fontsize);
           PDF::MultiCell($col1, 0, 'COST', 'TL', 'C', 0, 0);
           PDF::MultiCell($col2, 0, 'ACCOUNTING ENTRY', 'TL', 'C', 0, 0);
           PDF::MultiCell($col3, 0, 'DEBIT', 'TL', 'C', 0, 0);
-          PDF::MultiCell($col4, 0, 'CREDIT', 'TL', 'C', 0,0);
-          PDF::MultiCell($col5, 0, 'REMARKS', 'TLR', 'C', 0,1);
+          PDF::MultiCell($col4, 0, 'CREDIT', 'TL', 'C', 0, 0);
+          PDF::MultiCell($col5, 0, 'REMARKS', 'TLR', 'C', 0, 1);
 
           PDF::MultiCell($col1, 0, 'CENTER', 'BL', 'C', 0, 0);
           PDF::MultiCell($col2, 0, '', 'BL', 'C', 0, 0);
           PDF::MultiCell($col3, 0, '', 'BL', 'C', 0, 0);
-          PDF::MultiCell($col4, 0, '', 'BL', 'C', 0,0);
-          PDF::MultiCell($col5, 0, '', 'BLR', 'C', 0,1);
-
+          PDF::MultiCell($col4, 0, '', 'BL', 'C', 0, 0);
+          PDF::MultiCell($col5, 0, '', 'BLR', 'C', 0, 1);
         }
       }
     }
@@ -450,32 +447,32 @@ class pv
     PDF::MultiCell($col1, 0, '', 'LB', 'C', 0, 0);
     PDF::MultiCell($col2, 0, '', 'LB', 'C', 0, 0);
     PDF::MultiCell($col3, 0, '', 'LB', 'R', 0, 0);
-    PDF::MultiCell($col4, 0, '', 'LB', 'R', 0,0);
-    PDF::MultiCell($col5, 0, '', 'LBR', 'L', 0,1);
-    
-    
+    PDF::MultiCell($col4, 0, '', 'LB', 'R', 0, 0);
+    PDF::MultiCell($col5, 0, '', 'LBR', 'L', 0, 1);
+
+
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell($col1, 0, '', 'LB', 'C', 0, 0);
     PDF::MultiCell($col2, 0, '', 'LB', 'C', 0, 0);
     PDF::MultiCell($col3, 0, '', 'LB', 'R', 0, 0);
-    PDF::MultiCell($col4, 0, '', 'LB', 'R', 0,0);
-    PDF::MultiCell($col5, 0, '', 'LBR', 'L', 0,1);
-    
+    PDF::MultiCell($col4, 0, '', 'LB', 'R', 0, 0);
+    PDF::MultiCell($col5, 0, '', 'LBR', 'L', 0, 1);
+
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell($col1, 0, '', 'BL', 'C', 0, 0);
     PDF::MultiCell($col2, 0, 'TOTAL', 'BL', 'C', 0, 0);
-    PDF::MultiCell($col3, 0, number_format($totaldb,2), 'BL', 'R', 0, 0);
-    PDF::MultiCell($col4, 0, number_format($totalcr,2), 'BL', 'R', 0,0);
-    PDF::MultiCell($col5, 0, '', 'BLR', 'L', 0,1);
+    PDF::MultiCell($col3, 0, number_format($totaldb, 2), 'BL', 'R', 0, 0);
+    PDF::MultiCell($col4, 0, number_format($totalcr, 2), 'BL', 'R', 0, 0);
+    PDF::MultiCell($col5, 0, '', 'BLR', 'L', 0, 1);
 
-    PDF::SetFont($font, '', $fontsize-5);
+    PDF::SetFont($font, '', $fontsize - 5);
     PDF::MultiCell($col1, 0, '', 'L', 'C', 0, 0);
     PDF::MultiCell($col2, 0, '', '', 'C', 0, 0);
     PDF::MultiCell($col3, 0, '', '', 'R', 0, 0);
-    PDF::MultiCell($col4, 0, '', '', 'R', 0,0);
-    PDF::MultiCell($col5, 0, '', 'R', 'L', 0,1);
+    PDF::MultiCell($col4, 0, '', '', 'R', 0, 0);
+    PDF::MultiCell($col5, 0, '', 'R', 'L', 0, 1);
 
-    
+
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 0, 'Attachments:', 'L', 'C', 0, 0);
 
@@ -503,38 +500,38 @@ class pv
     PDF::MultiCell(13, 0, '', '', 'R', 0, 0);
     PDF::MultiCell(60, 0, 'Others', 'R', 'L', 0, 1);
 
-    
-    
-    PDF::SetFont($font, '', $fontsize-5);
+
+
+    PDF::SetFont($font, '', $fontsize - 5);
     PDF::MultiCell(100, 0, '', 'BL', 'C', 0, 0);
     PDF::MultiCell(300, 0, '', 'B', 'C', 0, 0);
     PDF::MultiCell(110, 0, '', 'B', 'R', 0, 0);
-    PDF::MultiCell(110, 0, '', 'B', 'R', 0,0);
-    PDF::MultiCell(100, 0, '', 'BR', 'L', 0,1);
+    PDF::MultiCell(110, 0, '', 'B', 'R', 0, 0);
+    PDF::MultiCell(100, 0, '', 'BR', 'L', 0, 1);
 
-    
+
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(720, 0, 'Explanation:', 'LR', 'L', 0,1);
-    PDF::MultiCell(720, 0, '', 'LR', 'L', 0,1);
-    PDF::MultiCell(720, 0, $data[0]['headrem'], 'LR', 'L', 0,1);
-    
-    PDF::SetFont($font, '', $fontsize-5);
-    PDF::MultiCell(720, 0, '', 'BLR', 'L', 0,1);
+    PDF::MultiCell(720, 0, 'Explanation:', 'LR', 'L', 0, 1);
+    PDF::MultiCell(720, 0, '', 'LR', 'L', 0, 1);
+    PDF::MultiCell(720, 0, $data[0]['headrem'], 'LR', 'L', 0, 1);
+
+    PDF::SetFont($font, '', $fontsize - 5);
+    PDF::MultiCell(720, 0, '', 'BLR', 'L', 0, 1);
 
 
-    
+
     PDF::SetFont($font, '', $fontsize);
 
     PDF::MultiCell(240, 0, 'Prepared By: ', 'L', 'L', 0, 0);
-    PDF::MultiCell(240, 0, 'Checked By: ', '', 'L',0,0);
+    PDF::MultiCell(240, 0, 'Checked By: ', '', 'L', 0, 0);
     PDF::MultiCell(240, 0, 'Approved By: ', 'R', 'L', 0, 1);
 
-    PDF::MultiCell(720, 0, '', 'LR', 'L', 0,1);
+    PDF::MultiCell(720, 0, '', 'LR', 'L', 0, 1);
 
 
 
     PDF::MultiCell(240, 0, $params['params']['dataparams']['prepared'], 'LB', 'L', 0, 0);
-    PDF::MultiCell(240, 0, $params['params']['dataparams']['checked'], 'B', 'L',0,0);
+    PDF::MultiCell(240, 0, $params['params']['dataparams']['checked'], 'B', 'L', 0, 0);
     PDF::MultiCell(240, 0, $params['params']['dataparams']['approved'], 'BR', 'L', 0, 1);
 
 
@@ -1517,7 +1514,7 @@ class pv
       PDF::MultiCell(80, $max_height, $key, 'LRB', '', false, 0);
 
       switch ($data['head'][0]['month']) {
-          
+
         case '1':
         case '4':
         case '7':
@@ -1527,7 +1524,7 @@ class pv
           PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
           $totalwtx1 +=  $data['detail'][$key]['oamt'];
           break;
-         
+
         case '2':
         case '5':
         case '8':
@@ -1778,7 +1775,7 @@ class pv
 
   public function rpt_default_header_ccvoucher($data, $filters)
   {
-     $center = $filters['params']['center'];
+    $center = $filters['params']['center'];
     $username = $filters['params']['user'];
 
     $prepared = $filters['params']['dataparams']['prepared'];
@@ -2920,12 +2917,12 @@ class pv
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-   
+
     $str .= $this->reporter->col('<img src ="' . $bir . '">', '135', null, false, '2px solid ', 'LRTB', 'C', 'Century Gothic', '11', '', '', '');
     $str .= $this->reporter->col('', '55', null, false, '2px solid ', 'TB', 'L', 'Century Gothic', '11', 'B', '', '');
     $str .= $this->reporter->col('Certificate of Creditable Tax <br> Withheld At Source', '450', null, false, '2px solid ', 'RTB', 'C', 'Century Gothic', '16', 'B', '', '');
 
-   
+
 
     $str .= $this->reporter->col('<img src ="' . $birblogo . '" alt="BIR" width="200px" height ="50px">', '130', null, false, '2px solid ', 'TB', 'C', 'Century Gothic', '11', '', '', '');
     $str .= $this->reporter->col('', '5', null, false, '2px solid ', 'RTB', 'L', 'Century Gothic', '11', 'B', '', '');
@@ -2978,7 +2975,7 @@ class pv
         $str .= $this->reporter->col('01', '10', null, false, '2px solid', 'LRTB', 'C', 'Century Gothic', '10', 'B', '', '3px');
         $str .= $this->reporter->col((isset($data['head'][0]['yr']) ? $data['head'][0]['yr'] : ''), '10', null, false, '2px solid', 'LRTB', 'C', 'Century Gothic', '10', 'B', '', '3px');
 
-  
+
         $str .= $this->reporter->col('(MM/DD/YY)', '270', null, false, '2px solid ', 'R', 'L', 'Century Gothic', '10', '', '', '');
 
         $str .= $this->reporter->col('06', '10', null, false, '2px solid', 'LRTB', 'C', 'Century Gothic', '10', 'B', '', '3px');
@@ -3049,7 +3046,7 @@ class pv
     $str .= $this->reporter->col('2', '20', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
 
     $str .= $this->reporter->col('Tax Payer Identification Number (TIN)', '150', null, false, '2px solid ', '', 'L', 'Century Gothic', '10', '', '', '3px');
-  
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['tin']) ? $data['head'][0]['tin'] : ''), '400', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 
@@ -3095,7 +3092,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
- 
+
     $str .= $this->reporter->col((isset($data['head'][0]['payee']) ? $data['head'][0]['payee'] : ''), '760', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 
     $str .= $this->reporter->col('', '10', null, false, '2px solid ', 'R', 'C', 'Century Gothic', '10', '', '', '');
@@ -3120,7 +3117,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
-  
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['address']) ? $data['head'][0]['address'] : ''), '620', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
     $str .= $this->reporter->col('', '10', null, false, '2px solid ', 'R', 'C', 'Century Gothic', '10', '', '', '');
@@ -3149,7 +3146,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
-  
+
 
     $str .= $this->reporter->col('', '760', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '10px');
 
@@ -3191,7 +3188,7 @@ class pv
     $str .= $this->reporter->col('6', '20', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
 
     $str .= $this->reporter->col('Tax Payer Identification Number (TIN)', '150', null, false, '2px solid ', '', 'L', 'Century Gothic', '10', '', '', '3px');
- 
+
     $str .= $this->reporter->col((isset($data['head'][0]['tin']) ? $data['head'][0]['tin'] : ''), '400', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 
     $str .= $this->reporter->col('', '10', null, false, '2px solid ', 'R', 'C', 'Century Gothic', '10', '', '', '');
@@ -3216,7 +3213,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
-  
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['payee']) ? $data['head'][0]['payee'] : ''), '760', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 
@@ -3266,7 +3263,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Part III-Details of Monthly Income Payments and Taxes Withheld', '800', null, false, '2px solid ', 'TLBR', 'C', 'Century Gothic', '10', 'B', '', '');
-  
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -3528,7 +3525,7 @@ class pv
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Signature over Printed Name of Payor/Payor`s Authorized Representative/Tax Agent
             <br/>(Indicate Title/Designation and TIN)', '800', null, false, '2px solid ', 'LRB', 'C', 'Century Gothic', '10', '', '', '');
-  
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -3586,7 +3583,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('CONFORME:', '800', null, false, '2px solid ', 'TLBR', 'C', 'Century Gothic', '10', 'B', '', '');
-   
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -3635,7 +3632,7 @@ class pv
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Signature over Printed Name of Payee/Payee`s Authorized Representative/Tax Agent
             <br/>(Indicate Title/Designation and TIN)', '800', null, false, '2px solid ', 'LRB', 'C', 'Century Gothic', '10', '', '', '');
-   
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 

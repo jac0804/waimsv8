@@ -30,12 +30,12 @@ class monthly_analyze_item_purchase
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1200'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -155,7 +155,7 @@ class monthly_analyze_item_purchase
     // $username = $config['params']['user'];
     $companyid = $config['params']['companyid'];
 
-    switch ($companyid){
+    switch ($companyid) {
       case 59: // roosevelt
         $data = $this->reportRooseveltLayout($config, $result);
         break;
@@ -672,24 +672,24 @@ class monthly_analyze_item_purchase
       $modec = ($data->modec <> 0 ? number_format($data->modec, 2) : '-');
       $amt = $data->mojan + $data->mofeb + $data->momar + $data->moapr + $data->momay + $data->mojun + $data->mojul + $data->moaug + $data->mosep + $data->mooct + $data->monov + $data->modec;
       $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-          $str .= $this->reporter->addline();
-          $str .= $this->reporter->col($data->itemname, '140', null, false, $border, 'TLRB', 'L', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col($data->size. ' ', '80', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '', '');
-          $str .= $this->reporter->col($mojan, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
-          $str .= $this->reporter->col($mofeb, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
-          $str .= $this->reporter->col($momar, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
-          $str .= $this->reporter->col($moapr, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
-          $str .= $this->reporter->col($momay, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
-          $str .= $this->reporter->col($mojun, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
-          $str .= $this->reporter->col($mojul, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
-          $str .= $this->reporter->col($moaug, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
-          $str .= $this->reporter->col($mosep, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
-          $str .= $this->reporter->col($mooct, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
-          $str .= $this->reporter->col($monov, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
-          $str .= $this->reporter->col($modec, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
-          $str .= $this->reporter->col(number_format($amt, 2).' ', '80', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
-        $str .= $this->reporter->endrow();
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->col($data->itemname, '140', null, false, $border, 'TLRB', 'L', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col($data->size . ' ', '80', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '', '');
+      $str .= $this->reporter->col($mojan, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
+      $str .= $this->reporter->col($mofeb, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
+      $str .= $this->reporter->col($momar, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
+      $str .= $this->reporter->col($moapr, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
+      $str .= $this->reporter->col($momay, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
+      $str .= $this->reporter->col($mojun, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
+      $str .= $this->reporter->col($mojul, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
+      $str .= $this->reporter->col($moaug, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
+      $str .= $this->reporter->col($mosep, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
+      $str .= $this->reporter->col($mooct, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
+      $str .= $this->reporter->col($monov, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
+      $str .= $this->reporter->col($modec, '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
+      $str .= $this->reporter->col(number_format($amt, 2) . ' ', '80', null, false, $border, 'TLRB', 'R', $font, $font_size9, '', '', '0 2px 0 0', '');
+      $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
       //brand
@@ -752,23 +752,23 @@ class monthly_analyze_item_purchase
     } // end foreach
 
     $str .= $this->reporter->begintable($layoutsize);
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('GRAND TOTAL', '140', null, false, $border, 'TLRB', 'L', $font, $font_size9, 'b', '', '');
-        $str .= $this->reporter->col('', '80', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '', '');
-        $str .= $this->reporter->col($totalmojan == 0 ? '-' : number_format($totalmojan, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
-        $str .= $this->reporter->col($totalmofeb == 0 ? '-' : number_format($totalmofeb, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
-        $str .= $this->reporter->col($totalmomar == 0 ? '-' : number_format($totalmomar, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
-        $str .= $this->reporter->col($totalmoapr == 0 ? '-' : number_format($totalmoapr, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
-        $str .= $this->reporter->col($totalmomay == 0 ? '-' : number_format($totalmomay, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
-        $str .= $this->reporter->col($totalmojun == 0 ? '-' : number_format($totalmojun, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
-        $str .= $this->reporter->col($totalmojul == 0 ? '-' : number_format($totalmojul, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
-        $str .= $this->reporter->col($totalmoaug == 0 ? '-' : number_format($totalmoaug, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
-        $str .= $this->reporter->col($totalmosep == 0 ? '-' : number_format($totalmosep, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
-        $str .= $this->reporter->col($totalmooct == 0 ? '-' : number_format($totalmooct, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
-        $str .= $this->reporter->col($totalmonov == 0 ? '-' : number_format($totalmonov, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
-        $str .= $this->reporter->col($totalmodec == 0 ? '-' : number_format($totalmodec, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
-        $str .= $this->reporter->col($totalamt == 0 ? '-' : number_format($totalamt, 2), '80', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('GRAND TOTAL', '140', null, false, $border, 'TLRB', 'L', $font, $font_size9, 'b', '', '');
+    $str .= $this->reporter->col('', '80', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '', '');
+    $str .= $this->reporter->col($totalmojan == 0 ? '-' : number_format($totalmojan, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
+    $str .= $this->reporter->col($totalmofeb == 0 ? '-' : number_format($totalmofeb, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
+    $str .= $this->reporter->col($totalmomar == 0 ? '-' : number_format($totalmomar, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
+    $str .= $this->reporter->col($totalmoapr == 0 ? '-' : number_format($totalmoapr, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
+    $str .= $this->reporter->col($totalmomay == 0 ? '-' : number_format($totalmomay, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
+    $str .= $this->reporter->col($totalmojun == 0 ? '-' : number_format($totalmojun, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
+    $str .= $this->reporter->col($totalmojul == 0 ? '-' : number_format($totalmojul, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
+    $str .= $this->reporter->col($totalmoaug == 0 ? '-' : number_format($totalmoaug, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
+    $str .= $this->reporter->col($totalmosep == 0 ? '-' : number_format($totalmosep, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
+    $str .= $this->reporter->col($totalmooct == 0 ? '-' : number_format($totalmooct, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
+    $str .= $this->reporter->col($totalmonov == 0 ? '-' : number_format($totalmonov, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
+    $str .= $this->reporter->col($totalmodec == 0 ? '-' : number_format($totalmodec, 2), '75', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
+    $str .= $this->reporter->col($totalamt == 0 ? '-' : number_format($totalamt, 2), '80', null, false, $border, 'TLRB', 'R', $font, $font_size9, 'b', '0 2px 0 0', '');
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->endreport();
@@ -822,35 +822,35 @@ class monthly_analyze_item_purchase
     $layoutsize = '1200';
 
     $str .= $this->reporter->begintable($layoutsize);
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->letterhead($center, $username, $config);
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= '<br/><br/>';
     $str .= $this->reporter->begintable($layoutsize);
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('ANALYZE ITEM PURCHASE (MONTHLY)', null, null, false, $border, '', '', $font, '18', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('ANALYZE ITEM PURCHASE (MONTHLY)', null, null, false, $border, '', '', $font, '18', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable($layoutsize);
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Supplier : ' . strtoupper(($client == '' ? 'ALL' : $client)), NULL, null, false, $border, '', 'L', $font_size, '', '', '');
-        $str .= $this->reporter->col('Item :' . strtoupper(($barcode == '' ? 'ALL' : $barcode)), null, null, false, $border, '', 'L', $font_size, '', '', '');
-        $str .= $this->reporter->col('Group :' . strtoupper(($groupname == '' ? 'ALL' : $groupname)), null, null, false, $border, '', 'L', $font_size, '', '', '');
-        $str .= $this->reporter->col('Brand : ' . strtoupper(($brandname == '' ? 'ALL' : $brandname)), null, null, false, $border, '', 'L', $font_size, '', '', '');
-        $str .= $this->reporter->col('Class :' . strtoupper(($classname == '' ? 'ALL' : $classname)), null, null, false, $border, '', 'L', $font_size, '', '', '');
-        $str .= $this->reporter->col('Category : ' . ($categoryname == '' ? 'ALL' : $categoryname), '200', null, false, '1px solid ', '', 'L', $font_size, '', '', $padding, $margin);
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->startrow(null, null, false, $border, '', 'R', $font_size, '', '', '');
-        $str .= $this->reporter->col('Transaction : ' . strtoupper($posttype), null, null, false, $border, '', 'L', $font_size, '', '', '');
-        $str .= $this->reporter->col('Analyze By : ' . strtoupper($analyzedby), null, null, false, $border, '', 'L', $font_size, '', '', '');
-        $str .= $this->reporter->col('Item Type : ' . strtoupper($itemtype), null, null, false, $border, '', 'L', $font_size, '', '', '');
-        $str .= $this->reporter->col('Sub-Category : ' . ($subcatname == '' ? 'ALL' : $subcatname), '200', null, false, '1px solid ', '', 'L', $font_size, '', '', $padding, $margin);
-        $str .= $this->reporter->col('', null, null, false, $border, '', 'L', $font_size, '', '', '');
-        $str .= $this->reporter->pagenumber('Page');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Supplier : ' . strtoupper(($client == '' ? 'ALL' : $client)), NULL, null, false, $border, '', 'L', $font_size, '', '', '');
+    $str .= $this->reporter->col('Item :' . strtoupper(($barcode == '' ? 'ALL' : $barcode)), null, null, false, $border, '', 'L', $font_size, '', '', '');
+    $str .= $this->reporter->col('Group :' . strtoupper(($groupname == '' ? 'ALL' : $groupname)), null, null, false, $border, '', 'L', $font_size, '', '', '');
+    $str .= $this->reporter->col('Brand : ' . strtoupper(($brandname == '' ? 'ALL' : $brandname)), null, null, false, $border, '', 'L', $font_size, '', '', '');
+    $str .= $this->reporter->col('Class :' . strtoupper(($classname == '' ? 'ALL' : $classname)), null, null, false, $border, '', 'L', $font_size, '', '', '');
+    $str .= $this->reporter->col('Category : ' . ($categoryname == '' ? 'ALL' : $categoryname), '200', null, false, '1px solid ', '', 'L', $font_size, '', '', $padding, $margin);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow(null, null, false, $border, '', 'R', $font_size, '', '', '');
+    $str .= $this->reporter->col('Transaction : ' . strtoupper($posttype), null, null, false, $border, '', 'L', $font_size, '', '', '');
+    $str .= $this->reporter->col('Analyze By : ' . strtoupper($analyzedby), null, null, false, $border, '', 'L', $font_size, '', '', '');
+    $str .= $this->reporter->col('Item Type : ' . strtoupper($itemtype), null, null, false, $border, '', 'L', $font_size, '', '', '');
+    $str .= $this->reporter->col('Sub-Category : ' . ($subcatname == '' ? 'ALL' : $subcatname), '200', null, false, '1px solid ', '', 'L', $font_size, '', '', $padding, $margin);
+    $str .= $this->reporter->col('', null, null, false, $border, '', 'L', $font_size, '', '', '');
+    $str .= $this->reporter->pagenumber('Page');
+    $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
 
@@ -865,27 +865,27 @@ class monthly_analyze_item_purchase
     // $str .= $this->reporter->printline();
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('ITEM DESCRIPTION', '140', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('SIZE/UOM', '80', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('JAN', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('FEB', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('MAR', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('APR', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('MAY', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('JUN', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('JUL', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('AUG', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('SEP', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('OCT', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('NOV', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('DEC', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
-      $str .= $this->reporter->col('TOTAL', '80', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('ITEM DESCRIPTION', '140', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('SIZE/UOM', '80', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('JAN', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('FEB', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('MAR', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('APR', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('MAY', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('JUN', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('JUL', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('AUG', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('SEP', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('OCT', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('NOV', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('DEC', '75', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
+    $str .= $this->reporter->col('TOTAL', '80', '', '', $border, 'TLRB', 'C', $font, $font_size9, 'B', '', '');
 
     $str .= $this->reporter->endrow();
 
     return $str;
   }
-  
+
   private function default_displayHeader($config)
   {
     $border = '1px solid';
@@ -1507,7 +1507,7 @@ class monthly_analyze_item_purchase
     $analyzedby = $config['params']['dataparams']['analyzedby'];
 
     $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
+    $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '1195', '5', false, $border, '', 'C', $font, $font_size9, 'B', '', '', '', '', '', '', '', '#808080');
     $str .= $this->reporter->col('', '25', '', '', $border, '', 'C', $font, $font_size9, 'B', '', '');
     $str .= $this->reporter->endrow();
@@ -1515,7 +1515,7 @@ class monthly_analyze_item_purchase
     $str .= $this->reporter->col('', '1195', null, false, '2px solid', 'T', 'C', $font, $font_size9, 'B', '', '', '', '', '', '', '', '#A0A0A0');
     $str .= $this->reporter->col('', '25', '', '', $border, '', 'C', $font, $font_size9, 'B', '', '');
     $str .= $this->reporter->endrow();
-        $str .= $this->reporter->startrow();
+    $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '1195', '5', false, $border, '', 'C', $font, $font_size9, 'B', '', '', '', '', '', '', '', '#808080');
     $str .= $this->reporter->col('', '25', '', '', $border, '', 'C', $font, $font_size9, 'B', '', '');
     $str .= $this->reporter->endrow();
@@ -1852,7 +1852,7 @@ class monthly_analyze_item_purchase
 
       if ($rowcount >= $page) {
 
-      // DEBUG: print the cumulative rowcount at this page break
+        // DEBUG: print the cumulative rowcount at this page break
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col("CUMULATIVE ROWCOUNT AT THIS BREAK: {$rowcount} (page budget was: {$page})", '1220', null, false, '', '', 'L', $font, $font_size9, 'B', '', '');

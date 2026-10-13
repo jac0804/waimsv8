@@ -35,11 +35,11 @@ class salesgroupqouta
   public $tablelogs_del = 'del_masterfile_log';
   public $fields = ['yr', 'projectid', 'amt'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -50,7 +50,8 @@ class salesgroupqouta
   public function getAttrib()
   {
     $attrib = array(
-      'view' => 3861, 'save' => 3862,
+      'view' => 3861,
+      'save' => 3862,
       'saveallentry' => 3862
     );
     return $attrib;
@@ -204,7 +205,7 @@ class salesgroupqouta
     foreach ($rows as $key => $val) {
       if ($val["bgcolor"] != "") {
         foreach ($this->fields as $k) {
-             $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k], $lookups);
+          $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k], $lookups);
         }
 
         $this->coreFunctions->sbcupdate("salesgroupqouta", ['amt' => $val['amt'], 'editdate' => $this->othersClass->getCurrentTimeStamp(), 'editby' => $config['params']['user']], ['line' => $val["line"]]);

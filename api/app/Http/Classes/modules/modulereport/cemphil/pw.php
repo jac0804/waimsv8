@@ -36,9 +36,9 @@ class pw
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -57,7 +57,7 @@ class pw
     }
     public function reportparamsdata($config)
     {
-      
+
         $param = "select
                   'PDFM' as print,
                   '' as prepared,
@@ -73,7 +73,7 @@ class pw
     public function default_qry($config)
     {
 
-      
+
 
         $trno = $config['params']['dataid'];
         $query = "select head.docno,(head.dateid) as date ,head.rem as notes,
@@ -139,7 +139,7 @@ from pwhead as head
         PDF::MultiCell(90, 20, "Consumed (kwh)", 'TLRB', 'C', false, 0, '',  '');
         PDF::MultiCell(60, 20, "Rate (₱)", 'TLRB', 'R', false, 0, '',  '');
         PDF::MultiCell(72, 20, "Total (₱/kwh)", 'TLRB', 'R', false, 1, '',  '');
-       
+
         $total = 0;
         for ($i = 0; $i < count($data); $i++) {
 
@@ -183,7 +183,7 @@ from pwhead as head
                     PDF::MultiCell(72, 0, (isset($arr_total[$r]) ? $arr_total[$r] : ''), 'BR', 'R', false, 1, '',  '');
                 }
 
-               
+
 
                 if (intVal($i) + 1 == $page) {
                     $this->default_pw_header($params, $data);
@@ -211,7 +211,7 @@ from pwhead as head
     }
     public function default_pw_header($params, $data)
     {
-      
+
         $center = $params['params']['center'];
         $username = $params['params']['user'];
         //$width = 800; $height = 1000;

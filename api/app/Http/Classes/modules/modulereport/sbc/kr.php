@@ -37,9 +37,9 @@ class kr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -56,16 +56,16 @@ class kr
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
       // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
     ]);
-    
+
     data_set($col1, 'attention.readonly', false);
-    
+
     return array('col1' => $col1);
   }
 
   public function reportparamsdata($config)
   {
     $username = $this->coreFunctions->datareader("select name as value from useraccess where username =? ", [$config['params']['user']]);
-    
+
     return $this->coreFunctions->opentable(
       "select 
       'PDFM' as print,
@@ -261,303 +261,299 @@ class kr
 
   public function default_KR_header_PDF($params, $data)
   {
-      $center = $params['params']['center'];
-      $username = $params['params']['user'];
-      
-      $qry = "select name,address,tel,code from center where code = '" . $center . "'";
-      $headerdata = $this->coreFunctions->opentable($qry);
-      $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+    $center = $params['params']['center'];
+    $username = $params['params']['user'];
 
-      $font = "";
-      $fontbold = "";
-      $fontsize = 11;
-      if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
-          $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
-          $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
-      }
+    $qry = "select name,address,tel,code from center where code = '" . $center . "'";
+    $headerdata = $this->coreFunctions->opentable($qry);
+    $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
-      PDF::SetTitle($this->modulename);
-      PDF::SetAuthor('Solutionbase Corp.');
-      PDF::SetCreator('Solutionbase Corp.');
-      PDF::SetSubject($this->modulename . ' Module Report');
-      PDF::setPageUnit('px');
-      PDF::AddPage('p', [800, 1000]);
-      PDF::SetMargins(40, 40);
+    $font = "";
+    $fontbold = "";
+    $fontsize = 11;
+    if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
+    }
 
-      // Company Header - From desired layout
-      PDF::MultiCell(0, 0, "\n");
-      PDF::SetFont($fontbold, '', 14);
-      PDF::MultiCell(0, 0, "SOLUTIONBASE CORPORATION", '', 'L');
-      
-      PDF::SetFont($font, '', 10);
-      PDF::MultiCell(0, 0, "255 Gregorio Araneta Ave,", '', 'L');
-      PDF::MultiCell(0, 0, "Quezon City, 113 Metro Manila", '', 'L');
-      
-      PDF::SetTextColor(71, 199, 39);
-      PDF::MultiCell(0, 0, "www.sbc.ph", '', 'L');
-      PDF::SetTextColor(0, 0, 0);
+    PDF::SetTitle($this->modulename);
+    PDF::SetAuthor('Solutionbase Corp.');
+    PDF::SetCreator('Solutionbase Corp.');
+    PDF::SetSubject($this->modulename . ' Module Report');
+    PDF::setPageUnit('px');
+    PDF::AddPage('p', [800, 1000]);
+    PDF::SetMargins(40, 40);
 
-      //logo
-      PDF::Image($this->companysetup->getlogopath($params['params']) .'sbclogo.png', '600', '20', 143, 100);
-      
-      // Horizontal line separator
-      // PDF::SetLineWidth(0.5);
-      // PDF::Line(40, PDF::GetY(), 760, PDF::GetY());
-      // PDF::MultiCell(0, 0, "\n");
-      
-      
-      
-      #grey 
-      #160, 160, 160
-      #lighter grey 
-      #224, 224, 224
-      #black 
-      #0, 0, 0
-      #white 
-      #255, 255, 255
-      
-      PDF::MultiCell(0, 0, "\n\n\n\n");
-      PDF::SetFillColor(160, 160, 160);
-      
-      PDF::SetTextColor(255, 255, 255);
-      
-						// $style = ['width' => 3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => [0, 0, 0]];
-						// PDF::SetLineStyle($style);
-            // setCellPaddings($left='', $top='', $right='', $bottom='') {
+    // Company Header - From desired layout
+    PDF::MultiCell(0, 0, "\n");
+    PDF::SetFont($fontbold, '', 14);
+    PDF::MultiCell(0, 0, "SOLUTIONBASE CORPORATION", '', 'L');
 
-      PDF::SetFont($fontbold, '', $fontsize+5);
-      PDF::MultiCell(720, 20, 'STATEMENT OF ACCOUNTS', 'TBLR', 'C', true, 1, '', '130');
-      PDF::SetTextColor(0, 0, 0);
+    PDF::SetFont($font, '', 10);
+    PDF::MultiCell(0, 0, "255 Gregorio Araneta Ave,", '', 'L');
+    PDF::MultiCell(0, 0, "Quezon City, 113 Metro Manila", '', 'L');
 
-      
-      $style = ['width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 2.3, 'color' => [0, 0, 0]];
-      PDF::SetLineStyle($style);
+    PDF::SetTextColor(71, 199, 39);
+    PDF::MultiCell(0, 0, "www.sbc.ph", '', 'L');
+    PDF::SetTextColor(0, 0, 0);
 
-      /////////////
-      $part_pos_adjust = 0;
-      // $data[0]['clientname'] = 'TRANS POWER TRANS POWER TRANS POWER TRANS POWER TRANS POWER TRANS POWER TRANS POWER';
-      // $data[0]['clientname'] = 'TRANS POWER TRANS POWER';
-      // for ($i = 0; $i < count($data); $i++) {
-        $maxrow = 1;
-        $arr_name = $this->reporter->fixcolumn([$data[0]['clientname']],'55',0);
-        $arr_date = $this->reporter->fixcolumn([$data[0]['dateid']],'16',0);
+    //logo
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbclogo.png', '600', '20', 143, 100);
 
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_name, $arr_date]);
-
-        for($r = 0; $r < $maxrow; $r++) {
-          
-          PDF::SetFillColor(224,224,224);
-          PDF::setCellPaddings(5, 0, 0, 0);
-          PDF::SetFont($font, '', $fontsize+1);
-          if($r==0){
-            PDF::MultiCell(130, 20, 'Company Name :', 'TLR', 'L', 1, 0, '', '', true, 0, true, false);
-            
-            PDF::SetFont($fontbold, '', $fontsize+1);
-            PDF::setCellPaddings(15, 0, 0, 0);
-            PDF::MultiCell(440, 20, (isset($arr_name[$r]) ? $arr_name[$r] : ''), 'TLR', 'L', 0, 0, '', '', true, 0, true, false);
-            
-            PDF::SetFont($font, '', $fontsize+1);
-            PDF::setCellPaddings(5, 0, 0, 0);
-            PDF::MultiCell(50, 20, 'Date:', 'TLR', 'L', 1, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(100, 20, (isset($arr_date[$r]) ? $arr_date[$r] : ''), 'TLR', 'L', 0, 1, '', '', true, 0, true, false);
-            $part_pos_adjust = 20;
-          }else{
-            PDF::MultiCell(130, 20, '', 'LRB', 'L', 1, 0, '', '', true, 0, true, false);
-
-            PDF::SetFont($fontbold, '', $fontsize+1);
-            PDF::setCellPaddings(15, 0, 0, 0);
-            PDF::MultiCell(440, 20, (isset($arr_name[$r]) ? $arr_name[$r] : ''), 'BLR', 'L', 0, 0, '', '', true, 0, true, false);
-
-            PDF::SetFont($font, '', $fontsize+1);
-            PDF::setCellPaddings(5, 0, 0, 0);
-            PDF::MultiCell(50, 20, '', 'BLR', 'L', 1, 0, '', '', true, 0, true, false);
-            PDF::MultiCell(100, 20, (isset($arr_date[$r]) ? $arr_date[$r] : ''), 'BLR', 'L', 0, 1, '', '', true, 0, true, false);
-            $part_pos_adjust = -5;
-          }
-
-        }
-    
-      PDF::SetFont($font, '', $fontsize+1);
-      PDF::MultiCell(130, 20, "Company Address :", 'TBLR', 'L', true, 0);
-    
-    
+    // Horizontal line separator
+    // PDF::SetLineWidth(0.5);
+    // PDF::Line(40, PDF::GetY(), 760, PDF::GetY());
+    // PDF::MultiCell(0, 0, "\n");
 
 
-      PDF::SetFont($fontbold, '', $fontsize+1);
-      PDF::setCellPaddings(15, 0, 0, 0);
-      PDF::MultiCell(590, 20, (isset($data[0]['address']) ? $data[0]['address'] : ''), 'TBLR', 'L', false);
 
-      PDF::SetFont($font, '', $fontsize+1);
+    #grey 
+    #160, 160, 160
+    #lighter grey 
+    #224, 224, 224
+    #black 
+    #0, 0, 0
+    #white 
+    #255, 255, 255
+
+    PDF::MultiCell(0, 0, "\n\n\n\n");
+    PDF::SetFillColor(160, 160, 160);
+
+    PDF::SetTextColor(255, 255, 255);
+
+    // $style = ['width' => 3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => [0, 0, 0]];
+    // PDF::SetLineStyle($style);
+    // setCellPaddings($left='', $top='', $right='', $bottom='') {
+
+    PDF::SetFont($fontbold, '', $fontsize + 5);
+    PDF::MultiCell(720, 20, 'STATEMENT OF ACCOUNTS', 'TBLR', 'C', true, 1, '', '130');
+    PDF::SetTextColor(0, 0, 0);
+
+
+    $style = ['width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 2.3, 'color' => [0, 0, 0]];
+    PDF::SetLineStyle($style);
+
+    /////////////
+    $part_pos_adjust = 0;
+    // $data[0]['clientname'] = 'TRANS POWER TRANS POWER TRANS POWER TRANS POWER TRANS POWER TRANS POWER TRANS POWER';
+    // $data[0]['clientname'] = 'TRANS POWER TRANS POWER';
+    // for ($i = 0; $i < count($data); $i++) {
+    $maxrow = 1;
+    $arr_name = $this->reporter->fixcolumn([$data[0]['clientname']], '55', 0);
+    $arr_date = $this->reporter->fixcolumn([$data[0]['dateid']], '16', 0);
+
+    $maxrow = $this->othersClass->getmaxcolumn([$arr_name, $arr_date]);
+
+    for ($r = 0; $r < $maxrow; $r++) {
+
+      PDF::SetFillColor(224, 224, 224);
       PDF::setCellPaddings(5, 0, 0, 0);
-      PDF::MultiCell(130, 20, "Attention to :", 'TBLR', 'L', true, 0);
+      PDF::SetFont($font, '', $fontsize + 1);
+      if ($r == 0) {
+        PDF::MultiCell(130, 20, 'Company Name :', 'TLR', 'L', 1, 0, '', '', true, 0, true, false);
 
-      PDF::SetFont($fontbold, '', $fontsize+1);
-      PDF::setCellPaddings(15, 0, 0, 0);
-      PDF::MultiCell(590, 20, (isset($params['params']['dataparams']['attention']) ? $params['params']['dataparams']['attention'] : ''), 'BLR', 'L', false);
+        PDF::SetFont($fontbold, '', $fontsize + 1);
+        PDF::setCellPaddings(15, 0, 0, 0);
+        PDF::MultiCell(440, 20, (isset($arr_name[$r]) ? $arr_name[$r] : ''), 'TLR', 'L', 0, 0, '', '', true, 0, true, false);
 
-      PDF::MultiCell(0, 0, "\n");
-      
-      $style = ['width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => [0, 0, 0]];
-			PDF::SetLineStyle($style);
-      PDF::SetFillColor(160, 160, 160);
-      PDF::SetTextColor(255, 255, 255);
-      
-      PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(570, 15, 'P A R T I C U L A R', 'TBLR', 'C', true, 0, '', '');
-      PDF::MultiCell(150, 15, 'AMOUNT', 'TBLR', 'C', true, 1, '', '');
-      PDF::SetTextColor(0, 0, 0);
-      PDF::MultiCell(570, 550, '', 'BLR', 'C', false, 0, '', '');
-      PDF::MultiCell(150, 550, '', 'BR', 'C', false, 1, '', '');
-      
-      PDF::MultiCell(0, 0, "\n");
-      
-      $pos_adjust = 255 - $part_pos_adjust;
-      PDF::MultiCell(720, 0, '', '', 'L', false, 1, '', $pos_adjust);
+        PDF::SetFont($font, '', $fontsize + 1);
+        PDF::setCellPaddings(5, 0, 0, 0);
+        PDF::MultiCell(50, 20, 'Date:', 'TLR', 'L', 1, 0, '', '', true, 0, true, false);
+        PDF::MultiCell(100, 20, (isset($arr_date[$r]) ? $arr_date[$r] : ''), 'TLR', 'L', 0, 1, '', '', true, 0, true, false);
+        $part_pos_adjust = 20;
+      } else {
+        PDF::MultiCell(130, 20, '', 'LRB', 'L', 1, 0, '', '', true, 0, true, false);
 
-      
+        PDF::SetFont($fontbold, '', $fontsize + 1);
+        PDF::setCellPaddings(15, 0, 0, 0);
+        PDF::MultiCell(440, 20, (isset($arr_name[$r]) ? $arr_name[$r] : ''), 'BLR', 'L', 0, 0, '', '', true, 0, true, false);
+
+        PDF::SetFont($font, '', $fontsize + 1);
+        PDF::setCellPaddings(5, 0, 0, 0);
+        PDF::MultiCell(50, 20, '', 'BLR', 'L', 1, 0, '', '', true, 0, true, false);
+        PDF::MultiCell(100, 20, (isset($arr_date[$r]) ? $arr_date[$r] : ''), 'BLR', 'L', 0, 1, '', '', true, 0, true, false);
+        $part_pos_adjust = -5;
+      }
+    }
+
+    PDF::SetFont($font, '', $fontsize + 1);
+    PDF::MultiCell(130, 20, "Company Address :", 'TBLR', 'L', true, 0);
+
+
+
+
+    PDF::SetFont($fontbold, '', $fontsize + 1);
+    PDF::setCellPaddings(15, 0, 0, 0);
+    PDF::MultiCell(590, 20, (isset($data[0]['address']) ? $data[0]['address'] : ''), 'TBLR', 'L', false);
+
+    PDF::SetFont($font, '', $fontsize + 1);
+    PDF::setCellPaddings(5, 0, 0, 0);
+    PDF::MultiCell(130, 20, "Attention to :", 'TBLR', 'L', true, 0);
+
+    PDF::SetFont($fontbold, '', $fontsize + 1);
+    PDF::setCellPaddings(15, 0, 0, 0);
+    PDF::MultiCell(590, 20, (isset($params['params']['dataparams']['attention']) ? $params['params']['dataparams']['attention'] : ''), 'BLR', 'L', false);
+
+    PDF::MultiCell(0, 0, "\n");
+
+    $style = ['width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => [0, 0, 0]];
+    PDF::SetLineStyle($style);
+    PDF::SetFillColor(160, 160, 160);
+    PDF::SetTextColor(255, 255, 255);
+
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(570, 15, 'P A R T I C U L A R', 'TBLR', 'C', true, 0, '', '');
+    PDF::MultiCell(150, 15, 'AMOUNT', 'TBLR', 'C', true, 1, '', '');
+    PDF::SetTextColor(0, 0, 0);
+    PDF::MultiCell(570, 550, '', 'BLR', 'C', false, 0, '', '');
+    PDF::MultiCell(150, 550, '', 'BR', 'C', false, 1, '', '');
+
+    PDF::MultiCell(0, 0, "\n");
+
+    $pos_adjust = 255 - $part_pos_adjust;
+    PDF::MultiCell(720, 0, '', '', 'L', false, 1, '', $pos_adjust);
   }
 
   public function default_KR_PDF($params, $data)
   {
-      $companyid = $params['params']['companyid'];
-      $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
-      $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
-      $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
-      $center = $params['params']['center'];
-      $username = $params['params']['user'];
-      $count = $page = 35;
+    $companyid = $params['params']['companyid'];
+    $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
+    $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
+    $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
+    $center = $params['params']['center'];
+    $username = $params['params']['user'];
+    $count = $page = 35;
 
-      
-      $head = 'krhead';
-      $hhead = 'hkrhead';
 
-      $font = "";
-      $fontbold = "";
-      $border = "1px solid ";
-      $fontsize = "11";
-      if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
-          $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
-          $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
+    $head = 'krhead';
+    $hhead = 'hkrhead';
+
+    $font = "";
+    $fontbold = "";
+    $border = "1px solid ";
+    $fontsize = "11";
+    if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
+    }
+
+    $this->default_KR_header_PDF($params, $data);
+
+
+    if (!empty($data)) {
+      $total = 0;
+      for ($i = 0; $i < count($data); $i++) {
+        $maxrow = 1;
+        $particulars = $data[$i]['particulars'];
+
+        $amount = 0;
+        if ($data[$i]['db'] != 0) {
+          $amount = $data[$i]['db'];
+        } elseif ($data[$i]['cr'] != 0) {
+          $amount = $data[$i]['cr'];
+        }
+
+        $total += $amount;
+
+        // if ($db < 1) $db = '-';
+        // if ($cr < 1) $cr = '-';
+
+        $arr_particulars = $this->reporter->fixcolumn([$particulars], '65', 0);
+        $arr_amt = $this->reporter->fixcolumn([number_format($amount, $decimalprice)], '18', 0);
+
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_particulars, $arr_amt]);
+
+
+        for ($r = 0; $r < $maxrow; $r++) {
+          PDF::SetFont($font, '', $fontsize + 3);
+          PDF::MultiCell(570, 30, ' ' . (isset($arr_particulars[$r]) ? $arr_particulars[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::setCellPaddings(0, 0, 25, 0);
+          PDF::MultiCell(150, 30, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::setCellPaddings(15, 0, 0, 0);
+        }
+        // PDF::setCellPaddings(0, 0, 0, 0);
+
+
+        if (PDF::getY() > 600) {
+          $this->default_KR_header_PDF($params, $data);
+        }
       }
-      
-      $this->default_KR_header_PDF($params, $data);
+    }
 
-      
-      if (!empty($data)) {
-        $total = 0;
-        for ($i = 0; $i < count($data); $i++) {
-          $maxrow = 1;
-          $particulars = $data[$i]['particulars'];
+    if ($total > 0) {
 
-          $amount = 0;
-          if ($data[$i]['db'] != 0) {
-              $amount = $data[$i]['db'];
-          } elseif ($data[$i]['cr'] != 0) {
-              $amount = $data[$i]['cr'];
-          }
-          
-          $total += $amount;
+      $part_pos_adjust = 0;
+      // $data[0]['clientname'] = 'TRANS POWER TRANS POWER TRANS POWER TRANS POWER TRANS POWER TRANS POWER TRANS POWER';
+      // $data[0]['clientname'] = 'TRANS POWER TRANS POWER';
+      // for ($i = 0; $i < count($data); $i++) {
+      $maxrow = 1;
+      $arr_name = $this->reporter->fixcolumn([$data[0]['clientname']], '55', 0);
+      $arr_date = $this->reporter->fixcolumn([$data[0]['dateid']], '16', 0);
 
-          // if ($db < 1) $db = '-';
-          // if ($cr < 1) $cr = '-';
+      $maxrow = $this->othersClass->getmaxcolumn([$arr_name, $arr_date]);
 
-          $arr_particulars = $this->reporter->fixcolumn([$particulars], '65', 0);
-          $arr_amt = $this->reporter->fixcolumn([number_format($amount,$decimalprice)], '18', 0);
-
-          $maxrow = $this->othersClass->getmaxcolumn([$arr_particulars, $arr_amt]);
-          
-          
-          for ($r = 0; $r < $maxrow; $r++) {
-            PDF::SetFont($font, '', $fontsize+3);
-            PDF::MultiCell(570, 30, ' ' . (isset($arr_particulars[$r]) ? $arr_particulars[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::setCellPaddings(0, 0, 25, 0);
-            PDF::MultiCell(150, 30, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::setCellPaddings(15, 0, 0, 0);
-          }
-          // PDF::setCellPaddings(0, 0, 0, 0);
+      for ($r = 0; $r < $maxrow; $r++) {
 
 
-          if (PDF::getY() > 600) {
-            $this->default_KR_header_PDF($params, $data);
-          }
+        if ($r == 0) {
+
+          $part_pos_adjust = 790;
+        } else {
+
+          $part_pos_adjust = 810;
         }
       }
 
-      if($total>0){
 
-        $part_pos_adjust = 0;
-        // $data[0]['clientname'] = 'TRANS POWER TRANS POWER TRANS POWER TRANS POWER TRANS POWER TRANS POWER TRANS POWER';
-        // $data[0]['clientname'] = 'TRANS POWER TRANS POWER';
-        // for ($i = 0; $i < count($data); $i++) {
-          $maxrow = 1;
-          $arr_name = $this->reporter->fixcolumn([$data[0]['clientname']],'55',0);
-          $arr_date = $this->reporter->fixcolumn([$data[0]['dateid']],'16',0);
-
-          $maxrow = $this->othersClass->getmaxcolumn([$arr_name, $arr_date]);
-
-          for($r = 0; $r < $maxrow; $r++) {
-            
-           
-            if($r==0){
-              
-              $part_pos_adjust = 790;
-            }else{
-              
-              $part_pos_adjust = 810;
-            }
-
-          }
-        
-          
-        $pos_adjust = $part_pos_adjust;
-        PDF::SetFont($fontbold, '', $fontsize+3);
-        PDF::MultiCell(570, 25, 'GRAND TOTAL', 'BLR', 'C', false, 0, '', $pos_adjust);
-        PDF::setCellPaddings(0, 0, 25, 0);
-        PDF::MultiCell(150, 25, number_format($total,2), 'BR', 'R', false, 1, '', '');
-        PDF::setCellPaddings(0, 0, 0, 0);
-      }
-
-      
-      PDF::MultiCell(0, 0, "\n");
-
-      PDF::SetFont($font, '', $fontsize);
-      
+      $pos_adjust = $part_pos_adjust;
+      PDF::SetFont($fontbold, '', $fontsize + 3);
+      PDF::MultiCell(570, 25, 'GRAND TOTAL', 'BLR', 'C', false, 0, '', $pos_adjust);
+      PDF::setCellPaddings(0, 0, 25, 0);
+      PDF::MultiCell(150, 25, number_format($total, 2), 'BR', 'R', false, 1, '', '');
       PDF::setCellPaddings(0, 0, 0, 0);
-      PDF::MultiCell(720, 15, 'Looking forward to your immediate settlement', '', 'L', false, 1, '', '');
+    }
 
-      PDF::MultiCell(0, 0, "\n");
-      PDF::MultiCell(170, 40, 'Prepared By:', 'B', 'L', false, 0, '', '');
-      PDF::MultiCell(250, 40, '', '', 'L', false, 0, '', '');
 
-      PDF::setCellPaddings(15, 0, 0, 0);
-      PDF::MultiCell(100, 40, 'Received By:', '', 'L', false, 0, '', '');
-      PDF::MultiCell(200, 40, '', 'B', 'L', false, 1, '', '');
-      
-      
-      PDF::setCellPaddings(0, 0, 0, 0);
-      PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(170, 20, (isset($params['params']['dataparams']['prepared']) ? $params['params']['dataparams']['prepared'] : ''), '', 'L', false, 0, '', '');
-      PDF::MultiCell(250, 20, '', '', 'L', false, 0, '', '');
+    PDF::MultiCell(0, 0, "\n");
 
-      PDF::SetFont($font, '', $fontsize);
-      PDF::setCellPaddings(15, 0, 0, 0);
-      PDF::MultiCell(170, 20, 'Receive Date:', '', 'L', false, 0, '', '');
-      PDF::MultiCell(200, 20, '', '', 'L', false, 1, '', '');
+    PDF::SetFont($font, '', $fontsize);
 
-      
-      PDF::setCellPaddings(0, 0, 0, 0);
-      PDF::MultiCell(170, 10, 'Programmer', '', 'L', false, 0, '', '');
-      PDF::MultiCell(250, 10, '', '', 'L', false, 0, '', '');
+    PDF::setCellPaddings(0, 0, 0, 0);
+    PDF::MultiCell(720, 15, 'Looking forward to your immediate settlement', '', 'L', false, 1, '', '');
 
-      PDF::setCellPaddings(15, 0, 0, 0);
-      PDF::MultiCell(100, 10, '', '', 'L', false, 0, '', '');
-      PDF::MultiCell(200, 10, '', 'B', 'L', false, 1, '', '');
-      // PDF::MultiCell(420, 15, 'Prepared By:', 'B', 'L', false, 1, '', '');
-      // PDF::MultiCell(300, 15, 'Received By:', 'B', 'L', false, 0, '', '');
+    PDF::MultiCell(0, 0, "\n");
+    PDF::MultiCell(170, 40, 'Prepared By:', 'B', 'L', false, 0, '', '');
+    PDF::MultiCell(250, 40, '', '', 'L', false, 0, '', '');
 
-      $trno = $params['params']['dataid'];
+    PDF::setCellPaddings(15, 0, 0, 0);
+    PDF::MultiCell(100, 40, 'Received By:', '', 'L', false, 0, '', '');
+    PDF::MultiCell(200, 40, '', 'B', 'L', false, 1, '', '');
 
-      $clientid = $this->coreFunctions->datareader("
+
+    PDF::setCellPaddings(0, 0, 0, 0);
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(170, 20, (isset($params['params']['dataparams']['prepared']) ? $params['params']['dataparams']['prepared'] : ''), '', 'L', false, 0, '', '');
+    PDF::MultiCell(250, 20, '', '', 'L', false, 0, '', '');
+
+    PDF::SetFont($font, '', $fontsize);
+    PDF::setCellPaddings(15, 0, 0, 0);
+    PDF::MultiCell(170, 20, 'Receive Date:', '', 'L', false, 0, '', '');
+    PDF::MultiCell(200, 20, '', '', 'L', false, 1, '', '');
+
+
+    PDF::setCellPaddings(0, 0, 0, 0);
+    PDF::MultiCell(170, 10, 'Programmer', '', 'L', false, 0, '', '');
+    PDF::MultiCell(250, 10, '', '', 'L', false, 0, '', '');
+
+    PDF::setCellPaddings(15, 0, 0, 0);
+    PDF::MultiCell(100, 10, '', '', 'L', false, 0, '', '');
+    PDF::MultiCell(200, 10, '', 'B', 'L', false, 1, '', '');
+    // PDF::MultiCell(420, 15, 'Prepared By:', 'B', 'L', false, 1, '', '');
+    // PDF::MultiCell(300, 15, 'Received By:', 'B', 'L', false, 0, '', '');
+
+    $trno = $params['params']['dataid'];
+
+    $clientid = $this->coreFunctions->datareader("
         select cl.clientid as value from " . $head . " as head
         left join client as cl on cl.client = head.client
         where trno = ?
@@ -565,15 +561,15 @@ class kr
         select cl.clientid as value from " . $hhead . "  as head
         left join client as cl on cl.client = head.client
         where trno = ?", [$trno, $trno]);
-      
-      $this->logger->sbcsoareportlog($username, $clientid, 'soalog', $data[0]['dateid']);
 
-      return PDF::Output($this->modulename . '.pdf', 'S');
+    $this->logger->sbcsoareportlog($username, $clientid, 'soalog', $data[0]['dateid']);
+
+    return PDF::Output($this->modulename . '.pdf', 'S');
   }
 
-  
+
   private function isQueryError($result)
   {
-      return is_array($result) && isset($result['status']) && $result['status'] === false;
+    return is_array($result) && isset($result['status']) && $result['status'] === false;
   }
 }

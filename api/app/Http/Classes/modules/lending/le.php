@@ -142,11 +142,11 @@ class le
     // public $labelposted = 'Approved';
     // public $labellocked = 'For Review';
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -184,7 +184,7 @@ class le
         // $amt = 6;
         // $cvno = 7;
         // $postdate = 8;
-        $getcols = ['action', 'liststatus', 'listdocument', 'releasedate', 'listdate', 'listclient', 'listclientname', 'amt', 'cvno','loantype', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+        $getcols = ['action', 'liststatus', 'listdocument', 'releasedate', 'listdate', 'listclient', 'listclientname', 'amt', 'cvno', 'loantype', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
 
         foreach ($getcols as $key => $value) {
             $$value = $key;
@@ -234,7 +234,7 @@ class le
 
 
         if (isset($searchfilter)) {
-            $searchfield = ['head.docno', 'head.clientname', 'head.lname', 'head.mname', 'head.fname', 'cv.docno', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby','r.reqtype'];
+            $searchfield = ['head.docno', 'head.clientname', 'head.lname', 'head.mname', 'head.fname', 'cv.docno', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby', 'r.reqtype'];
 
             if ($searchfilter != "") {
                 $condition .= $this->othersClass->multisearch($searchfield, $searchfilter);
@@ -1056,7 +1056,7 @@ class le
         data_set($col15, 'loanamt.class', 'csloanamt');
 
         //housing loan info
-        $fields = ['tct','subdivision','blklot', 'area', 'pricesqm', 'tcp', 'disc','outstanding','penaltyamt'];
+        $fields = ['tct', 'subdivision', 'blklot', 'area', 'pricesqm', 'tcp', 'disc', 'outstanding', 'penaltyamt'];
         $col16 = $this->fieldClass->create($fields);
         data_set($col16, 'blklot.type', 'cinput');
         data_set($col16, 'blklot.label', 'Blk & Lot No./ Address');
@@ -1065,8 +1065,8 @@ class le
         data_set($col16, 'disc.label', 'Discount');
         data_set($col16, 'tcp.label', 'Contract Price');
         data_set($col16, 'area.type', 'input');
-        
-        $fields = ['lbldateid','entryfee','lrf', 'itfee', 'regfee','docstamp1', 'nf','annotationfee','articles','annotationexp','otransfer','pf','rpt'];
+
+        $fields = ['lbldateid', 'entryfee', 'lrf', 'itfee', 'regfee', 'docstamp1', 'nf', 'annotationfee', 'articles', 'annotationexp', 'otransfer', 'pf', 'rpt'];
         $col17 = $this->fieldClass->create($fields);
         data_set($col17, 'lbldateid.label', 'REAL ESTATE MORTGAGE');
         data_set($col17, 'nf.label', 'Legal & Notarial Fee');
@@ -1074,22 +1074,22 @@ class le
         // data_set($col17, 'pf.class', 'sbccsreadonly');
         // data_set($col17, 'nf.class', 'sbccsreadonly');
         // data_set($col17, 'regfee.class', 'sbccsreadonly');
-        
-        
-        $fields = ['lblinvreq', 'docstamp','fmri','handling','appraisal','filing','nf2','nf3'];
+
+
+        $fields = ['lblinvreq', 'docstamp', 'fmri', 'handling', 'appraisal', 'filing', 'nf2', 'nf3'];
         $col18 = $this->fieldClass->create($fields);
         data_set($col18, 'lblinvreq.label', 'BANK CHARGES');
         data_set($col18, 'lblinvreq.style', 'font-weight:bold; font-size:13px;');
-        
-        $fields = ['lblforapproval','ofee','referral','cancellation4','cancellation7','annotationoc1','annotationoc2','cancellationu','totalcharges'];
+
+        $fields = ['lblforapproval', 'ofee', 'referral', 'cancellation4', 'cancellation7', 'annotationoc1', 'annotationoc2', 'cancellationu', 'totalcharges'];
         $col19 = $this->fieldClass->create($fields);
         data_set($col19, 'lblforapproval.label', 'OTHER CHARGES FOR RD REGISTRATION FEE AND SERVICE FEE ');
         data_set($col19, 'lblforapproval.style', 'font-weight:bold; font-size:13px;');
         //data_set($col19, 'totalcharges.type', 'label');
         data_set($col19, 'totalcharges.style', 'font-weight:bold; font-size:20px;');
         data_set($col19, 'totalcharges.class', 'sbccsreadonly');
-       
-        
+
+
         $tab = [
             'multiinput1' => ['inputcolumn' => ['col1' => $col1, 'col2' => $col2], 'label' => 'BORROWER INFO'],
             'multiinput2' => ['inputcolumn' => ['col3' => $col3], 'label' => 'SPOUSE INFO (BORROWER)'],
@@ -1100,7 +1100,7 @@ class le
             'multiinput7' => ['inputcolumn' => ['col14' => $col14], 'label' => 'CHECK LIST'],
             'multiinput8' => ['inputcolumn' => ['col15' => $col15], 'label' => 'APPROVING BODY'],
             'multiinput9' => ['inputcolumn' => ['col16' => $col16], 'label' => 'FOR HOUSING LOAN ONLY'],
-            'multiinput10' => ['inputcolumn' => ['col17' => $col17,'col18'=>$col18,'col19'=>$col19], 'label' => 'TAKEOUT/OTHER FEES'],
+            'multiinput10' => ['inputcolumn' => ['col17' => $col17, 'col18' => $col18, 'col19' => $col19], 'label' => 'TAKEOUT/OTHER FEES'],
         ];
 
         // $tab['customform'] = ['event' => ['action' => 'customform', 'lookupclass' => 'leloancomputation', 'access' => 'edit'], 'label' => 'LOAN COMPUTATION'];
@@ -1149,7 +1149,7 @@ class le
 
         //  'cvno',
         // data_set($col7, 'cvno.class', 'sbccsreadonly');
-        $fields = [['amount', 'terms'], ['cvno','gjno']];
+        $fields = [['amount', 'terms'], ['cvno', 'gjno']];
         $col3 = $this->fieldClass->create($fields);
         data_set($col3, 'amount.type', 'cinput');
         data_set($col3, 'amount.label', 'Loan Amount*');
@@ -1334,7 +1334,7 @@ class le
         $data[0]['disc'] = 0;
         $data[0]['outstanding'] = 0;
         $data[0]['penaltyamt'] = 0;
-        
+
         $data[0]['entryfee'] = 0;
         $data[0]['lrf'] = 0;
         $data[0]['itfee'] = 0;
@@ -1344,7 +1344,7 @@ class le
         $data[0]['nf3'] = 0;
         $data[0]['ofee'] = 0;
         $data[0]['tct'] = '';
-        
+
         $data[0]['annotationfee'] = 0;
         $data[0]['docstamp1'] = 0;
         $data[0]['articles'] = 0;
@@ -1792,12 +1792,12 @@ class le
         $info['mri'] =  $this->othersClass->sanitizekeyfieldFast('price',  $head['fmri'], $lookups);
 
 
-        $isdiminish = $this->coreFunctions->getfieldvalue("reqcategory","isdiminishing","line=?",[$head['planid']],'',true);
+        $isdiminish = $this->coreFunctions->getfieldvalue("reqcategory", "isdiminishing", "line=?", [$head['planid']], '', true);
 
-        if($isdiminish == 1){
-            $days = $this->coreFunctions->getfieldvalue("terms","days","terms = ?",[$head['terms']]);
-            if($info['regfee'] == 0){
-                $info['regfee'] =   $info['amount'] * (.5325/100);
+        if ($isdiminish == 1) {
+            $days = $this->coreFunctions->getfieldvalue("terms", "days", "terms = ?", [$head['terms']]);
+            if ($info['regfee'] == 0) {
+                $info['regfee'] =   $info['amount'] * (.5325 / 100);
             }
 
             // if($info['pf'] == 0){
@@ -1835,9 +1835,7 @@ class le
             $info['ofee'] = $this->othersClass->sanitizekeyfieldFast('price',  $info['ofee'], $lookups);
 
             $info['filing'] = $this->othersClass->sanitizekeyfieldFast('price',  $info['filing'], $lookups);
-
-
-        }      
+        }
 
         if ($head['planid'] != $head['plangrpid']) {
             $data['purpose'] = '';
@@ -1850,23 +1848,23 @@ class le
             if (floatval($exist) <> 0) {
                 $this->coreFunctions->sbcupdate($this->info, $info, ['trno' => $head['trno']]);
             } else {
-                if($info['docstamp'] == 0){
-                    $info['docstamp'] = ($info['amount']/200)*1.5;
+                if ($info['docstamp'] == 0) {
+                    $info['docstamp'] = ($info['amount'] / 200) * 1.5;
                 }
-        
-                if($info['mri'] ==0){
-                    $info['mri'] = $info['amount']*.01;
+
+                if ($info['mri'] == 0) {
+                    $info['mri'] = $info['amount'] * .01;
                 }
 
                 $this->coreFunctions->sbcinsert($this->info, $info);
             }
         } else {
-            if($info['docstamp'] == 0){
-                $info['docstamp'] = ($info['amount']/200)*1.5;
+            if ($info['docstamp'] == 0) {
+                $info['docstamp'] = ($info['amount'] / 200) * 1.5;
             }
-    
-            if($info['mri'] ==0){
-                $info['mri'] = $info['amount']*.01;
+
+            if ($info['mri'] == 0) {
+                $info['mri'] = $info['amount'] * .01;
             }
 
             $data['doc'] = $config['params']['doc'];
@@ -1918,7 +1916,7 @@ class le
         if ($client == '') {
             return ['status' => false, 'msg' => 'Please complete details for co-maker.'];
         }
-       
+
         $clientcode = $this->getnewclient($config); // create customer
 
         $qry = "select 
@@ -2074,7 +2072,7 @@ class le
 
         $this->coreFunctions->execqry("update " . $this->head . " set client = ? where trno = ?", 'update', [$clientcode, $trno]);
 
-        return ['status'=>true,'msg'=>'Ok'];
+        return ['status' => true, 'msg' => 'Ok'];
     }
 
     private function getnewclient($config)
@@ -2086,7 +2084,7 @@ class le
         $seq = substr($last, $start) + 1;
         $poseq = $pref . $seq;
         $newclient = $this->othersClass->PadJ($poseq, $docnolength);
-        $this->coreFunctions->LogConsole('new client:'.$newclient);
+        $this->coreFunctions->LogConsole('new client:' . $newclient);
         return $newclient;
     }
 
@@ -2096,11 +2094,11 @@ class le
         $trno = $config['params']['trno'];
 
         $qry = "select (i.entryfee+i.lrf+i.itfee+i.regfee+i.docstamp+i.nf2+i.nf3+i.ofee) as value 
-        from ".$this->info." as i where i.trno=?";
-      
+        from " . $this->info . " as i where i.trno=?";
+
         $takeout = $this->coreFunctions->datareader($qry, [$trno]);
-        $planid = $this->coreFunctions->getfieldvalue($this->head,"planid","trno=?",[$trno]);
-        $isdim = $this->coreFunctions->getfieldvalue("reqcategory","isdiminishing","line=?", [$planid],'',true);
+        $planid = $this->coreFunctions->getfieldvalue($this->head, "planid", "trno=?", [$trno]);
+        $isdim = $this->coreFunctions->getfieldvalue("reqcategory", "isdiminishing", "line=?", [$planid], '', true);
 
         $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->head . ' where trno=? and lockdate is null', [$trno]);
 
@@ -2119,17 +2117,17 @@ class le
         if ($client == '') {
             $borrower = $this->coreFunctions->getfieldvalue($this->head, "trim(concat(lname,fname))", "trno=?", [$trno]);
             $this->coreFunctions->LogConsole($borrower);
-            $cexist = $this->coreFunctions->getfieldvalue("clientinfo","clientid","trim(concat(lname,fname)) = ?",[$borrower],'',true);
+            $cexist = $this->coreFunctions->getfieldvalue("clientinfo", "clientid", "trim(concat(lname,fname)) = ?", [$borrower], '', true);
             $this->coreFunctions->LogConsole($cexist);
-            if($cexist <> 0){
+            if ($cexist <> 0) {
                 return ['status' => false, 'msg' => 'This Borrower already exist, please select borrower code.'];
-            }else{
+            } else {
                 $this->coreFunctions->LogConsole('pumasok ba?');
                 $stat = $this->createclient($config);
-                if(!$stat['status']){
+                if (!$stat['status']) {
                     return ['status' => false, 'msg' => $stat['msg']];
                 }
-            }           
+            }
         }
 
         $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
@@ -2195,9 +2193,9 @@ class le
                     $this->coreFunctions->execqry("delete from tempdetailinfo where trno=?", "delete", [$trno]);
                     $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
                     $this->othersClass->sbctransferlog($trno, $config, $this->htablelogs);
-                    if($isdim !=0){
+                    if ($isdim != 0) {
                         $this->generatejv($config);
-                    }                    
+                    }
                     return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully posted.'];
                 } else {
                     $this->coreFunctions->execqry("delete from " . $this->hinfo . " where trno=?", "delete", [$trno]);
@@ -2365,171 +2363,163 @@ class le
 
     private function generatejv($config)
     {
-      $companyid = $config['params']['companyid'];
-      $trno = $config['params']['trno'];
+        $companyid = $config['params']['companyid'];
+        $trno = $config['params']['trno'];
 
-      $isposted = $this->othersClass->isposted2($trno,$this->tablenum);
+        $isposted = $this->othersClass->isposted2($trno, $this->tablenum);
 
-      if(!$isposted){
-        return ['status' => false, 'msg' => 'Not yet Approve.'];
-      }
+        if (!$isposted) {
+            return ['status' => false, 'msg' => 'Not yet Approve.'];
+        }
 
         $dateTables = ['lahead', 'ladetail'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-      $exist = $this->coreFunctions->getfieldvalue($this->tablenum,"pstrno","trno=?",[$trno],'',true);
-      if($exist !=0){
-        return ['status' => false, 'msg' => 'Already have GJ.'];
-      }
+        $exist = $this->coreFunctions->getfieldvalue($this->tablenum, "pstrno", "trno=?", [$trno], '', true);
+        if ($exist != 0) {
+            return ['status' => false, 'msg' => 'Already have GJ.'];
+        }
 
-      $path = 'App\Http\Classes\modules\accounting\gj';
-      $qry = "select h.docno,h.client,h.clientname,h.dateid,(i.entryfee+i.lrf+i.itfee+i.regfee+i.ofee+i.nf+i.pf+i.annotationfee+i.docstamp1+i.articles+i.annotationexp+i.otransfer+i.rpt+i.handling+i.appraisal+i.filing+i.referral+i.cancellation4+i.cancellation7+i.annotationoc1+i.annotationoc2+i.cancellationu+i.mri) as otherrec,(i.docstamp+i.nf2+i.nf3) as depfee,(i.entryfee+i.lrf+i.itfee+i.regfee+i.docstamp+i.nf2+i.nf3+i.ofee+i.nf+i.pf+i.annotationfee+i.docstamp1+i.articles+i.annotationexp+i.otransfer+i.rpt+i.handling+i.appraisal+i.filing+i.referral+i.cancellation4+i.cancellation7+i.annotationoc1+i.annotationoc2+i.cancellationu+i.mri) as total 
-      from ".$this->hhead." as h left join ".$this->hinfo." as i on i.trno = h.trno
+        $path = 'App\Http\Classes\modules\accounting\gj';
+        $qry = "select h.docno,h.client,h.clientname,h.dateid,(i.entryfee+i.lrf+i.itfee+i.regfee+i.ofee+i.nf+i.pf+i.annotationfee+i.docstamp1+i.articles+i.annotationexp+i.otransfer+i.rpt+i.handling+i.appraisal+i.filing+i.referral+i.cancellation4+i.cancellation7+i.annotationoc1+i.annotationoc2+i.cancellationu+i.mri) as otherrec,(i.docstamp+i.nf2+i.nf3) as depfee,(i.entryfee+i.lrf+i.itfee+i.regfee+i.docstamp+i.nf2+i.nf3+i.ofee+i.nf+i.pf+i.annotationfee+i.docstamp1+i.articles+i.annotationexp+i.otransfer+i.rpt+i.handling+i.appraisal+i.filing+i.referral+i.cancellation4+i.cancellation7+i.annotationoc1+i.annotationoc2+i.cancellationu+i.mri) as total 
+      from " . $this->hhead . " as h left join " . $this->hinfo . " as i on i.trno = h.trno
       where h.trno=?";
-    
-      $data = $this->coreFunctions->opentable($qry, [$trno]);
-      if (!empty($data)) {
-        if($data[0]->total !=0){
-            
-            try{
-                $gjtrno = $this->othersClass->generatecntnum($config, "cntnum", 'GJ','GJ');
-                if ($gjtrno != -1) {
-                    $docno =  $this->coreFunctions->getfieldvalue("cntnum", 'docno', "trno=?", [$gjtrno]);
-            
-                    $head = ['trno' => $gjtrno, 
+
+        $data = $this->coreFunctions->opentable($qry, [$trno]);
+        if (!empty($data)) {
+            if ($data[0]->total != 0) {
+
+                try {
+                    $gjtrno = $this->othersClass->generatecntnum($config, "cntnum", 'GJ', 'GJ');
+                    if ($gjtrno != -1) {
+                        $docno =  $this->coreFunctions->getfieldvalue("cntnum", 'docno', "trno=?", [$gjtrno]);
+
+                        $head = [
+                            'trno' => $gjtrno,
                             'doc' => 'GJ',
-                            'docno' => $docno, 
+                            'docno' => $docno,
                             'aftrno' => $trno,
-                            'client' => $data[0]->client, 
-                            'clientname' => $data[0]->clientname, 
+                            'client' => $data[0]->client,
+                            'clientname' => $data[0]->clientname,
                             'dateid' => $data[0]->dateid, //date('Y-m-d'), 
                             'yourref' => $data[0]->docno,
-                            'rem' => 'Take out Fees for Loan Application # '.$data[0]->docno.' of '. $data[0]->clientname,
+                            'rem' => 'Take out Fees for Loan Application # ' . $data[0]->docno . ' of ' . $data[0]->clientname,
                             'createby' => $config['params']['user'],
-                            'createdate'=> $this->othersClass->getCurrentTimeStamp()
-                            ];
-        
-                        foreach($head as $k => $value){
+                            'createdate' => $this->othersClass->getCurrentTimeStamp()
+                        ];
+
+                        foreach ($head as $k => $value) {
                             $data2[$k] = $this->othersClass->sanitizekeyfieldFast($k, $head[$k], $lookups);
                         }
-        
-                    $inserthead = $this->coreFunctions->sbcinsert(app($path)->head, $data2);
-                    $config['params']['trno']=$gjtrno;
-                    $line = 1;
-                    $d =[];
-                    $detail =[];
-                    if($inserthead){
-                        $this->logger->sbcwritelog($gjtrno, $config, 'CREATE', $docno . ' - ' . $data[0]->client . ' - ' . $data[0]->clientname,app($path)->tablelogs);
-                        //entries:
-                        $otherrec = $this->coreFunctions->getfieldvalue("coa","acnoid","alias = 'AR3'");
-                        $otherinc = $this->coreFunctions->getfieldvalue("coa","acnoid","alias = 'UE3'");
-                        $depfee = $this->coreFunctions->getfieldvalue("coa","acnoid","alias = 'UE4'");
 
-                        if($data[0]->total != 0){
-                            $d['trno'] = $gjtrno;
-                            $d['line'] = $line;
-                            $d['refx'] = 0;
-                            $d['linex'] = 0;
-                            $d['client'] = $data[0]->client;
-                            $d['acnoid'] = $otherrec;
-                            $d['postdate'] = $data[0]->dateid;//date('Y-m-d');
-                            $d['checkno'] ='';
-                            $d['ref'] = '';
-                            $d['db'] = $data[0]->total;
-                            $d['cr'] = 0;
-                            $d['rem'] = 'Take out fee';
-                            array_push($detail, $d);
-                            $line +=1;
+                        $inserthead = $this->coreFunctions->sbcinsert(app($path)->head, $data2);
+                        $config['params']['trno'] = $gjtrno;
+                        $line = 1;
+                        $d = [];
+                        $detail = [];
+                        if ($inserthead) {
+                            $this->logger->sbcwritelog($gjtrno, $config, 'CREATE', $docno . ' - ' . $data[0]->client . ' - ' . $data[0]->clientname, app($path)->tablelogs);
+                            //entries:
+                            $otherrec = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias = 'AR3'");
+                            $otherinc = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias = 'UE3'");
+                            $depfee = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias = 'UE4'");
+
+                            if ($data[0]->total != 0) {
+                                $d['trno'] = $gjtrno;
+                                $d['line'] = $line;
+                                $d['refx'] = 0;
+                                $d['linex'] = 0;
+                                $d['client'] = $data[0]->client;
+                                $d['acnoid'] = $otherrec;
+                                $d['postdate'] = $data[0]->dateid; //date('Y-m-d');
+                                $d['checkno'] = '';
+                                $d['ref'] = '';
+                                $d['db'] = $data[0]->total;
+                                $d['cr'] = 0;
+                                $d['rem'] = 'Take out fee';
+                                array_push($detail, $d);
+                                $line += 1;
+                            }
+
+                            if ($data[0]->otherrec != 0) {
+                                $d['trno'] = $gjtrno;
+                                $d['line'] = $line;
+                                $d['refx'] = 0;
+                                $d['linex'] = 0;
+                                $d['client'] = $data[0]->client;
+                                $d['acnoid'] = $otherinc;
+                                $d['postdate'] = $data[0]->dateid; // date('Y-m-d');
+                                $d['checkno'] = '';
+                                $d['ref'] = '';
+                                $d['db'] = 0;
+                                $d['cr'] = $data[0]->otherrec;
+                                $d['rem'] = '';
+                                array_push($detail, $d);
+                                $line += 1;
+                            }
+
+                            if ($data[0]->depfee != 0) {
+                                $d['trno'] = $gjtrno;
+                                $d['line'] = $line;
+                                $d['refx'] = 0;
+                                $d['linex'] = 0;
+                                $d['client'] = $data[0]->client;
+                                $d['acnoid'] = $depfee;
+                                $d['postdate'] = $data[0]->dateid; //date('Y-m-d');
+                                $d['checkno'] = '';
+                                $d['ref'] = '';
+                                $d['db'] = 0;
+                                $d['cr'] = $data[0]->depfee;
+                                $d['rem'] = '';
+                                array_push($detail, $d);
+                                $line += 1;
+                            }
+
+                            //var_dump($detail);
+
+                            if (!empty($detail)) {
+                                $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+                                foreach ($detail as $key => $value) {
+                                    foreach ($value as $key2 => $value2) {
+                                        $detail[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
+                                    }
+                                    $detail[$key]['editdate'] = $current_timestamp;
+                                    $detail[$key]['editby'] = $config['params']['user'];
+                                    $detail[$key]['encodeddate'] = $current_timestamp;
+                                    $detail[$key]['encodedby'] = $config['params']['user'];
+
+                                    if ($this->coreFunctions->sbcinsert(app($path)->detail, $detail[$key]) == 1) {
+                                        $this->logger->sbcwritelog($gjtrno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION SUCCESS', app($path)->tablelogs);
+                                        $this->logger->sbcwritelog($gjtrno, $config, 'ACCTG', 'ADD - Line:' . $detail[$key]['line'] . ' Remarks:' . $detail[$key]['rem'] . ' DB:' . $detail[$key]['db'] . ' CR:' . $detail[$key]['cr'] . ' Client:' . $detail[$key]['client'] . ' Date:' . $detail[$key]['postdate'], app($path)->tablelogs);
+                                    } else {
+                                        $this->logger->sbcwritelog($gjtrno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION FAILED', app($path)->tablelogs);
+                                        return ['accounting' => [], 'status' => false, 'msg' => 'Entry Failed'];
+                                    }
+                                } //for $detail
+
+                            }
+
+                            $config['params']['trno'] = $gjtrno;
+                            $this->tablenum = 'cntnum';
+                            $this->head = 'lahead';
+                            $this->hhead = 'glhead';
+                            $this->tablelogs = 'table_log';
+                            $this->htablelogs = 'htable_log';
+                            $return = $this->othersClass->posttransacctg($config);
+                            if ($return['status']) {
+                                $msg = "Auto entry Successful";
+                                $this->coreFunctions->execqry("update transnum set pstrno = " . $gjtrno . ". where trno =" . $trno, "update");
+                                return ['status' => true, 'msg' => $msg];
+                            }
                         }
-
-                        if($data[0]->otherrec != 0){
-                            $d['trno'] = $gjtrno;
-                            $d['line'] = $line;
-                            $d['refx'] = 0;
-                            $d['linex'] = 0;
-                            $d['client'] = $data[0]->client;
-                            $d['acnoid'] = $otherinc;
-                            $d['postdate'] =$data[0]->dateid;// date('Y-m-d');
-                            $d['checkno'] ='';
-                            $d['ref'] = '';
-                            $d['db'] = 0;
-                            $d['cr'] = $data[0]->otherrec;
-                            $d['rem'] = '';
-                            array_push($detail, $d);
-                            $line +=1;
-                        }
-
-                        if($data[0]->depfee != 0){
-                            $d['trno'] = $gjtrno;
-                            $d['line'] = $line;
-                            $d['refx'] = 0;
-                            $d['linex'] = 0;
-                            $d['client'] = $data[0]->client;
-                            $d['acnoid'] = $depfee;
-                            $d['postdate'] = $data[0]->dateid;//date('Y-m-d');
-                            $d['checkno'] ='';
-                            $d['ref'] = '';
-                            $d['db'] = 0;
-                            $d['cr'] = $data[0]->depfee;
-                            $d['rem'] = '';
-                            array_push($detail, $d);
-                            $line +=1;
-                        }
-
-                        //var_dump($detail);
-
-                        if (!empty($detail)) {
-                            $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-                            foreach ($detail as $key => $value) {
-                              foreach ($value as $key2 => $value2) {
-                                $detail[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
-                              }
-                              $detail[$key]['editdate'] = $current_timestamp;
-                              $detail[$key]['editby'] = $config['params']['user'];
-                              $detail[$key]['encodeddate'] = $current_timestamp;
-                              $detail[$key]['encodedby'] = $config['params']['user'];
-                  
-                              if ($this->coreFunctions->sbcinsert(app($path)->detail, $detail[$key]) == 1) {
-                                $this->logger->sbcwritelog($gjtrno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION SUCCESS',app($path)->tablelogs);
-                                $this->logger->sbcwritelog($gjtrno, $config, 'ACCTG', 'ADD - Line:' . $detail[$key]['line'] . ' Remarks:' . $detail[$key]['rem'] . ' DB:' . $detail[$key]['db'] . ' CR:' . $detail[$key]['cr'] . ' Client:' . $detail[$key]['client'] . ' Date:' . $detail[$key]['postdate'],app($path)->tablelogs);                               
-                              } else {
-                                $this->logger->sbcwritelog($gjtrno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION FAILED',app($path)->tablelogs);
-                                return ['accounting' => [], 'status' => false, 'msg' => 'Entry Failed'];
-                              }
-                            } //for $detail
-                  
-                          }
-
-                          $config['params']['trno'] = $gjtrno;
-                          $this->tablenum = 'cntnum';
-                          $this->head = 'lahead';
-                          $this->hhead = 'glhead';
-                          $this->tablelogs = 'table_log';
-                          $this->htablelogs = 'htable_log';
-                          $return = $this->othersClass->posttransacctg($config);
-                          if ($return['status']) {                         
-                            $msg = "Auto entry Successful";
-                            $this->coreFunctions->execqry("update transnum set pstrno = ".$gjtrno.". where trno =".$trno,"update");
-                            return ['status' => true, 'msg' => $msg];
-                          }
-                         
-                    
+                    } else {
+                        return $gjtrno;
                     }
-            
-                            
-                }else{
-                    return $gjtrno;
+                } catch (Exception $e) {
+                    return ['status' => false, 'msg' => $e->getMessage()];
                 }
-            }catch (Exception $e) {
-                return ['status' => false, 'msg' => $e->getMessage()];
             }
-      
         }
-       
-       
-  
-       
-      }
     }
 
 

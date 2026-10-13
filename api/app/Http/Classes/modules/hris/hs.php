@@ -106,11 +106,11 @@ class hs
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -749,15 +749,23 @@ class hs
     $doc = $config['params']['doc'];
     $companyid = $config['params']['companyid'];
 
-    $rateqry ="select trno, dateid, fpayrate, tpayrate, fbasicrate, tbasicrate, tallowrate from " . $this->head . " where trno = $trno";
+    $rateqry = "select trno, dateid, fpayrate, tpayrate, fbasicrate, tbasicrate, tallowrate, hsperiod from " . $this->head . " where trno = $trno";
     $rateqryResult = $this->coreFunctions->opentable($rateqry);
 
-    if ($rateqryResult[0]->tbasicrate != 0 && empty($rateqryResult[0]->tpayrate)) {
+    if ($companyid == 58) {
+      if ($rateqryResult[0]->tbasicrate != 0 && empty($rateqryResult[0]->hsperiod)) {
         return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. MISSING CLASS RATE FOR BASIC RATE.'];
+      }
+    } else {
+
+      if ($rateqryResult[0]->tbasicrate != 0 && empty($rateqryResult[0]->tpayrate)) {
+        return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. MISSING CLASS RATE FOR BASIC RATE.'];
+      }
     }
 
+
     if ($rateqryResult[0]->tallowrate != 0 && empty($rateqryResult[0]->tpayrate)) {
-        return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. MISSING CLASS RATE FOR ALLOWANCE.'];
+      return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. MISSING CLASS RATE FOR ALLOWANCE.'];
     }
 
     $docno = $this->coreFunctions->datareader('select docno as value from ' . $config['docmodule']->tablenum . ' where trno=?', [$trno]);

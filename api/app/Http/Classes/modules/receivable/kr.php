@@ -69,11 +69,11 @@ class kr
   private $helpClass;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -334,10 +334,10 @@ class kr
         break;
     }
 
-    if($companyid == 60) { //transpower
+    if ($companyid == 60) { //transpower
       $obj[0]['accounting']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
       $obj[0]['accounting']['columns'][$rem]['type'] = 'textarea';
-    }   
+    }
 
     return $obj;
   }

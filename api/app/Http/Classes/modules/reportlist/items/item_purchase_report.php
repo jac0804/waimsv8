@@ -29,12 +29,12 @@ class item_purchase_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -343,7 +343,7 @@ class item_purchase_report
             $filter1 .= "";
         }
 
-        if ($companyid == 71){
+        if ($companyid == 71) {
             $addfield .= ", stock.loc as lotnum, stock.expiry";
             $addselect .= ", cost, lotnum, expiry";
             $addgrpby .= ", lotnum, expiry";
@@ -856,7 +856,6 @@ class item_purchase_report
                 $str .= $this->roosevelt_displayHeader($config);
                 $page = $page + $count;
             }
-
         }
 
         // $str .= $this->reporter->startrow();

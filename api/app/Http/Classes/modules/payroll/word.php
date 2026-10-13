@@ -67,11 +67,11 @@ class word
     ];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -435,7 +435,7 @@ class word
         }
 
 
-        $data['shftcode'] =  $this->othersClass->sanitizekeyfieldFast('shiftcode', $head['shiftcode'],$lookups);
+        $data['shftcode'] =  $this->othersClass->sanitizekeyfieldFast('shiftcode', $head['shiftcode'], $lookups);
         $empname = $this->coreFunctions->datareader("select cl.clientname as value 
         from employee as e
         left join client as cl on cl.clientid = e.empid

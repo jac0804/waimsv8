@@ -35,10 +35,10 @@ class issuedclearance
     private $reporter;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -61,7 +61,7 @@ class issuedclearance
             case 'TL':
                 $columns = ['dateid', 'docno', 'yourref', 'ourref', 'amount', 'status'];
                 break;
-            
+
             case 'INFRA':
                 $columns = ['dateid', 'docno', 'amount', 'status'];
                 break;
@@ -93,7 +93,7 @@ class issuedclearance
         $obj[0][$this->gridname]['columns'][$status]['type'] = "label";
         $obj[0][$this->gridname]['columns'][$status]['style'] = "width:80px;whiteSpace: normal;min-width:80px; text-align:left;";
 
-        if($doc!='INFRA'){
+        if ($doc != 'INFRA') {
             $obj[0][$this->gridname]['columns'][$yourref]['type'] = "label";
             $obj[0][$this->gridname]['columns'][$yourref]['label'] = "RC No";
             $obj[0][$this->gridname]['columns'][$yourref]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
@@ -103,7 +103,7 @@ class issuedclearance
             $obj[0][$this->gridname]['columns'][$ourref]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
         }
 
-        
+
 
         switch ($doc) {
             case 'TL':
@@ -117,7 +117,7 @@ class issuedclearance
                 $obj[0][$this->gridname]['columns'][$docno]['label'] = "Infrastructure No.";
                 $obj[0][$this->gridname]['columns'][$amount]['type'] = "label";
                 $obj[0][$this->gridname]['columns'][$amount]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
-                
+
                 break;
             default:
                 $obj[0][$this->gridname]['columns'][$purpose]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";

@@ -34,9 +34,9 @@ class po
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -391,7 +391,7 @@ class po
         $arr_ext = $this->reporter->fixcolumn([$ext], '13', 0);
         $arr_rem = $this->reporter->fixcolumn([$srem], '25', 0);
 
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_itemname, $arr_qty, $arr_uom, $arr_netamt, $arr_disc, $arr_ext,$arr_rem]);
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_itemname, $arr_qty, $arr_uom, $arr_netamt, $arr_disc, $arr_ext, $arr_rem]);
 
         for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);

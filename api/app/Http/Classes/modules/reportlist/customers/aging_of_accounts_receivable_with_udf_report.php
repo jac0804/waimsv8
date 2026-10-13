@@ -32,12 +32,12 @@ class aging_of_accounts_receivable_with_udf_report
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -176,7 +176,7 @@ class aging_of_accounts_receivable_with_udf_report
     switch ($reporttype) {
       case '0': // SUMMARIZED
         switch ($posttype) {
-            // UNPOSTED
+          // UNPOSTED
           case '0':
             $qry = "select clientname, name, elapse, sum(balance) as balance,crlimit,agent,terms
               from (
@@ -317,7 +317,7 @@ class aging_of_accounts_receivable_with_udf_report
 
         switch ($posttype) {
 
-            //UNPOSTED
+          //UNPOSTED
           case '0':
             $qry = "select clientname, name, sum(balance) as balance, elapse, bstyle, code, agent, terms, crlimit, sum(totalbal) as totalbal, clgrp, alias, db, cr from(
               select cntnum.center, 'u' as tr, client.clientname, case client.clientname when '' then 'no name' else client.clientname end as name, date(head.dateid) as dateid, head.docno,
@@ -344,7 +344,7 @@ class aging_of_accounts_receivable_with_udf_report
               client.agent, client.terms, client.crlimit, client.groupid, stock.ext, coa.alias
             ) as t group by clientname, elapse, name, bstyle, code, agent, terms, crlimit, clgrp, alias, db, cr";
             break;
-            //POSTED
+          //POSTED
           case '1':
             $qry = "select tr, clientname, name, sum(balance) as balance,elapse,crlimit,sum(totalbal) as totalbal,bstyle,clgrp,code,terms,alias,db,cr
               from (select 'p' as tr, client.clientname, ifnull(client.clientname,'no name') as name,
@@ -364,7 +364,7 @@ class aging_of_accounts_receivable_with_udf_report
               group by tr, clientname, name,elapse,crlimit,bstyle,code,clgrp,terms,tr,alias,db,cr
               order by tr, clientname";
             break;
-            //ALL
+          //ALL
           default:
             $qry = "select clientname, name, sum(balance) as balance, elapse, bstyle, code, terms, crlimit, sum(totalbal) as totalbal, clgrp, alias, db, cr
               from(

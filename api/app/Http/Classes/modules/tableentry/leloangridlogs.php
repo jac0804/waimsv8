@@ -27,7 +27,7 @@ class leloangridlogs
   public $tablelogs = 'transnum_log';
   public $tablelogs_del = 'del_transnum_log';
   private $companysetup;
-  
+
   private $coreFunctions;
   private $logger;
   public $style = 'width:1500px;max-width:1500px;';
@@ -35,16 +35,16 @@ class leloangridlogs
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
   }
 
-  
+
   public function getAttrib()
   {
     $attrib = array(
@@ -57,7 +57,7 @@ class leloangridlogs
   public function createTab($config)
   {
 
-    $gridcolumns = ['principal', 'interest','pfnf', 'nf','dst','mri', 'ext','bal'];
+    $gridcolumns = ['principal', 'interest', 'pfnf', 'nf', 'dst', 'mri', 'ext', 'bal'];
     $tab = [
       $this->gridname => [
         'gridcolumns' => $gridcolumns
@@ -101,21 +101,21 @@ class leloangridlogs
     // $trno = $config['params']['trno'];
     $trno = $config['params']['tableid'];
     $tblname = 'eahead';
-    $isposted = $this->othersClass->isposted2($trno,"transnum");
-    if($isposted){
-      $tblname ='heahead';
+    $isposted = $this->othersClass->isposted2($trno, "transnum");
+    if ($isposted) {
+      $tblname = 'heahead';
     }
-    $planid =$this->coreFunctions->getfieldvalue($tblname,"planid","trno = ?",[$trno]);
-    $this->coreFunctions->LogConsole($planid.'----');
-    $isdiminish = $this->coreFunctions->getfieldvalue("reqcategory","isdiminishing","line = ?",[$planid],'',true);
-    $this->coreFunctions->LogConsole($isdiminish.'----');
-    if($isdiminish ==0){
-      $obj[0][$this->gridname]['columns'][$bal]['type']='coldel';
-    }else{      
-      $obj[0][$this->gridname]['columns'][$dst]['type']='coldel';
-      $obj[0][$this->gridname]['columns'][$bal]['type']='coldel';
+    $planid = $this->coreFunctions->getfieldvalue($tblname, "planid", "trno = ?", [$trno]);
+    $this->coreFunctions->LogConsole($planid . '----');
+    $isdiminish = $this->coreFunctions->getfieldvalue("reqcategory", "isdiminishing", "line = ?", [$planid], '', true);
+    $this->coreFunctions->LogConsole($isdiminish . '----');
+    if ($isdiminish == 0) {
+      $obj[0][$this->gridname]['columns'][$bal]['type'] = 'coldel';
+    } else {
+      $obj[0][$this->gridname]['columns'][$dst]['type'] = 'coldel';
+      $obj[0][$this->gridname]['columns'][$bal]['type'] = 'coldel';
     }
-    
+
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }
@@ -131,11 +131,11 @@ class leloangridlogs
   public function get_head($config)
   {
     $doc = $config['params']['doc'];
-    $trno = (isset($config['params']['trno'])) ? $config['params']['trno'] : $config['params']['ledgerdata']['trno'] ;
+    $trno = (isset($config['params']['trno'])) ? $config['params']['trno'] : $config['params']['ledgerdata']['trno'];
     $filter = "";
     $field = "";
 
-    if($doc=='LA'){
+    if ($doc == 'LA') {
       $field = "'$trno' as cptrno,info.trno as trno,";
       $source1 = "
       from lahead as cp
@@ -148,7 +148,7 @@ class leloangridlogs
       left join heainfo as info on head.trno = info.trno
       left join terms on terms.terms = head.terms";
       $filter = "and cp.trno=$trno";
-    }else{
+    } else {
       $field = "'$trno' as trno,info.fmons,info.fannum,info.frate,";
       $source1 = "
       from eainfo as info
@@ -177,35 +177,34 @@ class leloangridlogs
     $source2
     where 1=1 $filter";
     return $qry;
-    
   }
 
   public function data($config)
   {
     $doc = $config['params']['doc'];
-    if($doc == 'LA'){
+    if ($doc == 'LA') {
       $cptrno = (isset($config['params']['trno'])) ? $config['params']['trno'] : $config['params']['ledgerdata']['trno'];
       $qry = "select aftrno as value from lahead where trno=$cptrno
       union all
       select aftrno as value from glhead where trno=$cptrno";
       $trno = $this->coreFunctions->datareader($qry);
-    }else{
+    } else {
       $trno = (isset($config['params']['trno'])) ? $config['params']['trno'] : $config['params']['ledgerdata']['trno'];
     }
-    
+
     $qry = "select * from (select line,format(interest,2) as interest,format(principal,2) as principal,format(pfnf,2) as pfnf,format(nf,2) as nf,format(principal+interest+pfnf+nf+dst+mri,2) as ext,format(bal,2) as bal,format(dst,2) as dst ,format(mri,2) as mri  from tempdetailinfo where trno =  " . $trno .
-    " union all
-    select line,format(interest,2) as interest,format(principal,2) as principal,format(pfnf,2) as pfnf,format(nf,2) as nf,format(principal+interest+pfnf+nf+dst+mri,2) as ext,format(bal,2) as bal,format(dst,2) as dst ,format(mri,2) as mri from htempdetailinfo where trno =  " . $trno.") as a order by line";
+      " union all
+    select line,format(interest,2) as interest,format(principal,2) as principal,format(pfnf,2) as pfnf,format(nf,2) as nf,format(principal+interest+pfnf+nf+dst+mri,2) as ext,format(bal,2) as bal,format(dst,2) as dst ,format(mri,2) as mri from htempdetailinfo where trno =  " . $trno . ") as a order by line";
     $data = $this->coreFunctions->opentable($qry);
     return $data;
   }
 
   public function loaddata($config)
   {
-    
-      $data = $this->data($config);
 
-      return $data;
+    $data = $this->data($config);
+
+    return $data;
   } //end function
 
 
@@ -216,7 +215,7 @@ class leloangridlogs
   {
     $lookupclass2 = $config['params']['lookupclass2'];
     switch ($lookupclass2) {
-      
+
       case 'lookuplogs':
         return $this->lookuplogs($config);
         break;
@@ -227,7 +226,7 @@ class leloangridlogs
     }
   }
 
-  
+
   public function lookuplogs($config)
   {
     $main_doc = $config['params']['doc'];
@@ -263,35 +262,9 @@ class leloangridlogs
     where log.trno = '" . $trno . "' and log.field = 'LOANCOMP'";
 
     $qry = $qry . " order by dateid desc";
-    
+
 
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, $qry];
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 } //end class

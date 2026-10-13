@@ -29,12 +29,12 @@ class ar_setup
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -100,9 +100,9 @@ class ar_setup
     $reporttype = $config['params']['dataparams']['reporttype'];
     switch ($reporttype) {
       case '0': // SUMMARIZED
-        if($companyid == 68){
+        if ($companyid == 68) {
           $result = $this->JDA_Layout_SUMMARIZED($config);
-        }else{
+        } else {
           $result = $this->reportDefaultLayout_SUMMARIZED($config);
         }
         break;
@@ -593,7 +593,7 @@ class ar_setup
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        
+
         $str .= $this->reporter->col($data->dateid, '80', null, false, $border, '', 'CT', $font, $fontsize, 'R', '', '');
         $str .= $this->reporter->col($data->docno, '120', null, false, $border, '', 'CT', $font, $fontsize, 'R', '', '');
         $str .= $this->reporter->col($data->hclient, '130', null, false, $border, '', 'CT', $font, $fontsize, 'R', '', '');
@@ -601,7 +601,7 @@ class ar_setup
         $str .= $this->reporter->col($data->yourref, '120', null, false, $border, '', 'CT', $font, $fontsize, 'R', '', '');
         $str .= $this->reporter->col(number_format($data->debit, 2), '100', null, false, $border, '', 'RT', $font, $fontsize, 'R', '', '');
         $str .= $this->reporter->col($data->rem, '250', null, false, $border, '', 'CT', $font, $fontsize, 'R', '', '');
-        
+
         $str .= $this->reporter->endrow($layoutsize);
 
         if ($this->reporter->linecounter == $page) {
@@ -619,7 +619,7 @@ class ar_setup
     // Footer with Grand Total
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col("<div style='height:10px;'></div>", '80', null, false, $border, 'T', 'C', $font, $fontsize, 'R', '', '');
     $str .= $this->reporter->col("<div style='height:10px;'></div>", '120', null, false, $border, 'T', 'C', $font, $fontsize, 'R', '', '');
     $str .= $this->reporter->col("<div style='height:10px;'></div>", '130', null, false, $border, 'T', 'C', $font, $fontsize, 'R', '', '');
@@ -627,10 +627,10 @@ class ar_setup
     $str .= $this->reporter->col("<div style='height:10px;'></div>", '120', null, false, $border, 'T', 'C', $font, $fontsize, 'R', '', '');
     $str .= $this->reporter->col("<div style='height:10px;'></div>", '100', null, false, $border, 'T', 'C', $font, $fontsize, 'R', '', '');
     $str .= $this->reporter->col("<div style='height:10px;'></div>", '250', null, false, $border, 'T', 'C', $font, $fontsize, 'R', '', '');
-    
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('', '80', null, false, $border, '', 'C', $font, $fontsize, 'R', '', '');
     $str .= $this->reporter->col('', '120', null, false, $border, '', 'C', $font, $fontsize, 'R', '', '');
     $str .= $this->reporter->col('', '130', null, false, $border, '', 'C', $font, $fontsize, 'R', '', '');
@@ -638,7 +638,7 @@ class ar_setup
     $str .= $this->reporter->col('Grand Total:', '120', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col(number_format($totaldb, 2), '100', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '250', null, false, $border, '', 'C', $font, $fontsize, 'R', '', '');
-    
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();
@@ -699,7 +699,7 @@ class ar_setup
     $border = "1px solid";
     $str = "";
 
-    if ($companyid == 68){
+    if ($companyid == 68) {
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('Date', '80', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
@@ -712,7 +712,7 @@ class ar_setup
       $str .= $this->reporter->col('Notes', '250', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
-    }else {
+    } else {
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('Date', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');

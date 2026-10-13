@@ -44,8 +44,34 @@ class cp
   public $tablelogs_del = 'del_table_log';
   private $fields = ['trno', 'docno', 'client', 'clientname', 'dateid', 'aftrno', 'due', 'agent', 'vattype', 'tax'];
   private $blnfields = [
-    'isplanholder', 'ispassport', 'isdriverlisc', 'isprc', 'isseniorid', 'isotherid', 'isemployment', 'isbusiness', 'isinvestment', 'isothersource', 'isemployed', 'isselfemployed',
-    'isofw', 'isretired', 'iswife', 'isnotemployed', 'lessten', 'tenthirty', 'thirtyfifty', 'fiftyhundred', 'hundredtwofifty', 'twofiftyfivehundred', 'fivehundredup', 'isbene', 'issameadd', 'issenior', 'isdp', 'ispf'
+    'isplanholder',
+    'ispassport',
+    'isdriverlisc',
+    'isprc',
+    'isseniorid',
+    'isotherid',
+    'isemployment',
+    'isbusiness',
+    'isinvestment',
+    'isothersource',
+    'isemployed',
+    'isselfemployed',
+    'isofw',
+    'isretired',
+    'iswife',
+    'isnotemployed',
+    'lessten',
+    'tenthirty',
+    'thirtyfifty',
+    'fiftyhundred',
+    'hundredtwofifty',
+    'twofiftyfivehundred',
+    'fivehundredup',
+    'isbene',
+    'issameadd',
+    'issenior',
+    'isdp',
+    'ispf'
   ];
   private $except = ['trno', 'dateid', 'duedate'];
   public $showfilteroption = true;
@@ -64,11 +90,11 @@ class cp
   public $labellocked = 'For Review';
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -377,8 +403,26 @@ class cp
     $companyid = $config['params']['companyid'];
 
     $fields = [
-      'lblbranch', 'docno', 'afdocno', 'lname2', 'fname2', 'mname2', 'ext2', 'lblshipping', ['ispassport', 'isprc'], ['isdriverlisc', 'isotherid'], 'isseniorid', ['idno', 'expiration'], 'passbook',
-      'lessten', 'tenthirty', 'thirtyfifty', 'fiftyhundred', 'hundredtwofifty', 'twofiftyfivehundred', 'fivehundredup'
+      'lblbranch',
+      'docno',
+      'afdocno',
+      'lname2',
+      'fname2',
+      'mname2',
+      'ext2',
+      'lblshipping',
+      ['ispassport', 'isprc'],
+      ['isdriverlisc', 'isotherid'],
+      'isseniorid',
+      ['idno', 'expiration'],
+      'passbook',
+      'lessten',
+      'tenthirty',
+      'thirtyfifty',
+      'fiftyhundred',
+      'hundredtwofifty',
+      'twofiftyfivehundred',
+      'fivehundredup'
     ];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'docno.label', 'Contract #');
@@ -417,8 +461,26 @@ class cp
 
 
     $fields = [
-      'dateid', 'due', 'dvattype', 'plantype', 'amount', 'dagentname', 'gender', 'civilstatus', ['bday', 'nationality'], 'pob', ['lblbilling'], ['isemployment', 'isinvestment'], ['isbusiness', 'isothersource'], 'othersource', 'lblacquisition',
-      ['isemployed', 'isselfemployed'], 'isofw', 'isretired', 'iswife', 'isnotemployed'
+      'dateid',
+      'due',
+      'dvattype',
+      'plantype',
+      'amount',
+      'dagentname',
+      'gender',
+      'civilstatus',
+      ['bday', 'nationality'],
+      'pob',
+      ['lblbilling'],
+      ['isemployment', 'isinvestment'],
+      ['isbusiness', 'isothersource'],
+      'othersource',
+      'lblacquisition',
+      ['isemployed', 'isselfemployed'],
+      'isofw',
+      'isretired',
+      'iswife',
+      'isnotemployed'
     ];
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'lblbilling.label', 'Source of Income');
@@ -870,7 +932,7 @@ class cp
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }

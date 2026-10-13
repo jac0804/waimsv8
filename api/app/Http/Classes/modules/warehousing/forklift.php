@@ -39,11 +39,11 @@ class forklift
   public $showfilter = false;
   public $showcreatebtn = false;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -75,8 +75,15 @@ class forklift
     $docno = 8;
 
     $getcols = [
-      'action', 'added', 'barcode', 'itemdesc', 'brand_desc',
-      'partno',  'subcode', 'lblstatus', 'docno'
+      'action',
+      'added',
+      'barcode',
+      'itemdesc',
+      'brand_desc',
+      'partno',
+      'subcode',
+      'lblstatus',
+      'docno'
     ];
     $stockbuttons = ['view'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
@@ -259,8 +266,15 @@ class forklift
       }
 
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'isnew' => false, 'status' => true, 'msg' => $msg,
-        'islocked' => false, 'isposted' => false, 'qq' => $config['params']['clientid'], 'hideobj' => $hideobj
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'islocked' => false,
+        'isposted' => false,
+        'qq' => $config['params']['clientid'],
+        'hideobj' => $hideobj
       ];
     } else {
       $head = $this->resetdata();

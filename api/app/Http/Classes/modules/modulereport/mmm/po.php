@@ -37,9 +37,9 @@ class po
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -56,7 +56,7 @@ class po
 
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
-      
+
     ]);
 
     $fields = ['print'];
@@ -133,7 +133,7 @@ class po
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col($this->modulename, '580', null, false, $border, '', 'L', $font, '18', 'B', '', '');
     $str .= $this->reporter->col('DOCUMENT # :', '120', null, false, $border, '', 'L', $font, '13', 'B', '', '');
     $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '100', null, false, $border, 'B', 'L', $font, '13', '', '', '') . '<br />';
@@ -167,7 +167,7 @@ class po
     $str .= $this->reporter->printline();
 
 
-    
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->title_header($params);
     return $str;
@@ -282,7 +282,7 @@ class po
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    
+
     $str .= $this->reporter->endreport();
 
     return $str;
@@ -293,7 +293,7 @@ class po
     $companyid = $params['params']['companyid'];
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -307,7 +307,7 @@ class po
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -316,17 +316,17 @@ class po
     PDF::SetMargins(40, 40);
     PDF::AddPage('p', [800, 1000]);
 
-    
+
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . strtoupper($headerdata[0]->name), '', 'L');
     PDF::SetFont($fontbold, '', 14);
 
-    
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::Image('/images/mmm/3m.png', '45', '50', 180, 50, '', '', 'M', false, 300, 'M', false, false, 0, true, false, false);
     PDF::SetFont($fontbold, '', 14);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'L',false, 1, 210, 50);
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'L', false, 1, 210, 50);
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel), '', 'C');
 
@@ -348,7 +348,7 @@ class po
     PDF::SetFont($font, '', 10);
     PDF::MultiCell(120, 20, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(60, 20, "Supplier : ", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
@@ -359,7 +359,7 @@ class po
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(120, 20, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
-    
+
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(60, 20, "Address : ", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
@@ -381,7 +381,6 @@ class po
     PDF::MultiCell(75, 25, "UNIT PRICE", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
     PDF::MultiCell(50, 25, "(+/-) %", 'TB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
     PDF::MultiCell(100, 25, "TOTAL", 'TB', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
-
   }
 
   public function default_PO_PDF($params, $data)
@@ -416,32 +415,32 @@ class po
 
       $barcode = $data[$i]['barcode'];
       $itemname = $data[$i]['itemname'];
-      $qty = number_format($data[$i]['qty'],2);
+      $qty = number_format($data[$i]['qty'], 2);
       $uom = $data[$i]['uom'];
-      $amt = number_format($data[$i]['netamt'],2);
+      $amt = number_format($data[$i]['netamt'], 2);
       $disc = $data[$i]['disc'];
-      $ext = number_format($data[$i]['ext'],2);
+      $ext = number_format($data[$i]['ext'], 2);
 
-      $arr_barcode = $this->reporter->fixcolumn([$barcode],'15',0);
-      $arr_itemname = $this->reporter->fixcolumn([$itemname],'35',0);
-      $arr_qty = $this->reporter->fixcolumn([$qty],'13',0);
-      $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-      $arr_amt = $this->reporter->fixcolumn([$amt],'13',0);
-      $arr_disc = $this->reporter->fixcolumn([$disc],'13',0);
-      $arr_ext = $this->reporter->fixcolumn([$ext],'15',0);
+      $arr_barcode = $this->reporter->fixcolumn([$barcode], '15', 0);
+      $arr_itemname = $this->reporter->fixcolumn([$itemname], '35', 0);
+      $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+      $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+      $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
+      $arr_disc = $this->reporter->fixcolumn([$disc], '13', 0);
+      $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_itemname, $arr_qty, $arr_uom, $arr_amt, $arr_disc, $arr_ext]);
 
-      for($r = 0; $r < $maxrow; $r++) {
+      for ($r = 0; $r < $maxrow; $r++) {
 
         PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(125, 15, ' '. (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(50, 15, ' '. (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(50, 15, ' '. (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(250, 15, ' '. (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(75, 15, ' '. (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(50, 15, ' '. (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(100, 15, ' '. (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(125, 15, ' ' . (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(50, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(50, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(250, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(75, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(50, 15, ' ' . (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(100, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
       }
 
       $totalext += $data[$i]['ext'];
@@ -480,11 +479,8 @@ class po
     PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['received'], '', 'L');
 
-    
+
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
-
-  
 }

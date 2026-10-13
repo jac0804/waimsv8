@@ -35,9 +35,9 @@ class kr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -218,7 +218,7 @@ class kr
 
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(300, 21.5, $data[0]['distributor'], '', 'L', 0, 1, '190', '100');
-    
+
 
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(250, 0, $data[0]['sodocno'], '', 'L', 0, 1, '210', '120');

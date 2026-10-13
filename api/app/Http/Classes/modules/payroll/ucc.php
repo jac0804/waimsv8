@@ -56,11 +56,11 @@ class ucc
     ];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -303,8 +303,8 @@ class ucc
         $trno = $config['params']['trno'];
         $forapproval = $this->othersClass->getCurrentDate();
 
-        $pendingdata = $this->coreFunctions->opentable("select * from pendingapp where doc='UNDERTIME' and line=".$trno);
-        $this->coreFunctions->execqry("delete from pendingapp where doc='UNDERTIME' and line=".$trno, 'delete');
+        $pendingdata = $this->coreFunctions->opentable("select * from pendingapp where doc='UNDERTIME' and line=" . $trno);
+        $this->coreFunctions->execqry("delete from pendingapp where doc='UNDERTIME' and line=" . $trno, 'delete');
         $url = 'App\Http\Classes\modules\payroll\\' . 'undertime';
         $data = ['empid' => $config['params']['adminid']];
         $appstatus = $this->othersClass->insertUpdatePendingapp(0, $trno, 'UNDERTIMECANCELLATION', $data, $url, $config, 0, true, true);
@@ -322,7 +322,7 @@ class ucc
                 $msg = 'Failed for Approval';
                 $status = false;
                 reinsertpendingapp:
-                $this->coreFunctions->execqry("delete from pendingapp where doc='UNDERTIMECANCELLATION' and trno=".$trno, 'delete');
+                $this->coreFunctions->execqry("delete from pendingapp where doc='UNDERTIMECANCELLATION' and trno=" . $trno, 'delete');
                 if (!empty($pendingdata)) {
                     foreach ($pendingdata as $pd) {
                         $this->coreFunctions->execqry("insert into pendingapp(trno, line, doc, clientid, approver) values(?, ?, ?, ?, ?)", 'insert', [$pd->trno, $pd->line, $pd->doc, $pd->clientid, $pd->approver]);

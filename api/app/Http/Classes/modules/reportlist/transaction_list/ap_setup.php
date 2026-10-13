@@ -29,12 +29,12 @@ class ap_setup
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -294,9 +294,10 @@ class ap_setup
     //   $filter .= " and head.deptid = $dept";
     // }
     if ($deptname != "") {
-        if ($deptid != 0) {
-            $filter .= " and head.deptid = $deptid";
-    }}
+      if ($deptid != 0) {
+        $filter .= " and head.deptid = $deptid";
+      }
+    }
 
     $query = "select docno, createby, date(dateid) as dateid, postdate, 
                      GROUP_CONCAT(IF(checkno='', NULL, checkno)) as checkno, sum(db) as debit, sum(cr) as credit, rem
@@ -815,7 +816,7 @@ class ap_setup
     $filterusername  = $config['params']['dataparams']['username'];
     $prefix     = $config['params']['dataparams']['approved'];
 
-  
+
     $str = '';
     $font = $this->companysetup->getrptfont($config['params']);
     $fontsize = "10";
@@ -840,13 +841,13 @@ class ap_setup
     $str .= $this->reporter->col('AP Setup Summarized', null, null, false, $border, '', '', $font, '18', 'B', '', '') . '<br />';
     $str .= $this->reporter->endrow();
 
-  
+
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Date Range: ' . $start . ' to ' . $end, '500', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('User: ' . $user, '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Prefix: ' . $prefix, '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
-   
+
     $str .= $this->reporter->endtable();
 
     return $str;
@@ -903,7 +904,7 @@ class ap_setup
     $str .= $this->reporter->col('Prefix: ' . $prefix, '150', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Department: ' . $deptname, '250', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
-  
+
     $str .= $this->reporter->endtable();
 
     return $str;

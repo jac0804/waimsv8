@@ -29,12 +29,12 @@ class lead_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1200'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -146,7 +146,7 @@ class lead_report
         left join exhibit as ex on att.exhibitid = ex.line  and att.isexhibit =1
         left join seminar as sem on att.exhibitid = sem.line  and att.isseminar =1
         where date(att.dateid) between '" . $start . "' and '" . $end . "'  ";
-        //and  ophead.docno is not null
+      //and  ophead.docno is not null
     } else {
       $query = "
     select
@@ -339,16 +339,16 @@ class lead_report
     $totalext = 0;
     $totalbal = 0;
     $amount = 0;
-    $docno='';
+    $docno = '';
 
     if (!empty($result)) {
       foreach ($result as $key => $data) {
-        $docno='';
+        $docno = '';
         $salesremarks = $data->saleremarks;
         $inqstat = "";
-       
+
         if ($data->optrno  != 0) {
-          $amount = $this->coreFunctions->datareader("select sum(ext) as value  from (select ifnull(ext,0) as ext from opstock where trno = ? union all select ifnull(ext,0) as ext from hopstock where trno = ?) as a", [$data->optrno,$data->optrno],'',true);
+          $amount = $this->coreFunctions->datareader("select sum(ext) as value  from (select ifnull(ext,0) as ext from opstock where trno = ? union all select ifnull(ext,0) as ext from hopstock where trno = ?) as a", [$data->optrno, $data->optrno], '', true);
 
           $qry1 = "select docno,doc,trno from transnum where trno = " . $data->optrno;
 
@@ -369,24 +369,24 @@ class lead_report
               $isposted = $this->othersClass->isposted2($data->optrno, 'transnum');
               if ($isposted) {
                 $salesremarks = 'PROCESSED';
-              } 
+              }
               break;
             case 'OP':
-              $salesremarks= $this->coreFunctions->datareader("select ifnull(rem,'') as value  from calllogs where trno = ?  order by line desc limit 1", [$data->optrno]);
+              $salesremarks = $this->coreFunctions->datareader("select ifnull(rem,'') as value  from calllogs where trno = ?  order by line desc limit 1", [$data->optrno]);
               $inqstatus = $this->coreFunctions->datareader("select ifnull(status,'') as value  from calllogs where trno = ?  order by line desc limit 1", [$data->optrno]);
               break;
             default:
-              $salesremarks= '';
+              $salesremarks = '';
               $inqstatus = '';
               break;
           }
         }
 
-      //   $qry = "select trno, line, left(dateid, 10) as dateid, starttime, endtime, rem, calltype, contact
-      // from calllogs
-      // where trno = '" . $data->trno . "'
-      // order by dateid DESC LIMIT 1";
-      //   $calllogs = $this->coreFunctions->opentable($qry);
+        //   $qry = "select trno, line, left(dateid, 10) as dateid, starttime, endtime, rem, calltype, contact
+        // from calllogs
+        // where trno = '" . $data->trno . "'
+        // order by dateid DESC LIMIT 1";
+        //   $calllogs = $this->coreFunctions->opentable($qry);
 
         $str .= $this->reporter->addline();
         // $str .= $this->reporter->begintable($layoutsize);

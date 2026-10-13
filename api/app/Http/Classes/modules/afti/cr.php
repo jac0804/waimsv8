@@ -97,11 +97,11 @@ class cr
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -155,7 +155,7 @@ class cr
 
     $cols[$db]['type'] = 'coldel';
     $cols[$listprojectname]['type'] = 'coldel';
-   
+
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
   }
@@ -359,7 +359,7 @@ class cr
       $return['To Do'] = ['icon' => 'fa fa-list', 'tab' => $objtodo];
     }
 
-    
+
     return $return;
   }
 
@@ -425,10 +425,10 @@ class cr
     if ($this->companysetup->getiseditsortline($config['params'])) {
       array_push($stockbuttons, 'sortline');
     }
-    
+
     array_push($stockbuttons, 'detailinfo');
 
-  
+
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     $obj[0]['accounting']['columns'][$action]['checkfield'] = 'void';
     $obj[0][$this->gridname]['columns'][$ref]['lookupclass'] = 'refcr';
@@ -736,7 +736,6 @@ class cr
     if ($isupdate) {
       $prevqt = $this->coreFunctions->getfieldvalue($this->head, "qttrno", "trno=?", [$head['trno']]);
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
-
     } else {
       $data['doc'] = $config['params']['doc'];
       $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -1573,7 +1572,7 @@ class cr
       $this->coreFunctions->sbcupdate('qshead', ['crtrno' => 0], ['trno' => $data[0]->qttrno]);
     }
 
-   
+
     $data = json_decode(json_encode($data), true);
     $this->logger->sbcwritelog(
       $trno,
@@ -1592,7 +1591,7 @@ class cr
     $rows = [];
     $total = 0;
     $fb = $this->coreFunctions->getfieldvalue($this->head, "contra", "trno=?", [$trno]);
-    
+
     $data = $config['params']['rows'];
     foreach ($data as $key => $value) {
       $config['params']['data']['acno'] = $data[$key]['acno'];
@@ -1679,7 +1678,7 @@ class cr
     $data = [];
     $isreload = false;
     $companyid = $config['params']['companyid'];
-    
+
     $style = 'width:500px;max-width:500px;';
 
     return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false, 'reloadhead' => $isreload];

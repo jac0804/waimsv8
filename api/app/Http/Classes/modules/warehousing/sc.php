@@ -56,11 +56,11 @@ class sc
     ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -596,7 +596,7 @@ class sc
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -990,11 +990,11 @@ class sc
       $config['params']['line'] = $line;
     }
 
-     
-     $dateTables = ['scstock'];
-     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
-     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+
+    $dateTables = ['scstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.amt,item.amt2,item.famt,item.amt4 
      from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);

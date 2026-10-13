@@ -37,9 +37,9 @@ class mj
   private $logger;
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -1154,7 +1154,7 @@ class mj
       }
     }
 
-    if ($data['modeofsales'] == 'INHOUSE INSTALLMENT') {                 
+    if ($data['modeofsales'] == 'INHOUSE INSTALLMENT') {
       PDF::SetFont($fontbold, '', $fontsize);
       PDF::MultiCell(100, 20, "Due Date : ", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
       PDF::SetFont($font, '', $fontsize);
@@ -1395,7 +1395,7 @@ class mj
         $crno = $data[$i]['cr'];
         $downpayment = $data[$i]['downpayment'];
         $rebate = $data[$i]['rebate'];
-        $penalty = '';//$data[$i]['penalty'];
+        $penalty = ''; //$data[$i]['penalty'];
         $terms = $data[$i]['days'];
 
         if ($downpayment != 0 && $downpayment != '') {
@@ -1473,7 +1473,7 @@ class mj
                       where  detail.refx = $trr and left(detail.postdate,10)='$post' and coa.alias in ('AR5')) as a 
                       group by trno,yourref,docno,postdate,refx,ardate,penalty";
 
-                      //ifnull((select sum(d.cr-d.db) as amt from gldetail as d left join coa as c on c.acnoid = d.acnoid where d.trno = head.trno and c.alias ='SA6'  and d.type = 'R' and left(d.podate,10)='$post'),0) as urebate,
+        //ifnull((select sum(d.cr-d.db) as amt from gldetail as d left join coa as c on c.acnoid = d.acnoid where d.trno = head.trno and c.alias ='SA6'  and d.type = 'R' and left(d.podate,10)='$post'),0) as urebate,
         $crd = $this->coreFunctions->opentable($qryh); //crnumberrrrr here 
         $drefx = 0;
 
@@ -1486,23 +1486,23 @@ class mj
         $crno2 = '';
         $postdate2 = '';
         $ma2 = 0;
-        $rebate2 = 0;        
+        $rebate2 = 0;
         $penalty2 = '';
-        $particulars='';
+        $particulars = '';
         $current2 = $current;
-        
+
         if (!empty($crd)) {
           foreach ($crd as $key => $crnoo) {
             $crno2 = isset($crnoo->yourref) ? $crnoo->yourref : '';
             $postdate2 = isset($crnoo->postdate) ? $crnoo->postdate : '';
-            $ma2 = isset($crnoo->db) ? $crnoo->db : '';            
+            $ma2 = isset($crnoo->db) ? $crnoo->db : '';
 
             $rebate2 = $crnoo->rebate;
             if ($crnoo->ardate < $crnoo->postdate) {
               $rebate2 = 0;
-              $ma2 = isset($crnoo->db) ? $crnoo->db + $crnoo->rebate : '';             
+              $ma2 = isset($crnoo->db) ? $crnoo->db + $crnoo->rebate : '';
             }
-          
+
             $dayselapse = date_diff(date_create($crnoo->postdate), date_create($crnoo->ardate));
             if (intval($dayselapse->format("%a")) > 5) {
               if ($crnoo->penalty != 0) {
@@ -1510,7 +1510,7 @@ class mj
               }
             }
 
-          
+
             $arr_date2 = $this->reporter->fixcolumn([$postdate2], '25', 0);
             $arr_rem2 = $this->reporter->fixcolumn([$rem2], '35', 0);
             $arr_crno2 = $this->reporter->fixcolumn([$crno2], '25', 0);
@@ -1539,10 +1539,7 @@ class mj
             }
             $drefx = 0;
           }
-
-         
-          
-        }else{//if wala pa payment
+        } else { //if wala pa payment
           $current2 = $ma2;
           $arr_date2 = $this->reporter->fixcolumn([$postdate2], '25', 0);
           $arr_rem2 = $this->reporter->fixcolumn([$rem2], '35', 0);
@@ -1572,7 +1569,6 @@ class mj
           }
           $drefx = 0;
         }
-        
       }
 
       $overalltotal += $totalar;
@@ -1669,8 +1665,7 @@ class mj
                     coa.alias IN ('AR1', 'AR2') AND head.trno = $trno
                     group by postdate,trno ) AS a
                GROUP BY postdate,rem,trno";
-      } 
-      else { //default
+      } else { //default
         $qry2 = "        
             SELECT rem, postdate,trno
             FROM (
@@ -2006,7 +2001,7 @@ class mj
         $crno = $data[$i]['cr'];
         $downpayment = $data[$i]['downpayment'];
         $rebate = $data[$i]['rebate'];
-        $penalty = '';//$data[$i]['penalty'];
+        $penalty = ''; //$data[$i]['penalty'];
         $terms = $data[$i]['days'];
 
         if ($downpayment != 0 && $downpayment != '') {
@@ -2043,7 +2038,7 @@ class mj
           PDF::MultiCell(160, 0, ' ' . (isset($arr_rem[$j]) ? $arr_rem[$j] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(80, 0, ' ' . (isset($arr_crno[$j]) ? $arr_crno[$j] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(80, 0, ' ' . (isset($arr_ma[$j]) ? $arr_ma[$j] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(80, 0, ' ' , '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(80, 0, ' ', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(80, 0, ' ' . (isset($arr_penalty[$j]) ? $arr_penalty[$j] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(80, 0, ' ' . (isset($arr_current[$j]) ? $arr_current[$j] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(83, 0, '' . (isset($arr_totalar[$j]) ? $arr_totalar[$j] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
@@ -2084,7 +2079,7 @@ class mj
                       where  detail.refx = $trr and left(detail.postdate,10)='$post' and coa.alias in ('AR5')) as a 
                       group by trno,yourref,docno,postdate,refx,ardate,penalty";
 
-                      //ifnull((select sum(d.cr-d.db) as amt from gldetail as d left join coa as c on c.acnoid = d.acnoid where d.trno = head.trno and c.alias ='SA6'  and d.type = 'R' and left(d.podate,10)='$post'),0) as urebate,
+        //ifnull((select sum(d.cr-d.db) as amt from gldetail as d left join coa as c on c.acnoid = d.acnoid where d.trno = head.trno and c.alias ='SA6'  and d.type = 'R' and left(d.podate,10)='$post'),0) as urebate,
         $crd = $this->coreFunctions->opentable($qryh); //crnumberrrrr here 
         $drefx = 0;
 
@@ -2097,23 +2092,23 @@ class mj
         $crno2 = '';
         $postdate2 = '';
         $ma2 = 0;
-        $rebate2 = 0;        
+        $rebate2 = 0;
         $penalty2 = '';
-        $particulars='';
+        $particulars = '';
         $current2 = $current;
-        
+
         if (!empty($crd)) {
           foreach ($crd as $key => $crnoo) {
             $crno2 = isset($crnoo->yourref) ? $crnoo->yourref : '';
             $postdate2 = isset($crnoo->postdate) ? $crnoo->postdate : '';
-            $ma2 = isset($crnoo->db) ? $crnoo->db : '';            
+            $ma2 = isset($crnoo->db) ? $crnoo->db : '';
 
             $rebate2 = $crnoo->rebate;
             if ($crnoo->ardate < $crnoo->postdate) {
               $rebate2 = 0;
-              $ma2 = isset($crnoo->db) ? $crnoo->db + $crnoo->rebate : '';             
+              $ma2 = isset($crnoo->db) ? $crnoo->db + $crnoo->rebate : '';
             }
-          
+
             $dayselapse = date_diff(date_create($crnoo->postdate), date_create($crnoo->ardate));
             if (intval($dayselapse->format("%a")) > 5) {
               if ($crnoo->penalty != 0) {
@@ -2121,7 +2116,7 @@ class mj
               }
             }
 
-          
+
             $arr_date2 = $this->reporter->fixcolumn([$postdate2], '25', 0);
             $arr_rem2 = $this->reporter->fixcolumn([$rem2], '35', 0);
             $arr_crno2 = $this->reporter->fixcolumn([$crno2], '25', 0);
@@ -2150,10 +2145,7 @@ class mj
             }
             $drefx = 0;
           }
-
-         
-          
-        }else{//if wala pa payment
+        } else { //if wala pa payment
           $current2 = $ma2;
           $arr_date2 = $this->reporter->fixcolumn([$postdate2], '25', 0);
           $arr_rem2 = $this->reporter->fixcolumn([$rem2], '35', 0);
@@ -2183,7 +2175,6 @@ class mj
           }
           $drefx = 0;
         }
-        
       }
 
       $overalltotal += $totalar;

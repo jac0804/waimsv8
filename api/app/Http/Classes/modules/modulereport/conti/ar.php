@@ -35,9 +35,9 @@ class ar
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -305,7 +305,7 @@ class ar
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
 
-    
+
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('RECEIVABLE SETUP', '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
@@ -627,7 +627,7 @@ class ar
 
   public function default_AR_PDF($params, $data)
   {
-   
+
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
     $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);

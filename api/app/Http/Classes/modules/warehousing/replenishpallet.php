@@ -49,11 +49,11 @@ class replenishpallet
         ['val' => 'posted', 'label' => 'Validated', 'color' => 'primary']
     ];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -425,7 +425,7 @@ class replenishpallet
 
                         $dateTables = ['lastock'];
                         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-                        
+
                         foreach ($stock as $key => $v) {
                             $stock[$key] = $this->othersClass->sanitizekeyfieldFast($key, $stock[$key], $lookups);
                         }

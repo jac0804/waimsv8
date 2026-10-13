@@ -29,12 +29,12 @@ class outsource_summary_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -213,8 +213,8 @@ class outsource_summary_report
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow(null, null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(date('M-d-Y', strtotime($start)) . ' TO ' . date('M-d-Y', strtotime($end)), '300', null, false, $border, '', 'L', $font, $fontsize, '','', '', '');
-    $str .= $this->reporter->col('Transaction Type : ' . $posttype, '300', null, false, $border, '', 'L', $font, $fontsize,'', '', '', '');
+    $str .= $this->reporter->col(date('M-d-Y', strtotime($start)) . ' TO ' . date('M-d-Y', strtotime($end)), '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '', '');
+    $str .= $this->reporter->col('Transaction Type : ' . $posttype, '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '', '');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();

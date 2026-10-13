@@ -50,11 +50,11 @@ class cc
 
   public $showfilterlabel = [];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -361,126 +361,126 @@ class cc
       head.lockuser,head.lockdate,head.openby,head.users,head.createdate,head.createby,head.editby,head.editdate,head.viewby,head.viewdate
       from (" . $this->hhead . " as head left join " . $this->tablenum . " as cntnum on cntnum.trno=head.trno) left join client on client.clientid=head.clientid left join client as dept on dept.clientid=head.deptid 
       where head.trno=? limit 1";
-          //head
-        if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
-          $qry = "insert into " . $this->stock . "(
+    //head
+    if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
+      $qry = "insert into " . $this->stock . "(
         line,trno,createdate,createby,comment)
         SELECT line,trno,createdate,createby,comment
         from " . $this->hstock . " where trno=?";
-          //stock
-          if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
-            $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null,postedby='' where trno=?", 'update', [$trno]);
-            $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
-            $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
-            $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
-            return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
-          } else {
-            $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", 'delete', [$trno]);
-            return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED, stock problems...'];
-          }
-        }
-      } //end function
-
-
-      public function openstock($trno, $config)
-      {
-        $qry = 'select line,trno,createdate,createby,comment from csscomment where trno=? union all ';
-        $qry = 'select line,trno,createdate,createby,comment from hcsscomment where trno=? order by line desc';
-        $csscomment = $this->coreFunctions->opentable($qry, [$trno]);
-        return $csscomment;
-      } //end function
-
-      public function openstockline($config)
-      {
-        return [];
-      } // end function
-
-      public function stockstatus($config)
-      {
-        switch ($config['params']['action']) {
-          case 'additem':
-            return $this->additem('insert', $config);
-            break;
-          case 'updatestatus': //save all item edited
-            return $this->updatestatus($config);
-            break;
-          default:
-            return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
-            break;
-        }
+      //stock
+      if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
+        $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null,postedby='' where trno=?", 'update', [$trno]);
+        $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
+        $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
+        $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
+        return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
+      } else {
+        $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", 'delete', [$trno]);
+        return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED, stock problems...'];
       }
+    }
+  } //end function
 
 
-      public function updatestatus($config)
-      {
-        if ($this->othersClass->isposted($config)) {
-          return ['status' => false, 'msg' => 'Updating failed. Transaction has already been posted.'];
-        }
-        $data = [];
-        $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-        $data['editby'] = $config['params']['user'];
-        $data['ourref'] = $config['params']['status'];
-        $ourref = $this->coreFunctions->getfieldvalue($this->head, 'ourref', 'trno=?', [$config['params']['trno']]);
-        $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $config['params']['trno']]);
-        $this->logger->sbcwritelog($config['params']['trno'], $config, 'CHANGE STATUS', $config['params']['user'] . ' - From ' . $ourref . ' to ' . $config['params']['status']);
-        return ['status' => true, 'msg' => 'Update Status successfull...'];
-      } //end function
+  public function openstock($trno, $config)
+  {
+    $qry = 'select line,trno,createdate,createby,comment from csscomment where trno=? union all ';
+    $qry = 'select line,trno,createdate,createby,comment from hcsscomment where trno=? order by line desc';
+    $csscomment = $this->coreFunctions->opentable($qry, [$trno]);
+    return $csscomment;
+  } //end function
+
+  public function openstockline($config)
+  {
+    return [];
+  } // end function
+
+  public function stockstatus($config)
+  {
+    switch ($config['params']['action']) {
+      case 'additem':
+        return $this->additem('insert', $config);
+        break;
+      case 'updatestatus': //save all item edited
+        return $this->updatestatus($config);
+        break;
+      default:
+        return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
+        break;
+    }
+  }
 
 
-      // insert and update item
-      public function additem($action, $config)
-      {
-        if ($this->othersClass->isposted($config)) {
-          return ['status' => false, 'msg' => 'Updating failed. Transaction has already been posted.'];
-        }
-        $data = [];
-        $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
-        $data['createby'] = $config['params']['user'];
-        $data['trno'] = $config['params']['trno'];
-        $data['comment'] = $config['params']['comment'];
-        $this->coreFunctions->sbcinsert($this->head, $data);
-        $this->logger->sbcwritelog($config['params']['trno'], $config, 'ADD COMMENT', $config['params']['user'] . ' - ' . $config['params']['comment']);
-        $csscomment = $this->openstock($config['params']['trno'], $config);
-        return ['status' => true, 'msg' => 'Successfully added.', 'griddata' => ['inventory' => $csscomment]];
-      } // end function
+  public function updatestatus($config)
+  {
+    if ($this->othersClass->isposted($config)) {
+      return ['status' => false, 'msg' => 'Updating failed. Transaction has already been posted.'];
+    }
+    $data = [];
+    $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+    $data['editby'] = $config['params']['user'];
+    $data['ourref'] = $config['params']['status'];
+    $ourref = $this->coreFunctions->getfieldvalue($this->head, 'ourref', 'trno=?', [$config['params']['trno']]);
+    $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $config['params']['trno']]);
+    $this->logger->sbcwritelog($config['params']['trno'], $config, 'CHANGE STATUS', $config['params']['user'] . ' - From ' . $ourref . ' to ' . $config['params']['status']);
+    return ['status' => true, 'msg' => 'Update Status successfull...'];
+  } //end function
+
+
+  // insert and update item
+  public function additem($action, $config)
+  {
+    if ($this->othersClass->isposted($config)) {
+      return ['status' => false, 'msg' => 'Updating failed. Transaction has already been posted.'];
+    }
+    $data = [];
+    $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
+    $data['createby'] = $config['params']['user'];
+    $data['trno'] = $config['params']['trno'];
+    $data['comment'] = $config['params']['comment'];
+    $this->coreFunctions->sbcinsert($this->head, $data);
+    $this->logger->sbcwritelog($config['params']['trno'], $config, 'ADD COMMENT', $config['params']['user'] . ' - ' . $config['params']['comment']);
+    $csscomment = $this->openstock($config['params']['trno'], $config);
+    return ['status' => true, 'msg' => 'Successfully added.', 'griddata' => ['inventory' => $csscomment]];
+  } // end function
 
 
 
-      public function reportsetup($config)
-      {
-        $txtfield = $this->createreportfilter();
-        $txtdata = $this->reportparamsdata($config);
-        $modulename = $this->modulename;
-        $data = [];
-        $style = 'width:500px;max-width:500px;';
-        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
-      }
+  public function reportsetup($config)
+  {
+    $txtfield = $this->createreportfilter();
+    $txtdata = $this->reportparamsdata($config);
+    $modulename = $this->modulename;
+    $data = [];
+    $style = 'width:500px;max-width:500px;';
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+  }
 
 
-      public function createreportfilter()
-      {
-        $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
-        $col1 = $this->fieldClass->create($fields);
-        return array('col1' => $col1);
-      }
+  public function createreportfilter()
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
+    return array('col1' => $col1);
+  }
 
-      public function reportparamsdata($config)
-      {
-        return $this->coreFunctions->opentable(
-          "select 
+  public function reportparamsdata($config)
+  {
+    return $this->coreFunctions->opentable(
+      "select 
         'default' as print,
         '' as prepared,
         '' as approved,
         '' as received
         "
-        );
-      }
+    );
+  }
 
 
-      private function report_default_query($trno)
-      {
+  private function report_default_query($trno)
+  {
 
-        $query = "select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
+    $query = "select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,
     right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
     head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
     item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext, head.agent,
@@ -508,7 +508,7 @@ class cc
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn
-  
+
   public function reportdata($config)
   {
     $sitrno = $this->coreFunctions->getfieldvalue($this->head, 'sitrno', 'trno=?', [$config['params']['dataid']]);

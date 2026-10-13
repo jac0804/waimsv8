@@ -38,10 +38,10 @@ class en_gradecomponent
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -105,9 +105,9 @@ class en_gradecomponent
 
   public function checkGradecomp($data, $type = 'update')
   {
-    $qry = "select line as value from en_gradecomponent where gccode='".$data['gccode']."'";
+    $qry = "select line as value from en_gradecomponent where gccode='" . $data['gccode'] . "'";
     if ($type == 'update') {
-      $qry = "select line as value from en_gradecomponent where gccode='".$data['gccode']."' and line<>".$data['line'];
+      $qry = "select line as value from en_gradecomponent where gccode='" . $data['gccode'] . "' and line<>" . $data['line'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check == '') return false;
@@ -124,12 +124,11 @@ class en_gradecomponent
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
-
     }
     if ($row['line'] == 0) {
       $check = $this->checkGradecomp($row, 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$row['gccode'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $row['gccode'], 'row' => []];
       } else {
         $line = $this->coreFunctions->insertGetId($this->table, $data);
         if ($line != 0) {
@@ -143,7 +142,7 @@ class en_gradecomponent
     } else {
       $check = $this->checkGradecomp($row);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$row['gccode'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $row['gccode'], 'row' => []];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
@@ -174,7 +173,7 @@ class en_gradecomponent
         if ($data[$key]['line'] == 0) {
           $check = $this->checkGradecomp($data[$key], 'new');
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data[$key]['gccode'];
+            $msg .= "\n Duplicate entry for " . $data[$key]['gccode'];
           } else {
             $line = $this->coreFunctions->insertGetId($this->table, $data2);
             $this->logger->sbcmasterlog($data[$key]['line'], $config, ' CREATE - ' . $data[$key]['gccode']);
@@ -182,7 +181,7 @@ class en_gradecomponent
         } else {
           $check = $this->checkGradecomp($data[$key]);
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data[$key]['gccode'];
+            $msg .= "\n Duplicate entry for " . $data[$key]['gccode'];
           } else {
             $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data2['editby'] = $config['params']['user'];
@@ -192,7 +191,7 @@ class en_gradecomponent
       } // end if
     } // foreach
     $returndata = $this->loaddata($config);
-    return ['status' => true, 'msg' => 'All saved successfully. '.$msg, 'data' => $returndata];
+    return ['status' => true, 'msg' => 'All saved successfully. ' . $msg, 'data' => $returndata];
   } // end function 
 
   public function lookupsetup($config)
@@ -314,7 +313,8 @@ class en_gradecomponent
   public function reportparamsdata($config)
   {
     return $this->coreFunctions->opentable(
-      "select 'PDFM' as print, '' as prepared, '' as approved, '' as received");
+      "select 'PDFM' as print, '' as prepared, '' as approved, '' as received"
+    );
   }
 
   public function reportdata($config)

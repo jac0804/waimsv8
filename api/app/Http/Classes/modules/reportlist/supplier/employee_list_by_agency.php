@@ -32,12 +32,12 @@ class employee_list_by_agency
     public $directprint = false;
     public $reportParams = array('orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000');
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -202,7 +202,7 @@ class employee_list_by_agency
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col( '   Agency: ' . ($agencyname != '' ? strtoupper($agencyname) : 'ALL AGENCY') . '   Status: ' . $statuslabel, null, null, false, '', '', 'L', $font, '10', '', '', '');
+        $str .= $this->reporter->col('   Agency: ' . ($agencyname != '' ? strtoupper($agencyname) : 'ALL AGENCY') . '   Status: ' . $statuslabel, null, null, false, '', '', 'L', $font, '10', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 

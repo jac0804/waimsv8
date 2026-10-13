@@ -65,11 +65,11 @@ class bo
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -2121,12 +2121,12 @@ class bo
       $qty = $config['params']['data'][$this->dqty];
       $config['params']['line'] = $line;
     }
-      $dateTables = ['lastock'];
-      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-      $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
-      $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
-      $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
 
 
 
@@ -2165,7 +2165,7 @@ class bo
       }
     }
 
-       $hamt = $this->othersClass->sanitizekeyfieldFast('amt', $hamt, $lookups);
+    $hamt = $this->othersClass->sanitizekeyfieldFast('amt', $hamt, $lookups);
 
     $data = [
       'trno' => $trno,
@@ -2204,8 +2204,7 @@ class bo
 
 
     foreach ($data as $key => $value) {
-        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
-
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -3616,7 +3615,7 @@ class bo
     foreach ($data2 as $key => $value) {
       $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
       $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
-     
+
       if ($companyid == 10) { //afti
         if ($data[$key]->disc != "") {
           $computedata = $this->othersClass->computestock(

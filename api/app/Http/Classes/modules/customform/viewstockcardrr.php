@@ -30,10 +30,10 @@ class viewstockcardrr
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -210,16 +210,30 @@ class viewstockcardrr
       case 60: //TRANSPOWER
         $column = [
           'action',
-          'docno', 'dateid', 'listclientname', 'rrcost', 'disc', 'cost', 'rrqty', 'status', 'uom', 'rem', 'center', 'userid', 'loc', 'expiry',   'location'
+          'docno',
+          'dateid',
+          'listclientname',
+          'rrcost',
+          'disc',
+          'cost',
+          'rrqty',
+          'status',
+          'uom',
+          'rem',
+          'center',
+          'userid',
+          'loc',
+          'expiry',
+          'location'
         ];
 
         foreach ($column as $key => $value) {
-            $$value = $key;
+          $$value = $key;
         }
 
         //Document | Date | Name | Base Amount | Discount | Unit Cost | Quantity | Status | Trans.Uom | Remarks | Branch | Encoded | Location | Expiry
 
-        
+
         //document# | date | name |              discount | unit cost | quantity | status | transuom | remarks | branch encoded | location  | expiry
         break;
 
@@ -260,7 +274,7 @@ class viewstockcardrr
           'userid'
         ];
 
-        
+
         break;
     }
 
@@ -331,7 +345,7 @@ class viewstockcardrr
         break;
     }
 
-    if ($companyid != 47) { //not kitchenstar
+    if ($companyid != 47) { //not kitchenstar and jda
       if (isset($whname)) {
         $obj[0][$this->gridname]['columns'][$whname]['type'] = 'coldel';
       }
@@ -383,8 +397,8 @@ class viewstockcardrr
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'dateid.readonly', false);
     data_set($col1, 'luom.lookupclass', 'uomledger');
-  
-    if($config['params']['companyid'] == 60 && $moduletype=='INQUIRY'){
+
+    if ($config['params']['companyid'] == 60 && $moduletype == 'INQUIRY') {
       data_set($col1, 'luom.addedparams', ['itemid']);
     }
 
@@ -393,9 +407,24 @@ class viewstockcardrr
     //   array_push($fields, 'itemname');
     // }
 
-    array_push($fields, 'wh');
+    // array_push($fields, 'wh');
+    if ($companyid == 68) { // JDA - display name, wh code stays in data
+      array_push($fields, 'whname');
+    } else {
+      array_push($fields, 'wh');
+    }
     $col2 = $this->fieldClass->create($fields);
-    data_set($col2, 'wh.lookupclass', 'whledger');
+
+    if ($companyid == 68) { //jda
+      data_set($col2, 'whname.type', 'lookup');
+      data_set($col2, 'whname.lookupclass', 'whledger');
+      data_set($col2, 'whname.action', 'lookupclient'); 
+      data_set($col2, 'whname.label', 'Warehouse');
+      data_set($col2, 'whname.readonly', true);
+      data_set($col2, 'whname.labeldata', 'wh~whname');
+    } else {
+      data_set($col2, 'wh.lookupclass', 'whledger');
+    }
     data_set($col2, 'itemname.type', 'lookup');
     data_set($col2, 'itemname.lookupclass', 'lookupitem');
     data_set($col2, 'itemname.action', 'lookupbarcode');
@@ -415,16 +444,16 @@ class viewstockcardrr
   public function paramsdata($config)
   {
     $companyid = $config['params']['companyid'];
-    if($companyid==60 && $config['params']['moduletype']=='INQUIRY'){//transpower
-       $itemid = $config['params']['row']['itemid'];
-       $config['params']['itemid'] = $itemid;
-    }else{
-       $itemid = $config['params']['clientid'];
+    if ($companyid == 60 && $config['params']['moduletype'] == 'INQUIRY') { //transpower
+      $itemid = $config['params']['row']['itemid'];
+      $config['params']['itemid'] = $itemid;
+    } else {
+      $itemid = $config['params']['clientid'];
     }
 
     $uom = $this->coreFunctions->getfieldvalue('item', 'uom', 'itemid=?', [$itemid]);
     $wh = $this->companysetup->getwh($config['params']);
-    if ($companyid == 17) { //unihome
+    if ($companyid == 17 || $companyid==68) { //unihome and JDA
       $wh = '';
     }
 
@@ -438,7 +467,7 @@ class viewstockcardrr
     $item = $this->othersClass->getitemname($itemid);
     $data = $this->getbal($config, $itemid, $wh, $uom);
     if (!empty($data)) {
-      return $this->coreFunctions->opentable("select
+      $result = $this->coreFunctions->opentable("select
         " . $itemid . " as itemid,'" . $item[0]->barcode . "' as barcode , '" . $item[0]->itemname . "' as itemname, 
         " . $date . " as dateid,
         '$wh' as wh,
@@ -447,8 +476,17 @@ class viewstockcardrr
         '" . $data[0]->iss . "' as cr,
         '" . $data[0]->bal . "' as bal");
     } else {
-      return $this->coreFunctions->opentable("select " . $itemid . " as itemid,'" . $item[0]->barcode . "' as barcode , '" . $item[0]->itemname . "' as itemname, adddate(left(now(),10),-360) as dateid,'$wh' as wh, '$uom' as uom,'0.0' as db,'0.0' as cr,'0.0' as bal");
+      $result = $this->coreFunctions->opentable("select " . $itemid . " as itemid,'" . $item[0]->barcode . "' as barcode , '" . $item[0]->itemname . "' as itemname, adddate(left(now(),10),-360) as dateid,'$wh' as wh, '$uom' as uom,'0.0' as db,'0.0' as cr,'0.0' as bal");
     }
+
+    if ($companyid == 68) { // JDA - idagdag whname sa result, hindi na dadaan sa SQL string
+      $whname = $wh == '' ? '' : $wh . ' ~ ' . $this->coreFunctions->getfieldvalue('client', 'clientname', 'client=?', [$wh]); 
+      if (!empty($result)) {
+        $result[0]->whname = $whname;
+      }
+    }
+
+    return $result;
   }
 
   public function data()
@@ -469,13 +507,13 @@ class viewstockcardrr
     $wh = $config['params']['dataparams']['wh'];
     if (isset($config['params']['dataparams']['itemid'])) {
       $itemid = $config['params']['dataparams']['itemid'];
-    }else{
+    } else {
       $itemid = $config['params']['itemid'];
     }
     if ($wh == '') {
       $filterwh = '';
     } else {
-      $filterwh = " and wh.client='" . $wh . "'";
+      $filterwh = " and wh.client='" . $wh . "'"; 
     }
 
     $filtercenter = " and cntnum.center='" . $center . "' ";
@@ -558,6 +596,14 @@ class viewstockcardrr
         '0.0' as bal");
     }
 
+    if ($companyid == 68) { // JDA
+      // $whname = $wh == '' ? '' : $this->coreFunctions->getfieldvalue('client', 'clientname', 'client=?', [$wh]); 
+      $whname = $wh == '' ? '' : $wh . ' ~ ' . $this->coreFunctions->getfieldvalue('client', 'clientname', 'client=?', [$wh]); 
+      if (!empty($txtdata)) {
+        $txtdata[0]->whname = $whname;
+      }
+    }
+
     $dateexist = $this->coreFunctions->getfieldvalue("profile", "pvalue", "doc='SKRR' and psection='StartDate' and puser=?", [$config['params']['user']]);
     if ($dateexist == '') {
       $profile = ['doc' => 'SKRR', 'psection' => 'StartDate', 'pvalue' => $date, 'puser' => $config['params']['user']];
@@ -602,12 +648,12 @@ class viewstockcardrr
     return $data;
   } //end function
 
-  public function sbcscript($config){
+  public function sbcscript($config)
+  {
     if ($config['params']['companyid'] == 60) { //transpower
       return $this->sbcscript->skcustomform($config);
     } else {
       return true;
-    }   
+    }
   }
-
 } //end class

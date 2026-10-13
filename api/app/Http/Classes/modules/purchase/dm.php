@@ -100,11 +100,11 @@ class dm
     ['val' => 'all', 'label' => 'All', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -766,7 +766,7 @@ class dm
       $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
     }
 
-     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
 
     if (!$islocation) {
       switch ($companyid) {

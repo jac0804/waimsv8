@@ -42,10 +42,10 @@ class jc
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -287,7 +287,6 @@ class jc
       $str .= $this->reporter->col($data[$i]['subprojectname'], '100', null, false, $border, 'L', 'C', $font, $fontsize, '', '', '5px');
       $str .= $this->reporter->col($db, '100', null, false, $border, 'L', 'R', $font, $fontsize, '', '', '5px');
       $str .= $this->reporter->col($cr, '100', null, false, $border, 'LR', 'R', $font, $fontsize, '', '', '5px');
-
     }
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
@@ -356,7 +355,7 @@ class jc
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n", '', 'C');
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '40', '20', 120, 65);
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '40', '20', 120, 65);
 
 
     PDF::MultiCell(0, 0, "\n\n\n");
@@ -559,7 +558,7 @@ class jc
         PDF::MultiCell(10, 20, '', 'L', 'L', false, 0, '', '', false, 1);
         PDF::MultiCell(190, 20, $data[$i]['acnoname'], '', 'L', false, 0, '', '', false, 1);
         PDF::MultiCell(160, 20, $data[$i]['subprojectname'], 'L', 'C', false, 0, '', '', false, 1);
-   
+
         if ($data[$i]['db'] != 0) {
           $dbcur = "<span>&#8369;</span>";
         } else {
@@ -571,7 +570,7 @@ class jc
           $crcur = '';
         }
         PDF::SetFont('dejavusans', '', 11, '', true);
-      
+
         PDF::MultiCell(20, 20, $dbcur, 'L', 'C', false, 0, '', '', false, 1, true);
         PDF::SetFont($font, '', 10);
         PDF::MultiCell(80, 20, $db, '', 'R', false, 0, '', '', false, 1);
@@ -609,7 +608,7 @@ class jc
     PDF::MultiCell(253, 0, 'Prepared By: ', '', 'L', false, 0);
     PDF::MultiCell(153, 0, '', '', 'L', false, 0);
     PDF::MultiCell(253, 0, 'Checked By: ', '', 'L', false);
-  
+
 
     PDF::MultiCell(0, 0, "\n\n");
     PDF::SetFont($font, '', 10);
@@ -617,7 +616,7 @@ class jc
     PDF::MultiCell(233, 0, $params['params']['dataparams']['prepared'], 'B', 'C', false, 0);
     PDF::MultiCell(173, 0, '', '', 'L', false, 0);
     PDF::MultiCell(233, 0, $params['params']['dataparams']['approved'], 'B', 'C', false, 0);
-   
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 }

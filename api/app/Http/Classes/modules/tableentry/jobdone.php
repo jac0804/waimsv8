@@ -36,10 +36,10 @@ class jobdone
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -121,7 +121,7 @@ class jobdone
         $data = $config['params']['data'];
         $config['params']['trno'] = $config['params']['tableid'];
         $data2 = [];
-        
+
         $companyid = $config['params']['companyid'];
         $dateTables = [$this->table];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -129,7 +129,7 @@ class jobdone
         foreach ($data as $key => $value) {
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
                 if ($data[$key]['rem'] == '') {
                     return ['status' => false, 'msg' => 'Action/Job Done is empty', 'data' => []];
@@ -159,7 +159,7 @@ class jobdone
         $row = $config['params']['row'];
         $config['params']['trno'] = $config['params']['tableid'];
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
         if ($row['bgcolor'] != '') {
             if ($row['rem'] == '') {

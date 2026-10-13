@@ -44,7 +44,14 @@ class othercharges
   // private $stockselect;
 
   private $fields = [
-    'amt', 'byear', 'bmonth', 'center', 'clientid', 'rem', 'isposted', 'clientname'
+    'amt',
+    'byear',
+    'bmonth',
+    'center',
+    'clientid',
+    'rem',
+    'isposted',
+    'clientname'
   ];
   //   private $fields = [
   //     'docno', 'dateid', 'empid', 'remarks', 'acno', 'amt', 'w1', 'w2', 'w3', 'w4', 'w5',
@@ -65,11 +72,11 @@ class othercharges
     ['val' => 'posted', 'label' => 'Without Balance', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -160,7 +167,9 @@ class othercharges
 
     $tab = [$this->gridname => [
       'gridcolumns' => [
-        'action', 'description', 'amt'
+        'action',
+        'description',
+        'amt'
       ]
     ]];
 
@@ -224,19 +233,13 @@ class othercharges
     return array('col1' => $col1, 'col2' => $col2);
   }
 
-  public function newclient($config)
-  {
-    
-  }
+  public function newclient($config) {}
 
-  private function resetdata($client = '')
-  {
-    
-  }
+  private function resetdata($client = '') {}
 
   public function loadheaddata($config)
   {
-    
+
     $clientid = $config['params']['clientid'];
 
     if ($clientid == 0) {
@@ -309,7 +312,7 @@ class othercharges
         "CREATE - NAME: " . $head['empname'] . ", ACCNT: " . $head['acnoname'] . ", AMT: " . $head['amt'] . ", BAL: " . $balance . ""
       );
     }
-    
+
     return ['status' => $msg == '' ? true : false, 'msg' => $msg, 'clientid' => $clientid];
   } // end function
 

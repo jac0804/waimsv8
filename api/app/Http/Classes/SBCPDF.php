@@ -1350,22 +1350,44 @@ class SBCPDF
         }
     }
 
-    public function estimateLines($text, $colWidthPx, $fontSizePt = 10, $pad = '6px', $isBold = false)
+    private function textWidthPx($text, $fontPx, $isBold = false)
+    {
+        $w = 0;
+        foreach (preg_split('//u', (string) $text, -1, PREG_SPLIT_NO_EMPTY) as $ch) {
+            if (ctype_upper($ch))                $w += 0.70;
+            elseif (ctype_digit($ch))            $w += 0.56;
+            elseif (ctype_lower($ch))            $w += 0.52;
+            elseif ($ch === ' ')                 $w += 0.28;
+            elseif (strpos('.,-()/:;\'', $ch) !== false) $w += 0.33;
+            else                                 $w += 0.60;
+        }
+        return $w * $fontPx * ($isBold ? 1.08 : 1);
+    }
+
+    public function estimateLines($text, $colWidthPx, $fontSizePt = 10, $pad = '2px', $isBold = false)
     {
         if ($text === null || $text === '') return 1;
-
-        $paddingPx = $this->parseHorizontalPadding($pad);
-        $usableWidth = max(1, $colWidthPx - $paddingPx);
-
-        $fontSizePx = $fontSizePt * 1.333;
-        $avgCharWidth = $fontSizePx * 0.62;
-        if ($isBold) {
-            $avgCharWidth *= 1.08;
+        $usable = max(1, $colWidthPx - $this->parseHorizontalPadding($pad));
+        $total = 0;
+        foreach (preg_split('/<br\s*\/?>|\R/i', (string) $text) as $para) {
+            $lines = 1;
+            $cur = 0;
+            foreach (preg_split('/(?<=[\s-])/u', $para, -1, PREG_SPLIT_NO_EMPTY) as $tok) {
+                $tw = $this->textWidthPx($tok, $fontSizePt * 1.333, $isBold);
+                if ($cur > 0 && $cur + $tw > $usable) {
+                    $lines++;
+                    $cur = 0;
+                }
+                if ($tw > $usable) {                      // long token, hard split
+                    $lines += (int) ceil($tw / $usable) - 1;
+                    $cur = fmod($tw, $usable);
+                } else {
+                    $cur += $tw;
+                }
+            }
+            $total += $lines;
         }
-
-        $charsPerLine = max(1, (int) floor($usableWidth / $avgCharWidth));
-
-        return max(1, (int) ceil(mb_strlen($text) / $charsPerLine));
+        return max(1, $total);
     }
 
     public function estimateRowLines(array $fields, $fontSizePt = 10)
@@ -1375,7 +1397,7 @@ class SBCPDF
             foreach ($fields as $field) {
                 $text   = $field[0];
                 $width  = $field[1];
-                $pad    = isset($field[2]) ? $field[2] : '6px'; // same default as your existing col() calls
+                $pad    = isset($field[2]) ? $field[2] : '2px'; // same default as your existing col() calls
                 $isBold = isset($field[3]) ? $field[3] : false;
                 $max = max($max, $this->estimateLines($text, $width, $fontSizePt, $pad, $isBold));
             }

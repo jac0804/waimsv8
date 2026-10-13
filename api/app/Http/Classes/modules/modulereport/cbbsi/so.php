@@ -35,9 +35,9 @@ class so
   private $reporter;
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -128,7 +128,7 @@ class so
       left join uom on uom.itemid=item.itemid and uom.uom=stock.uom
       left join hheadinfotrans as info on info.trno=head.trno
       where head.doc='so' and head.trno='$trno' order by line";
-    
+
 
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
@@ -447,7 +447,7 @@ class so
           PDF::MultiCell(50, 0, 'Terms: ', '', 'L', false, 0, '',  '');
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(100, 0, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), 'B', 'L', false, 1, '',  '');
-          
+
           PDF::SetFont($fontbold, '', $fontsize);
           PDF::MultiCell(80, 0, '', '', 'L', false, 0, '',  '');
           PDF::SetFont($font, '', $fontsize);

@@ -36,27 +36,40 @@ class en_modeofpayment
   public $tablelogs = 'masterfile_log';
   public $tablelogs_del = 'del_masterfile_log';
   private $fields = [
-    'code', 'deductpercent', 'modeofpayment', 'months',
-    'perc1', 'date1',
-    'perc2', 'date2',
-    'perc3', 'date3',
-    'perc4', 'date4',
-    'perc5', 'date5',
-    'perc6', 'date6',
-    'perc7', 'date7',
-    'perc8', 'date8',
-    'perc9', 'date9',
-    'perc10', 'date10'
+    'code',
+    'deductpercent',
+    'modeofpayment',
+    'months',
+    'perc1',
+    'date1',
+    'perc2',
+    'date2',
+    'perc3',
+    'date3',
+    'perc4',
+    'date4',
+    'perc5',
+    'date5',
+    'perc6',
+    'date6',
+    'perc7',
+    'date7',
+    'perc8',
+    'date8',
+    'perc9',
+    'date9',
+    'perc10',
+    'date10'
   ];
   public $showclosebtn = false;
   private $enrollmentlookup;
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -77,17 +90,30 @@ class en_modeofpayment
   {
     $tab = [$this->gridname => ['gridcolumns' => [
       'action',
-      'code', 'modeofpayment', 'deductpercent', 'months',
-      'perc1', 'date1',
-      'perc2', 'date2',
-      'perc3', 'date3',
-      'perc4', 'date4',
-      'perc5', 'date5',
-      'perc6', 'date6',
-      'perc7', 'date7',
-      'perc8', 'date8',
-      'perc9', 'date9',
-      'perc10', 'date10'
+      'code',
+      'modeofpayment',
+      'deductpercent',
+      'months',
+      'perc1',
+      'date1',
+      'perc2',
+      'date2',
+      'perc3',
+      'date3',
+      'perc4',
+      'date4',
+      'perc5',
+      'date5',
+      'perc6',
+      'date6',
+      'perc7',
+      'date7',
+      'perc8',
+      'date8',
+      'perc9',
+      'date9',
+      'perc10',
+      'date10'
     ]]];
 
     $stockbuttons = ['save', 'delete'];
@@ -190,12 +216,12 @@ class en_modeofpayment
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-           $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         if ($data[$key]['line'] == 0) {
           $check = $this->checkMOP($data[$key], 'new');
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data2['code'];
+            $msg .= "\n Duplicate entry for " . $data2['code'];
           } else {
             $line = $this->coreFunctions->insertGetId($this->table, $data2);
             $this->logger->sbcmasterlog($data[$key]['line'], $config, ' CREATE - ' . $data[$key]['code']);
@@ -203,7 +229,7 @@ class en_modeofpayment
         } else {
           $check = $this->checkMOP($data[$key]);
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data2['code'];
+            $msg .= "\n Duplicate entry for " . $data2['code'];
           } else {
             $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data2['editby'] = $config['params']['user'];
@@ -231,7 +257,7 @@ class en_modeofpayment
     if ($row['line'] == 0) {
       $check = $this->checkMOP($row, 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$data['code'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $data['code'], 'row' => []];
       } else {
         $line = $this->coreFunctions->insertGetId($this->table, $data);
         if ($line != 0) {
@@ -245,7 +271,7 @@ class en_modeofpayment
     } else {
       $check = $this->checkMOP($row);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$data['code'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $data['code'], 'row' => []];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
@@ -261,9 +287,9 @@ class en_modeofpayment
 
   public function checkMOP($data, $type = 'update')
   {
-    $qry = "select line as value from en_modeofpayment where code='".$data['code']."'";
+    $qry = "select line as value from en_modeofpayment where code='" . $data['code'] . "'";
     if ($type == 'update') {
-      $qry = "select line as value from en_modeofpayment where code='".$data['code']."' and line<>".$data['line'];
+      $qry = "select line as value from en_modeofpayment where code='" . $data['code'] . "' and line<>" . $data['line'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check != '') return true;

@@ -33,9 +33,9 @@ class sj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -58,7 +58,7 @@ class sj
       [
         ['label' => 'DELIVERY RECEIPT', 'value' => '0', 'color' => 'blue'],
         ['label' => 'SALES INVOICE', 'value' => '1', 'color' => 'blue'],
-       // ['label' => 'NEW SALES INVOICE', 'value' => '2', 'color' => 'blue'],
+        // ['label' => 'NEW SALES INVOICE', 'value' => '2', 'color' => 'blue'],
       ]
     );
 
@@ -453,10 +453,10 @@ class sj
           $amt = isset($arr_amt[$r]) ? $arr_amt[$r] : '';
           $sub = isset($arr_ext[$r]) ? $arr_ext[$r] : '';
           $totalamt = $data[$i]['amt'] * $data[$i]['qty'];
-          
-          $tl='';
-          if($r==0){
-            $tl=number_format($totalamt, 2);
+
+          $tl = '';
+          if ($r == 0) {
+            $tl = number_format($totalamt, 2);
           }
 
           PDF::MultiCell(100, 0, '', '', 'L', false, 0, '', '', true, 1);

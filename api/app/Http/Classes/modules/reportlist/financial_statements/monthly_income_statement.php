@@ -29,12 +29,12 @@ class monthly_income_statement
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -645,7 +645,7 @@ class monthly_income_statement
                 $a[] = array(
                   'acno' => $result2[$b]['acno'],
                   'acnoname' =>
-                    'TOTAL ' . $result2[$b]['acnoname'],
+                  'TOTAL ' . $result2[$b]['acnoname'],
                   'levelid' => $result2[$b]['levelid'],
                   'cat' => $result2[$b]['cat'],
                   'parent' => $result2[$b]['parent'],

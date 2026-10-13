@@ -36,9 +36,9 @@ class ll
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -616,8 +616,13 @@ class ll
         $arr_consignee = $this->reporter->fixcolumn([$consignee], '36', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([
-          $arr_ref, $arr_wbdate, $arr_uom, $arr_qty,
-          $arr_amt, $arr_consignee, $arr_shipper
+          $arr_ref,
+          $arr_wbdate,
+          $arr_uom,
+          $arr_qty,
+          $arr_amt,
+          $arr_consignee,
+          $arr_shipper
         ]);
 
         PDF::SetFont($font, '', 2);

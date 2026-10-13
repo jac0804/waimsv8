@@ -36,8 +36,15 @@ class en_credentials
   public $tablelogs = 'masterfile_log';
   public $tablelogs_del = 'del_masterfile_log';
   private $fields = [
-    'credentials', 'amt', 'particulars', 'percentdisc',
-    'credentialcode', 'acnoid', 'feesid', 'subjectid', 'scheme'
+    'credentials',
+    'amt',
+    'particulars',
+    'percentdisc',
+    'credentialcode',
+    'acnoid',
+    'feesid',
+    'subjectid',
+    'scheme'
   ];
   public $showclosebtn = false;
   private $enrollmentlookup;
@@ -45,10 +52,10 @@ class en_credentials
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -68,8 +75,14 @@ class en_credentials
   public function createTab($config)
   {
     $tab = [$this->gridname => ['gridcolumns' => [
-      'action', 'credentialcode', 'credentials', 'particulars', 'amt', 'percentdisc',
-      'acno',  'feescode'
+      'action',
+      'credentialcode',
+      'credentials',
+      'particulars',
+      'amt',
+      'percentdisc',
+      'acno',
+      'feescode'
     ]]];
 
     $stockbuttons = ['save', 'delete'];
@@ -154,7 +167,7 @@ class en_credentials
         if ($data[$key]['line'] == 0) {
           $check = $this->checkCredential($data[$key], 'new');
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data2['credentialcode'];
+            $msg .= "\n Duplicate entry for " . $data2['credentialcode'];
           } else {
             $line = $this->coreFunctions->insertGetId($this->table, $data2);
             $this->logger->sbcmasterlog($data[$key]['line'], $config, ' CREATE - ' . $data[$key]['credentialcode']);
@@ -162,7 +175,7 @@ class en_credentials
         } else {
           $check = $this->checkCredential($data[$key]);
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data2['credentialcode'];
+            $msg .= "\n Duplicate entry for " . $data2['credentialcode'];
           } else {
             $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data2['editby'] = $config['params']['user'];
@@ -172,7 +185,7 @@ class en_credentials
       } // end if
     } // foreach
     $returndata = $this->loaddata($config);
-    return ['status' => true, 'msg' => 'All saved successfully.'.$msg, 'data' => $returndata];
+    return ['status' => true, 'msg' => 'All saved successfully.' . $msg, 'data' => $returndata];
   } // end function  
 
   public function save($config)
@@ -190,7 +203,7 @@ class en_credentials
     if ($row['line'] == 0) {
       $check = $this->checkCredential($row, 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$data['credentialcode'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $data['credentialcode'], 'row' => []];
       } else {
         $line = $this->coreFunctions->insertGetId($this->table, $data);
         if ($line != 0) {
@@ -204,7 +217,7 @@ class en_credentials
     } else {
       $check = $this->checkCredential($row);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$data['credentialcode'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $data['credentialcode'], 'row' => []];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
@@ -220,9 +233,9 @@ class en_credentials
 
   public function checkCredential($data, $type = 'update')
   {
-    $qry = "select line as value from en_credentials where credentialcode='".$data['credentialcode']."'";
+    $qry = "select line as value from en_credentials where credentialcode='" . $data['credentialcode'] . "'";
     if ($type == 'update') {
-      $qry = "select line as value from en_credentials where credentialcode='".$data['credentialcode']."' and line<>".$data['line'];
+      $qry = "select line as value from en_credentials where credentialcode='" . $data['credentialcode'] . "' and line<>" . $data['line'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check != '') return true;

@@ -34,9 +34,9 @@ class supplier
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -46,7 +46,7 @@ class supplier
 
     public function createreportfilter($config)
     {
-        $fields = ['radioprint','start', 'end', 'radiocustreporttype', 'prepared', 'approved', 'received', 'print'];
+        $fields = ['radioprint', 'start', 'end', 'radiocustreporttype', 'prepared', 'approved', 'received', 'print'];
 
         $col1 = $this->fieldClass->create($fields);
         data_set(
@@ -398,13 +398,13 @@ class supplier
 
         $str .= $this->reporter->beginreport();
 
-    
+
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->letterhead($center, $username);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-    
+
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
@@ -566,7 +566,7 @@ class supplier
         $str .= $this->reporter->letterhead($center, $username);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-    
+
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
@@ -729,7 +729,7 @@ class supplier
         $str .= $this->reporter->letterhead($center, $username);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-    
+
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
@@ -891,7 +891,7 @@ class supplier
         $str .= $this->reporter->letterhead($center, $username);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-    
+
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
@@ -1072,7 +1072,7 @@ class supplier
 
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
-    
+
 
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "SUPPLIER LEDGER - ACCOUNTS RECEIVABLE", '', 'L', false);
@@ -1163,7 +1163,7 @@ class supplier
             $balance = $balance < 0 ? '-' : $balance;
 
             PDF::SetFont($font, '', $fontsize);
-            
+
             PDF::MultiCell(110, 15, $data1->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(70, 15, $data1->dateid, '', 'C', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(140, 15, $data1->rem, '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1184,7 +1184,7 @@ class supplier
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize);
-        
+
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(140, 15, 'Grand Total : ', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1252,10 +1252,10 @@ class supplier
 
         PDF::SetFont($fontbold, '', 12);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-        
+
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
-    
+
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "SUPPLIER LEDGER - ACCOUNTS PAYABLE", '', 'L', false);
 
@@ -1267,7 +1267,7 @@ class supplier
         PDF::MultiCell(130, 20, "View Accounts from : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(200, 20, $start . ' - ' . $end, '', 'L', false);
-        
+
 
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(100, 20, "Customer : ", '', 'L', false, 0);
@@ -1309,7 +1309,7 @@ class supplier
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(250, 20, (isset($data[0]->contact) ? $data[0]->contact : ''), '', 'L', false);
 
-        
+
 
         PDF::SetFont($font, '', 5);
         PDF::MultiCell(700, 0, "", 'T', 'L', false, 0);
@@ -1388,7 +1388,7 @@ class supplier
             $debit = $debit < 0 ? '-' : $debit;
 
             $rbalance += $data1->bal;
-            
+
 
             if ($rbalance == 0) {
                 $balance = '-';
@@ -1498,10 +1498,10 @@ class supplier
 
         PDF::SetFont($fontbold, '', 12);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-        
+
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
-    
+
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "SUPPLIER LEDGER - POSTDATED CHECKS", '', 'L', false);
 
@@ -1591,7 +1591,7 @@ class supplier
             $balance = $balance < 0 ? '-' : $balance;
 
             PDF::SetFont($font, '', $fontsize);
-            
+
             PDF::MultiCell(110, 15, $data1->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(70, 15, $data1->dateid, '', 'C', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(140, 15, $data1->rem, '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1612,7 +1612,7 @@ class supplier
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize);
-        
+
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(140, 15, 'Grand Total : ', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1679,10 +1679,10 @@ class supplier
 
         PDF::SetFont($fontbold, '', 12);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-        
+
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
-    
+
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "SUPPLIER LEDGER - INVENTORY", '', 'L', false);
 
@@ -1775,7 +1775,7 @@ class supplier
             $rrcost = $rrcost < 0 ? '-' : $rrcost;
 
             PDF::SetFont($font, '', $fontsize);
-            
+
             PDF::MultiCell(110, 15, $data1->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(70, 15, date('Y-m-d', strtotime($data1->dateid)), '', 'C', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(110, 15, $data1->barcode, '', 'L', 0, 0, '', '', true, 0, true, false);

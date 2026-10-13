@@ -32,33 +32,35 @@ class viewotherfees
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
     $this->enrollmentlookup = new enrollmentlookup;
   }
 
-  public function getAttrib(){
-    $attrib = array('load'=>0
-                    );
+  public function getAttrib()
+  {
+    $attrib = array(
+      'load' => 0
+    );
     return $attrib;
-}
+  }
 
   public function createTab($config)
   {
-    $tab = [$this->gridname => ['gridcolumns' => ['feescode','rem','isamt','acno','acnoname']]];
+    $tab = [$this->gridname => ['gridcolumns' => ['feescode', 'rem', 'isamt', 'acno', 'acnoname']]];
 
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
-    
+
     $obj[0][$this->gridname]['columns'][0]['style'] = "width:40px;whiteSpace: normal;min-width:40px;"; //action
-    $obj[0][$this->gridname]['columns'][1]['readonly'] = true; 
-    $obj[0][$this->gridname]['columns'][2]['readonly'] = true; 
-    $obj[0][$this->gridname]['columns'][4]['readonly'] = true; 
+    $obj[0][$this->gridname]['columns'][1]['readonly'] = true;
+    $obj[0][$this->gridname]['columns'][2]['readonly'] = true;
+    $obj[0][$this->gridname]['columns'][4]['readonly'] = true;
 
     return $obj;
   }
@@ -70,13 +72,14 @@ class viewotherfees
     return $obj;
   }
 
-  private function loaddataperrecord($trno,$line){
+  private function loaddataperrecord($trno, $line)
+  {
     $select = $this->selectqry();
-    $qry = $select." FROM en_sootherfees as stock left join transnum as num on num.trno=stock.trno left join en_fees as f on f.line=stock.feesid left join coa on coa.acnoid=stock.acnoid  where stock.trno=? and stock.line=? 
+    $qry = $select . " FROM en_sootherfees as stock left join transnum as num on num.trno=stock.trno left join en_fees as f on f.line=stock.feesid left join coa on coa.acnoid=stock.acnoid  where stock.trno=? and stock.line=? 
       union all 
-      ".$select." FROM en_glotherfees as stock left join transnum as num on num.trno=stock.trno left join en_fees as f on f.line=stock.feesid left join coa on coa.acnoid=stock.acnoid  where stock.trno=? and stock.line=?  ";
+      " . $select . " FROM en_glotherfees as stock left join transnum as num on num.trno=stock.trno left join en_fees as f on f.line=stock.feesid left join coa on coa.acnoid=stock.acnoid  where stock.trno=? and stock.line=?  ";
 
-    $data = $this->coreFunctions->opentable($qry,[$trno,$line,$trno,$line]);    
+    $data = $this->coreFunctions->opentable($qry, [$trno, $line, $trno, $line]);
     return $data;
   }
 
@@ -87,17 +90,19 @@ class viewotherfees
     '' as errcolor  ";
   }
 
-  public function loaddata($config){  
+  public function loaddata($config)
+  {
     $tableid = $config['params']['tableid'];
     $doc = $config['params']['doc'];
-    
+
     switch ($doc) {
-      case 'ER': case 'ED':
+      case 'ER':
+      case 'ED':
         $table = 'en_sjotherfees';
         $htable = 'glotherfees';
         $tablenum = 'cntnum';
         break;
-        default:
+      default:
         $table = 'en_sootherfees';
         $htable = 'en_glotherfees';
         $tablenum = 'transnum';
@@ -106,39 +111,11 @@ class viewotherfees
 
     $select = $this->selectqry();
 
-    $qry =  $select." FROM ".$table." as stock left join ".$tablenum." as num on num.trno=stock.trno left join en_fees as f on f.line=stock.feesid left join coa on coa.acnoid=stock.acnoid  where stock.trno=? 
+    $qry =  $select . " FROM " . $table . " as stock left join " . $tablenum . " as num on num.trno=stock.trno left join en_fees as f on f.line=stock.feesid left join coa on coa.acnoid=stock.acnoid  where stock.trno=? 
       union all 
-      ".$select." FROM ".$htable." as stock left join ".$tablenum." as num on num.trno=stock.trno left join en_fees as f on f.line=stock.feesid left join coa on coa.acnoid=stock.acnoid  where stock.trno=? ";
+      " . $select . " FROM " . $htable . " as stock left join " . $tablenum . " as num on num.trno=stock.trno left join en_fees as f on f.line=stock.feesid left join coa on coa.acnoid=stock.acnoid  where stock.trno=? ";
 
-    $data = $this->coreFunctions->opentable($qry,[$tableid,$tableid]);
+    $data = $this->coreFunctions->opentable($qry, [$tableid, $tableid]);
     return $data;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 } //end class

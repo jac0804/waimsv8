@@ -98,11 +98,11 @@ class cm
     ['val' => 'all', 'label' => 'All', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -517,12 +517,12 @@ class cm
 
     $column = ['action', 'itemdescription', 'rrqty', 'uom', 'kgs', 'isamt', 'disc', 'ext', 'cost', 'wh', 'whname', 'ref', 'loc', 'expiry', 'rem', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount'];
     $sortcolumn = ['action', 'itemdescription', 'rrqty', 'uom', 'kgs', 'isamt', 'disc', 'ext', 'cost', 'wh', 'whname', 'ref', 'loc', 'expiry', 'rem', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount'];
-    
-   if ($companyid == 60) { //transpower
-    $position = array_search('isamt', $column) + 1; // position right after isamt
-    array_splice($column, $position, 0, 'agentamt'); // insert agentamt sa $column 0 means walang tatanggalin, insert lang 
-    array_splice($sortcolumn, $position, 0, 'agentamt'); // insert agentamt sa $sortcolumn
-   }
+
+    if ($companyid == 60) { //transpower
+      $position = array_search('isamt', $column) + 1; // position right after isamt
+      array_splice($column, $position, 0, 'agentamt'); // insert agentamt sa $column 0 means walang tatanggalin, insert lang 
+      array_splice($sortcolumn, $position, 0, 'agentamt'); // insert agentamt sa $sortcolumn
+    }
 
     switch ($systemtype) {
       case 'REALESTATE':
@@ -540,9 +540,9 @@ class cm
 
 
     foreach ($column as $key => $value) {
-            $$value = $key;
-        }
-   
+      $$value = $key;
+    }
+
 
 
     if ($invonly) {
@@ -621,9 +621,9 @@ class cm
 
     if (!$isexpiry) {
 
-    //  if(!$islocation) {
-        // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-        // }
+      //  if(!$islocation) {
+      // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+      // }
       // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
     } else {
@@ -719,15 +719,15 @@ class cm
       $obj[0]['inventory']['columns'][$wh]['type'] = 'coldel';
     }
 
-    if($companyid == 60) { //transpower
-        $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
-        $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
-        $obj[0]['inventory']['columns'][$agentamt]['style'] = 'text-align: center; width: 100px;whiteSpace: normal;min-width:100px;max-width:100px;';
+    if ($companyid == 60) { //transpower
+      $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
+      $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
+      $obj[0]['inventory']['columns'][$agentamt]['style'] = 'text-align: center; width: 100px;whiteSpace: normal;min-width:100px;max-width:100px;';
     }
 
-     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
-     $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-     $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+    $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+    $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
 
     if (!$islocation) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
@@ -1125,7 +1125,7 @@ class cm
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1227,12 +1227,12 @@ class cm
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $qty_dec = 0;
     }
-    $addfield='';    
-     switch ($companyid) {
-        case 60: //transpower
+    $addfield = '';
+    switch ($companyid) {
+      case 60: //transpower
         $addfield = ",format(stock.agentamt,2) as agentamt";
         break;
-     }
+    }
 
 
     $sqlselect = "select item.brand as brand,
@@ -2156,7 +2156,7 @@ class cm
 
   // insert and update item
   public function additem($action, $config, $setlog = false)
-  {  
+  {
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $classname = __NAMESPACE__ . '\\cm';
     $config['docmodule'] = new $classname;
@@ -2235,9 +2235,9 @@ class cm
       }
     }
 
-     if ($companyid == 60) { //transpower
+    if ($companyid == 60) { //transpower
       if (isset($config['params']['data']['agentamt'])) {
-       $agentamt = $config['params']['data']['agentamt'];
+        $agentamt = $config['params']['data']['agentamt'];
       }
     }
 
@@ -2361,7 +2361,7 @@ class cm
     }
 
     foreach ($data as $key => $value) {
-       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -2607,10 +2607,10 @@ class cm
     $dateid = $this->coreFunctions->getfieldvalue($this->head, 'dateid', 'trno=?', [$trno]);
     $rows = [];
 
-      $addf="";
-      if ($companyid == 60) { //transpower
-      $addf=", stock.agentamt";
-      }
+    $addf = "";
+    if ($companyid == 60) { //transpower
+      $addf = ", stock.agentamt";
+    }
 
 
     foreach ($config['params']['rows'] as $key => $value) {
@@ -2688,10 +2688,10 @@ class cm
     $dateid = $this->coreFunctions->getfieldvalue($this->head, 'dateid', 'trno=?', [$trno]);
     $rows = [];
 
-      $addf="";
-      if ($companyid == 60) { //transpower
-      $addf=", stock.agentamt";
-      }
+    $addf = "";
+    if ($companyid == 60) { //transpower
+      $addf = ", stock.agentamt";
+    }
 
     foreach ($config['params']['rows'] as $key => $value) {
       $qry = "
@@ -3000,10 +3000,10 @@ class cm
     if ($config['params']['companyid'] == 60) { //transpower
       $isposted = $this->othersClass->isposted2($config['params']['trno'], $this->tablenum);
       if (!$isposted) {
-          $result = $this->posttrans($config);
-          if (!$result['status']) {
-              return ['status' => false, 'msg' => $result['msg']];
-          }
+        $result = $this->posttrans($config);
+        if (!$result['status']) {
+          return ['status' => false, 'msg' => $result['msg']];
+        }
       }
       $isreload = true;
     }
@@ -3051,9 +3051,9 @@ class cm
     foreach ($data2 as $key => $value) {
 
       $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
-      $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])) ,$lookups);
-      
-      
+      $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
+
+
       $computedata = $this->othersClass->computestock(
         $damt * $head['forex'],
         $data[$key]->disc,

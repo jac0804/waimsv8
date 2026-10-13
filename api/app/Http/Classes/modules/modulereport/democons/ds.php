@@ -34,10 +34,10 @@ class ds
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -45,17 +45,19 @@ class ds
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter($config){
-    $fields = ['radioprint', 'prepared','approved', 'received','print'];
-    $col1 = $this->fieldClass->create($fields);           
+  public function createreportfilter($config)
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
     ]);
-    
-    return array('col1'=>$col1);
+
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     $user = $config['params']['user'];
     $username = $this->coreFunctions->datareader("select name as value from useraccess where username =?", [$config['params']['user']]);
     return $this->coreFunctions->opentable("select 
@@ -66,9 +68,10 @@ class ds
     ");
   }
 
-  public function report_default_query($filters){
+  public function report_default_query($filters)
+  {
     $trno = md5($filters['params']['dataid']);
-    $query="
+    $query = "
     select head.trno, date(head.dateid) as dateid, head.docno, 
     coa.acnoname as clientname, coa.acno,
     coa.acnoname, client.client, detail.ref,
@@ -96,7 +99,8 @@ class ds
     return $result;
   }
 
-  public function reportplotting($params, $data) {
+  public function reportplotting($params, $data)
+  {
     return $this->default_DS_PDF($params, $data);
   }
 
@@ -132,12 +136,12 @@ class ds
     // MultiCell(width, height, txt, border, align, x, y)
     // write2DBarcode(code, type, x, y, width, height, style, align)
 
-  
+
     PDF::MultiCell(0, 0, "\n");
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(0, 0, $headerdata[0]->address."\n".$headerdata[0]->tel."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n\n\n", '', 'C');
 
     PDF::Image('public/images/reports/mdc.jpg', '40', '20', 120, 65);
     PDF::Image('public/images/reports/tuv.jpg', '640', '20', 120, 65);
@@ -164,7 +168,7 @@ class ds
     PDF::MultiCell(100, 0, (isset($data[0]->dateid) ? $data[0]->dateid : ''), 'B', 'L', false, 0, '',  '');
 
     PDF::MultiCell(0, 0, "\n\n\n");
-    
+
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', 'T');
 
@@ -183,7 +187,7 @@ class ds
 
   public function default_DS_PDF($params, $data)
   {
-   
+
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
     $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
@@ -201,41 +205,41 @@ class ds
     }
     $this->default_DS_header_PDF($params, $data);
 
-    
+
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', '');
     $countarr = 0;
-    
+
     if (!empty($data)) {
       $totaldb = 0;
       $totalcr = 0;
       for ($i = 0; $i < count($data); $i++) {
-       
+
 
         $maxrow = 1;
-      
+
 
         $acno = $data[$i]->acno;
         $acnoname = $data[$i]->acnoname;
         $ref = $data[$i]->ref;
         $postdate = $data[$i]->postdate;
-        $debit = number_format($data[$i]->db,$decimalcurr);
-        $credit = number_format($data[$i]->cr,$decimalcurr);
+        $debit = number_format($data[$i]->db, $decimalcurr);
+        $credit = number_format($data[$i]->cr, $decimalcurr);
         $client = $data[$i]->client;
         $debit = $debit < 0 ? '-' : $debit;
         $credit = $credit < 0 ? '-' : $credit;
 
-        $arr_acno = $this->reporter->fixcolumn([$acno],'16',0);
-        $arr_acnoname = $this->reporter->fixcolumn([$acnoname],'35',0);
-        $arr_ref = $this->reporter->fixcolumn([$ref],'16',0);
-        $arr_postdate = $this->reporter->fixcolumn([$postdate],'16',0);
-        $arr_debit = $this->reporter->fixcolumn([$debit],'13',0);
-        $arr_credit = $this->reporter->fixcolumn([$credit],'13',0);
-        $arr_client = $this->reporter->fixcolumn([$client],'16',0);
+        $arr_acno = $this->reporter->fixcolumn([$acno], '16', 0);
+        $arr_acnoname = $this->reporter->fixcolumn([$acnoname], '35', 0);
+        $arr_ref = $this->reporter->fixcolumn([$ref], '16', 0);
+        $arr_postdate = $this->reporter->fixcolumn([$postdate], '16', 0);
+        $arr_debit = $this->reporter->fixcolumn([$debit], '13', 0);
+        $arr_credit = $this->reporter->fixcolumn([$credit], '13', 0);
+        $arr_client = $this->reporter->fixcolumn([$client], '16', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_client]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(90, 0, (isset($arr_acno[$r]) ? $arr_acno[$r] : ''), '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(210, 0, (isset($arr_acnoname[$r]) ? $arr_acnoname[$r] : ''), '', 'L', false, 0, '', '', false, 1);
@@ -247,7 +251,7 @@ class ds
         }
         $totaldb += $data[$i]->db;
         $totalcr += $data[$i]->cr;
-    
+
         if (intVal($i) + 1 == $page) {
           $this->default_DS_header_PDF($params, $data);
           $page += $count;
@@ -257,7 +261,7 @@ class ds
 
 
     PDF::SetFont($font, '', 5);
-    PDF::MultiCell(700, 0, '','B');
+    PDF::MultiCell(700, 0, '', 'B');
 
     PDF::MultiCell(700, 0, "", "T");
     PDF::SetFont($fontbold, '', $fontsize);
@@ -286,5 +290,4 @@ class ds
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

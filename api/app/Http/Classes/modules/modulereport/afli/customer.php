@@ -36,9 +36,9 @@ class customer
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -417,7 +417,7 @@ class customer
         return $query;
     }
 
-    
+
     public function gridloan_QUERY($config)
     {
         // $center   = $config['params']['center'];
@@ -432,15 +432,15 @@ class customer
 
         $trno   = $config['params']['dataparams']['trno'];
 
-        
-            // from htempdetailinfo as dinfo 
-            // left join heahead as head on head.trno=dinfo.trno
-            // left join heainfo as info on info.trno=dinfo.trno
-            // left join transnum as num on num.trno=head.trno
-            
-            // left join gldetail as detail on detail.trno = num.cvtrno and dinfo.dateid = detail.postdate
-            // left join gldetail as pay on pay.refx = detail.trno and pay.linex=detail.line
-            // left join glhead as payhead on payhead.trno = pay.trno
+
+        // from htempdetailinfo as dinfo 
+        // left join heahead as head on head.trno=dinfo.trno
+        // left join heainfo as info on info.trno=dinfo.trno
+        // left join transnum as num on num.trno=head.trno
+
+        // left join gldetail as detail on detail.trno = num.cvtrno and dinfo.dateid = detail.postdate
+        // left join gldetail as pay on pay.refx = detail.trno and pay.linex=detail.line
+        // left join glhead as payhead on payhead.trno = pay.trno
 
 
         $query = "
@@ -1500,7 +1500,7 @@ class customer
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
 
-    
+
     public function bloan_header_PDF($config, $head)
     {
         $center   = $config['params']['center'];
@@ -1534,7 +1534,7 @@ class customer
         // PDF::SetAuthor('Solutionbase Corp.');
         // PDF::SetCreator('Solutionbase Corp.');
         // PDF::SetSubject($this->modulename . ' Module Report');
-        
+
 
         // PDF::SetFont($font, '', 9);
         // PDF::MultiCell(0, 0, $center . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . $username, '', 'L');
@@ -1545,14 +1545,14 @@ class customer
         // PDF::SetFont($font, '', 15);
         // PDF::MultiCell(960, 20, "Happy Homes 2 House and Lot", '', 'C', false);
         // PDF::MultiCell(960, 30, "Customer Ledger", '', 'C', false);
-        
+
         // // .(isset($head[0]->blklot) ? $head[0]->blklot : '')
 
         // PDF::MultiCell(0, 0, "\n");
 
         // if ($sjlogo == 'wlogo') {
-        
-        PDF::Image(public_path() . $this->companysetup->getlogopath($config['params']).'afli.jpg', '280', '50', 200, 150);
+
+        PDF::Image(public_path() . $this->companysetup->getlogopath($config['params']) . 'afli.jpg', '280', '50', 200, 150);
         // PDF::Image($this->companysetup->getlogopath($config['params']).'afli.png', '0', '0', 60, 50);
         // PDF::Image('/images/afli/afli.png', '0', '0', 60, 50);
         // PDF::Image('public/images/afli/afli.png', '0', '0', 60, 50);
@@ -1569,14 +1569,14 @@ class customer
 
         // PDF::Image('http://localhost:8000/waimsv2_backend/laravels/public/images/afli/afli.png', '0', '0', 100, 100);
 
-        
-            
-            
-    // PDF::Image($this->companysetup->getlogopath($params['params']) . 'aftilogo.png', '35', '30', 60, 50);
-    PDF::MultiCell(0, 180, "\n");
-            // PDF::MultiCell(390, 0, '', '', 'L', 0, 0, '', '', false, 0, false, false, 0);
-            // PDF::SetFont($font, 'B', $fontsize11);
-            // PDF::MultiCell(320, 0, 'DELIVERY RECEIPT - ORIGINAL', '', 'C', 0, 0, '300', '26', false, 0, false, false, 0);
+
+
+
+        // PDF::Image($this->companysetup->getlogopath($params['params']) . 'aftilogo.png', '35', '30', 60, 50);
+        PDF::MultiCell(0, 180, "\n");
+        // PDF::MultiCell(390, 0, '', '', 'L', 0, 0, '', '', false, 0, false, false, 0);
+        // PDF::SetFont($font, 'B', $fontsize11);
+        // PDF::MultiCell(320, 0, 'DELIVERY RECEIPT - ORIGINAL', '', 'C', 0, 0, '300', '26', false, 0, false, false, 0);
         // } else {
         //     PDF::SetFont($font, '', 10);
         //     PDF::MultiCell(390, 0, '         A C C E S S ' . '   ' . 'F R O N T I E R', '', 'L', 0, 0, '50', '30', false, 0, false, false, 0);
@@ -1590,20 +1590,20 @@ class customer
 
         PDF::SetFont($font, '', 15);
         PDF::MultiCell(720, 50, "Punta Dulog Commercial Complex, St. Joesph Ave. Pueblo de Panay Township, Brgy. Lawaan Roxas City, Capiz", '', 'C', false);
-        
+
         $title = (isset($head[0]->subdivision) ? $head[0]->subdivision : '');
-        
+
 
         PDF::SetFont($font, '', 15);
         PDF::MultiCell(720, 20, $title, '', 'C', false);
-        
+
         PDF::SetFont($font, '', 13);
         PDF::MultiCell(720, 30, "Customer Ledger", '', 'C', false);
-        
+
         // .(isset($head[0]->blklot) ? $head[0]->blklot : '')
 
         PDF::MultiCell(0, 0, "\n");
-        
+
         PDF::SetFont($font, '', 12);
         PDF::MultiCell(150, 20, "Blk & Lot No. :", '', 'L', false, 0);
         PDF::MultiCell(210, 20, (isset($head[0]->blklot) ? $head[0]->blklot : ''), '', 'L', false, 0);
@@ -1613,17 +1613,17 @@ class customer
         PDF::MultiCell(150, 20, "Area (Sqm) :", '', 'L', false, 0);
         PDF::MultiCell(210, 20, (isset($head[0]->area) ? $head[0]->area : ''), '', 'L', false, 0);
         PDF::MultiCell(150, 20, "Interest Rate :", '', 'L', false, 0);
-        PDF::MultiCell(210, 20, (isset($head[0]->interest) ? $head[0]->interest.'%' : ''), '', 'L', false);
+        PDF::MultiCell(210, 20, (isset($head[0]->interest) ? $head[0]->interest . '%' : ''), '', 'L', false);
 
         PDF::MultiCell(150, 20, "Price / Sqm :", '', 'L', false, 0);
         PDF::MultiCell(210, 20, (isset($head[0]->pricesqm) ? $head[0]->pricesqm : ''), '', 'L', false, 0);
         PDF::MultiCell(150, 20, "Interest Amount :", '', 'L', false, 0);
-        PDF::MultiCell(210, 20, (isset($head[0]->totalinterest) ? number_format($head[0]->totalinterest,2) : ''), '', 'L', false);
+        PDF::MultiCell(210, 20, (isset($head[0]->totalinterest) ? number_format($head[0]->totalinterest, 2) : ''), '', 'L', false);
 
         PDF::MultiCell(150, 20, "Contract Price :", '', 'L', false, 0);
         PDF::MultiCell(210, 20, (isset($head[0]->contractamt) ? $head[0]->contractamt : ''), '', 'L', false, 0);
         PDF::MultiCell(150, 20, "Monthly Amortization :", '', 'L', false, 0);
-        PDF::MultiCell(210, 20, (isset($head[0]->amortization) ? number_format($head[0]->amortization,2) : ''), '', 'L', false);
+        PDF::MultiCell(210, 20, (isset($head[0]->amortization) ? number_format($head[0]->amortization, 2) : ''), '', 'L', false);
 
         PDF::MultiCell(150, 20, "Discount :", '', 'L', false, 0);
         PDF::MultiCell(210, 20, (isset($head[0]->disc) ? $head[0]->disc : ''), '', 'L', false, 0);
@@ -1631,17 +1631,17 @@ class customer
         PDF::MultiCell(210, 20, (isset($head[0]->terms) ? $head[0]->terms : ''), '', 'L', false);
 
         PDF::MultiCell(150, 20, "Outstanding Balance :", '', 'L', false, 0);
-        PDF::MultiCell(210, 20, (isset($head[0]->outstanding) ? number_format($head[0]->outstanding,2) : ''), '', 'L', false, 0);
+        PDF::MultiCell(210, 20, (isset($head[0]->outstanding) ? number_format($head[0]->outstanding, 2) : ''), '', 'L', false, 0);
         PDF::MultiCell(150, 20, "Total Payable :", '', 'L', false, 0);
-        PDF::MultiCell(210, 20, (isset($head[0]->totalpayable) ? number_format($head[0]->totalpayable,2) : ''), '', 'L', false);
+        PDF::MultiCell(210, 20, (isset($head[0]->totalpayable) ? number_format($head[0]->totalpayable, 2) : ''), '', 'L', false);
 
         PDF::MultiCell(150, 20, "Penalty :", '', 'L', false, 0);
-        PDF::MultiCell(210, 20, (isset($head[0]->penaltyamt) ? number_format($head[0]->penaltyamt,2) : ''), '', 'L', false, 0);
+        PDF::MultiCell(210, 20, (isset($head[0]->penaltyamt) ? number_format($head[0]->penaltyamt, 2) : ''), '', 'L', false, 0);
         PDF::MultiCell(150, 20, " ", '', 'R', false, 0);
         PDF::MultiCell(210, 20, '', '', 'L', false);
 
         PDF::MultiCell(150, 20, "Loanable Amount :", '', 'L', false, 0);
-        PDF::MultiCell(210, 20, (isset($head[0]->amount) ? number_format($head[0]->amount,2) : ''), '', 'L', false, 0);
+        PDF::MultiCell(210, 20, (isset($head[0]->amount) ? number_format($head[0]->amount, 2) : ''), '', 'L', false, 0);
         PDF::MultiCell(150, 20, " ", '', 'R', false, 0);
         PDF::MultiCell(210, 20, '', '', 'L', false);
 
@@ -1703,16 +1703,16 @@ class customer
 
 
         $this->bloan_header_PDF($config, $head);
-        
+
         $balance = $head[0]->amount;
 
         PDF::SetFont($font, '', 10);
-        
+
         PDF::MultiCell(85, 0, '', 'TBLR', 'C', false, 0);
         PDF::MultiCell(85, 0, '', 'TBLR', 'C', false, 0);
         PDF::MultiCell(75, 0, '', 'TBLR', 'C', false, 0);
         PDF::MultiCell(75, 0, '', 'TBLR', 'C', false, 0);
-        PDF::MultiCell(80, 0, number_format($balance,2), 'TBLR', 'R', false, 0);
+        PDF::MultiCell(80, 0, number_format($balance, 2), 'TBLR', 'R', false, 0);
         PDF::MultiCell(80, 0, '', 'TBLR', 'C', false, 0);
         PDF::MultiCell(80, 0, '', 'TBLR', 'C', false, 0);
         PDF::MultiCell(70, 0, '', 'TBLR', 'C', false, 0);
@@ -1726,27 +1726,27 @@ class customer
             $balance -= $value->crcr;
             PDF::SetFont($font, '', 10);
             PDF::MultiCell(85, 0, $value->due, 'LB', 'C', false, 0);
-            PDF::MultiCell(85, 0, number_format($value->amortization,2), 'LB', 'C', false, 0);
-            PDF::MultiCell(75, 0, number_format($value->principal,2), 'LB', 'C', false, 0);
-            PDF::MultiCell(75, 0, number_format($value->interest,2), 'LB', 'C', false, 0);
-            PDF::MultiCell(80, 0, number_format($balance,2), 'LB', 'R', false, 0);
-            PDF::MultiCell(80, 0, number_format($value->crcr,2), 'LB', 'R', false, 0);
+            PDF::MultiCell(85, 0, number_format($value->amortization, 2), 'LB', 'C', false, 0);
+            PDF::MultiCell(75, 0, number_format($value->principal, 2), 'LB', 'C', false, 0);
+            PDF::MultiCell(75, 0, number_format($value->interest, 2), 'LB', 'C', false, 0);
+            PDF::MultiCell(80, 0, number_format($balance, 2), 'LB', 'R', false, 0);
+            PDF::MultiCell(80, 0, number_format($value->crcr, 2), 'LB', 'R', false, 0);
             PDF::MultiCell(80, 0, $value->datepaid, 'LB', 'C', false, 0);
             PDF::MultiCell(70, 0, $value->paydoc, 'LB', 'C', false, 0);
             PDF::MultiCell(90, 0, $value->rem, 'BLR', 'L', false);
-            
+
 
 
             $totalamortization += $value->amortization;
             $totalprincipal += $value->principal;
             $totalinterest += $value->interest;
-            
+
             if (PDF::getY() > 900) {
                 PDF::setPageUnit('px');
                 PDF::AddPage('p', [800, 1000]);
                 PDF::SetMargins(40, 40);
-                
-                        
+
+
                 PDF::MultiCell(0, 0, "\n");
 
 
@@ -1760,15 +1760,14 @@ class customer
                 PDF::MultiCell(80, 0, "Date Paid", 'TBLR', 'C', false, 0);
                 PDF::MultiCell(70, 0, "Receipt No", 'TBLR', 'C', false, 0);
                 PDF::MultiCell(90, 0, "Remarks", 'TBLR', 'C', false);
-                
             }
         }
 
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(85, 0, '', 'T', 'C', false, 0);
-        PDF::MultiCell(85, 0, number_format($totalamortization,2), 'T', 'C', false, 0);
-        PDF::MultiCell(75, 0, number_format($totalprincipal,2), 'T', 'C', false, 0);
-        PDF::MultiCell(75, 0, number_format($totalinterest,2), 'T', 'C', false, 0);
+        PDF::MultiCell(85, 0, number_format($totalamortization, 2), 'T', 'C', false, 0);
+        PDF::MultiCell(75, 0, number_format($totalprincipal, 2), 'T', 'C', false, 0);
+        PDF::MultiCell(75, 0, number_format($totalinterest, 2), 'T', 'C', false, 0);
         PDF::MultiCell(80, 0, '', 'T', 'R', false, 0);
         PDF::MultiCell(80, 0, '', 'T', 'R', false, 0);
         PDF::MultiCell(80, 0, '', 'T', 'C', false, 0);

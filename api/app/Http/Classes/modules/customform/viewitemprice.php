@@ -60,10 +60,10 @@ class viewitemprice
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -122,19 +122,19 @@ class viewitemprice
                             }
                         }
                     }
-                }elseif ($config['params']['companyid'] == 72) { // hahsy
+                } elseif ($config['params']['companyid'] == 72) { // hahsy
                     $uom = $this->coreFunctions->getfieldvalue('item', 'uom', 'itemid=?', [$itemid]);
                     $viewcost = $this->othersClass->checkAccess($config['params']['user'], 368);
-                
+
                     if ($viewcost) {
-                
+
                         $qry = "select rrstatus.cost as latest,rrstatus.dateid,cntnum.doc from rrstatus
                         left join cntnum on cntnum.trno=rrstatus.trno
                         where rrstatus.itemid=" . $itemid . " and rrstatus.uom='" . $uom . "'
                         and cntnum.doc='RR'
                         order by rrstatus.dateid desc
                         limit 1";
-                
+
                         $result = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
                         if (!empty($result)) {
                             $cost = $result[0]['latest'];
@@ -183,14 +183,27 @@ class viewitemprice
                 break;
             case 60: //transpower
                 $allowview = $this->othersClass->checkAccess($config['params']['user'], 5488);
-                $fields = [['amt5', 'disc5', 'namt5'],['amt7', 'disc7', 'namt7'],['amt2', 'disc2', 'namt2'],['amt', 'disc', 'namt'],  ['famt', 'disc3', 'nfamt'], ['amt6', 'disc6', 'namt6'],['amt4', 'disc4', 'namt4'], 
-                'refresh'];
-                if(!$allowview){
-                    $fields = [['amt5', 'disc5', 'namt5'],['amt7', 'disc7', 'namt7'],['amt2', 'disc2', 'namt2'],['amt', 'disc', 'namt'], 
-                    'refresh'];
+                $fields = [
+                    ['amt5', 'disc5', 'namt5'],
+                    ['amt7', 'disc7', 'namt7'],
+                    ['amt2', 'disc2', 'namt2'],
+                    ['amt', 'disc', 'namt'],
+                    ['famt', 'disc3', 'nfamt'],
+                    ['amt6', 'disc6', 'namt6'],
+                    ['amt4', 'disc4', 'namt4'],
+                    'refresh'
+                ];
+                if (!$allowview) {
+                    $fields = [
+                        ['amt5', 'disc5', 'namt5'],
+                        ['amt7', 'disc7', 'namt7'],
+                        ['amt2', 'disc2', 'namt2'],
+                        ['amt', 'disc', 'namt'],
+                        'refresh'
+                    ];
                 }
-                
-                $col1 = $this->fieldClass->create($fields); 
+
+                $col1 = $this->fieldClass->create($fields);
                 data_set($col1, 'amt.readonly', false);
                 data_set($col1, 'amt.label', 'Base Price');
                 data_set($col1, 'disc.readonly', false);
@@ -223,7 +236,7 @@ class viewitemprice
                 data_set($col1, 'namt6.label', 'Net Lowest');
                 data_set($col1, 'amt7.readonly', false);
                 data_set($col1, 'amt7.label', 'DR Price');
-    
+
                 data_set($col1, 'disc7.readonly', false);
                 data_set($col1, 'disc7.label', 'DR Discount');
                 data_set($col1, 'namt7.label', 'Net DR');
@@ -417,7 +430,7 @@ class viewitemprice
         $itemid = $config['params']['itemid'];
         $companyid = $config['params']['companyid'];
         $row = $config['params']['dataparams'];
-        
+
         $dateTables = ['item'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
@@ -426,121 +439,114 @@ class viewitemprice
             $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
-        
-        if($config['params']['companyid']==60){//transpower
-            if($data['disc']!=""){
-                $discper ="";
+
+        if ($config['params']['companyid'] == 60) { //transpower
+            if ($data['disc'] != "") {
+                $discper = "";
                 if (!str_contains($data['disc'], '%')) {
-                  $d = explode("/",$data['disc']);
-                  foreach ($d as $k => $x) {
-                    if($discper !=""){
-                      $discper .="/";
+                    $d = explode("/", $data['disc']);
+                    foreach ($d as $k => $x) {
+                        if ($discper != "") {
+                            $discper .= "/";
+                        }
+
+                        $discper .= $x . '%';
                     }
-          
-                    $discper .= $x.'%';
-                    
-                  }
-                  $data['disc'] = $discper;
+                    $data['disc'] = $discper;
                 }
             }
 
-            if($data['disc2']!=""){
-                $discper ="";
+            if ($data['disc2'] != "") {
+                $discper = "";
                 if (!str_contains($data['disc2'], '%')) {
-                  $d = explode("/",$data['disc2']);
-                  foreach ($d as $k => $x) {
-                    if($discper !=""){
-                      $discper .="/";
+                    $d = explode("/", $data['disc2']);
+                    foreach ($d as $k => $x) {
+                        if ($discper != "") {
+                            $discper .= "/";
+                        }
+
+                        $discper .= $x . '%';
                     }
-          
-                    $discper .= $x.'%';
-                    
-                  }
-                  $data['disc2'] = $discper;
+                    $data['disc2'] = $discper;
                 }
             }
 
-            if($data['disc3']!=""){
-                $discper ="";
+            if ($data['disc3'] != "") {
+                $discper = "";
                 if (!str_contains($data['disc3'], '%')) {
-                  $d = explode("/",$data['disc3']);
-                  foreach ($d as $k => $x) {
-                    if($discper !=""){
-                      $discper .="/";
+                    $d = explode("/", $data['disc3']);
+                    foreach ($d as $k => $x) {
+                        if ($discper != "") {
+                            $discper .= "/";
+                        }
+
+                        $discper .= $x . '%';
                     }
-          
-                    $discper .= $x.'%';
-                    
-                  }
-                  $data['disc3'] = $discper;
+                    $data['disc3'] = $discper;
                 }
             }
 
-            if($data['disc4']!=""){
-                $discper ="";
+            if ($data['disc4'] != "") {
+                $discper = "";
                 if (!str_contains($data['disc4'], '%')) {
-                  $d = explode("/",$data['disc4']);
-                  foreach ($d as $k => $x) {
-                    if($discper !=""){
-                      $discper .="/";
+                    $d = explode("/", $data['disc4']);
+                    foreach ($d as $k => $x) {
+                        if ($discper != "") {
+                            $discper .= "/";
+                        }
+
+                        $discper .= $x . '%';
                     }
-          
-                    $discper .= $x.'%';
-                    
-                  }
-                  $data['disc4'] = $discper;
+                    $data['disc4'] = $discper;
                 }
             }
 
-            if($data['disc5']!=""){
-                $discper ="";
+            if ($data['disc5'] != "") {
+                $discper = "";
                 if (!str_contains($data['disc5'], '%')) {
-                  $d = explode("/",$data['disc5']);
-                  foreach ($d as $k => $x) {
-                    if($discper !=""){
-                      $discper .="/";
+                    $d = explode("/", $data['disc5']);
+                    foreach ($d as $k => $x) {
+                        if ($discper != "") {
+                            $discper .= "/";
+                        }
+
+                        $discper .= $x . '%';
                     }
-          
-                    $discper .= $x.'%';
-                    
-                  }
-                  $data['disc5'] = $discper;
+                    $data['disc5'] = $discper;
                 }
             }
 
-            if($data['disc6']!=""){
-                $discper ="";
+            if ($data['disc6'] != "") {
+                $discper = "";
                 if (!str_contains($data['disc6'], '%')) {
-                  $d = explode("/",$data['disc6']);
-                  foreach ($d as $k => $x) {
-                    if($discper !=""){
-                      $discper .="/";
+                    $d = explode("/", $data['disc6']);
+                    foreach ($d as $k => $x) {
+                        if ($discper != "") {
+                            $discper .= "/";
+                        }
+
+                        $discper .= $x . '%';
                     }
-          
-                    $discper .= $x.'%';
-                    
-                  }
-                  $data['disc6'] = $discper;
+                    $data['disc6'] = $discper;
                 }
             }
 
-            if($data['disc7']!=""){
-                $discper ="";
+            if ($data['disc7'] != "") {
+                $discper = "";
                 if (!str_contains($data['disc7'], '%')) {
-                  $d = explode("/",$data['disc7']);
-                  foreach ($d as $k => $x) {
-                    if($discper !=""){
-                      $discper .="/";
+                    $d = explode("/", $data['disc7']);
+                    foreach ($d as $k => $x) {
+                        if ($discper != "") {
+                            $discper .= "/";
+                        }
+
+                        $discper .= $x . '%';
                     }
-          
-                    $discper .= $x.'%';
-                    
-                  }
-                  $data['disc7'] = $discper;
+                    $data['disc7'] = $discper;
                 }
             }
         }
-        
+
         $namt = $this->othersClass->computestock($data['amt'], $data['disc'], 1, 1);
         $namt2 = $this->othersClass->computestock($data['amt2'], $data['disc2'], 1, 1);
         $nfamt = $this->othersClass->computestock($data['famt'], $data['disc3'], 1, 1);
@@ -567,7 +573,7 @@ class viewitemprice
 
         if ($companyid == 72) { // hahsy
             return ['status' => true, 'msg' => 'Save Item Price Success', 'data' => [], 'txtdata' => $txtdata, 'closecustomform' => true, 'reloadhead' => true];
-        }else {
+        } else {
             return ['status' => true, 'msg' => 'Save Item Price Success', 'data' => [], 'txtdata' => $txtdata];
         }
     }

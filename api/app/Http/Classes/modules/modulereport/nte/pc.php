@@ -35,9 +35,9 @@ class pc
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -609,7 +609,7 @@ class pc
         $str .= $this->default_pc_header($params, $data);
 
         $totalext = 0;
- 
+
         for ($i = 0; $i < count($data); $i++) {
             $str .= $this->reporter->startrow();
             // $str .= $this->reporter->addline();

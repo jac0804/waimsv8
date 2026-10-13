@@ -32,10 +32,10 @@ class entrystudenthistory
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -98,13 +98,13 @@ class entrystudenthistory
   {
     $data = [];
     $row = $config['params']['row'];
-    
+
     $companyid = $config['params']['companyid'];
     $dateTables = ['en_studentcredentials'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
-       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     if ($row['line'] == 0) {
@@ -159,7 +159,7 @@ class entrystudenthistory
       group by es.docno,head.trno,head.docno,head.dateid,st.clientname,course.coursecode,course.coursename,
         period.code,period.name,period.sy,sec.section,h.docno,h.dateid, instr.clientname
       union all
-      ".$select." from en_sohead as head left join en_sosubject as sub on sub.trno=head.trno
+      " . $select . " from en_sohead as head left join en_sosubject as sub on sub.trno=head.trno
       left join client as st on st.client=head.client left join en_course as course on course.line=head.courseid
       left join en_period as period on period.line=head.periodid
       left join en_section as sec on sec.line=head.sectionid left join en_glhead as es on es.trno=sub.refx left join client as instr on instr.clientid=es.adviserid

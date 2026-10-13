@@ -35,12 +35,12 @@ class philhealth_remittance_report
   // layoutsize: reportWidth
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '700'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -171,7 +171,7 @@ class philhealth_remittance_report
             left join department as dept on dept.deptname = deptcl.clientname
             where e.client <>'' and emp.level in $emplvl $filter 
             group by e.clientname,e.client,emp.phic";
-            // var_dump($query);
+    // var_dump($query);
 
     return $this->coreFunctions->opentable($query);
   }
@@ -272,7 +272,7 @@ class philhealth_remittance_report
     $font = $this->companysetup->getrptfont($config['params']);
     $font_size = '10';
 
-    $count = 45; 
+    $count = 45;
     $page = 45;
 
     $str = '';

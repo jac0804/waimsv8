@@ -36,9 +36,9 @@ class kr
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -193,7 +193,7 @@ class kr
         PDF::MultiCell(700, 0, '', 'B');
     }
 
-    public function default_KR_PDF_ORIG($params, $data)// B4-1/16/2026
+    public function default_KR_PDF_ORIG($params, $data) // B4-1/16/2026
     {
         $companyid = $params['params']['companyid'];
         $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
@@ -218,7 +218,7 @@ class kr
 
         $countarr = 0;
         $grandtotal = 0;
-        $totalar =0;
+        $totalar = 0;
 
         if (!empty($data)) {
             $totaldb = 0;
@@ -262,8 +262,8 @@ class kr
                 $totaldb += $data[$i]['db'];
                 $totalcr += $data[$i]['cr'];
 
-                if($data[$i]['alias'] == 'AR1'){
-                    $totalar += ($data[$i]['db']-$data[$i]['cr']);
+                if ($data[$i]['alias'] == 'AR1') {
+                    $totalar += ($data[$i]['db'] - $data[$i]['cr']);
                 }
 
                 if (intVal($i) + 1 == $page) {
@@ -292,21 +292,21 @@ class kr
         // PDF::MultiCell(85, 0, '', '', 'R', false, 0);
         PDF::MultiCell(170, 0, 'LESS DISCOUNT: ', '', 'R', false, 0);
         PDF::MultiCell(85, 0, $data[0]['disc'], '', 'R', false);
-        
-        $discamt= 0; 
-        if($data[0]['disc'] !=0){
-            $discamt= $totalar-( $this->othersClass->Discount($totalar,$data[0]['disc']));
-        }else{
-            $discamt= 0;  
+
+        $discamt = 0;
+        if ($data[0]['disc'] != 0) {
+            $discamt = $totalar - ($this->othersClass->Discount($totalar, $data[0]['disc']));
+        } else {
+            $discamt = 0;
         }
 
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(425, 0, '', '', 'R', false, 0);
         // PDF::MultiCell(85, 0, '', '', 'R', false, 0);
         PDF::MultiCell(170, 0, 'DISCOUNT AMOUNT: ', '', 'R', false, 0);
-        PDF::MultiCell(85, 0, number_format($discamt,2), '', 'R', false);
+        PDF::MultiCell(85, 0, number_format($discamt, 2), '', 'R', false);
 
-        $grandtotal = $grandtotal - $discamt;// $this->othersClass->Discount($grandtotal,$data[0]['disc']);
+        $grandtotal = $grandtotal - $discamt; // $this->othersClass->Discount($grandtotal,$data[0]['disc']);
 
         PDF::MultiCell(425, 0, '', '', 'R', false, 0);
         // PDF::MultiCell(85, 0, '', '', 'R', false, 0);
@@ -359,21 +359,21 @@ class kr
 
         $countarr = 0;
         $grandtotal = 0;
-        $totalar =0;
-        $tldb=0;
-        $tlcr=0;
+        $totalar = 0;
+        $tldb = 0;
+        $tlcr = 0;
 
-        $rowCount=0;
+        $rowCount = 0;
 
         if (!empty($data)) {
             $totaldb = 0;
             $totalcr = 0;
             for ($i = 0; $i < count($data); $i++) {
-               
+
                 //SKIP A/R Freight
-               if($data[$i]['doc'] == 'GC' || $data[$i]['doc'] == 'GD'){
-                continue;
-               }
+                if ($data[$i]['doc'] == 'GC' || $data[$i]['doc'] == 'GD') {
+                    continue;
+                }
 
                 $maxrow = 1;
                 $acno = $data[$i]['acno'];
@@ -414,8 +414,8 @@ class kr
                 $totaldb += $data[$i]['db'];
                 $totalcr += $data[$i]['cr'];
 
-                if($data[$i]['alias'] == 'AR1'){
-                    $totalar += ($data[$i]['db']-$data[$i]['cr']);
+                if ($data[$i]['alias'] == 'AR1') {
+                    $totalar += ($data[$i]['db'] - $data[$i]['cr']);
                 }
 
                 // if (intVal($i) + 1 == $page) {
@@ -423,10 +423,10 @@ class kr
                 //     $page += $count;
                 // }
 
-                  if ($rowCount >= $page && $i < count($data) - 1) {
-                          $this->default_KR_header_PDF($params, $data);
-                        $rowCount = 0; // reset counter
-                 }
+                if ($rowCount >= $page && $i < count($data) - 1) {
+                    $this->default_KR_header_PDF($params, $data);
+                    $rowCount = 0; // reset counter
+                }
             }
         }
 
@@ -445,39 +445,39 @@ class kr
 
         // PDF::MultiCell(0, 0, "\n\n\n"); //5 
 
-         for ($i = 0; $i < 3; $i++) { //5
-             $this->addrow('');
-             $rowCount++;
-            }
+        for ($i = 0; $i < 3; $i++) { //5
+            $this->addrow('');
+            $rowCount++;
+        }
 
-         
+
         PDF::SetFont($fontbold, '', $fontsize); //6
         PDF::MultiCell(425, 0, '', '', 'R', false, 0);
         PDF::MultiCell(170, 0, 'LESS DISCOUNT: ', '', 'R', false, 0);
         PDF::MultiCell(85, 0, $data[0]['disc'], '', 'R', false);
-        
-        $discamt= 0; 
-        if($data[0]['disc'] !=0){
-            $discamt= $totalar-( $this->othersClass->Discount($totalar,$data[0]['disc']));
-        }else{
-            $discamt= 0;  
+
+        $discamt = 0;
+        if ($data[0]['disc'] != 0) {
+            $discamt = $totalar - ($this->othersClass->Discount($totalar, $data[0]['disc']));
+        } else {
+            $discamt = 0;
         }
 
         PDF::SetFont($fontbold, '', $fontsize); //7
         PDF::MultiCell(425, 0, '', '', 'R', false, 0);
         PDF::MultiCell(170, 0, 'DISCOUNT AMOUNT: ', '', 'R', false, 0);
-        PDF::MultiCell(85, 0, number_format($discamt,2), '', 'R', false);
+        PDF::MultiCell(85, 0, number_format($discamt, 2), '', 'R', false);
 
 
         PDF::SetFont($font, '', 11); //8
         PDF::MultiCell(700, 0, '', '');
-         
-        PDF::SetFont($font, '', 5);  
+
+        PDF::SetFont($font, '', 5);
         PDF::MultiCell(700, 0, '', 'B');
-        
+
         PDF::SetFont($font, '', 5);  //9
         PDF::MultiCell(700, 0, '', '');
-    
+
 
         PDF::SetFont($font, 'B', 12); //10
         PDF::MultiCell(700, 0, "CREDIT/DEBIT MEMO", '', 'L', false);
@@ -493,11 +493,11 @@ class kr
             $totaldb1 = 0;
             $totalcr1 = 0;
             for ($i = 0; $i < count($data); $i++) {
-               
-               if($data[$i]['doc'] != 'GC' && $data[$i]['doc'] != 'GD'){
-                continue;
-               }
-               
+
+                if ($data[$i]['doc'] != 'GC' && $data[$i]['doc'] != 'GD') {
+                    continue;
+                }
+
                 $maxrow = 1;
                 $acno = $data[$i]['acno'];
                 $acnoname = $data[$i]['acnoname'];
@@ -532,8 +532,7 @@ class kr
                 }
                 $totaldb1 += $data[$i]['db'];
                 $totalcr1 += $data[$i]['cr'];
-                $rowCount=$rowCount+8;
-
+                $rowCount = $rowCount + 8;
             }
         }
 
@@ -548,18 +547,18 @@ class kr
         PDF::MultiCell(425, 0, 'TOTAL: ', '', 'R', false, 0);
         PDF::MultiCell(85, 0, number_format($totaldb1, $decimalprice), '', 'R', false, 0);
         PDF::MultiCell(85, 0, number_format($totalcr1, $decimalprice), '', 'R', false);
-       
+
         PDF::SetFont($font, '', 15);
         PDF::MultiCell(700, 0, '', '');
 
 
-        $tldb=$totaldb + $totaldb1;
-        $tlcr=$totalcr + $totalcr1;
+        $tldb = $totaldb + $totaldb1;
+        $tlcr = $totalcr + $totalcr1;
         $grandtotal = $tldb - $tlcr;
 
 
         PDF::SetFont($fontbold, '', $fontsize);
-        $grandtotal = $grandtotal - $discamt;// $this->othersClass->Discount($grandtotal,$data[0]['disc']);
+        $grandtotal = $grandtotal - $discamt; // $this->othersClass->Discount($grandtotal,$data[0]['disc']);
 
         PDF::MultiCell(425, 0, '', '', 'R', false, 0);
         // PDF::MultiCell(85, 0, '', '', 'R', false, 0);
@@ -586,8 +585,8 @@ class kr
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
 
-     private function addrow($border)
-     {
+    private function addrow($border)
+    {
         $font = "";
         $fontbold = "";
         $border = "1px solid ";
@@ -596,14 +595,14 @@ class kr
             $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
             $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
         }
-                    PDF::SetFont($font, '', $fontsize);
-                    PDF::MultiCell(90, 0, '', '', 'L', false, 0, '', '', true, 1);
-                    PDF::MultiCell(150, 0,'', '', 'L', false, 0, '', '', false, 1);
-                    PDF::MultiCell(110, 0, '', '', 'L', false, 0, '', '', false, 1);
-                    PDF::MultiCell(75, 0, '', '', 'C', false, 0, '', '', false, 1);
-                    PDF::MultiCell(85, 0, '', '', 'R', false, 0, '', '', false, 1);
-                    PDF::MultiCell(85, 0, '', '', 'R', false, 0, '', '', false, 1);
-                    PDF::MultiCell(10, 0, '', '', 'R', false, 0, '', '', false, 1);
-                    PDF::MultiCell(100, 0, '', '', 'L', false, 1, '', '', false, 1);
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(90, 0, '', '', 'L', false, 0, '', '', true, 1);
+        PDF::MultiCell(150, 0, '', '', 'L', false, 0, '', '', false, 1);
+        PDF::MultiCell(110, 0, '', '', 'L', false, 0, '', '', false, 1);
+        PDF::MultiCell(75, 0, '', '', 'C', false, 0, '', '', false, 1);
+        PDF::MultiCell(85, 0, '', '', 'R', false, 0, '', '', false, 1);
+        PDF::MultiCell(85, 0, '', '', 'R', false, 0, '', '', false, 1);
+        PDF::MultiCell(10, 0, '', '', 'R', false, 0, '', '', false, 1);
+        PDF::MultiCell(100, 0, '', '', 'L', false, 1, '', '', false, 1);
     }
 }

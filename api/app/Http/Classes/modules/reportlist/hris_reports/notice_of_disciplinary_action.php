@@ -32,12 +32,12 @@ class notice_of_disciplinary_action
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -113,11 +113,12 @@ class notice_of_disciplinary_action
     if ($client != "") {
       $filter .= " and emp.client = '$client'";
     }
-    
-    if ($deptname !=''){
-    if ($deptid != 0) {
-      $filter1 .= " and dept.clientid = $deptid";
-    }}
+
+    if ($deptname != '') {
+      if ($deptid != 0) {
+        $filter1 .= " and dept.clientid = $deptid";
+      }
+    }
 
     $query = "select head.trno, head.docno, head.empid, date(head.dateid) as dateid,
   head.artid, head.sectionno, head.violationno,head.startdate, head.enddate, head.amt,

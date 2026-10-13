@@ -34,10 +34,10 @@ class loanapplication
     public $fields = ['status', 'status2', 'approvedby_disapprovedby', 'approvedby_disapprovedby2', 'date_approved_disapproved', 'date_approved_disapproved2', 'disapproved_remarks', 'disapproved_remarks2'];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -99,7 +99,7 @@ class loanapplication
 
         data_set($col2, 'dateid.type', 'input');
         data_set($col2, 'rem.label', 'Remarks');
-        
+
         if ($companyid == 53) { // camera
             data_set($col2, 'rem.label', 'Reason');
         }
@@ -172,7 +172,7 @@ class loanapplication
 
             $dateTables = ['loanapplication', 'standardsetup'];
             $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-            
+
             switch ($action) {
                 case 'approve':
                     $loanstatus = 'A';

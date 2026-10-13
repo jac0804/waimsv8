@@ -34,10 +34,10 @@ class pendinginitialobapplications
     public $showclosebtn = true;
     public $obfields = ['status', 'status2', 'initialstatus', 'initialappdate', 'initialapprovedby', 'initial_remarks', 'initialstatus2', 'initialappdate2', 'initialapprovedby2', 'initial_remarks2'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;

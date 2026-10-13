@@ -29,12 +29,12 @@ class student_list
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -87,14 +87,14 @@ class student_list
     $sectionid = isset($config['params']['dataparams']['sectionid']) ? $config['params']['dataparams']['sectionid'] : '';
     $sy = isset($config['params']['dataparams']['sy']) ? $config['params']['dataparams']['sy'] : '';
     $filter = '';
-    if ($sectionid != '') $filter = " and s.sectionid=".$sectionid;
-    if ($sy != '') $filter .= " and ss.sy='".$sy."'";
+    if ($sectionid != '') $filter = " and s.sectionid=" . $sectionid;
+    if ($sy != '') $filter .= " and ss.sy='" . $sy . "'";
     $query = "select distinct sec.section, s.sectionid
       from en_studentinfo as s
       left join en_glhead as es on es.trno=s.schedtrno
       left join en_schoolyear as ss on ss.line=es.syid
       left join en_section as sec on sec.line=s.sectionid
-      where s.courseid=".$courseid." ".$filter." order by sec.section";
+      where s.courseid=" . $courseid . " " . $filter . " order by sec.section";
     return $this->coreFunctions->opentable($query);
   }
 
@@ -105,15 +105,15 @@ class student_list
     $sy = isset($config['params']['dataparams']['sy']) ? $config['params']['dataparams']['sy'] : '';
 
     $filter = 'where 1=1';
-    if ($courseid != '') $filter .= " and s.courseid=".$courseid;
-    if ($sectionid != '') $filter .= " and s.sectionid=".$sectionid;
-    if ($sy != '') $filter .= " and ss.sy='".$sy."'";
+    if ($courseid != '') $filter .= " and s.courseid=" . $courseid;
+    if ($sectionid != '') $filter .= " and s.sectionid=" . $sectionid;
+    if ($sy != '') $filter .= " and ss.sy='" . $sy . "'";
     $query = "select distinct course.coursename, s.courseid
       from en_studentinfo as s
       left join en_glhead as es on es.trno=s.schedtrno
       left join en_course as course on course.line=s.courseid
       left join en_section as sec on sec.line=s.sectionid
-      left join en_schoolyear as ss on ss.line=es.syid ".$filter." order by course.coursename";
+      left join en_schoolyear as ss on ss.line=es.syid " . $filter . " order by course.coursename";
     return $this->coreFunctions->opentable($query);
   }
 
@@ -124,16 +124,16 @@ class student_list
     $sy = isset($config['params']['dataparams']['sy']) ? $config['params']['dataparams']['sy'] : '';
 
     $filter   = "where 1=1";
-    if ($courseid != '') $filter .= " and s.courseid=".$courseid;
-    if ($sectionid != '') $filter .= " and s.sectionid=".$sectionid;
-    if ($sy != '') $filter .= " and ss.sy='".$sy."'";
+    if ($courseid != '') $filter .= " and s.courseid=" . $courseid;
+    if ($sectionid != '') $filter .= " and s.sectionid=" . $sectionid;
+    if ($sy != '') $filter .= " and ss.sy='" . $sy . "'";
     $query = "select c.clientname, s.studentid, s.chinesename, s.gender, date(c.bday) as bday, course.coursename, sec.section, s.courseid, s.sectionid, ss.sy
       from en_studentinfo as s
       left join client as c on c.clientid=s.clientid
       left join en_course as course on course.line=s.courseid
       left join en_glhead as es on es.trno=s.schedtrno
       left join en_schoolyear as ss on ss.line=es.syid
-      left join en_section as sec on sec.line=s.sectionid ".$filter." order by course.coursename, sec.section, c.clientname";
+      left join en_section as sec on sec.line=s.sectionid " . $filter . " order by course.coursename, sec.section, c.clientname";
     return $this->coreFunctions->opentable($query);
   }
 
@@ -222,18 +222,18 @@ class student_list
       foreach ($courselist as $cl) {
         $coursetotal = 0;
         $str .= $this->reporter->begintable($layoutsize);
-          $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col(strtoupper($cl->coursename), '1000', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
-          $str .= $this->reporter->endrow();
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col(strtoupper($cl->coursename), '1000', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
+        $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         $sectionlist = $this->getSectionlist($config, $cl->courseid);
         if (!empty($sectionlist)) {
           foreach ($sectionlist as $sl) {
             $studentcount = 0;
             $str .= $this->reporter->begintable($layoutsize);
-              $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col("&nbsp;&nbsp;&nbsp;SECTION: ".($sl->section == '' ? 'NO SECTION' : $sl->section), '1000', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
-              $str .= $this->reporter->endrow();
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col("&nbsp;&nbsp;&nbsp;SECTION: " . ($sl->section == '' ? 'NO SECTION' : $sl->section), '1000', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '');
+            $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
             $studentcount = 0;
             foreach ($result as $key => $data) {
@@ -241,32 +241,32 @@ class student_list
                 $studentcount++;
                 $coursetotal++;
                 $str .= $this->reporter->begintable($layoutsize);
-                  $str .= $this->reporter->startrow();
-                    $str .= $this->reporter->col("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".$data->studentid, '125', null, false, $border, '', '', $font, $fontsize, '', '', '');
-                    $str .= $this->reporter->col($data->clientname, '325', null, false, $border, '', '', $font, $fontsize, '', '', '');
-                    $str .= $this->reporter->col($data->chinesename, '300', null, false, $border, '', '', $font, $fontsize, '', '', '');
-                    $str .= $this->reporter->col($data->gender, '125', null, false, $border, '', '', $font, $fontsize, '', '', '');
-                    $str .= $this->reporter->col($data->bday, '125', null, false, $border, '', '', $font, $fontsize, '', '', '');
-                  $str .= $this->reporter->endrow();
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" . $data->studentid, '125', null, false, $border, '', '', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->clientname, '325', null, false, $border, '', '', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->chinesename, '300', null, false, $border, '', '', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->gender, '125', null, false, $border, '', '', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->col($data->bday, '125', null, false, $border, '', '', $font, $fontsize, '', '', '');
+                $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
               }
             }
             if ($studentcount > 0) {
               $str .= $this->reporter->begintable($layoutsize);
-                $str .= $this->reporter->startrow();
-                  $str .= $this->reporter->col('', '875', null, false, $border, 'T', '', $font, $fontsize, '', '', '');
-                  $str .= $this->reporter->col('Student Count: '.$studentcount, '125', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
-                $str .= $this->reporter->endrow();
+              $str .= $this->reporter->startrow();
+              $str .= $this->reporter->col('', '875', null, false, $border, 'T', '', $font, $fontsize, '', '', '');
+              $str .= $this->reporter->col('Student Count: ' . $studentcount, '125', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+              $str .= $this->reporter->endrow();
               $str .= $this->reporter->endtable();
             }
           } // end sectionlist
         }
         if ($coursetotal > 0) {
           $str .= $this->reporter->begintable($layoutsize);
-            $str .= $this->reporter->startrow();
-              $str .= $this->reporter->col('', '875', null, false, $border, 'T', '', $font, $fontsize, '', '', '');
-              $str .= $this->reporter->col('Total Count: '.$coursetotal, '125', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
-            $str .= $this->reporter->endrow();
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col('', '875', null, false, $border, 'T', '', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col('Total Count: ' . $coursetotal, '125', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
+          $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
         }
       } // end courselist

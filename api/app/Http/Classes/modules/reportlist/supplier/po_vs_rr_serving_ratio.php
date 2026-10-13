@@ -37,12 +37,12 @@ class po_vs_rr_serving_ratio
     //for resize;
     public $margin = 130;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 

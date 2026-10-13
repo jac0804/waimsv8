@@ -33,9 +33,9 @@ class cm
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -100,7 +100,8 @@ class cm
     return $result;
   } //end fn
 
-  public function reportplotting($params, $data) {
+  public function reportplotting($params, $data)
+  {
     return $this->vitaline_CM_PDF($params, $data);
   }
 
@@ -309,7 +310,7 @@ class cm
     PDF::MultiCell(50, 0, "Date: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 0, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 0, '',  '');
-    
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', $fontsize);
@@ -364,43 +365,43 @@ class cm
     if (!empty($data)) {
 
 
-    for ($i = 0; $i < count($data); $i++) {
-      $maxrow = 1;
+      for ($i = 0; $i < count($data); $i++) {
+        $maxrow = 1;
 
-      $itemname = $data[$i]['itemname'];
-      $qty = number_format($data[$i]['qty'],$decimalqty);
-      $uom = $data[$i]['uom'];
-      $amt = number_format($data[$i]['amt'],$decimalprice);
-      $disc = $data[$i]['disc'];
-      $ext = number_format($data[$i]['ext'],$decimalprice);
+        $itemname = $data[$i]['itemname'];
+        $qty = number_format($data[$i]['qty'], $decimalqty);
+        $uom = $data[$i]['uom'];
+        $amt = number_format($data[$i]['amt'], $decimalprice);
+        $disc = $data[$i]['disc'];
+        $ext = number_format($data[$i]['ext'], $decimalprice);
 
-      $arr_itemname = $this->reporter->fixcolumn([$itemname],'35',0);
-      $arr_qty = $this->reporter->fixcolumn([$qty],'13',0);
-      $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-      $arr_amt = $this->reporter->fixcolumn([$amt],'13',0);
-      $arr_disc = $this->reporter->fixcolumn([$disc],'13',0);
-      $arr_ext = $this->reporter->fixcolumn([$ext],'13',0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '35', 0);
+        $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+        $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+        $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
+        $arr_disc = $this->reporter->fixcolumn([$disc], '13', 0);
+        $arr_ext = $this->reporter->fixcolumn([$ext], '13', 0);
 
-      $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_qty, $arr_uom, $arr_amt, $arr_disc, $arr_ext]);
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_qty, $arr_uom, $arr_amt, $arr_disc, $arr_ext]);
 
-      for($r = 0; $r < $maxrow; $r++) {
-        PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(100, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
-        PDF::MultiCell(100, 0, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
-        PDF::MultiCell(200, 0, (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
-        PDF::MultiCell(100, 0, (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
-        PDF::MultiCell(100, 0, (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
-        PDF::MultiCell(100, 0, (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', 0, 1, '', '', true, 0, true, false);
-      }
+        for ($r = 0; $r < $maxrow; $r++) {
+          PDF::SetFont($font, '', $fontsize);
+          PDF::MultiCell(100, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+          PDF::MultiCell(100, 0, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
+          PDF::MultiCell(200, 0, (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
+          PDF::MultiCell(100, 0, (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+          PDF::MultiCell(100, 0, (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
+          PDF::MultiCell(100, 0, (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', 0, 1, '', '', true, 0, true, false);
+        }
 
-      $totalext += $data[$i]['ext'];
+        $totalext += $data[$i]['ext'];
 
-      if (intVal($i) + 1 == $page) {
-        $this->vitaline_CM_header_PDF($params, $data);
-        $page += $count;
+        if (intVal($i) + 1 == $page) {
+          $this->vitaline_CM_header_PDF($params, $data);
+          $page += $count;
+        }
       }
     }
-  }
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', 'B');
 
@@ -412,7 +413,7 @@ class cm
     PDF::MultiCell(100, 0, number_format($totalext, $decimalcurr), '', 'R');
 
     PDF::MultiCell(0, 0, "\n");
-    
+
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(50, 0, 'NOTE: ', '', 'L', false, 0);
     PDF::MultiCell(560, 0, $data[0]['rem'], '', 'L');
@@ -433,6 +434,4 @@ class cm
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
-
 }

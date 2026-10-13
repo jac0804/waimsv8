@@ -31,12 +31,12 @@ class comparative_total_loan_releases
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -133,7 +133,7 @@ class comparative_total_loan_releases
         //             left join client as cl on cl.client=head.client
         //             where num.cvtrno<>0 and date(head.dateid) between '$start' and '$end'
         //             group by r.reqtype,head.dateid,head.planid";
-        $query ="select sum(info.amount) as amount, date(head.dateid) as effective, ea.planid, month(head.dateid) as months,
+        $query = "select sum(info.amount) as amount, date(head.dateid) as effective, ea.planid, month(head.dateid) as months,
                     ifnull(r.reqtype,'') as categoryname,count(cl.clientid) as empcount
                     from lahead as head
                     left join cntnum as num on num.trno = head.trno

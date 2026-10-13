@@ -35,10 +35,10 @@ class entryempprojectlog
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -404,11 +404,15 @@ class entryempprojectlog
     // $plottype = '';
     $title = 'Company Name';
     $plotting = array(
-      'compcode' => 'compcode', 'pjroxascode1' => 'projcode',
-      'subpjroxascode' => 'subprojcode', 'blotroxascode' => 'blocklotcode',
+      'compcode' => 'compcode',
+      'pjroxascode1' => 'projcode',
+      'subpjroxascode' => 'subprojcode',
+      'blotroxascode' => 'blocklotcode',
       'departmentroxascode' => 'deptcode',
-      'amenityroxascode' => 'amntcode', 'subamenityroxascode' => 'subamntcode',
-      'amntcode' => 'amntcode', 'subamntcode' => 'subamntcode',
+      'amenityroxascode' => 'amntcode',
+      'subamenityroxascode' => 'subamntcode',
+      'amntcode' => 'amntcode',
+      'subamntcode' => 'subamntcode',
       'deptcode' => 'deptcode'
     );
     $plottype = 'plotgrid';
@@ -444,9 +448,14 @@ class entryempprojectlog
 
     $plotting = array(
       'subprojcode' => 'subcode',
-      'subpjroxascode' => 'subname', 'subprojline' => 'spline', 'projcode' => 'prcode',
-      'pjroxascode1' => 'prname', 'projline' => 'prline', 'blocklotcode' => 'blkcode',
-      'blotroxascode' => 'blockname', 'blocklotline' => 'blkline'
+      'subpjroxascode' => 'subname',
+      'subprojline' => 'spline',
+      'projcode' => 'prcode',
+      'pjroxascode1' => 'prname',
+      'projline' => 'prline',
+      'blocklotcode' => 'blkcode',
+      'blotroxascode' => 'blockname',
+      'blocklotline' => 'blkline'
     );
 
     $plottype = 'plotgrid';
@@ -492,8 +501,12 @@ class entryempprojectlog
     $title = 'Amenity';
 
     $plotting = array(
-      'amntcode' => 'amntcode', 'amenityroxascode' => 'amname', 'amntline' => 'amline',
-      'subamntcode' => 'subamntcode', 'subamenityroxascode' => 'saname', 'subamntline' => 'saline'
+      'amntcode' => 'amntcode',
+      'amenityroxascode' => 'amname',
+      'amntline' => 'amline',
+      'subamntcode' => 'subamntcode',
+      'subamenityroxascode' => 'saname',
+      'subamntline' => 'saline'
     );
     $plottype = 'plotgrid';
 

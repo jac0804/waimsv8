@@ -44,10 +44,10 @@ class viewreimbursement
     public $fields = ['trno', 'client', 'jono', 'amount'];
     private $acctg = [];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -133,7 +133,7 @@ class viewreimbursement
         $userid = 0;
 
         $acc_data = ['client' => '', 'amount' => 0, 'line' => 0];
-        $dateTables = ['lahead','ladetail', 'glhead', 'gldetail', 'hdailytask'];
+        $dateTables = ['lahead', 'ladetail', 'glhead', 'gldetail', 'hdailytask'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
 
         foreach ($data as $key => $value) {
@@ -141,7 +141,7 @@ class viewreimbursement
             $msg = "";
             if ($data[$key]['bgcolor'] != '' && $data[$key]['ispicked'] == 'true') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
                 // check existing head
                 array_push($hdtrno_list, $data[$key]['trno']);
@@ -150,7 +150,7 @@ class viewreimbursement
                 $headdata = $this->coreFunctions->opentable("select trno,docno from lahead where doc = 'PV' and client ='" . $data[$key]['client'] . "'");
 
                 $alias = $this->coreFunctions->datareader("select case when alias <> '' then alias else clientname end as value
-                from client where clientid = ". $data[$key]['customerid']."");
+                from client where clientid = " . $data[$key]['customerid'] . "");
 
                 $date = $this->othersClass->getCurrentDate();
                 $cur = $this->companysetup->getdefaultcurrency($config['params']);
@@ -224,16 +224,16 @@ class viewreimbursement
                 $qry = "select reimbursement,rem from hdailytask where refx = ?";
 
                 $type = $this->coreFunctions->opentable($qry, [$data[$key]['trno']]);
-                $acnoid = $this->coreFunctions->datareader("select acnoid as value from coa where acnoname like '%". $type[0]->reimbursement."%' limit 1");
-                $jono ='';
-                if($data[$key]['jono'] != ""){
-                   $jono =  ' - '.$data[$key]['jono'];
+                $acnoid = $this->coreFunctions->datareader("select acnoid as value from coa where acnoname like '%" . $type[0]->reimbursement . "%' limit 1");
+                $jono = '';
+                if ($data[$key]['jono'] != "") {
+                    $jono =  ' - ' . $data[$key]['jono'];
                 }
                 $details = [
                     'trno' => $trno,
                     'line' => $line,
                     'client' => $data[$key]['client'],
-                    'rem' => $alias . ' - '. $type[0]->rem . $jono,
+                    'rem' => $alias . ' - ' . $type[0]->rem . $jono,
                     'cr' => 0,
                     'db' => $data[$key]['amount'],
                     'damt' => $data[$key]['amount'],
@@ -363,10 +363,10 @@ class viewreimbursement
 
         foreach ($this->acctg as $key => $value) {
             foreach ($value as $key2 => $value2) {
-                $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
+                $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
             }
             $this->acctg[$key]['encodeddate'] = $current_timestamp;
-            $this->acctg[$key]['encodedby'] = $config['params']['user'];     
+            $this->acctg[$key]['encodedby'] = $config['params']['user'];
             $this->acctg[$key]['trno'] = $trno;
             $this->acctg[$key]['db'] = round($this->acctg[$key]['db'], 2);
             $this->acctg[$key]['cr'] = round($this->acctg[$key]['cr'], 2);

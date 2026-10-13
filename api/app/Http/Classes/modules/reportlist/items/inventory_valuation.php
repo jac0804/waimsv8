@@ -33,12 +33,12 @@ class inventory_valuation
     // layoutsize: reportWidth
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -427,7 +427,7 @@ class inventory_valuation
         $str .= $this->reporter->col('<b>Group: </b> <u>' . $grouplbl . '</u> <b>Category: </b> <u>' . $catlabl . ' ' . '</u> <b>Size:</b> <u>' . ' All Size</u>', null, null, false, '10px solid', '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('<b>WH: </b> <u>' . $whlbl . '</u> <b>Include: </b><u>' . $itemnamelbl .' </u> <b>Stocks:</b> <u>' . 'All Stocks </u>', null, null, false, '10px solid', '', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('<b>WH: </b> <u>' . $whlbl . '</u> <b>Include: </b><u>' . $itemnamelbl . ' </u> <b>Stocks:</b> <u>' . 'All Stocks </u>', null, null, false, '10px solid', '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 

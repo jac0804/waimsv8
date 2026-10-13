@@ -33,12 +33,12 @@ class pending_sales_orders
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -2602,7 +2602,6 @@ class pending_sales_orders
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->addline();
-
         }
 
         // i-print ang bagong subcategory header
@@ -3681,5 +3680,4 @@ class pending_sales_orders
 
     return $str;
   }
-
 }//end class

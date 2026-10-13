@@ -34,10 +34,10 @@ class mt
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -46,22 +46,23 @@ class mt
   }
 
 
-public function createreportfilter(){
-  $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
-  $col1 = $this->fieldClass->create($fields);
-  data_set($col1, 'radioprint.options', [
-    ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
-  ]); 
-  return array('col1' => $col1);
-}
+  public function createreportfilter()
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
+    data_set($col1, 'radioprint.options', [
+      ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
+    ]);
+    return array('col1' => $col1);
+  }
 
   public function reportparamsdata($config)
   {
     $user = $config['params']['user'];
-    $qry="select name from useraccess where username='$user'";
+    $qry = "select name from useraccess where username='$user'";
     $name = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
 
-    if((isset($name[0]['name']) ? $name[0]['name'] : '')!=''){
+    if ((isset($name[0]['name']) ? $name[0]['name'] : '') != '') {
       $user = $name[0]['name'];
     }
     return $this->coreFunctions->opentable(
@@ -101,7 +102,8 @@ public function createreportfilter(){
     return $result;
   } //end fn
 
-  public function reportplotting($params, $data) {
+  public function reportplotting($params, $data)
+  {
     return $this->default_MT_PDF($params, $data);
   }
 
@@ -285,9 +287,9 @@ public function createreportfilter(){
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(0, 0, $headerdata[0]->address."\n".$headerdata[0]->tel."\n\n\n", '', 'C');
-   
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '40', '20', 120, 65);
+    PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n\n\n", '', 'C');
+
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '40', '20', 120, 65);
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
@@ -356,28 +358,28 @@ public function createreportfilter(){
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', '');
-    
+
     $countarr = 0;
 
     if (!empty($data)) {
-      for ($i = 0; $i < count($data); $i++) {      
+      for ($i = 0; $i < count($data); $i++) {
         $barcode = $data[$i]['barcode'];
-        $qty = number_format($data[$i]['qty'],$decimalqty);
+        $qty = number_format($data[$i]['qty'], $decimalqty);
         $uom = $data[$i]['uom'];
         $itemname = $data[$i]['itemname'];
-        $amt = number_format($data[$i]['amt'],$decimalprice);
-        $ext = number_format($data[$i]['ext'],$decimalprice);
+        $amt = number_format($data[$i]['amt'], $decimalprice);
+        $ext = number_format($data[$i]['ext'], $decimalprice);
 
-        $arr_barcode = $this->reporter->fixcolumn([$barcode],'16',0);
-        $arr_qty = $this->reporter->fixcolumn([$qty],'13',0);
-        $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-        $arr_itemname = $this->reporter->fixcolumn([$itemname],'40',0);
-        $arr_amt = $this->reporter->fixcolumn([$amt],'13',0);
-        $arr_ext = $this->reporter->fixcolumn([$ext],'13',0);
+        $arr_barcode = $this->reporter->fixcolumn([$barcode], '16', 0);
+        $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+        $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '40', 0);
+        $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
+        $arr_ext = $this->reporter->fixcolumn([$ext], '13', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_qty, $arr_uom, $arr_itemname, $arr_amt, $arr_ext]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(100, 0, (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '', '', true, 1);
           PDF::MultiCell(60, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '', '', false, 1);
@@ -425,5 +427,4 @@ public function createreportfilter(){
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

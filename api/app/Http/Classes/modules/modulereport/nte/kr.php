@@ -34,10 +34,10 @@ class kr
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -53,7 +53,7 @@ class kr
     data_set($col1, 'approved.label', 'Receipt Acknowledged By');
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
     return array('col1' => $col1);
   }
@@ -95,7 +95,7 @@ class kr
     left join client on client.client = head.client
     left join client as ag on ag.clientid=head2.agentid
     where head.trno='$trno' order by postdate,dateid, docno";
-    
+
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
@@ -127,7 +127,7 @@ class kr
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('COUNTER RECEIPT', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '18', 'B', '', '');
     $str .= $this->reporter->col('DOCUMENT # :', '100', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', 'B', '', '');
     $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '100', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '13', '', '', '') . '<br />';
@@ -156,19 +156,19 @@ class kr
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('ACCT.#', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('ACCOUNT NAME', '350', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('REFERENCE #', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
-    
+
     $str .= $this->reporter->col('DATE', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('DEBIT', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('CREDIT', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('CLIENT', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
-    
+
     return $str;
   }
 
@@ -260,7 +260,7 @@ class kr
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -274,7 +274,7 @@ class kr
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -283,7 +283,7 @@ class kr
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
-    
+
 
     PDF::SetFont($font, '', 9);
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
@@ -293,7 +293,7 @@ class kr
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(0, 0, $this->modulename, '', 'C');
 
@@ -314,7 +314,7 @@ class kr
     PDF::MultiCell(80, 0, "Address: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(470, 0, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 1, '',  '');
-    
+
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 0, "Tel No: ", '', 'L', false, 0, '',  '');
@@ -378,9 +378,9 @@ class kr
         $date = $data[$i]['postdate'];
         $docno = $data[$i]['docno'];
         $ref = $data[$i]['ref'];
-        $db = number_format($data[$i]['db'],$decimalcurr);
-        $cr = number_format($data[$i]['cr'],$decimalcurr);
-        if($cr <= 0) $cr = '-';
+        $db = number_format($data[$i]['db'], $decimalcurr);
+        $cr = number_format($data[$i]['cr'], $decimalcurr);
+        if ($cr <= 0) $cr = '-';
         $rem = $data[$i]['rem2'];
 
         $arr_date = $this->reporter->fixcolumn([$date], '15');
@@ -392,14 +392,14 @@ class kr
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_date, $arr_docno, $arr_ref, $arr_db, $arr_cr, $arr_rem]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
-          PDF::MultiCell(80, 15, ' '.(isset($arr_date[$r]) ? $arr_date[$r] : ''), '', 'L', false, 0);
-          PDF::MultiCell(130, 15, ' '.(isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'L', false, 0);
-          PDF::MultiCell(180, 15, ' '.(isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'L', false, 0);
-          PDF::MultiCell(80, 15, ' '.(isset($arr_db[$r]) ? $arr_db[$r] : ''), '', 'R', false, 0);
-          PDF::MultiCell(80, 15, ' '.(isset($arr_cr[$r]) ? $arr_cr[$r] : ''), '', 'R', false, 0);
-          PDF::MultiCell(150, 15, ' '.(isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'L', false);
+          PDF::MultiCell(80, 15, ' ' . (isset($arr_date[$r]) ? $arr_date[$r] : ''), '', 'L', false, 0);
+          PDF::MultiCell(130, 15, ' ' . (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'L', false, 0);
+          PDF::MultiCell(180, 15, ' ' . (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'L', false, 0);
+          PDF::MultiCell(80, 15, ' ' . (isset($arr_db[$r]) ? $arr_db[$r] : ''), '', 'R', false, 0);
+          PDF::MultiCell(80, 15, ' ' . (isset($arr_cr[$r]) ? $arr_cr[$r] : ''), '', 'R', false, 0);
+          PDF::MultiCell(150, 15, ' ' . (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'L', false);
         }
         $totaldb += $data[$i]['db'];
         $totalcr += $data[$i]['cr'];
@@ -420,7 +420,7 @@ class kr
     PDF::MultiCell(80, 0, 'TOTAL: ', '', 'C', false, 0);
     PDF::MultiCell(390, 0, number_format($totaldb, $decimalprice), '', 'R', false, 0);
     PDF::MultiCell(80, 0, number_format($totalcr, $decimalprice), '', 'R', false, 0);
-    PDF::MultiCell(150, 0, number_format(($totaldb - $totalcr),$decimalprice), '', 'R', false);
+    PDF::MultiCell(150, 0, number_format(($totaldb - $totalcr), $decimalprice), '', 'R', false);
 
     PDF::MultiCell(0, 0, "\n");
 
@@ -442,7 +442,7 @@ class kr
     PDF::MultiCell(13, 0, '', '', '', false, 0);
     PDF::MultiCell(220, 0, '', 'B', 'L');
 
-    
+
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }

@@ -66,11 +66,11 @@ class rn
 
   private $barcode;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -319,7 +319,7 @@ class rn
   {
     $islocation = $this->companysetup->getislocation($config['params']);
     $locname = $this->companysetup->getlocname($config['params']);
-    $companyid= $config['params']['companyid'];
+    $companyid = $config['params']['companyid'];
     $action = 0;
     $itemdesc = 1;
     $isqty = 2;
@@ -394,7 +394,7 @@ class rn
           $obj[0][$this->gridname]['columns'][$loc]['type'] = 'coldel';
           break;
       }
-    } 
+    }
 
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;

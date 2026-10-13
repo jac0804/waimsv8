@@ -49,11 +49,11 @@ class en_roomlist
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -231,7 +231,7 @@ class en_roomlist
       if (isset($head[$key])) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if 
       }
     }
@@ -261,9 +261,7 @@ class en_roomlist
     return $return;
   }
 
-  public function openstock($trno, $config)
-  {
-  }
+  public function openstock($trno, $config) {}
 
   public function deletetrans($config)
   {

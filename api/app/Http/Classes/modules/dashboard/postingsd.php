@@ -28,13 +28,13 @@ class postingsd
   public $style = 'width:1200px;max-width:1200px;';
   public $issearchshow = true;
   public $showclosebtn = true;
- 
 
 
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -42,7 +42,7 @@ class postingsd
 
   public function getAttrib()
   {
-    $attrib = array('load' =>224,'view'=> 224);
+    $attrib = array('load' => 224, 'view' => 224);
     return $attrib;
   }
 
@@ -54,7 +54,6 @@ class postingsd
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     return $obj;
-
   }
 
   public function createtabbutton($config)
@@ -66,7 +65,7 @@ class postingsd
 
   public function createHeadField($config)
   {
-    $fields = ['checkno', 'checkdate','dacnoname'];
+    $fields = ['checkno', 'checkdate', 'dacnoname'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'checkno.readonly', false);
     data_set($col1, 'checkdate.readonly', false);
@@ -76,7 +75,6 @@ class postingsd
     data_set($col1, 'dacnoname.action', 'lookupdepositto');
 
     return array('col1' => $col1);
-
   }
 
   public function paramsdata($config)
@@ -90,8 +88,6 @@ class postingsd
     } else {
       return [];
     }
-
-
   }
 
   public function data()
@@ -99,9 +95,9 @@ class postingsd
     return [];
   }
 
-  public function loaddata($config) 
+  public function loaddata($config)
   {
-    
+
     $center = $config['params']['center'];
     $qry = "select '' as siref,'' as prref,
       date(head.dateid) as dateid,
@@ -113,7 +109,7 @@ class postingsd
       left join heainfo as info on info.trno = app.trno
       left join client as c on c.clientid=head.clientid
       left join reqcategory as r on r.line = info.sbuid
-      where  num.dptrno<> 0 and head.dateid <=now() and head.bal <>0 and num.center='".$center."' and info.isselfemployed =1
+      where  num.dptrno<> 0 and head.dateid <=now() and head.bal <>0 and num.center='" . $center . "' and info.isselfemployed =1
       group by head.dateid,head.docno,head.trno,c.clientname,r.category
       order by head.dateid ";
 

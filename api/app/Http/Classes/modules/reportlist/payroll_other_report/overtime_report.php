@@ -31,12 +31,12 @@ class overtime_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1500'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -390,8 +390,8 @@ class overtime_report
 
         foreach ($result as $key => $data) {
             $firstline++;
-            $deptChange = ($dept !== $data->deptname && $dept !== null);//if change, subtotal
-            $newDept = ($dept !== $data->deptname);//if new, deptname
+            $deptChange = ($dept !== $data->deptname && $dept !== null); //if change, subtotal
+            $newDept = ($dept !== $data->deptname); //if new, deptname
 
             $neededRows = 1; //default
             if ($deptChange)
@@ -567,7 +567,7 @@ class overtime_report
             $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col($data->RR8NS == 0 ? '-' : number_format($data->RR8NS, 2), '50', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-            
+
             $totalOTNS =
                 $data->OTREG + $data->OTNS + $data->O8NS +
                 $data->SUN + $data->OTSUN + $data->SUNS + $data->S8NS +
@@ -575,7 +575,7 @@ class overtime_report
                 $data->OTLG + $data->LGNS + $data->L8NS + $data->RDLG + $data->LROT +
                 $data->RRNS + $data->RR8NS;
 
-            $str .= $this->reporter->col($totalOTNS == 0 ? '-' :number_format($totalOTNS,2), '80', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($totalOTNS == 0 ? '-' : number_format($totalOTNS, 2), '80', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', '25', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
@@ -712,7 +712,7 @@ class overtime_report
         $str .= '</br>';
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('No. of record printed: '.$count, null, null, false, $border, '', '', $font, '6', 'B', '', '');
+        $str .= $this->reporter->col('No. of record printed: ' . $count, null, null, false, $border, '', '', $font, '6', 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -761,34 +761,34 @@ class overtime_report
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col($grandOTREG == 0 ? '-' : number_format($grandOTREG,2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col($grandOTREG == 0 ? '-' : number_format($grandOTREG, 2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col($grandO8NS == 0 ? '-' : number_format($grandO8NS,2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col($grandO8NS == 0 ? '-' : number_format($grandO8NS, 2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col($grandOTSUN == 0 ? '-' : number_format($grandOTSUN,2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col($grandOTSUN == 0 ? '-' : number_format($grandOTSUN, 2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col($grandS8NS == 0 ? '-' : number_format($grandS8NS,2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col($grandS8NS == 0 ? '-' : number_format($grandS8NS, 2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col($grandOTSR == 0 ? '-' : number_format($grandOTSR,2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col($grandOTSR == 0 ? '-' : number_format($grandOTSR, 2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col($grandSR8NS == 0 ? '-' : number_format($grandSR8NS,2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col($grandSR8NS == 0 ? '-' : number_format($grandSR8NS, 2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col($grandOTLG == 0 ? '-' : number_format($grandOTLG,2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col($grandOTLG == 0 ? '-' : number_format($grandOTLG, 2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col($grandL8NS == 0 ? '-' : number_format($grandL8NS,2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col($grandL8NS == 0 ? '-' : number_format($grandL8NS, 2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col($grandLROT == 0 ? '-' : number_format($grandLROT,2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col($grandLROT == 0 ? '-' : number_format($grandLROT, 2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col($grandRR8NS == 0 ? '-' : number_format($grandRR8NS,2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col($grandRR8NS == 0 ? '-' : number_format($grandRR8NS, 2), '100', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '5', null, false, $border, 'B', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '80', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '25', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
@@ -808,6 +808,4 @@ class overtime_report
         $str .= $this->reporter->endreport();
         return $str;
     }
-
-
 }

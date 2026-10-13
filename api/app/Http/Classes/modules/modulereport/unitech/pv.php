@@ -37,9 +37,9 @@ class pv
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -178,7 +178,7 @@ class pv
         $username = $params['params']['user'];
         $count = $page = 35;
         $totalext = 0;
-        
+
         $font = "";
         $fontbold = "";
         $border = "1px solid ";
@@ -188,7 +188,7 @@ class pv
             $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
         }
         $this->PDF_default_header_ccvoucher($params, $data);
-          //MultiCell($w, $h, $txt, $border=0, $align='J', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='T', $fitcell=false)
+        //MultiCell($w, $h, $txt, $border=0, $align='J', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='T', $fitcell=false)
         // PDF::setCellPadding(left, $top, $right, $bottom);
         PDF::setCellPadding(3, 5, 0, 0);
         $totaldb = 0;
@@ -207,17 +207,17 @@ class pv
             }
         }
         //if empty ang rem i display ref at podocno
-        $references=$data[0]['ref'].'  '.$data[0]['podocno'];
+        $references = $data[0]['ref'] . '  ' . $data[0]['podocno'];
         $remarks = $data[0]['rem'];
-          
-        if($remarks ==''){
-            $references= $data[0]['ref'].' - '.$data[0]['podocno'];
-        }else{
-            $references=$remarks.'<br /> '.$data[0]['ref'].' - '.$data[0]['podocno'];
+
+        if ($remarks == '') {
+            $references = $data[0]['ref'] . ' - ' . $data[0]['podocno'];
+        } else {
+            $references = $remarks . '<br /> ' . $data[0]['ref'] . ' - ' . $data[0]['podocno'];
         }
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(550, 75, $references, 'TBL', 'L', false, 0,'','','','',true);
+        PDF::MultiCell(550, 75, $references, 'TBL', 'L', false, 0, '', '', '', '', true);
         PDF::MultiCell(150, 75, number_format($totaldb, 2), 'TBLR', 'R', false);
 
         PDF::MultiCell(700, 25, '', '', 'R', false);
@@ -231,7 +231,7 @@ class pv
         $totaldb = 0;
         $totalcr = 0;
         $acname = "";
-        $acname2="";
+        $acname2 = "";
 
         for ($i = 0; $i < count($data); $i++) {
             $debit = number_format($data[$i]['db'], 2);
@@ -246,10 +246,10 @@ class pv
                 $acname = $data[$i]['acnoname'];
             }
 
-            if($alias=='CB'){
-               $acname2=$acname.' / '.$data[$i]['checkno'].' / '.$data[$i]['postdate'];
-            }else{
-               $acname2 = $acname;
+            if ($alias == 'CB') {
+                $acname2 = $acname . ' / ' . $data[$i]['checkno'] . ' / ' . $data[$i]['postdate'];
+            } else {
+                $acname2 = $acname;
             }
             // if ($acname == $data[$i]['acnoname']) {
             //     $acname = "";
@@ -1272,7 +1272,7 @@ class pv
             PDF::MultiCell(80, $max_height, $key, 'LRB', '', false, 0);
 
             switch ($data['head'][0]['month']) {
-                    // case '1': case '2': case '3':
+                // case '1': case '2': case '3':
                 case '1':
                 case '4':
                 case '7':
@@ -1282,7 +1282,7 @@ class pv
                     PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
                     $totalwtx1 +=  $data['detail'][$key]['oamt'];
                     break;
-                    // case '4': case '5': case '6':
+                // case '4': case '5': case '6':
                 case '2':
                 case '5':
                 case '8':
@@ -1631,7 +1631,7 @@ class pv
                                 left join client on client.clientid=head.clientid
                                 left join coa on coa.acnoid=detail.acnoid left join client as dclient on dclient.clientid=detail.clientid
                                 where head.doc='pv' and md5(head.trno)='" . md5($trno) . "'";
-                                //  var_dump($query);
+                //  var_dump($query);
                 $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
                 break;
         } // end switch

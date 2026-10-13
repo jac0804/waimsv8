@@ -38,9 +38,9 @@ class on
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -196,7 +196,7 @@ class on
             return $this->wilcon_layout_PDF($params, $data);
             break;
           case '2': //GENERAL OUTHRIGHT
-          case '3':  
+          case '3':
             return $this->general_layout_PDF($params, $data);
             break;
         }
@@ -1852,9 +1852,9 @@ class on
     // PDF::MultiCell(80, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     // PDF::MultiCell(150, 20, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-     $contact=isset($data[0]['clientname']) ? $data[0]['clientname'] : '';
-    if($reporttype ==3){
-      $contact=isset($data[0]['contact']) ? $data[0]['contact'] : '';
+    $contact = isset($data[0]['clientname']) ? $data[0]['clientname'] : '';
+    if ($reporttype == 3) {
+      $contact = isset($data[0]['contact']) ? $data[0]['contact'] : '';
     }
 
     PDF::SetXY(40, 172); //210

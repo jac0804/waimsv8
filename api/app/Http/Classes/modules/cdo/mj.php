@@ -115,11 +115,11 @@ class mj
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -560,13 +560,13 @@ class mj
       // 4 - disc
       $obj[0]['inventory']['columns'][$disc]['readonly'] = true;
     }
-    
+
     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
 
-    if(!$islocation) {
+    if (!$islocation) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
     }
-        
+
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }
@@ -925,7 +925,7 @@ class mj
       $data['due']  = $newDate->format('Y-m-d');
     }
 
-    if ($isupdate) {      
+    if ($isupdate) {
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
       $this->othersClass->getcreditinfo($config, $this->head);
       $this->recomputestock($head, $config);
@@ -1838,7 +1838,7 @@ class mj
     $uom = $config['params']['data']['uom'];
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
-    $terms = $this->coreFunctions->getfieldvalue($this->head,"terms","trno=?",[$trno]);
+    $terms = $this->coreFunctions->getfieldvalue($this->head, "terms", "trno=?", [$trno]);
     $disc = $config['params']['data']['disc'];
     $wh = $config['params']['data']['wh'];
     $loc = isset($config['params']['data']['loc']) ? $config['params']['data']['loc'] : '';
@@ -2089,24 +2089,24 @@ class mj
         }
 
         //add finance rate info
-        $existinfo = $this->coreFunctions->getfieldvalue("cntnuminfo","trno","trno=?",[$trno],'',true);
+        $existinfo = $this->coreFunctions->getfieldvalue("cntnuminfo", "trno", "trno=?", [$trno], '', true);
         $cinfo = [];
-        
-        $fr = $this->coreFunctions->opentable("select dp,interest,factor,penalty,miscfee,rebate from  mcfinancerate where itemid =? and terms=? ",[$itemid,$terms]);
-        if(!empty($fr)){
+
+        $fr = $this->coreFunctions->opentable("select dp,interest,factor,penalty,miscfee,rebate from  mcfinancerate where itemid =? and terms=? ", [$itemid, $terms]);
+        if (!empty($fr)) {
           $cinfo['downpayment'] = $fr[0]->dp;
-          $cinfo['fmiscfee']= $fr[0]->miscfee;
-          $cinfo['interestrate']= $fr[0]->interest;
-          $cinfo['fma2']= $fr[0]->factor;
-          $cinfo['penalty']= $fr[0]->penalty;
-          $cinfo['rebate']= $fr[0]->rebate;
+          $cinfo['fmiscfee'] = $fr[0]->miscfee;
+          $cinfo['interestrate'] = $fr[0]->interest;
+          $cinfo['fma2'] = $fr[0]->factor;
+          $cinfo['penalty'] = $fr[0]->penalty;
+          $cinfo['rebate'] = $fr[0]->rebate;
           if ($existinfo == '') {
-            $cinfo['trno']= $trno;
+            $cinfo['trno'] = $trno;
             $this->coreFunctions->sbcinsert("cntnuminfo", $cinfo);
           } else {
             $this->coreFunctions->sbcupdate("cntnuminfo", $cinfo, ['trno' => $trno]);
           }
-        }        
+        }
 
         $this->othersClass->getcreditinfo($config, $this->head);
         $row = $this->openstockline($config);
@@ -3712,410 +3712,407 @@ class mj
 
   private function preterminate($config)
   {
-      $trno = $config['params']['trno'];
+    $trno = $config['params']['trno'];
 
-      $createDetail = function (
-          $line,
-          $client,
-          $acnoid,
-          $postdate,
-          $ref,
-          $db,
-          $cr,
-          $refx = 0,
-          $linex = 0,
-          $rem = ''
-      ) {
-          return [
-              'line'    => $line,
-              'client'  => $client,
-              'acnoid'  => $acnoid,
-              'postdate'=> $postdate,
-              'ref'     => $ref,
-              'db'      => $db,
-              'cr'      => $cr,
-              'refx'    => $refx,
-              'linex'   => $linex,
-              'rem'     => $rem
-          ];
-      };
+    $createDetail = function (
+      $line,
+      $client,
+      $acnoid,
+      $postdate,
+      $ref,
+      $db,
+      $cr,
+      $refx = 0,
+      $linex = 0,
+      $rem = ''
+    ) {
+      return [
+        'line'    => $line,
+        'client'  => $client,
+        'acnoid'  => $acnoid,
+        'postdate' => $postdate,
+        'ref'     => $ref,
+        'db'      => $db,
+        'cr'      => $cr,
+        'refx'    => $refx,
+        'linex'   => $linex,
+        'rem'     => $rem
+      ];
+    };
 
 
-      $outbal = $this->coreFunctions->getfieldvalue("arledger","sum(bal)","trno=?",[$trno]);
+    $outbal = $this->coreFunctions->getfieldvalue("arledger", "sum(bal)", "trno=?", [$trno]);
 
-      $outbal = $outbal ? $outbal : 0;
+    $outbal = $outbal ? $outbal : 0;
 
-      // 5% pretermination charge
-      $fiveperc = $outbal * 0.05;
+    // 5% pretermination charge
+    $fiveperc = $outbal * 0.05;
 
-      $data = $this->coreFunctions->opentable("SELECT client.client,
+    $data = $this->coreFunctions->opentable("SELECT client.client,
               client.clientname,head.docno,head.dateid,head.terms,IFNULL(hinfo.downpayment, 0) AS downpayment,
               IFNULL(hinfo.fmiscfee, 0) AS fmiscfee,(SELECT SUM(stock.ext) FROM glstock AS stock WHERE stock.trno = head.trno) AS amt
-              FROM glhead AS head LEFT JOIN hcntnuminfo AS hinfo on hinfo.trno = head.trno LEFT JOIN client ON client.clientid = head.clientid WHERE head.trno = ? ",[$trno]);
+              FROM glhead AS head LEFT JOIN hcntnuminfo AS hinfo on hinfo.trno = head.trno LEFT JOIN client ON client.clientid = head.clientid WHERE head.trno = ? ", [$trno]);
 
 
-      if (empty($data)) {
-          return [
-              'status' => false,
-              'msg'    => 'Transaction not found.'
-          ];
+    if (empty($data)) {
+      return [
+        'status' => false,
+        'msg'    => 'Transaction not found.'
+      ];
+    }
+
+    $account = $data[0];
+
+    $client     = $account->client;
+    $clientname = $account->clientname;
+    $docno      = $account->docno;
+
+    $amt      = $account->amt ? $account->amt : 0;
+    $fmiscfee = $account->fmiscfee ? $account->fmiscfee : 0;
+    $downpay  = $account->downpayment ? $account->downpayment : 0;
+
+    $financeamt = ($amt + $fmiscfee) - $downpay;
+
+
+    // Paid finance amount
+    $paidfa = $this->coreFunctions->getfieldvalue("arledger", "sum(db)", "acnoid = 21 and bal = 0 and trno=?", [$trno]);
+
+    $paidfa = $paidfa ? $paidfa : 0;
+
+    $remamt = $financeamt - $paidfa;
+
+    $interest = $this->coreFunctions->getfieldvalue("arledger", "db", "acnoid = 23 and bal <> 0 and trno=?", [$trno], "line");
+
+    $interest = $interest ? $interest : 0;
+
+    $ttl = $fiveperc + $remamt + $interest;
+
+    // Round to nearest thousand
+    $ttl = round($ttl, -3);
+
+    $line   = 1;
+    $detail = [];
+
+    //cib
+    $cash = $this->coreFunctions->getfieldvalue(
+      "coa",
+      "acnoid",
+      "alias = 'CA1'"
+    );
+
+    $detail[] = $createDetail(
+      $line,
+      $client,
+      $cash,
+      date('Y-m-d'),
+      $docno,
+      $ttl,
+      0
+    );
+
+    $line++;
+
+    $arprinc = $this->coreFunctions->opentable("SELECT trno,line, db, cr,bal, acnoid,dateid FROM arledger WHERE trno = ? AND bal <> 0 ORDER BY acnoid", [$trno]);
+
+    foreach ($arprinc as $ledger) {
+      $db = 0;
+      $cr = 0;
+
+      if ($ledger->db != 0) {
+        $cr = $ledger->bal;
+      } else {
+        $db = $ledger->bal;
       }
 
-      $account = $data[0];
-
-      $client     = $account->client;
-      $clientname = $account->clientname;
-      $docno      = $account->docno;
-
-      $amt      = $account->amt ? $account->amt : 0;
-      $fmiscfee = $account->fmiscfee ? $account->fmiscfee : 0;
-      $downpay  = $account->downpayment ? $account->downpayment : 0;
-
-      $financeamt = ($amt + $fmiscfee) - $downpay;
-
-
-      // Paid finance amount
-      $paidfa = $this->coreFunctions->getfieldvalue("arledger","sum(db)","acnoid = 21 and bal = 0 and trno=?",[$trno]);
-
-      $paidfa = $paidfa ? $paidfa : 0;
-
-      $remamt = $financeamt - $paidfa;
-
-      $interest = $this->coreFunctions->getfieldvalue("arledger","db","acnoid = 23 and bal <> 0 and trno=?", [$trno], "line");
-
-      $interest = $interest ? $interest : 0;
-
-      $ttl = $fiveperc + $remamt + $interest;
-
-      // Round to nearest thousand
-      $ttl = round($ttl, -3);
-
-      $line   = 1;
-      $detail = [];
-
-      //cib
-      $cash = $this->coreFunctions->getfieldvalue(
-          "coa",
-          "acnoid",
-          "alias = 'CA1'"
-      );
-
       $detail[] = $createDetail(
-          $line,
-          $client,
-          $cash,
-          date('Y-m-d'),
-          $docno,
-          $ttl,
-          0
+        $line,
+        $client,
+        $ledger->acnoid,
+        $ledger->dateid,
+        $docno,
+        $db,
+        $cr,
+        $ledger->trno,
+        $ledger->line
       );
 
       $line++;
+    }
 
-      $arprinc = $this->coreFunctions->opentable("SELECT trno,line, db, cr,bal, acnoid,dateid FROM arledger WHERE trno = ? AND bal <> 0 ORDER BY acnoid",[$trno]);
+    $unpaidfa = $this->coreFunctions->getfieldvalue("arledger", "sum(bal)", "acnoid = 21 and bal <> 0 and trno=?", [$trno]);
 
-      foreach ($arprinc as $ledger) {
-          $db = 0;
-          $cr = 0;
+    $unpaidfa = $unpaidfa ? $unpaidfa : 0;
 
-          if ($ledger->db != 0) {
-              $cr = $ledger->bal;
-          } else {
-              $db = $ledger->bal;
-          }
+    $ardiff = $ttl - $unpaidfa;
 
-          $detail[] = $createDetail(
-              $line,
-              $client,
-              $ledger->acnoid,
-              $ledger->dateid,
-              $docno,
-              $db,
-              $cr,
-              $ledger->trno,
-              $ledger->line
-          );
 
-          $line++;
+    $unpaidint = $this->coreFunctions->getfieldvalue("arledger", "sum(bal)", "acnoid = 23 and bal <> 0 and trno=?", [$trno]);
+
+    $unpaidint = $unpaidint ? $unpaidint : 0;
+
+    $ueint = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias = 'SA3'");
+
+    $detail[] = $createDetail(
+      $line,
+      $client,
+      $ueint,
+      date('Y-m-d'),
+      '',
+      $unpaidint,
+      0
+    );
+    $line++;
+
+
+    $saint = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias = 'SA8'");
+
+    $detail[] = $createDetail(
+      $line,
+      $client,
+      $saint,
+      date('Y-m-d'),
+      '',
+      0,
+      $ardiff
+    );
+
+    $line++;
+
+    $rebate = $this->coreFunctions->getfieldvalue("arledger", "sum(db)", "acnoid = 24 and bal <> 0 and trno=?", [$trno]);
+
+    $rebate = $rebate ? $rebate : 0;
+
+
+    $apreb = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias = 'AP3'");
+
+    $detail[] = $createDetail(
+      $line,
+      $client,
+      $apreb,
+      date('Y-m-d'),
+      '',
+      $rebate,
+      0
+    );
+
+    if (empty($detail)) {
+      return [
+        'accounting' => [],
+        'status'     => false,
+        'msg'        => 'No accounting details generated.'
+      ];
+    }
+
+
+    $dateTables = ['lahead', 'ladetail'];
+
+    $lookups = $this->othersClass->buildSanitizeLookups(
+      'GJ',
+      $config['params']['companyid'],
+      [],
+      false,
+      $dateTables
+    );
+
+    $path = 'App\Http\Classes\modules\accounting\gj';
+
+    try {
+
+      $gjtrno = $this->othersClass->generatecntnum($config, 'cntnum', 'GJ', 'GJ');
+
+      if ($gjtrno == -1) {
+        return [
+          'status' => false,
+          'msg'    => 'Unable to generate GJ transaction number.'
+        ];
       }
 
-      $unpaidfa = $this->coreFunctions->getfieldvalue("arledger","sum(bal)","acnoid = 21 and bal <> 0 and trno=?",[$trno]);
+      $docno = $this->coreFunctions->getfieldvalue('cntnum', 'docno', 'trno=?', [$gjtrno]);
 
-      $unpaidfa = $unpaidfa ? $unpaidfa : 0;
-
-      $ardiff = $ttl - $unpaidfa;
-
-
-      $unpaidint = $this->coreFunctions->getfieldvalue("arledger","sum(bal)","acnoid = 23 and bal <> 0 and trno=?",[$trno]);
-
-      $unpaidint = $unpaidint ? $unpaidint : 0;
-
-      $ueint = $this->coreFunctions->getfieldvalue("coa","acnoid","alias = 'SA3'");
-
-      $detail[] = $createDetail(
-          $line,
-          $client,
-          $ueint,
-          date('Y-m-d'),
-          '',
-          $unpaidint,
-          0
-      );
-      $line++;
+      $head = [
+        'trno'       => $gjtrno,
+        'doc'        => 'GJ',
+        'docno'      => $docno,
+        'client'     => $client,
+        'clientname' => $clientname,
+        'dateid'     => date('Y-m-d'),
+        'yourref'    => $account->docno,
+        'ourref'     => '',
+        'rem'        => 'Pretermination of ' . $account->docno,
+        'createby'   => $config['params']['user'],
+        'createdate' => $this->othersClass->getCurrentTimeStamp()
+      ];
 
 
-      $saint = $this->coreFunctions->getfieldvalue("coa","acnoid", "alias = 'SA8'");
+      $data2 = [];
 
-      $detail[] = $createDetail(
-          $line,
-          $client,
-          $saint,
-          date('Y-m-d'),
-          '',
-          0,
-          $ardiff
+      foreach ($head as $key => $value) {
+        $data2[$key] = $this->othersClass->sanitizekeyfieldFast(
+          $key,
+          $value,
+          $lookups
+        );
+      }
+
+      $inserthead = $this->coreFunctions->sbcinsert(
+        app($path)->head,
+        $data2
       );
 
-      $line++;
 
-      $rebate = $this->coreFunctions->getfieldvalue("arledger","sum(db)", "acnoid = 24 and bal <> 0 and trno=?",[$trno]);
-
-      $rebate = $rebate ? $rebate : 0;
-
-
-      $apreb = $this->coreFunctions->getfieldvalue("coa","acnoid", "alias = 'AP3'");
-
-      $detail[] = $createDetail(
-          $line,
-          $client,
-          $apreb,
-          date('Y-m-d'),
-          '',
-          $rebate,
-          0
-      );
-
-      if (empty($detail)) {
-          return [
-              'accounting' => [],
-              'status'     => false,
-              'msg'        => 'No accounting details generated.'
-          ];
+      if (!$inserthead) {
+        return [
+          'status' => false,
+          'msg'    => 'Failed to create GJ header.'
+        ];
       }
 
 
-      $dateTables = ['lahead', 'ladetail'];
-
-      $lookups = $this->othersClass->buildSanitizeLookups(
-          'GJ',
-          $config['params']['companyid'],
-          [],
-          false,
-          $dateTables
+      $this->logger->sbcwritelog(
+        $gjtrno,
+        $config,
+        'CREATE',
+        $docno . ' - ' . $client . ' - ' . $clientname,
+        app($path)->tablelogs
       );
 
-      $path = 'App\Http\Classes\modules\accounting\gj';
 
-      try {
+      $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
-          $gjtrno = $this->othersClass->generatecntnum($config,'cntnum','GJ','GJ');
+      foreach ($detail as $detailLine) {
+        foreach ($detailLine as $key => $value) {
+          $detailLine[$key] =
+            $this->othersClass->sanitizekeyfieldFast(
+              $key,
+              $value,
+              $lookups
+            );
+        }
 
-          if ($gjtrno == -1) {
-              return [
-                  'status' => false,
-                  'msg'    => 'Unable to generate GJ transaction number.'
-              ];
-          }
-
-          $docno = $this->coreFunctions->getfieldvalue('cntnum','docno','trno=?',[$gjtrno]);
-
-          $head = [
-              'trno'       => $gjtrno,
-              'doc'        => 'GJ',
-              'docno'      => $docno,
-              'client'     => $client,
-              'clientname' => $clientname,
-              'dateid'     => date('Y-m-d'),
-              'yourref'    => $account->docno,
-              'ourref'     => '',
-              'rem'        => 'Pretermination of ' . $account->docno,
-              'createby'   => $config['params']['user'],
-              'createdate' => $this->othersClass->getCurrentTimeStamp()
-          ];
+        $detailLine['trno']        = $gjtrno;
+        $detailLine['editdate']    = $current_timestamp;
+        $detailLine['editby']      = $config['params']['user'];
+        $detailLine['encodeddate'] = $current_timestamp;
+        $detailLine['encodedby']   = $config['params']['user'];
 
 
-          $data2 = [];
+        $acno = $this->coreFunctions->getfieldvalue('coa', 'acno', 'acnoid = ?', [$detailLine['acnoid']]);
 
-          foreach ($head as $key => $value) {
-              $data2[$key] = $this->othersClass->sanitizekeyfieldFast(
-                  $key,
-                  $value,
-                  $lookups
-              );
-          }
+        $insertDetail = $this->coreFunctions->sbcinsert(
+          app($path)->detail,
+          $detailLine
+        );
 
-          $inserthead = $this->coreFunctions->sbcinsert(
-              app($path)->head,
-              $data2
-          );
-
-
-          if (!$inserthead) {
-              return [
-                  'status' => false,
-                  'msg'    => 'Failed to create GJ header.'
-              ];
-          }
-
-
+        if ($insertDetail != 1) {
           $this->logger->sbcwritelog(
+            $gjtrno,
+            $config,
+            'DETAILS',
+            'AUTOMATIC ACCOUNTING DISTRIBUTION FAILED',
+            app($path)->tablelogs
+          );
+
+          return [
+            'accounting' => [],
+            'status'     => false,
+            'msg'        => 'Entry Failed on line ' . $detailLine['line']
+          ];
+        }
+
+        if ($detailLine['refx'] != 0) {
+          $updateBalance = $this->sqlquery->setupdatebal(
+            $detailLine['refx'],
+            $detailLine['linex'],
+            $acno,
+            $config
+          );
+
+
+          if (!$updateBalance) {
+            $this->coreFunctions->sbcupdate(
+              $this->detail,
+              [
+                'db'  => 0,
+                'cr'  => 0,
+                'fdb' => 0,
+                'fcr' => 0
+              ],
+              [
+                'trno' => $gjtrno,
+                'line' => $detailLine['line']
+              ]
+            );
+
+            $this->sqlquery->setupdatebal(
+              $detailLine['refx'],
+              $detailLine['linex'],
+              $acno,
+              $config
+            );
+            $msg = 'Payment Amount is greater than Amount Setup';
+            $this->logger->sbcwritelog(
               $gjtrno,
               $config,
-              'CREATE',
-              $docno . ' - ' . $client . ' - ' . $clientname,
-              app($path)->tablelogs
-          );
+              'ACCTG',
+              $msg . ' - Line:' . $detailLine['line']
+            );
 
 
-          $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-
-          foreach ($detail as $detailLine) {
-             foreach ($detailLine as $key => $value) {
-                  $detailLine[$key] =
-                      $this->othersClass->sanitizekeyfieldFast(
-                          $key,
-                          $value,
-                          $lookups
-                      );
-              }
-
-              $detailLine['trno']        = $gjtrno;
-              $detailLine['editdate']    = $current_timestamp;
-              $detailLine['editby']      = $config['params']['user'];
-              $detailLine['encodeddate'] = $current_timestamp;
-              $detailLine['encodedby']   = $config['params']['user'];
-
-
-              $acno = $this->coreFunctions->getfieldvalue('coa','acno','acnoid = ?',[$detailLine['acnoid']]);
-
-              $insertDetail = $this->coreFunctions->sbcinsert(
-                  app($path)->detail,
-                  $detailLine
-              );
-
-              if ($insertDetail != 1) {
-                  $this->logger->sbcwritelog(
-                      $gjtrno,
-                      $config,
-                      'DETAILS',
-                      'AUTOMATIC ACCOUNTING DISTRIBUTION FAILED',
-                      app($path)->tablelogs
-                  );
-
-                  return [
-                      'accounting' => [],
-                      'status'     => false,
-                      'msg'        => 'Entry Failed on line ' . $detailLine['line']
-                  ];
-              }
-
-              if ($detailLine['refx'] != 0) {
-                  $updateBalance = $this->sqlquery->setupdatebal(
-                      $detailLine['refx'],
-                      $detailLine['linex'],
-                      $acno,
-                      $config
-                  );
-
-
-                  if (!$updateBalance) {
-                      $this->coreFunctions->sbcupdate(
-                          $this->detail,
-                          [
-                              'db'  => 0,
-                              'cr'  => 0,
-                              'fdb' => 0,
-                              'fcr' => 0
-                          ],
-                          [
-                              'trno' => $gjtrno,
-                              'line' => $detailLine['line']
-                          ]
-                      );
-
-                      $this->sqlquery->setupdatebal(
-                          $detailLine['refx'],
-                          $detailLine['linex'],
-                          $acno,
-                          $config
-                      );
-                      $msg = 'Payment Amount is greater than Amount Setup';
-                      $this->logger->sbcwritelog(
-                          $gjtrno,
-                          $config,
-                          'ACCTG',
-                          $msg . ' - Line:' . $detailLine['line']
-                      );
-
-
-                      return [
-                          'status' => false,
-                          'msg'    => $msg
-                      ];
-                  }
-              }
-
-              $this->logger->sbcwritelog(
-                  $gjtrno,
-                  $config,
-                  'DETAILS',
-                  'AUTOMATIC ACCOUNTING DISTRIBUTION SUCCESS',
-                  app($path)->tablelogs
-              );
-
-              $this->logger->sbcwritelog(
-                  $gjtrno,
-                  $config,
-                  'ACCTG',
-                  'ADD - Line:' . $detailLine['line'] .
-                  ' Remarks:' . $detailLine['rem'] .
-                  ' DB:' . $detailLine['db'] .
-                  ' CR:' . $detailLine['cr'] .
-                  ' Client:' . $detailLine['client'] .
-                  ' Date:' . $detailLine['postdate'],
-                  app($path)->tablelogs
-              );
-          }
-
-          $msg = 'Account Pre terminated. (' . $docno . ')';
-          $config['params']['trno'] = $gjtrno;
-
-          if (!app($path)->posttrans($config)) {
-              return [
-                  'status' => false,
-                  'msg'    => 'Post failed.'
-              ];
-          }
-
-          return [
-              'status' => true,
-              'msg'    => $msg
-          ];
-
-
-      } catch (Exception $e) {
-          $this->logger->sbcwritelog(
-              isset($gjtrno) ? $gjtrno : $trno,
-              $config,
-              'ERROR',
-              'Pretermination failed: ' . $e->getMessage()
-          );
-
-          return [
+            return [
               'status' => false,
-              'msg'    => $e->getMessage()
-          ];
-      }
-  }
+              'msg'    => $msg
+            ];
+          }
+        }
 
+        $this->logger->sbcwritelog(
+          $gjtrno,
+          $config,
+          'DETAILS',
+          'AUTOMATIC ACCOUNTING DISTRIBUTION SUCCESS',
+          app($path)->tablelogs
+        );
+
+        $this->logger->sbcwritelog(
+          $gjtrno,
+          $config,
+          'ACCTG',
+          'ADD - Line:' . $detailLine['line'] .
+            ' Remarks:' . $detailLine['rem'] .
+            ' DB:' . $detailLine['db'] .
+            ' CR:' . $detailLine['cr'] .
+            ' Client:' . $detailLine['client'] .
+            ' Date:' . $detailLine['postdate'],
+          app($path)->tablelogs
+        );
+      }
+
+      $msg = 'Account Pre terminated. (' . $docno . ')';
+      $config['params']['trno'] = $gjtrno;
+
+      if (!app($path)->posttrans($config)) {
+        return [
+          'status' => false,
+          'msg'    => 'Post failed.'
+        ];
+      }
+
+      return [
+        'status' => true,
+        'msg'    => $msg
+      ];
+    } catch (Exception $e) {
+      $this->logger->sbcwritelog(
+        isset($gjtrno) ? $gjtrno : $trno,
+        $config,
+        'ERROR',
+        'Pretermination failed: ' . $e->getMessage()
+      );
+
+      return [
+        'status' => false,
+        'msg'    => $e->getMessage()
+      ];
+    }
+  }
 } //end class

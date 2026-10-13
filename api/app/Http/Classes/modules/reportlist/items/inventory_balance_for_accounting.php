@@ -29,12 +29,12 @@ class inventory_balance_for_accounting
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -430,7 +430,7 @@ class inventory_balance_for_accounting
     groupid,brandname, partname,
     modelname,model, part,ib.brand,sizeid,body, class, ib.uom, loc, expiry, serialno, projname,
     ib.amt having (case when sum(qty-iss)>0 then 1 else 0 end) in " . $itemstock . ' ' . $order;
-//uom.uom = item.uom
+    //uom.uom = item.uom
     return $query;
   }
 
@@ -1215,7 +1215,7 @@ class inventory_balance_for_accounting
   public function reportDefaultLayout_NONE($config)
   {
     $result = $this->reportDefault($config);
-    
+
     $font = $this->companysetup->getrptfont($config['params']);
     $font_size = '10';
 

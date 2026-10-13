@@ -27,7 +27,7 @@ class approvebody
 
   public $info = 'eainfo';
   public $hinfo = 'heainfo';
-  
+
 
   public $tablelogs = 'transnum_log';
   public $tablelogs_del = 'del_transnum_log';
@@ -36,10 +36,10 @@ class approvebody
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -56,15 +56,15 @@ class approvebody
   {
 
 
-    $fields = ['payrolltype','employeetype','expiration','loanlimit','loanamt','refresh'];
+    $fields = ['payrolltype', 'employeetype', 'expiration', 'loanlimit', 'loanamt', 'refresh'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'expiration.readonly', false);
     data_set($col1, 'loanlimit.readonly', false);
     data_set($col1, 'loanamt.readonly', false);
 
-    
+
     data_set($col1, 'refresh.label', 'Save');
-    
+
 
     return array('col1' => $col1);
   }
@@ -77,15 +77,15 @@ class approvebody
   public function cntnuminfo_qry($trno)
   {
     $qry = "
-    select ".$trno." as trno, payrolltype,employeetype,expiration, loanlimit,loanamt from eainfo 
+    select " . $trno . " as trno, payrolltype,employeetype,expiration, loanlimit,loanamt from eainfo 
     where trno=$trno
     union all
-    select ".$trno." as trno, payrolltype,employeetype,expiration, loanlimit,loanamt from heainfo 
+    select " . $trno . " as trno, payrolltype,employeetype,expiration, loanlimit,loanamt from heainfo 
     where trno=$trno";
-    $data =$this->coreFunctions->opentable($qry);
+    $data = $this->coreFunctions->opentable($qry);
 
-    if(empty($data)){
-      $data= $this->coreFunctions->opentable("
+    if (empty($data)) {
+      $data = $this->coreFunctions->opentable("
       select $trno as trno, '' as payrolltype,'' as employeetype,now() as expiration, '0' as loanlimit,'0' as loanamt");
     }
 
@@ -105,12 +105,11 @@ class approvebody
   public function data($config)
   {
     return [];
-    
   }
 
   public function createTab($config)
   {
-    $obj=[];
+    $obj = [];
     return $obj;
   }
 
@@ -131,19 +130,17 @@ class approvebody
     $loanamt  = $config['params']['dataparams']['loanamt'];
     $expiration  = $config['params']['dataparams']['expiration'];
 
-     $qry = "update eainfo set 
-      payrolltype = '".$payrolltype."',
-      employeetype = '".$employeetype."',
-      loanlimit = '".$loanlimit."',
-      loanamt = '".$loanamt."',
-      expiration = '".$expiration."' 
-      where trno = '".$trno."'";
-     $this->coreFunctions->execqry($qry,"update");
+    $qry = "update eainfo set 
+      payrolltype = '" . $payrolltype . "',
+      employeetype = '" . $employeetype . "',
+      loanlimit = '" . $loanlimit . "',
+      loanamt = '" . $loanamt . "',
+      expiration = '" . $expiration . "' 
+      where trno = '" . $trno . "'";
+    $this->coreFunctions->execqry($qry, "update");
 
     $config['params']['clientid'] = $trno;
     $txtdata = $this->getheaddata($config);
-    return ['status' => true, 'msg' => 'Successfully change barcode.','trno'=>$trno,'reloadhead'=>true,'txtdata' => $txtdata];
+    return ['status' => true, 'msg' => 'Successfully change barcode.', 'trno' => $trno, 'reloadhead' => true, 'txtdata' => $txtdata];
   }
-
- 
 }

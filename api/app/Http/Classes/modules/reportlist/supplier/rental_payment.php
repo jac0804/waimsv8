@@ -29,12 +29,12 @@ class rental_payment
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -151,7 +151,7 @@ class rental_payment
     order by postdate
     ";
 
-    
+
     return $this->coreFunctions->opentable($query);
   }
 
@@ -198,7 +198,7 @@ class rental_payment
     $str .= $this->reporter->pagenumber('Page', NULL, null, false, $border, '', 'R', $font, $fontsize, '', '', '4px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-    
+
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');

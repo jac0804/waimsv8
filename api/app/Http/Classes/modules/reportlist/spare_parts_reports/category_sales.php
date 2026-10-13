@@ -29,12 +29,12 @@ class category_sales
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -61,7 +61,7 @@ class category_sales
         $fields = ['print'];
         $col3 = $this->fieldClass->create($fields);
 
-        return ['col1' => $col1,'col2' => $col2,'col3' => $col3];
+        return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3];
     }
 
     public function paramsdata($config)
@@ -116,7 +116,7 @@ class category_sales
             $whid = $config['params']['dataparams']['whid'];
             $filter = $filter . " and stock.whid=" . $whid;
         }
-        
+
         switch ($posttype) {
             case 'posted': // posted
                 $query = "select category,sum(refund) as refund, sum(total) as total
@@ -130,7 +130,7 @@ class category_sales
                     where head.dateid between '$start' and '$end' and  head.doc in ('ci','cm') and i.category <> 0 $filter
                 ) as a
                 group by category";
-            break;
+                break;
             case 'unposted':
                 $query = "select category,sum(refund) as refund, sum(total) as total
                 from (
@@ -143,7 +143,7 @@ class category_sales
                     where head.dateid between '$start' and '$end' and  head.doc in ('ci','cm') and i.category <> 0 $filter
                 ) as a
                 group by category";
-            break;
+                break;
             case 'all':
                 $query = "select category,sum(refund) as refund, sum(total) as total
                 from (
@@ -164,9 +164,9 @@ class category_sales
                     where head.dateid between '$start' and '$end' and  head.doc in ('ci','cm') and i.category <> 0 $filter
                 ) as a
                 group by category";
-            break;
+                break;
         }
-        
+
         return $query;
     }
 
@@ -177,7 +177,7 @@ class category_sales
         if (empty($result)) {
             return $this->othersClass->emptydata($config);
         }
-        
+
         $companyid = $config['params']['companyid'];
         $decimal = $this->companysetup->getdecimal('currency', $config['params']);
         // $count = 45;
@@ -190,7 +190,7 @@ class category_sales
         $border = "1px solid ";
         $layoutsize = '800';
         $totalsrp = 0;
-        $totalref =0;
+        $totalref = 0;
 
         if (empty($result)) {
             return $this->othersClass->emptydata($config);
@@ -236,7 +236,7 @@ class category_sales
         $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $whname     = $config['params']['dataparams']['whname'];
         $posttype  = $config['params']['dataparams']['posttype'];
-        
+
         switch ($posttype) {
             case 'posted':
                 $posttype = "POSTED";
@@ -248,7 +248,7 @@ class category_sales
                 $posttype = "ALL";
                 break;
         }
-        
+
         $str = '';
         $layoutsize = '800';
         $font = $this->companysetup->getrptfont($config['params']);

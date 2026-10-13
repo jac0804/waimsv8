@@ -33,10 +33,10 @@ class approvallist
   public $showfilter = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -114,7 +114,7 @@ select head.trno,left(head.dateid,10) as dateid,head.docno,p.name as project,'Bu
     $data = [];
     $row = $config['params']['row'];
     $companyid = $config['params']['companyid'];
-    
+
     $dateTables = ['lahead'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 

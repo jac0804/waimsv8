@@ -45,10 +45,10 @@ class  tabheadinfo
     private $warehousinglookup;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -139,7 +139,7 @@ class  tabheadinfo
         $data = $config['params']['data'];
         $config['params']['trno'] = $config['params']['tableid'];
         $data2 = [];
-        
+
         $companyid = $config['params']['companyid'];
         $dateTables = [$this->table];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -147,7 +147,7 @@ class  tabheadinfo
         foreach ($data as $key => $value) {
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
 
                 if ($data[$key]['trno'] == 0) {

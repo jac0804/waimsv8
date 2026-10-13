@@ -35,10 +35,10 @@ class mitagged
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -152,7 +152,7 @@ class mitagged
         left join hcntnuminfo as info on info.trno = head.trno
         where head.doc='MI' and num.center = ? and info.jotrno = $trno
         order by docno desc";
-        
+
         $data = $this->coreFunctions->opentable($qry, [$config['params']['center'], $config['params']['center']]);
         return $data;
     }

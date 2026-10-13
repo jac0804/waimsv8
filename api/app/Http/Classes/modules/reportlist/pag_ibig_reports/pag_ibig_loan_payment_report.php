@@ -35,12 +35,12 @@ class pag_ibig_loan_payment_report
   // layoutsize: reportWidth
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '700'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -121,9 +121,9 @@ class pag_ibig_loan_payment_report
     if ($client != "") {
       $filter .= " and e.client = '$client'";
     }
-   if ($deptname != '') {
+    if ($deptname != '') {
       if ($deptid != 0) {
-          $filter .= " and emp.deptid = $deptid";
+        $filter .= " and emp.deptid = $deptid";
       }
     }
 

@@ -120,11 +120,11 @@ class sj
     ['val' => 'all', 'label' => 'All', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -826,32 +826,32 @@ class sj
     $islocation = $this->companysetup->getislocation($config['params']);
     $locname = $this->companysetup->getlocname($config['params']);
 
-    $action = 0;
-    $itemdesc = 1;
-    $serial = 2;
-    $isqty = 3;
-    $uom = 4;
-    $kgs = 5;
-    $isamt = 6;
-    $disc = 7;
-    $ext = 8;
-    $itemstatus = 9;
-    $cost = 10;
-    $markup = 11;
-    $rebate = 12;
-    $gprofit = 13;
-    $itemd = 14;
-    $wh = 15;
-    $whname = 16;
-    $ref = 17;
-    $loc = 18;
-    $expiry = 19;
-    $rem = 20;
-    $itemname = 21;
-    $stock_projectname = 22;
-    $noprint = 23;
-    $barcode = 24;
-    $issp = 25;
+    // $action = 0;
+    // $itemdesc = 1;
+    // $serial = 2;
+    // $isqty = 3;
+    // $uom = 4;
+    // $kgs = 5;
+    // $isamt = 6;
+    // $disc = 7;
+    // $ext = 8;
+    // $itemstatus = 9;
+    // $cost = 10;
+    // $markup = 11;
+    // $rebate = 12;
+    // $gprofit = 13;
+    // $itemd = 14;
+    // $wh = 15;
+    // $whname = 16;
+    // $ref = 17;
+    // $loc = 18;
+    // $expiry = 19;
+    // $rem = 20;
+    // $itemname = 21;
+    // $stock_projectname = 22;
+    // $noprint = 23;
+    // $barcode = 24;
+    // $issp = 25;
 
 
     if ($inv) {
@@ -879,55 +879,54 @@ class sj
 
     switch ($companyid) {
       case 40: //cdo
-        $action = 0;
-        $itemdesc = 1;
-        $isqty = 2;
-        $uom = 3;
-        $serial = 4;
-        $color = 5;
-        $pnpcsr = 6;
-        $kgs = 7;
-        $isamt = 8;
-        $disc = 9;
-        $ext = 10;
-        $itemstatus = 11;
-        $cost = 12;
-        $markup = 13;
-        $rebate = 14;
-        $gprofit = 15;
-        $wh = 16;
-        $whname = 17;
-        $ref = 18;
-        $loc = 19;
-        $expiry = 20;
-        $rem = 21;
-        $itemname = 22;
-        $stock_projectname = 23;
-        $noprint = 24;
-        $barcode = 25;
+        // $action = 0;
+        // $itemdesc = 1;
+        // $isqty = 2;
+        // $uom = 3;
+        // $serial = 4;
+        // $color = 5;
+        // $pnpcsr = 6; --
+        // $kgs = 7;
+        // $isamt = 8;
+        // $disc = 9;
+        // $ext = 10;
+        // $itemstatus = 11;
+        // $cost = 12;
+        // $markup = 13;
+        // $rebate = 14;
+        // $gprofit = 15;
+        // $wh = 16;
+        // $whname = 17;
+        // $ref = 18;
+        // $loc = 19;
+        // $expiry = 20;
+        // $rem = 21;
+        // $itemname = 22;
+        // $stock_projectname = 23;
+        // $noprint = 24;
+        // $barcode = 25;
 
         $column = ['action', 'itemdescription',  'isqty', 'uom', 'serialno', 'color', 'pnp', 'kgs', 'isamt', 'disc', 'ext', 'itemstatus', 'cost', 'markup', 'rebate', 'gprofit', 'wh', 'ref', 'loc', 'expiry', 'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
         $sortcolumn = ['action', 'itemdescription',  'isqty', 'uom', 'serialno', 'color', 'pnp', 'kgs', 'isamt', 'disc', 'ext', 'itemstatus', 'cost', 'markup', 'rebate', 'gprofit', 'wh', 'ref', 'loc', 'expiry', 'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
         break;
       case 60: //transpower
-
-        $action = 0;
-        $barcode = 1;
-        $isqty = 2;
-        $uom = 3;
-        $itemname = 4;
-        $rem = 5;
-        $isamt = 6;
-        $disc = 7;
-        $agentamt = 8;
-        $ext = 9;
-        $startwire = 10;
-        $endwire = 11;
-        $cost = 12;
-        $markup = 13;
-        $wh = 14;
-        $whname = 15;
-        $ref = 16;
+        // $action = 0;
+        // $barcode = 1;
+        // $isqty = 2;
+        // $uom = 3;
+        // $itemname = 4;
+        // $rem = 5;
+        // $isamt = 6;
+        // $disc = 7;
+        // $agentamt = 8;
+        // $ext = 9;
+        // $startwire = 10;
+        // $endwire = 11;
+        // $cost = 12;
+        // $markup = 13;
+        // $wh = 14;
+        // $whname = 15;
+        // $ref = 16;
 
         $column = ['action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'agentamt', 'ext', 'startwire', 'endwire', 'cost', 'markup', 'wh', 'whname', 'ref'];
         $sortcolumn = ['action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'agentamt', 'ext', 'startwire', 'endwire', 'cost', 'markup', 'wh', 'whname', 'ref'];
@@ -936,39 +935,43 @@ class sj
 
         $column = ['action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref'];
         $sortcolumn = ['action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref'];
-        foreach ($column as $key => $value) {
-          $$value = $key;
-        }
+        // foreach ($column as $key => $value) {
+        //   $$value = $key;
+        // }
         break;
       case 64: //excilin
         $column = ['action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'consignpr', 'disc2', 'markup', 'wh', 'ref', 'rem'];
         $sortcolumn = ['action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'consignpr', 'disc2', 'markup', 'wh', 'ref', 'rem'];
-        foreach ($column as $key => $value) {
-          $$value = $key;
-        }
+        // foreach ($column as $key => $value) {
+        //   $$value = $key;
+        // }
         break;
 
       case 65: //metrodragon
         $column = ['action', 'barcode', 'isqty', 'weight', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem'];
         $sortcolumn = ['action', 'barcode',  'isqty', 'weight', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem'];
-        foreach ($column as $key => $value) {
-          $$value = $key;
-        }
+        // foreach ($column as $key => $value) {
+        //   $$value = $key;
+        // }
         break;
       case 67: //yulick
         $column = ['action', 'barcode', 'isqty', 'isqty2', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem', 'loc', 'expiry'];
         $sortcolumn = ['action', 'barcode',  'isqty', 'isqty2', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem', 'loc', 'expiry'];
-        foreach ($column as $key => $value) {
-          $$value = $key;
-        }
+        // foreach ($column as $key => $value) {
+        //   $$value = $key;
+        // }
         break;
       case 72: //hahsy
         $column = ['action', 'itemdescription', 'serialno',  'isqty',   'uom',  'kgs',  'isamt', 'disc', 'ext', 'itemstatus', 'cost',  'markup', 'rebate', 'gprofit',  'itemdesc',  'wh', 'whname',  'ref', 'loc',  'expiry', 'rem', 'itemname', 'stock_projectname',  'noprint', 'barcode', 'issp', 'rem2', 'cbm'];
         $sortcolumn = ['action', 'itemdescription', 'serialno', 'isqty',  'uom', 'kgs', 'isamt', 'disc',  'ext', 'itemstatus',  'cost', 'markup',  'rebate', 'gprofit', 'itemdesc', 'wh', 'whname', 'ref',  'loc',  'expiry',  'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode', 'issp', 'rem2', 'cbm'];
-        foreach ($column as $key => $value) {
-          $$value = $key;
-        }
+        // foreach ($column as $key => $value) {
+        //   $$value = $key;
+        // }
         break;
+    }
+
+    foreach ($column as $key => $value) {
+      $$value = $key;
     }
 
     switch ($companyid) {
@@ -1090,30 +1093,30 @@ class sj
 
     switch ($config['params']['companyid']) {
       case 1: //vitaline
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
 
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 23: //labsol cebu
       case 41: //labsol manila
       case 52: //technolab
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'input';
-        $obj[0]['inventory']['columns'][$itemd]['label'] = 'Item Description';
-        $obj[0]['inventory']['columns'][$itemd]['readonly'] = false;
+        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'input';
+        $obj[0]['inventory']['columns'][$itemdesc]['label'] = 'Item Description';
+        $obj[0]['inventory']['columns'][$itemdesc]['readonly'] = false;
 
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
@@ -1130,25 +1133,25 @@ class sj
         $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'input';
 
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
         // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 21: // kinggeorge
         $obj[0]['inventory']['columns'][$noprint]['type'] = 'coldel';
 
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
 
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
@@ -1157,18 +1160,18 @@ class sj
         // $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 10: //afti
       case 12: //afti usd
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'textarea';
-        $obj[0]['inventory']['columns'][$itemdesc]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$itemdesc]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:350px;max-width:350px;';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'lookup';
-        $obj[0]['inventory']['columns'][$serial]['lookupclass'] = 'lookupserialout';
-        $obj[0]['inventory']['columns'][$serial]['action'] = 'lookupserialout';
-        $obj[0]['inventory']['columns'][$serial]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'textarea';
+        $obj[0]['inventory']['columns'][$itemdescription]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$itemdescription]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:350px;max-width:350px;';
+        $obj[0]['inventory']['columns'][$serialno]['type'] = 'lookup';
+        $obj[0]['inventory']['columns'][$serialno]['lookupclass'] = 'lookupserialout';
+        $obj[0]['inventory']['columns'][$serialno]['action'] = 'lookupserialout';
+        $obj[0]['inventory']['columns'][$serialno]['readonly'] = true;
         $obj[0]['inventory']['columns'][$wh]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'lookup';
         $obj[0]['inventory']['columns'][$whname]['lookupclass'] = 'whstock';
@@ -1180,11 +1183,11 @@ class sj
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 40: //cdo
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         // $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
@@ -1197,28 +1200,28 @@ class sj
         $obj[0]['inventory']['columns'][$color]['readonly'] = true;
         $obj[0]['inventory']['columns'][$color]['style'] = 'text-align: left; width: 100px;whiteSpace: normal;min-width:100px;max-width:100px;';
         //$obj[0]['inventory']['columns'][$serial]['type'] = 'textarea';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'lookup';
-        $obj[0]['inventory']['columns'][$serial]['lookupclass'] = 'lookupserialout';
-        $obj[0]['inventory']['columns'][$serial]['action'] = 'lookupserialout';
-        $obj[0]['inventory']['columns'][$serial]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$serial]['label'] = 'Engine/Chassis#';
-        $obj[0]['inventory']['columns'][$serial]['style'] = 'text-align: left; width: 300px;whiteSpace: normal;min-width:250px;max-width:2350px;';
-        $obj[0]['inventory']['columns'][$pnpcsr]['type'] = 'textarea';
-        $obj[0]['inventory']['columns'][$pnpcsr]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$pnpcsr]['label'] = 'PNP/CSR#';
-        $obj[0]['inventory']['columns'][$pnpcsr]['style'] = 'text-align: left; width: 300px;whiteSpace: normal;min-width:250px;max-width:2350px;';
+        $obj[0]['inventory']['columns'][$serialno]['type'] = 'lookup';
+        $obj[0]['inventory']['columns'][$serialno]['lookupclass'] = 'lookupserialout';
+        $obj[0]['inventory']['columns'][$serialno]['action'] = 'lookupserialout';
+        $obj[0]['inventory']['columns'][$serialno]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$serialno]['label'] = 'Engine/Chassis#';
+        $obj[0]['inventory']['columns'][$serialno]['style'] = 'text-align: left; width: 300px;whiteSpace: normal;min-width:250px;max-width:2350px;';
+        $obj[0]['inventory']['columns'][$pnp]['type'] = 'textarea';
+        $obj[0]['inventory']['columns'][$pnp]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$pnp]['label'] = 'PNP/CSR#';
+        $obj[0]['inventory']['columns'][$pnp]['style'] = 'text-align: left; width: 300px;whiteSpace: normal;min-width:250px;max-width:2350px;';
 
         $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 69: //cemphil
       case 24: //goodfound
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
@@ -1237,7 +1240,7 @@ class sj
         }
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 60: //transpower
@@ -1297,28 +1300,31 @@ class sj
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         break;
       case 67: //yulick
+        $obj[0]['inventory']['columns'][$isqty]['label'] = 'Dispatch Qty';
         $obj[0]['inventory']['columns'][$isqty2]['label'] = 'Customer Qty';
         $obj[0]['inventory']['columns'][$isqty2]['readonly'] = true;
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$rem]['type'] = 'lookup';
+        $obj[0]['inventory']['columns'][$rem]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$rem]['lookupclass'] = 'lookupitemdesc';
+        $obj[0]['inventory']['columns'][$rem]['action'] = 'lookupitemdesc';
         break;
       case 71: //buenatech
         $obj[0]['inventory']['columns'][$issp]['style'] = 'text-align: left; width: 50px;whiteSpace: normal;min-width:125px;max-width:50px;';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'toggle';
         $obj[0]['inventory']['columns'][$issp]['label'] = 'Special Price';
-        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
 
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
 
         if (!$isexpiry) {
           $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
@@ -1332,31 +1338,30 @@ class sj
         $obj[0]['inventory']['columns'][$rem2]['style'] = 'text-align: left; width:200px;whiteSpace: normal;min-width:200px;';
         $obj[0]['inventory']['columns'][$cbm]['readonly'] = true;
 
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$noprint]['type'] = 'coldel';
-
         break;
       default:
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         if (!$isexpiry) {
           // switch ($companyid) {
@@ -1728,7 +1733,7 @@ class sj
         array_push($fields, 'dewt');
         break;
       case 67: //yulick
-        array_push($fields, 'rfno', 'conaddr');
+        array_push($fields, 'vendorname', 'clientpref');
         break;
     }
 
@@ -1760,9 +1765,10 @@ class sj
         break;
       case 67: //yulick
         data_set($col3, 'yourref.label', 'PO#');
-        data_set($col3, 'rfno.label', 'Vendor Code');
-        data_set($col3, 'conaddr.label', 'Requestor');
-        data_set($col3, 'conaddr.class', 'csconaddr');
+        data_set($col3, 'vendorname.label', 'Vendor Code');
+        data_set($col3, 'vendorname.readonly', true);
+        data_set($col3, 'clientpref.label', 'Requestor');
+        data_set($col3, 'clientpref.readonly', true);
         break;
       default:
         data_set($col3, 'yourref.label', 'PO#');
@@ -1849,6 +1855,10 @@ class sj
         break;
       case 22:
         $data[0]['vattype'] = 'NON-VATABLE';
+        break;
+      case 67:
+        $data[0]['vendorname'] = '';
+        $data[0]['clientpref'] = '';
         break;
       default:
         $data[0]['vattype'] = 'NON-VATABLE';
@@ -1975,6 +1985,10 @@ class sj
       case 60: //transpower
         $data[0]['tax'] = 12;
         $data[0]['vattype'] = 'VATABLE';
+        break;
+      case 67:
+        $data[0]['vendorname'] = '';
+        $data[0]['clientpref'] = '';
         break;
       default:
         $data[0]['tax'] = 0;
@@ -5360,8 +5374,7 @@ class sj
               'shipto' => $data[0]->shipto,
               'projectid' => $data[0]->hprojectid,
               'sano' => $data[0]->sano,
-              'pono' => $data[0]->pono,
-              'received' => $data[0]->received
+              'pono' => $data[0]->pono
             ];
           }
 

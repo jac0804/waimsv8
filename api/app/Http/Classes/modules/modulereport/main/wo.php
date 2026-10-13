@@ -37,9 +37,9 @@ class wo
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -63,7 +63,7 @@ class wo
     public function reportparamsdata($config)
     {
         return $this->coreFunctions->opentable(
-        "select
+            "select
         'PDFM' as print,
         '0' as reporttype,
         '' as prepared,
@@ -226,7 +226,7 @@ class wo
             $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
             $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
         }
-        
+
         $this->default_wo_header_PDF($params, $data);
 
         PDF::SetFont($font, '', 5);

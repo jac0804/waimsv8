@@ -33,9 +33,9 @@ class sj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -117,11 +117,11 @@ class sj
       case '0':
         $str = $this->vitaline_drreport($params, $data); // dr report
         // $str = $this->vitaline_drreport_PDF($params, $data); // dr report
-      break;
+        break;
       case '1':
         $str = $this->vitaline_sireport($params, $data);
         // $str = $this->vitaline_sireport_PDF($params, $data);
-      break;
+        break;
     }
     return $str;
   }
@@ -410,21 +410,21 @@ class sj
 
     for ($i = 0; $i < count($data); $i++) {
       $maxrow = 1;
-      $arr_barcode = $this->reporter->fixcolumn([$data[$i]['barcode']],'16',0);
-      $arr_qty = $this->reporter->fixcolumn([number_format($data[$i]['qty'],$decimalqty).$data[$i]['uom']],'13',0);
-      $arr_amt = $this->reporter->fixcolumn([number_format($data[$i]['amt'],$decimalprice)],'13',0);
-      $arr_ext = $this->reporter->fixcolumn([number_format($data[$i]['ext'],$decimalprice)],'13',0);
+      $arr_barcode = $this->reporter->fixcolumn([$data[$i]['barcode']], '16', 0);
+      $arr_qty = $this->reporter->fixcolumn([number_format($data[$i]['qty'], $decimalqty) . $data[$i]['uom']], '13', 0);
+      $arr_amt = $this->reporter->fixcolumn([number_format($data[$i]['amt'], $decimalprice)], '13', 0);
+      $arr_ext = $this->reporter->fixcolumn([number_format($data[$i]['ext'], $decimalprice)], '13', 0);
       if ($data[$i]['expiry'] != "") {
         $expiry = date('M-d-Y', strtotime($data[$i]['expiry']));
       } else {
         $expiry = "";
       }
-      $arr_desc = $this->reporter->fixcolumn([$data[$i]['itemname'].'<br>Lot: '.$data[$i]['loc'].' Exp: '.$expiry],'40',0);
-      $arr_expiry = $this->reporter->fixcolumn([$expiry],'16',0);
+      $arr_desc = $this->reporter->fixcolumn([$data[$i]['itemname'] . '<br>Lot: ' . $data[$i]['loc'] . ' Exp: ' . $expiry], '40', 0);
+      $arr_expiry = $this->reporter->fixcolumn([$expiry], '16', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_qty, $arr_amt, $arr_ext, $arr_expiry]);
 
-      for($r = 0; $r < $maxrow; $r++) {
+      for ($r = 0; $r < $maxrow; $r++) {
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(125, 0, (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false, 40, 'B');
         PDF::MultiCell(300, 0, (isset($arr_desc[$r]) ? $arr_desc[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false, 40, 'B');

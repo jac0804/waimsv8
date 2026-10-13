@@ -35,10 +35,10 @@ class pendingutcancelapplications
     public $fields = ['status', 'canceldate', 'cancelby', 'reason'];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -62,16 +62,16 @@ class pendingutcancelapplications
         $url = 'App\Http\Classes\modules\payroll\\' . 'ucc';
         $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='LEAVECANCELLATION'");
         if ($approversetup == '') {
-          $approversetup = app($url)->approvers($config['params']);
+            $approversetup = app($url)->approvers($config['params']);
         } else {
-          $approversetup = explode(',', $approversetup);
-          foreach ($approversetup as $appkey => $appsetup) {
-            if ($appsetup == 'Supervisor') {
-                $approversetup[$appkey] = 'issupervisor';
-            } else {
-                $approversetup[$appkey] = 'isapprover';
+            $approversetup = explode(',', $approversetup);
+            foreach ($approversetup as $appkey => $appsetup) {
+                if ($appsetup == 'Supervisor') {
+                    $approversetup[$appkey] = 'issupervisor';
+                } else {
+                    $approversetup[$appkey] = 'isapprover';
+                }
             }
-          }
         }
         $cols = ['action', 'clientname', 'dateid', 'rem1'];
         $tab = [$this->gridname => ['gridcolumns' => $cols]];
@@ -123,7 +123,7 @@ class pendingutcancelapplications
             left join pendingapp as p on p.line=ut.line and p.doc='UNDERTIMECANCELLATION'
             left join moduleapproval as m on m.modulename=p.doc
             where ut.status = 'E' and ut.forapproval is not null and canceldate is null
-            and p.clientid=".$config['params']['adminid']."
+            and p.clientid=" . $config['params']['adminid'] . "
             order by ut.dateid";
         $data = $this->coreFunctions->opentable($qry);
         return $data;
@@ -152,18 +152,18 @@ class pendingutcancelapplications
         $approver = $this->coreFunctions->getfieldvalue("employee", "isapprover", "empid=?", [$admin]);
         $supervisor = $this->coreFunctions->getfieldvalue("employee", "issupervisor", "empid=?", [$admin]);
         $url = 'App\Http\Classes\modules\payroll\\' . 'ucc';
-        $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='".$doc."'");
+        $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='" . $doc . "'");
         if ($approversetup == '') {
-          $approversetup = app($url)->approvers($config['params']);
+            $approversetup = app($url)->approvers($config['params']);
         } else {
-          $approversetup = explode(',', $approversetup);
-          foreach ($approversetup as $appkey => $appsetup) {
-            if ($appsetup == 'Supervisor') {
-              $approversetup[$appkey] = 'issupervisor';
-            } else {
-              $approversetup[$appkey] = 'isapprover';
+            $approversetup = explode(',', $approversetup);
+            foreach ($approversetup as $appkey => $appsetup) {
+                if ($appsetup == 'Supervisor') {
+                    $approversetup[$appkey] = 'issupervisor';
+                } else {
+                    $approversetup[$appkey] = 'isapprover';
+                }
             }
-          }
         }
 
         $line = $row['line'];
@@ -176,24 +176,24 @@ class pendingutcancelapplications
         $user = $config['params']['user'];
         if (!$status) $data = ['reason' => $row['rem1'], 'status' => $lstatus, 'canceldate' => $date, 'cancelby' => $user];
         $tempdata = [];
-        
+
         $companyid = $config['params']['companyid'];
         $dateTables = ['undertime'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key2) {
             if (isset($data[$key2])) {
                 $tempdata[$key2] = $data[$key2];
-                $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2],$lookups);
+                $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
             }
         }
         $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $tempdata['editby'] = $config['params']['user'];
         $update = $this->coreFunctions->sbcupdate("undertime", $tempdata, ['line' => $line, 'empid' => $row['empid']]);
         if ($update) {
-            $this->coreFunctions->execqry("delete from pendingapp where doc='UNDERTIMECANCELLATION' and line=".$line, 'delete');
+            $this->coreFunctions->execqry("delete from pendingapp where doc='UNDERTIMECANCELLATION' and line=" . $line, 'delete');
             $config['params']['doc'] = 'UNDERTIMECANCELLATION';
-            $this->logger->sbcmasterlog($line.' '.$row['trno'], $config, $label.' ('.$row['clientname'].') - '.$row['dateid']);
-            return ['status' => true, 'msg' => 'Successfully '.$label.' ', 'data' => [], 'reloadsbclist' => true, 'action' => 'gapplications', 'deleterow' => true];
+            $this->logger->sbcmasterlog($line . ' ' . $row['trno'], $config, $label . ' (' . $row['clientname'] . ') - ' . $row['dateid']);
+            return ['status' => true, 'msg' => 'Successfully ' . $label . ' ', 'data' => [], 'reloadsbclist' => true, 'action' => 'gapplications', 'deleterow' => true];
         }
         return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => []];
     }

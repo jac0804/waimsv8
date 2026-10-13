@@ -33,12 +33,12 @@ class inventory_balance
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -100,6 +100,10 @@ class inventory_balance
         $fields = ['radioprint', 'start', 'end', 'ditemname', 'luom', 'divsion', 'brandname', 'brandid', 'model', 'class', 'categoryname', 'subcatname', 'dwhname'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'divsion.label', 'Group');
+        break;
+      case 68: //JDA
+        array_push($fields, 'whtype');
+        $col1 = $this->fieldClass->create($fields);
         break;
       default:
         $col1 = $this->fieldClass->create($fields);
@@ -261,7 +265,8 @@ class inventory_balance
     '' as partid,
     '' as part,
     '' as partname,
-     '' as whid
+    '' as whid,
+    '' as whtype
     ";
 
     switch ($companyid) {
@@ -703,6 +708,7 @@ class inventory_balance
     $amountformat   = $config['params']['dataparams']['amountformat'];
     $itemstock  = $config['params']['dataparams']['itemstock'];
     $itemtype   = $config['params']['dataparams']['itemtype'];
+    $whtype = isset($config['params']['dataparams']['whtype']) ? $config['params']['dataparams']['whtype'] : '';
     $excwh = isset($config['params']['dataparams']['layoutformat']) ? $config['params']['dataparams']['layoutformat'] : '';
     $uom = $config['params']['dataparams']['uom'];
     $companyid = $config['params']['companyid'];
@@ -813,6 +819,12 @@ class inventory_balance
         $addfieldgrpby = ', uom.amt';
         break;
     }
+
+    if ($whtype != '') {
+      $defaultljoin =  ' left join client as whc on whc.clientid = stock.whid ';
+      $filter .= " and whc.type  = '$whtype'";
+    }
+
     switch ($companyid) {
       case 10: //afti
       case 12: //afti usd
@@ -877,6 +889,7 @@ class inventory_balance
     if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       $addfield .= ',stockgrp.stockgrp_name';
     }
+
 
     if ($companyid == 56) { //homeworks
       $addfieldhm .= ', cl.client as supcode, cl.clientname as supname, iclass.cl_name as classname , warehouse, stockgrp.stockgrp_name ';
@@ -1072,6 +1085,7 @@ class inventory_balance
           $proj2
           $proj3 $hmunpostedwh
           $defaultljoin
+  
           where $filtetdate $filter $filter1 $filteritem  $filterexcwh  and item.isofficesupplies = 0
           group by stock.itemid,  " . $fielduom . ", stock.whid, stock.loc, stock.expiry, item.itemrem $proj1 $hmgroup
           union all
@@ -1083,6 +1097,7 @@ class inventory_balance
           $proj2
           $proj3  $hmpostedwh
           $defaultljoin
+  
           where $filtetdate $filter $filter1 $filteritem  $filterexcwh  and item.isofficesupplies = 0
           group by stock.itemid,  " . $fielduom . ", stock.whid, stock.loc, stock.expiry, item.itemrem $proj1 $hmgroup
 
@@ -7800,6 +7815,8 @@ class inventory_balance
     $companyid = $config['params']['companyid'];
     $amountformat   = $config['params']['dataparams']['amountformat'];
 
+    $whtype = isset($config['params']['dataparams']['whtype']) ? $config['params']['dataparams']['whtype'] : '';
+
     $filter = '';
     $addfield = '';
     $joins = '';
@@ -7888,6 +7905,12 @@ class inventory_balance
       $grpby .= ", brand.brand_desc ";
       $joins .= "left join frontend_ebrands as brand on brand.brandid = i.brand";
     }
+
+    if ($whtype != '') {
+      $joins = $joins . " left join client as whc on whc.clientid = rr.whid ";
+      $filter = $filter . " and whc.type = '$whtype' ";
+    }
+
     $query = "select i.itemid,i.itemname,i.uom,i.amt,i.disc, sum(rr.bal) as balance, ifnull(partgrp.part_name,'') as part,i.barcode,
         '' as category, 0 as stockgrp_name, ifnull(cat.name,'') as category,ifnull(i.itemrem,'') as rem  $addfield 
         from rrstatus as rr

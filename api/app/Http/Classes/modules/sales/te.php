@@ -72,11 +72,11 @@ class te
     ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -574,7 +574,6 @@ class te
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
-
         } //end if
       }
     }

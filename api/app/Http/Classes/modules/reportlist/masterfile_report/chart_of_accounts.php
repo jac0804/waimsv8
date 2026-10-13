@@ -34,12 +34,12 @@ class chart_of_accounts
   // layoutsize: reportWidth
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -75,8 +75,7 @@ class chart_of_accounts
   public function reportdata($config)
   {
     $str = $this->reportplotting($config);
-    return ['status' => true, 'msg' => 'Generating report successfully.', 'report' =>$str, 'params' => $this->reportParams];
-
+    return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'params' => $this->reportParams];
   }
 
 
@@ -128,7 +127,7 @@ class chart_of_accounts
     $str .= $this->reporter->beginreport($this->reportParams['layoutSize']);
     $str .= $this->GENERATE_DEFAULT_HEADER($params);
     $str .= $this->default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11);
-   
+
     foreach ($data as $key => $value) {
 
       $str .= $this->reporter->startrow();
@@ -139,7 +138,7 @@ class chart_of_accounts
       $str .= $this->reporter->col($value->alias, '70', null, false, $border, $border_line, $alignment, $font, $font_size, '', '', '');
       $str .= $this->reporter->col($value->type, '70', null, false, $border, $border_line, $alignment, $font, $font_size, '', '', '');
       $str .= $this->reporter->endrow();
-      
+
 
       // if ($this->reporter->linecounter == $page) {
       //   $str .= $this->reporter->endtable();
@@ -176,13 +175,13 @@ class chart_of_accounts
 
     $str = '';
 
-   
-      $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->letterhead($center, $username, $params);
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->endtable();
-   
+
+    $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center, $username, $params);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
     $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('CHART OF ACCOUNTS', 1000, null, false, '10px solid ', '', '', $font, '24', '', '', '');
@@ -221,5 +220,4 @@ class chart_of_accounts
     $str .= $this->reporter->endrow();
     return $str;
   }
-
 }//end class

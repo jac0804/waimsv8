@@ -37,10 +37,10 @@ class entrysuspension
     public $showsearch = true;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -160,7 +160,7 @@ class entrysuspension
                         $enddate  =  $t->format("Y-m-d");
                     }
 
-                    $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$key][$value],$lookups);
+                    $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$key][$value], $lookups);
                 }
                 $empid = $this->coreFunctions->datareader("select empid as value from disciplinary where trno= " . $trno . "");
                 if ($empid == 0) {
@@ -238,7 +238,7 @@ class entrysuspension
         if ($trno == 0) {
             return ['status' => false, 'msg' => 'Please save header before adding details.'];
         }
-        
+
         $companyid = $config['params']['companyid'];
         $dateTables = [$this->detail];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -252,7 +252,7 @@ class entrysuspension
                 $t = new DateTime($row[$value]);
                 $enddate  =  $t->format("Y-m-d");
             }
-            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
 

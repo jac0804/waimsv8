@@ -29,12 +29,12 @@ class analyzed_agent_sales_monthly
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -940,13 +940,15 @@ class analyzed_agent_sales_monthly
     $dcenter  = $config['params']['center'];
     $year     = $config['params']['dataparams']['year'];
     $transac  = $config['params']['dataparams']['posttype'];
+    $subcatname =  $config['params']['dataparams']['subcatname'];
     $categoryname = $config['params']['dataparams']['categoryname'];
     $centername   = $config['params']['dataparams']['centername'];
     $code         = $config['params']['dataparams']['center'];
 
     $transtype = ($transac == '0') ? 'POSTED' : 'UNPOSTED';
     $centertxt = ($code == '') ? 'ALL CENTER' : strtoupper($centername);
-    $itemclass = ($categoryname == '') ? 'ALL ITEM CLASS' : strtoupper($categoryname);
+    $itemclass = ($categoryname == '') ? 'ALL CATEGORY' : strtoupper($categoryname);
+    $subcattxt = ($subcatname == '') ? 'ALL SUB-CATEGORY' : strtoupper($subcatname);
 
     $str = '';
     $layoutsize = '1300';
@@ -969,12 +971,14 @@ class analyzed_agent_sales_monthly
     $str .= $this->reporter->col('TRANSACTION :', '95', null, false, '', '', 'L', $font, $fontsize);
     $str .= $this->reporter->col($transtype, '105', null, false, '', '', 'L', $font, $fontsize, 'B');
     $str .= $this->reporter->col('CENTER :', '60', null, false, '', '', 'L', $font, $fontsize);
-    $str .= $this->reporter->col($centertxt, '200', null, false, '', '', 'L', $font, $fontsize, 'B');
-    $str .= $this->reporter->col('ITEM CLASS :', '80', null, false, '', '', 'L', $font, $fontsize);
-    $str .= $this->reporter->col($itemclass, '200', null, false, '', '', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->col($centertxt, '180', null, false, '', '', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('ITEM CATEGORY :', '110', null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col($itemclass, '170', null, false, '', '', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('SUB-CATEGORY :', '100', null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col($subcattxt, '150', null, false, '', '', 'L', $font, $fontsize, 'B');
     $str .= $this->reporter->col('TYPE :', '50', null, false, '', '', 'L', $font, $fontsize);
-    $str .= $this->reporter->col('SALES LESS RETURN', '210', null, false, '', '', 'L', $font, $fontsize, 'B');
-    $str .= $this->reporter->pagenumber('Page', 200, null, false, '', '', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('SALES LESS RETURN', '150', null, false, '', '', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->pagenumber('Page', 130, null, false, '', '', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -1067,6 +1071,184 @@ class analyzed_agent_sales_monthly
       $str .= $this->reporter->col($mtotal[$m] == 0 ? '-' : number_format($mtotal[$m], 2), '78', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
     }
     $str .= $this->reporter->col($gtotal == 0 ? '-' : number_format($gtotal, 2), '134', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endreport();
+
+    return $str;
+  }
+
+  public function reportDefault_HAHSY_GJ($config)
+  {
+    $year   = $config['params']['dataparams']['year'];
+    $transac = $config['params']['dataparams']['posttype'];
+    $code   = $config['params']['dataparams']['center'];
+
+    $filter = "";
+    if ($code != '') {
+      $filter .= " and cntnum.center='$code'";
+    }
+
+    if ($transac == '0') {
+      $from = "from glhead as head
+        left join gldetail as stock on stock.trno=head.trno
+        left join client as agent on agent.clientid=head.agentid";
+    } else {
+      $from = "from lahead as head
+        left join ladetail as stock on stock.trno=head.trno
+        left join client as agent on agent.client=head.agent";
+    }
+
+    $amt = "(stock.db-stock.cr)";
+
+    $query = "select clientname, yr,
+      sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
+      sum(moapr) as moapr, sum(momay) as momay, sum(mojun) as mojun,
+      sum(mojul) as mojul, sum(moaug) as moaug, sum(mosep) as mosep,
+      sum(mooct) as mooct, sum(monov) as monov, sum(modec) as modec
+      from (
+        select upper(ifnull(agent.clientname,'')) as clientname, year(head.dateid) as yr,
+        sum(case when month(head.dateid)=1  then $amt else 0 end) as mojan,
+        sum(case when month(head.dateid)=2  then $amt else 0 end) as mofeb,
+        sum(case when month(head.dateid)=3  then $amt else 0 end) as momar,
+        sum(case when month(head.dateid)=4  then $amt else 0 end) as moapr,
+        sum(case when month(head.dateid)=5  then $amt else 0 end) as momay,
+        sum(case when month(head.dateid)=6  then $amt else 0 end) as mojun,
+        sum(case when month(head.dateid)=7  then $amt else 0 end) as mojul,
+        sum(case when month(head.dateid)=8  then $amt else 0 end) as moaug,
+        sum(case when month(head.dateid)=9  then $amt else 0 end) as mosep,
+        sum(case when month(head.dateid)=10 then $amt else 0 end) as mooct,
+        sum(case when month(head.dateid)=11 then $amt else 0 end) as monov,
+        sum(case when month(head.dateid)=12 then $amt else 0 end) as modec
+        $from
+        left join cntnum on cntnum.trno=head.trno
+        left join coa on coa.acnoid=stock.acnoid
+        where head.doc='GJ' and coa.alias='SR1' and year(head.dateid)='$year' $filter
+        group by 1, 2
+      ) as x
+      group by clientname, yr
+      order by clientname, yr";
+
+    return $this->coreFunctions->opentable($query);
+  }
+
+  private function displayHeader_HAHSY_GJ($config, $font, $fontsize)
+  {
+    $username = $config['params']['user'];
+    $dcenter  = $config['params']['center'];
+    $year     = $config['params']['dataparams']['year'];
+    $transac  = $config['params']['dataparams']['posttype'];
+    $subcatname =  $config['params']['dataparams']['subcatname'];
+    $categoryname = $config['params']['dataparams']['categoryname'];
+    $centername   = $config['params']['dataparams']['centername'];
+    $code         = $config['params']['dataparams']['center'];
+
+    $transtype = ($transac == '0') ? 'POSTED' : 'UNPOSTED';
+    $centertxt = ($code == '') ? 'ALL CENTER' : strtoupper($centername);
+    $subcattxt = ($subcatname == '') ? 'ALL SUB-CATEGORY' : strtoupper($subcatname);
+    $itemclass = ($categoryname == '') ? 'ALL CATEGORY' : strtoupper($categoryname);
+    $layoutsize = '1300';
+
+    $str = '';
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($dcenter, $username, $config);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('ANALYZE AGENT SALES MONTHLY - ' . $year, '800', null, false, '', '', 'L', $font, '14', 'B', '', '');
+    $str .= $this->reporter->col('Print Date : ' . date('m/d/Y g:i:sA'), '500', null, false, '', '', 'R', $font, '9', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('TRANSACTION :', '95', null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col($transtype, '105', null, false, '', '', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('CENTER :', '60', null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col($centertxt, '180', null, false, '', '', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('ITEM CATEGORY :', '110', null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col($itemclass, '170', null, false, '', '', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('SUB-CATEGORY :', '100', null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col($subcattxt, '150', null, false, '', '', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('TYPE :', '50', null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col('SALES LESS RETURN', '150', null, false, '', '', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->pagenumber('Page', 130, null, false, '', '', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->printline();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('S A L E S   R E T U R N', $layoutsize, null, false, '', '', 'C', $font, '10', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    return $str;
+  }
+
+  public function reportDefaultLayout_HAHSY_GJ($config)
+  {
+    $result = $this->reportDefault_HAHSY_GJ($config);
+    $count = 38;
+    $page = 40;
+    $this->reporter->linecounter = 0;
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    $layoutsize = '1300';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = '9';
+    $border = '1px solid ';
+    $months = ['mojan', 'mofeb', 'momar', 'moapr', 'momay', 'mojun', 'mojul', 'moaug', 'mosep', 'mooct', 'monov', 'modec'];
+
+    $str = '';
+    $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '0px;margin-top:0px;margin-left:20px');
+    $str .= $this->displayHeader_HAHSY_GJ($config, $font, $fontsize);
+    $str .= $this->columnHeader_HAHSY_DISC($font, $fontsize);
+
+    $mtotal = array_fill_keys($months, 0);
+    $gtotal = 0;
+
+    foreach ($result as $data) {
+      $sumrow = 0;
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col($data->clientname == '' ? 'NO AGENT' : $data->clientname, '140', null, false, '', '', 'L', $font, $fontsize, '', '', '');
+
+      foreach ($months as $m) {
+        $val = $data->$m;
+        $sumrow += $val;
+        $mtotal[$m] += $val;
+        $str .= $this->reporter->col($val == 0 ? '-' : number_format($val, 2), '88', null, false, '', '', 'R', $font, $fontsize, '', '', '');
+      }
+
+      $gtotal += $sumrow;
+      $str .= $this->reporter->col($sumrow == 0 ? '-' : number_format($sumrow, 2), '104', null, false, '', '', 'R', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->addline();
+
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
+        $isfirstpageheader = $this->companysetup->getisfirstpageheader($config['params']);
+        if (!$isfirstpageheader) $str .= $this->displayHeader_HAHSY_GJ($config, $font, $fontsize);
+        $str .= $this->columnHeader_HAHSY_DISC($font, $fontsize);
+        $page = $page + $count;
+      }
+    }
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('GRAND TOTAL :', '140', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
+    foreach ($months as $m) {
+      $str .= $this->reporter->col($mtotal[$m] == 0 ? '-' : number_format($mtotal[$m], 2), '88', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
+    }
+    $str .= $this->reporter->col($gtotal == 0 ? '-' : number_format($gtotal, 2), '104', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();
@@ -1206,13 +1388,15 @@ class analyzed_agent_sales_monthly
     $dcenter  = $config['params']['center'];
     $year     = $config['params']['dataparams']['year'];
     $transac  = $config['params']['dataparams']['posttype'];
+    $subcatname   = $config['params']['dataparams']['subcatname'];
     $categoryname = $config['params']['dataparams']['categoryname'];
     $centername   = $config['params']['dataparams']['centername'];
     $code         = $config['params']['dataparams']['center'];
 
     $transtype = ($transac == '0') ? 'POSTED' : 'UNPOSTED';
     $centertxt = ($code == '') ? 'ALL CENTER' : strtoupper($centername);
-    $itemclass = ($categoryname == '') ? 'ALL ITEM CLASS' : strtoupper($categoryname);
+    $subcattxt = ($subcatname == '') ? 'ALL SUB-CATEGORY' : strtoupper($subcatname);
+    $itemclass = ($categoryname == '') ? 'ALL CATEGORY' : strtoupper($categoryname);
     $layoutsize = '1300';
 
     $str = '';
@@ -1234,12 +1418,14 @@ class analyzed_agent_sales_monthly
     $str .= $this->reporter->col('TRANSACTION :', '95', null, false, '', '', 'L', $font, $fontsize);
     $str .= $this->reporter->col($transtype, '105', null, false, '', '', 'L', $font, $fontsize, 'B');
     $str .= $this->reporter->col('CENTER :', '60', null, false, '', '', 'L', $font, $fontsize);
-    $str .= $this->reporter->col($centertxt, '200', null, false, '', '', 'L', $font, $fontsize, 'B');
-    $str .= $this->reporter->col('ITEM CLASS :', '80', null, false, '', '', 'L', $font, $fontsize);
-    $str .= $this->reporter->col($itemclass, '200', null, false, '', '', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->col($centertxt, '180', null, false, '', '', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('ITEM CATEGORY :', '110', null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col($itemclass, '170', null, false, '', '', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->col('SUB-CATEGORY :', '100', null, false, '', '', 'L', $font, $fontsize);
+    $str .= $this->reporter->col($subcattxt, '150', null, false, '', '', 'L', $font, $fontsize, 'B');
     $str .= $this->reporter->col('TYPE :', '50', null, false, '', '', 'L', $font, $fontsize);
-    $str .= $this->reporter->col('DISCOUNT', '210', null, false, '', '', 'L', $font, $fontsize, 'B');
-    $str .= $this->reporter->pagenumber('Page', 300, null, false, '', '', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('SALES LESS RETURN', '150', null, false, '', '', 'L', $font, $fontsize, 'B');
+    $str .= $this->reporter->pagenumber('Page', 130, null, false, '', '', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -1375,178 +1561,4 @@ class analyzed_agent_sales_monthly
 
     return $str;
   }
-
-  public function reportDefault_HAHSY_GJ($config)
-  {
-    $year   = $config['params']['dataparams']['year'];
-    $transac = $config['params']['dataparams']['posttype'];
-    $code   = $config['params']['dataparams']['center'];
-
-    $filter = "";
-    if ($code != '') {
-      $filter .= " and cntnum.center='$code'";
-    }
-
-    if ($transac == '0') {
-      $from = "from glhead as head
-        left join gldetail as stock on stock.trno=head.trno
-        left join client as agent on agent.clientid=head.agentid";
-    } else {
-      $from = "from lahead as head
-        left join ladetail as stock on stock.trno=head.trno
-        left join client as agent on agent.client=head.agent";
-    }
-
-    $amt = "(stock.db-stock.cr)";
-
-    $query = "select clientname, yr,
-      sum(mojan) as mojan, sum(mofeb) as mofeb, sum(momar) as momar,
-      sum(moapr) as moapr, sum(momay) as momay, sum(mojun) as mojun,
-      sum(mojul) as mojul, sum(moaug) as moaug, sum(mosep) as mosep,
-      sum(mooct) as mooct, sum(monov) as monov, sum(modec) as modec
-      from (
-        select upper(ifnull(agent.clientname,'')) as clientname, year(head.dateid) as yr,
-        sum(case when month(head.dateid)=1  then $amt else 0 end) as mojan,
-        sum(case when month(head.dateid)=2  then $amt else 0 end) as mofeb,
-        sum(case when month(head.dateid)=3  then $amt else 0 end) as momar,
-        sum(case when month(head.dateid)=4  then $amt else 0 end) as moapr,
-        sum(case when month(head.dateid)=5  then $amt else 0 end) as momay,
-        sum(case when month(head.dateid)=6  then $amt else 0 end) as mojun,
-        sum(case when month(head.dateid)=7  then $amt else 0 end) as mojul,
-        sum(case when month(head.dateid)=8  then $amt else 0 end) as moaug,
-        sum(case when month(head.dateid)=9  then $amt else 0 end) as mosep,
-        sum(case when month(head.dateid)=10 then $amt else 0 end) as mooct,
-        sum(case when month(head.dateid)=11 then $amt else 0 end) as monov,
-        sum(case when month(head.dateid)=12 then $amt else 0 end) as modec
-        $from
-        left join cntnum on cntnum.trno=head.trno
-        left join coa on coa.acnoid=stock.acnoid
-        where head.doc='GJ' and coa.alias='SR1' and year(head.dateid)='$year' $filter
-        group by 1, 2
-      ) as x
-      group by clientname, yr
-      order by clientname, yr";
-
-    return $this->coreFunctions->opentable($query);
-  }
-
-  private function displayHeader_HAHSY_GJ($config, $font, $fontsize)
-  {
-    $username = $config['params']['user'];
-    $dcenter  = $config['params']['center'];
-    $year     = $config['params']['dataparams']['year'];
-    $transac  = $config['params']['dataparams']['posttype'];
-    $categoryname = $config['params']['dataparams']['categoryname'];
-    $centername   = $config['params']['dataparams']['centername'];
-    $code         = $config['params']['dataparams']['center'];
-
-    $transtype = ($transac == '0') ? 'POSTED' : 'UNPOSTED';
-    $centertxt = ($code == '') ? 'ALL CENTER' : strtoupper($centername);
-    $itemclass = ($categoryname == '') ? 'ALL ITEM CLASS' : strtoupper($categoryname);
-    $layoutsize = '1300';
-
-    $str = '';
-    $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->letterhead($dcenter, $username, $config);
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
-
-    $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('ANALYZE AGENT SALES MONTHLY - ' . $year, '800', null, false, '', '', 'L', $font, '14', 'B', '', '');
-    $str .= $this->reporter->col('Print Date : ' . date('m/d/Y g:i:sA'), '500', null, false, '', '', 'R', $font, '9', '', '', '');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
-
-    $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('TRANSACTION :', '95', null, false, '', '', 'L', $font, $fontsize);
-    $str .= $this->reporter->col($transtype, '105', null, false, '', '', 'L', $font, $fontsize, 'B');
-    $str .= $this->reporter->col('CENTER :', '60', null, false, '', '', 'L', $font, $fontsize);
-    $str .= $this->reporter->col($centertxt, '200', null, false, '', '', 'L', $font, $fontsize, 'B');
-    $str .= $this->reporter->col('ITEM CLASS :', '80', null, false, '', '', 'L', $font, $fontsize);
-    $str .= $this->reporter->col($itemclass, '200', null, false, '', '', 'L', $font, $fontsize, 'B');
-    $str .= $this->reporter->col('TYPE :', '50', null, false, '', '', 'L', $font, $fontsize);
-    $str .= $this->reporter->col('RETURN', '210', null, false, '', '', 'L', $font, $fontsize, 'B');
-    $str .= $this->reporter->pagenumber('Page', 300, null, false, '', '', 'R', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
-
-    $str .= $this->reporter->printline();
-
-    $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('S A L E S   R E T U R N', $layoutsize, null, false, '', '', 'C', $font, '10', 'B', '', '');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
-
-    return $str;
-  }
-
-  public function reportDefaultLayout_HAHSY_GJ($config)
-  {
-    $result = $this->reportDefault_HAHSY_GJ($config);
-    $count = 38;
-    $page = 40;
-    $this->reporter->linecounter = 0;
-
-    if (empty($result)) {
-      return $this->othersClass->emptydata($config);
-    }
-
-    $layoutsize = '1300';
-    $font = $this->companysetup->getrptfont($config['params']);
-    $fontsize = '9';
-    $border = '1px solid ';
-    $months = ['mojan', 'mofeb', 'momar', 'moapr', 'momay', 'mojun', 'mojul', 'moaug', 'mosep', 'mooct', 'monov', 'modec'];
-
-    $str = '';
-    $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '0px;margin-top:0px;margin-left:20px');
-    $str .= $this->displayHeader_HAHSY_GJ($config, $font, $fontsize);
-    $str .= $this->columnHeader_HAHSY_DISC($font, $fontsize);
-
-    $mtotal = array_fill_keys($months, 0);
-    $gtotal = 0;
-
-    foreach ($result as $data) {
-      $sumrow = 0;
-
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col($data->clientname == '' ? 'NO AGENT' : $data->clientname, '140', null, false, '', '', 'L', $font, $fontsize, '', '', '');
-
-      foreach ($months as $m) {
-        $val = $data->$m;
-        $sumrow += $val;
-        $mtotal[$m] += $val;
-        $str .= $this->reporter->col($val == 0 ? '-' : number_format($val, 2), '88', null, false, '', '', 'R', $font, $fontsize, '', '', '');
-      }
-
-      $gtotal += $sumrow;
-      $str .= $this->reporter->col($sumrow == 0 ? '-' : number_format($sumrow, 2), '104', null, false, '', '', 'R', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->addline();
-
-      if ($this->reporter->linecounter == $page) {
-        $str .= $this->reporter->endtable();
-        $str .= $this->reporter->page_break();
-        $isfirstpageheader = $this->companysetup->getisfirstpageheader($config['params']);
-        if (!$isfirstpageheader) $str .= $this->displayHeader_HAHSY_GJ($config, $font, $fontsize);
-        $str .= $this->columnHeader_HAHSY_DISC($font, $fontsize);
-        $page = $page + $count;
-      }
-    }
-
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('GRAND TOTAL :', '140', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
-    foreach ($months as $m) {
-      $str .= $this->reporter->col($mtotal[$m] == 0 ? '-' : number_format($mtotal[$m], 2), '88', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
-    }
-    $str .= $this->reporter->col($gtotal == 0 ? '-' : number_format($gtotal, 2), '104', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->endrow();
-    $str .= $this->reporter->endtable();
-    $str .= $this->reporter->endreport();
-
-    return $str;
-  }
-}
+}// end class

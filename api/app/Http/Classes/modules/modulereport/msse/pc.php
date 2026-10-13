@@ -37,9 +37,9 @@ class pc
   private $reporter;
   private $reportheader;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -54,7 +54,7 @@ class pc
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
     data_set($col1, 'refresh.action', 'history');
 
@@ -133,12 +133,12 @@ class pc
     $str .= $this->reporter->letterhead($center, $username);
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-  
+
     $str .= '<br/><br/>';
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('PHYSICAL COUNT', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '18', 'B', '', '');
     $str .= $this->reporter->col('DOCUMENT # :', '100', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', 'B', '', '');
     $str .= $this->reporter->col((isset($result[0]->docno) ? $result[0]->docno : ''), '100', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '13', '', '', '') . '<br />';
@@ -189,7 +189,7 @@ class pc
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
-        
+
         $str .= $this->reporter->col('PHYSICAL COUNT', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '18', 'B', '', '');
         $str .= $this->reporter->col('DOCUMENT # :', '100', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', 'B', '', '');
         $str .= $this->reporter->col((isset($result[0]->docno) ? $result[0]->docno : ''), '100', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '13', '', '', '') . '<br />';
@@ -274,7 +274,7 @@ class pc
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -284,7 +284,7 @@ class pc
     $font = "courier";
     $fontbold = "courier";
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -293,13 +293,13 @@ class pc
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
-    
+
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . strtoupper($headerdata[0]->name), '', 'L');
 
     $this->reportheader->getheader($params);
 
-    
+
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);

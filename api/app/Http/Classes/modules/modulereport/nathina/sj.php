@@ -35,9 +35,9 @@ class sj
   private $logger;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -54,13 +54,13 @@ class sj
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
     data_set($col1, 'radioreporttype.options', [
       ['label' => 'SJ', 'value' => 'SJ', 'color' => 'red'],
       ['label' => 'Bodega OS', 'value' => 'BOS', 'color' => 'red'],
       ['label' => 'Order Slip', 'value' => 'OS', 'color' => 'red'],
-      
+
     ]);
     data_set($col1, 'radioreporttype.name', 'format');
     data_set($col1, 'received.label', 'Released By');
@@ -137,8 +137,6 @@ class sj
         case 'OS':
           return $this->OS_PDF($params, $data);
           break;
-
-          
       }
     }
   }
@@ -340,7 +338,7 @@ class sj
         $str .= $this->report_default_header($params, $data);
 
         $str .= $this->reporter->endrow();
-        
+
         $page = $page + $count;
       } //end if
     } //end for
@@ -562,7 +560,7 @@ class sj
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -576,7 +574,7 @@ class sj
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -593,7 +591,7 @@ class sj
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);
@@ -740,7 +738,7 @@ class sj
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -754,7 +752,7 @@ class sj
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -771,7 +769,7 @@ class sj
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, 'BODEGA ORDER SLIP', '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);
@@ -825,7 +823,7 @@ class sj
     PDF::MultiCell(20, 0, "", '', 'C', false, 0);
     PDF::MultiCell(60, 0, "ISSUED", '', 'L', false, 0);
     PDF::MultiCell(20, 0, "", '', 'C', false, 0);
-    
+
     PDF::MultiCell(20, 0, "", '', 'C', false, 0);
     PDF::MultiCell(60, 0, "REMARKS", '', 'L', false, 0);
     PDF::MultiCell(20, 0, "", '', 'C', false);
@@ -861,9 +859,9 @@ class sj
     $countarr = 0;
     if (!empty($data)) {
       for ($i = 0; $i < count($data); $i++) {
-        
+
         $maxrow = 1;
-        
+
 
         $itemname = $data[$i]['itemname'];
         $uom = $data[$i]['uom'];
@@ -888,21 +886,18 @@ class sj
           PDF::MultiCell(20, 0, '', '', 'R', false, 0, '', '', false, 1);
           PDF::MultiCell(60, 0, '', 'B', 'R', false, 0, '', '', false, 1);
           PDF::MultiCell(20, 0, '', '', 'R', false, 0, '', '', false, 1);
-          
+
           PDF::MultiCell(20, 0, '', '', 'R', false, 0, '', '', false, 0);
           PDF::MultiCell(60, 0, '', 'B', 'R', false, 0, '', '', false, 0);
           PDF::MultiCell(20, 0, '', '', 'R', false, 1, '', '', false, 0);
-          
         }
 
-        
+
 
         if (PDF::getY() > 900) {
           $this->Bodega_OS_header_PDF($params, $data);
         }
       }
-
-      
     }
 
 
@@ -910,7 +905,7 @@ class sj
     PDF::MultiCell(700, 0, '', '');
 
 
-    
+
     PDF::MultiCell(0, 0, "\n\n\n\n\n");
 
     PDF::SetFont($font, '', $fontsize);
@@ -927,7 +922,7 @@ class sj
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(200, 0, 'No of Items: ' . $itemnum, '', 'L');
-    
+
 
     PDF::MultiCell(0, 0, "\n\n\n");
 
@@ -942,7 +937,7 @@ class sj
     PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['received'], '', 'L');
 
-    
+
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
@@ -951,7 +946,7 @@ class sj
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -965,7 +960,7 @@ class sj
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -1103,7 +1098,7 @@ class sj
           PDF::MultiCell(100, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(300, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(100, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          
+
           PDF::MultiCell(100, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
         }
 

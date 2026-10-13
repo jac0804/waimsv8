@@ -34,9 +34,9 @@ class rr
   private $othersClass;
   private $logger;
   private $reporter;
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -47,7 +47,7 @@ class rr
 
   public function createreportfilter($config)
   {
-    
+
     $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
@@ -61,7 +61,7 @@ class rr
 
   public function reportparamsdata($config)
   {
-      $paramstr = "select
+    $paramstr = "select
       'PDFM' as print, 
       '' as prepared,
       '' as approved,
@@ -102,12 +102,11 @@ class rr
 
   public function reportplotting($params, $data)
   {
-      if ($params['params']['dataparams']['print'] == "default") {
-        return $this->default_RR_layout($params, $data);
-      } else if ($params['params']['dataparams']['print'] == "PDFM") {
-        return $this->default_RR_PDF($params, $data);
-      }
-    
+    if ($params['params']['dataparams']['print'] == "default") {
+      return $this->default_RR_layout($params, $data);
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
+      return $this->default_RR_PDF($params, $data);
+    }
   }
 
   public function default_header($params, $data)
@@ -303,7 +302,7 @@ class rr
     PDF::MultiCell(0, 0, '', '', 'L');
     // $this->reportheader->getheader($params);
     PDF::SetFont($fontbold, '', 13);
-		PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
 
 
     PDF::SetFont($fontbold, '', 15);
@@ -314,7 +313,7 @@ class rr
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(50, 20, "Doc No", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(30, 20,':', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(30, 20, ':', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(470, 20, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(170, 20, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
@@ -323,7 +322,7 @@ class rr
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(50, 20, "Supplier", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(30, 20,':', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(30, 20, ':', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(390, 20, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
@@ -335,83 +334,82 @@ class rr
 
 
 
-      $add = isset($data[0]['address']) ? $data[0]['address'] : '';
-        $maxChars = 48;
-        $adds = strlen($add);
-        $firstLine = '';
-        $remaininglines = [];
-        $addsz = '';
+    $add = isset($data[0]['address']) ? $data[0]['address'] : '';
+    $maxChars = 48;
+    $adds = strlen($add);
+    $firstLine = '';
+    $remaininglines = [];
+    $addsz = '';
 
-        if ($adds > $maxChars) {
-            $firstLine = substr($add, 0, $maxChars);
-            $remaining = substr($add, $maxChars);
-            // Split remaining address into multiple lines without cutting words
-            while (strlen($remaining) > $maxChars) {
-                // Find the last space within the maxChars limit
-                $spacePos = strrpos(substr($remaining, 0, $maxChars), ' ');
+    if ($adds > $maxChars) {
+      $firstLine = substr($add, 0, $maxChars);
+      $remaining = substr($add, $maxChars);
+      // Split remaining address into multiple lines without cutting words
+      while (strlen($remaining) > $maxChars) {
+        // Find the last space within the maxChars limit
+        $spacePos = strrpos(substr($remaining, 0, $maxChars), ' ');
 
-                // If there's no space, just cut at maxChars
-                if ($spacePos === false) {
-                    $nextLine = substr($remaining, 0, $maxChars);
-                    $remaining = substr($remaining, $maxChars);
-                } else {
-                    $nextLine = substr($remaining, 0, $spacePos);
-                    $remaining = substr($remaining, $spacePos + 1);
-                }
-
-                $remainingLines[] = $nextLine;
-            }
-            // Add the final remaining part if it's less than or equal to $maxChars
-            if (strlen($remaining) > 0) {
-                $remainingLines[] = $remaining;
-            }
+        // If there's no space, just cut at maxChars
+        if ($spacePos === false) {
+          $nextLine = substr($remaining, 0, $maxChars);
+          $remaining = substr($remaining, $maxChars);
         } else {
-            $addsz = $add;
+          $nextLine = substr($remaining, 0, $spacePos);
+          $remaining = substr($remaining, $spacePos + 1);
         }
 
+        $remainingLines[] = $nextLine;
+      }
+      // Add the final remaining part if it's less than or equal to $maxChars
+      if (strlen($remaining) > 0) {
+        $remainingLines[] = $remaining;
+      }
+    } else {
+      $addsz = $add;
+    }
 
-           if ($adds > $maxChars) {
-            PDF::SetFont($font, '', $fontsize);
-            PDF::MultiCell(50, 20, "Address", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-            PDF::SetFont($font, '', $fontsize);
-            PDF::MultiCell(30, 20,':', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-            PDF::SetFont($fontbold, '', $fontsize);
-            PDF::MultiCell(390, 20, $firstLine, '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-            PDF::SetFont($font, '', $fontsize);
-            PDF::MultiCell(50, 20, "Terms", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-            PDF::MultiCell(10, 20, ":", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-            PDF::SetFont($fontbold, '', $fontsize);
-            PDF::MultiCell(190, 20, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
-            // Loop through remaining lines and print them
-            foreach ($remainingLines as $line) {
-                        PDF::SetFont($font, '', $fontsize);
-                        PDF::MultiCell(50, 20, "", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-                        PDF::SetFont($font, '', $fontsize);
-                        PDF::MultiCell(30, 20,'', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-                        PDF::SetFont($fontbold, '', $fontsize);
-                        PDF::MultiCell(390, 20, $line, '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-                        PDF::SetFont($font, '', $fontsize);
-                        PDF::MultiCell(50, 20, "", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-                        PDF::MultiCell(10, 20, "", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-                        PDF::SetFont($fontbold, '', $fontsize);
-                        PDF::MultiCell(190, 20, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
-            }
-        } else {
-          PDF::SetFont($font, '', $fontsize);
-          PDF::MultiCell(50, 20, "Address", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-          PDF::SetFont($font, '', $fontsize);
-          PDF::MultiCell(30, 20,':', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-          PDF::SetFont($fontbold, '', $fontsize);
-          PDF::MultiCell(390, 20, $addsz, '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-          PDF::SetFont($font, '', $fontsize);
-          PDF::MultiCell(50, 20, "Terms", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-          PDF::MultiCell(10, 20, ":", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-          PDF::SetFont($fontbold, '', $fontsize);
-          PDF::MultiCell(190, 20, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
+    if ($adds > $maxChars) {
+      PDF::SetFont($font, '', $fontsize);
+      PDF::MultiCell(50, 20, "Address", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+      PDF::SetFont($font, '', $fontsize);
+      PDF::MultiCell(30, 20, ':', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+      PDF::SetFont($fontbold, '', $fontsize);
+      PDF::MultiCell(390, 20, $firstLine, '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+      PDF::SetFont($font, '', $fontsize);
+      PDF::MultiCell(50, 20, "Terms", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+      PDF::MultiCell(10, 20, ":", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+      PDF::SetFont($fontbold, '', $fontsize);
+      PDF::MultiCell(190, 20, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
-        }
-    
+      // Loop through remaining lines and print them
+      foreach ($remainingLines as $line) {
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(50, 20, "", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(30, 20, '', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(390, 20, $line, '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+        PDF::SetFont($font, '', $fontsize);
+        PDF::MultiCell(50, 20, "", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(10, 20, "", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+        PDF::SetFont($fontbold, '', $fontsize);
+        PDF::MultiCell(190, 20, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
+      }
+    } else {
+      PDF::SetFont($font, '', $fontsize);
+      PDF::MultiCell(50, 20, "Address", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+      PDF::SetFont($font, '', $fontsize);
+      PDF::MultiCell(30, 20, ':', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+      PDF::SetFont($fontbold, '', $fontsize);
+      PDF::MultiCell(390, 20, $addsz, '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+      PDF::SetFont($font, '', $fontsize);
+      PDF::MultiCell(50, 20, "Terms", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+      PDF::MultiCell(10, 20, ":", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+      PDF::SetFont($fontbold, '', $fontsize);
+      PDF::MultiCell(190, 20, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
+    }
+
     PDF::SetFont($font, '', 3);
     PDF::MultiCell(720, 0, '', '');
 
@@ -526,7 +524,4 @@ class rr
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
-
-
 }

@@ -38,10 +38,10 @@ class paymenttype
   private $logger;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -294,7 +294,7 @@ class paymenttype
       case 'syncallentry':
         $this->coreFunctions->execqry("update checktypes set dlock='" . $this->othersClass->getCurrentTimeStamp() . "'");
         $returndata = $this->loaddata($config);
-      return ['status' => true, 'msg' => 'Card type dlock updated.', 'data' => $returndata];
+        return ['status' => true, 'msg' => 'Card type dlock updated.', 'data' => $returndata];
         break;
 
       default:

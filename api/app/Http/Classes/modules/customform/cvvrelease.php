@@ -33,10 +33,10 @@ class cvvrelease
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -121,7 +121,7 @@ class cvvrelease
 
         $dateTables = [$tablenum, $head];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-       
+
 
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
@@ -131,7 +131,7 @@ class cvvrelease
         $data['ordate'] = $this->othersClass->sanitizekeyfieldFast("ordate", $ordate, $lookups);
 
 
-       
+
 
         $headdata['yourref'] = $this->othersClass->sanitizekeyfieldFast("yourref", $yourref, $lookups);
         $headdata['ourref'] = $this->othersClass->sanitizekeyfieldFast("ourref", $ourref, $lookups);

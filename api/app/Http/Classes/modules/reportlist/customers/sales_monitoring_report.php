@@ -40,9 +40,9 @@ class sales_monitoring_report
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -186,7 +186,7 @@ class sales_monitoring_report
               on sa.clientid=c.clientid
               group by c.areacode";
 
-   
+
     return $this->coreFunctions->opentable($query);
   }
 
@@ -222,7 +222,7 @@ class sales_monitoring_report
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('SALES MONITORING REPORT', null, null, false, $border, '', '', $font, '18', 'B', '', '') . '<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -263,7 +263,7 @@ class sales_monitoring_report
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('AREA CODE', '200', null, false, $border, 'TL', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('PORTLAND', '200', null, false, $border, 'TL', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('POZZOLAN', '200', null, false, $border, 'TL', 'C', $font, $fontsize, 'B', '', '');
@@ -282,7 +282,7 @@ class sales_monitoring_report
 
     $result  = $this->reportDefault($config);
 
-  
+
 
     $username   = $config['params']['user'];
 
@@ -318,7 +318,7 @@ class sales_monitoring_report
     $pozztotal = 0;
     $str .= $this->reporter->begintable($layoutsize);
     foreach ($result as $key => $data) {
-   
+
       $str .= $this->reporter->startrow();
       if ($data->areacode == '') {
         $str .= $this->reporter->col('No Area Code', '200', null, false, $border, 'TL', 'C', $font, $fontsize, '', '', '');

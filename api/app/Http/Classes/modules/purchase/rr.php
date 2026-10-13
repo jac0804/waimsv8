@@ -126,11 +126,11 @@ class rr
 
   private $barcode;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -1102,9 +1102,9 @@ class rr
     }
 
     if ($companyid == 72) { // hahsy
-        $obj[0]['inventory']['columns'][$charges]['label'] = 'Add Charges';
-        $obj[0]['inventory']['columns'][$freight]['type'] = 'input';
-        $obj[0]['inventory']['columns'][$freight]['readonly'] = true;
+      $obj[0]['inventory']['columns'][$charges]['label'] = 'Add Charges';
+      $obj[0]['inventory']['columns'][$freight]['type'] = 'input';
+      $obj[0]['inventory']['columns'][$freight]['readonly'] = true;
     }
 
 
@@ -2299,7 +2299,7 @@ class rr
     stock.rem,
     stock.palletid,
     stock.locid,
-    stock.freight,
+    format(stock.freight," . $this->companysetup->getdecimal('price', $config['params']) . ") as freight,
     ifnull(pallet.name,'') as pallet,
     ifnull(location.loc,'') as location,
     ifnull(uom.factor,1) as uomfactor,stock.fcost,ifnull(stock.stageid,0) as stageid ,ifnull(st.stage,'') as stage,
@@ -3497,7 +3497,7 @@ class rr
         $hamt = number_format((($computedata['amt'] * $forex) + ($freight / $qty)), 6, '.', '');
         break;
       case 72: // hahsy
-          $hamt = number_format(($computedata['amt'] + $freight), 6, '.', '');
+        $hamt = number_format(($computedata['amt'] + $freight), 6, '.', '');
         break;
       default:
         $hamt = number_format((($computedata['amt'] * $forex) + $freight), 6, '.', '');
@@ -3659,8 +3659,8 @@ class rr
         }
 
         if ($companyid == 72) { //hahsy
-          $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' Barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' WH:' . $wh . ' Uom:' . $uom . ' Ext:' . $computedata['ext'] . ' Add Charges:' . $charges . ' Freight:' . $freight . ' CBM:' . $cbm , $setlog ? $this->tablelogs : '');
-        }else {
+          $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' Barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' WH:' . $wh . ' Uom:' . $uom . ' Ext:' . $computedata['ext'] . ' Add Charges:' . $charges . ' Freight:' . $freight . ' CBM:' . $cbm, $setlog ? $this->tablelogs : '');
+        } else {
           $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' Barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' WH:' . $wh . ' Uom:' . $uom . ' Ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
         }
         $row = $this->openstockline($config);
@@ -3891,6 +3891,12 @@ class rr
       }
 
       if (!empty($data)) {
+
+        $this->coreFunctions->sbcupdate($this->head, [
+          'tax'     => $data[0]->tax,
+          'vattype' => $data[0]->vattype
+        ], ['trno' => $trno]);
+
         switch ($companyid) {
           case 3: //conti
             $this->coreFunctions->execqry("update lahead set ourref='" . $data[0]->docno . "', rem='" . $data[0]->rem . "' where trno = " . $trno, 'update');
@@ -4048,6 +4054,12 @@ class rr
       }
 
       if (!empty($data)) {
+
+        $this->coreFunctions->sbcupdate($this->head, [
+          'tax'     => $data[0]->tax,
+          'vattype' => $data[0]->vattype
+        ], ['trno' => $trno]);
+
         if ($companyid == 3) { //conti
           $this->coreFunctions->execqry("update lahead set ourref='" . $data[0]->docno . "', rem='" . $data[0]->hrem . "' where trno = " . $trno, 'update');
         }

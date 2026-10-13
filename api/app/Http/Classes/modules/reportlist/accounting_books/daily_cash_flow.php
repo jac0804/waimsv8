@@ -30,12 +30,12 @@ class daily_cash_flow
 
   public $reportParams = ['orientation' => 'L', 'format' => 'letter', 'layoutSize' => '4000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 

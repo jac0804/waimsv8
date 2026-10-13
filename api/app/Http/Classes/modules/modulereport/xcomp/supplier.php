@@ -33,9 +33,9 @@ class supplier
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -261,7 +261,7 @@ class supplier
         ) as t 
         left join client on client.clientid = t.clientid  
         order by dateid, docno";
-        
+
 
         return $query;
     }
@@ -388,11 +388,11 @@ class supplier
 
         $str .= $this->reporter->beginreport();
 
-            $str .= $this->reporter->begintable('800');
-            $str .= $this->reporter->startrow();
-            $str .= $this->reporter->letterhead($center, $username);
-            $str .= $this->reporter->endrow();
-            $str .= $this->reporter->endtable();
+        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->letterhead($center, $username);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
@@ -548,11 +548,11 @@ class supplier
         $border = "1px solid ";
         $str .= $this->reporter->beginreport();
 
-            $str .= $this->reporter->begintable('800');
-            $str .= $this->reporter->startrow();
-            $str .= $this->reporter->letterhead($center, $username);
-            $str .= $this->reporter->endrow();
-            $str .= $this->reporter->endtable();
+        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->letterhead($center, $username);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
@@ -709,11 +709,11 @@ class supplier
 
         $str .= $this->reporter->beginreport();
 
-            $str .= $this->reporter->begintable('800');
-            $str .= $this->reporter->startrow();
-            $str .= $this->reporter->letterhead($center, $username);
-            $str .= $this->reporter->endrow();
-            $str .= $this->reporter->endtable();
+        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->letterhead($center, $username);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
@@ -868,11 +868,11 @@ class supplier
         $border = "1px solid ";
         $str .= $this->reporter->beginreport();
 
-            $str .= $this->reporter->begintable('800');
-            $str .= $this->reporter->startrow();
-            $str .= $this->reporter->letterhead($center, $username);
-            $str .= $this->reporter->endrow();
-            $str .= $this->reporter->endtable();
+        $str .= $this->reporter->begintable('800');
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->letterhead($center, $username);
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
@@ -1049,8 +1049,8 @@ class supplier
         PDF::SetFont($fontbold, '', 12);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
 
-            PDF::SetFont($fontbold, '', 11);
-            PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "SUPPLIER LEDGER - ACCOUNTS RECEIVABLE", '', 'L', false);
@@ -1229,8 +1229,8 @@ class supplier
 
         PDF::SetFont($fontbold, '', 12);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-            PDF::SetFont($fontbold, '', 11);
-            PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "SUPPLIER LEDGER - ACCOUNTS PAYABLE", '', 'L', false);
 
@@ -1309,7 +1309,7 @@ class supplier
 
         PDF::MultiCell(0, 0, "\n");
 
-        
+
         $chkqry = $this->begbal($config, $data, 'AP');
         $bdat = $this->coreFunctions->opentable($chkqry);
         $bdata = json_decode(json_encode($bdat), true);
@@ -1373,7 +1373,7 @@ class supplier
             }
 
             PDF::SetFont($font, '', $fontsize);
-          
+
             PDF::MultiCell(130, 15, $data1->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(70, 15, $data1->dateid, '', 'C', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(140, 15, $data1->reference, '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1459,8 +1459,8 @@ class supplier
 
         PDF::SetFont($fontbold, '', 12);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-            PDF::SetFont($fontbold, '', 11);
-            PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "SUPPLIER LEDGER - POSTDATED CHECKS", '', 'L', false);
 
@@ -1637,8 +1637,8 @@ class supplier
 
         PDF::SetFont($fontbold, '', 12);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-            PDF::SetFont($fontbold, '', 11);
-            PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "SUPPLIER LEDGER - INVENTORY", '', 'L', false);
 
@@ -1767,7 +1767,7 @@ class supplier
     {
         $clientid = $config['params']['dataid'];
         $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-        
+
 
         $fitleralias = '';
         if ($alias != '') {

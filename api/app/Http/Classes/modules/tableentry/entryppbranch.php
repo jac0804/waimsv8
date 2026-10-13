@@ -30,10 +30,10 @@ class entryppbranch
   private $fields = ['trno', 'clientid'];
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -173,7 +173,7 @@ class entryppbranch
       'clientid' => $row['clientid']
     ];
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     $exist = $this->coreFunctions->getfieldvalue("ppbranch", "trno", "trno=? and clientid=?", [$data['trno'], $data['clientid']], '', true);

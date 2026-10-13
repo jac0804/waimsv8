@@ -43,9 +43,9 @@ class daily_collection_report
 
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -141,7 +141,7 @@ class daily_collection_report
         switch ($collectiontype) {
             case 'pdc':
                 switch ($posttype) {
-                        //posted
+                    //posted
                     case '0':
                         $query = "select head.doc,date(head.dateid) as dateid,cl.clientname,ifnull(loc.name,'') as loc,head.rem,head.ourref,
 substring_index(detail.checkno,',',1) as bank,substring_index(detail.checkno,',',-1) as checkno,
@@ -154,7 +154,7 @@ left join loc as loc on loc.line = cl.locid
 where $paytype  date(head.dateid) between '" . $start . "' and '" . $end . "' and head.doc = 'RC'
 group by head.doc,date(head.dateid),clientname,loc,rem,ourref,bank,detail.checkno,seqdoc,detail.amount order by seqdoc,dateid";
                         break;
-                        //unposted
+                    //unposted
                     case '1':
                         $query = "select head.doc,date(head.dateid) as dateid,cl.clientname,ifnull(loc.name,'') as loc,head.rem,head.ourref,
 substring_index(detail.checkno,',',1) as bank,substring_index(detail.checkno,',',-1) as checkno,
@@ -167,7 +167,7 @@ left join loc as loc on loc.line = cl.locid
 where $paytype date(head.dateid) between '" . $start . "' and '" . $end . "' and head.doc = 'RC'
 group by head.doc,date(head.dateid),clientname,loc,rem,ourref,bank,detail.checkno,seqdoc,detail.amount order by seqdoc,dateid";
                         break;
-                        //all
+                    //all
                     case '2':
                         $query = "select head.doc,date(head.dateid) as dateid,cl.clientname,ifnull(loc.name,'') as loc,head.rem,head.ourref,
 substring_index(detail.checkno,',',1) as bank,substring_index(detail.checkno,',',-1) as checkno,
@@ -197,7 +197,7 @@ group by head.doc,date(head.dateid),clientname,loc,rem,ourref,bank,detail.checkn
 
             case 'cach':
                 switch ($posttype) {
-                        //posted
+                    //posted
                     case '0':
                         $query =   "select head.doc,date(head.dateid) as dateid,tenant.clientname,ifnull(loc.name,'') as loc,head.rem,head.ourref,
 substring_index(detail.checkno,',',1) as bank,substring_index(detail.checkno,',',-1) as checkno,
@@ -225,7 +225,7 @@ left join loc as loc on loc.line = cl.locid
 where $paytype left(al.alias,2) in ('CR','CA','CB') and date(head.dateid) between '" . $start . "' and '" . $end . "' and head.doc = 'CR'
 group by head.doc,head.dateid,cl.clientname,loc,head.rem,head.ourref,bank,detail.checkno,seqdoc,head.amount";
                         break;
-                        //all
+                    //all
                     case '2':
                         $query = "select head.doc,date(head.dateid) as dateid,cl.clientname,ifnull(loc.name,'') as loc,head.rem,head.ourref,
 substring_index(detail.checkno,',',1) as bank,substring_index(detail.checkno,',',-1) as checkno,

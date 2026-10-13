@@ -34,9 +34,9 @@ class kr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -92,7 +92,7 @@ class kr
     left join client on client.client = head.client
     left join client as ag on ag.clientid=head2.agentid
     where head.trno='$trno' order by postdate,dateid, docno";
-    
+
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;

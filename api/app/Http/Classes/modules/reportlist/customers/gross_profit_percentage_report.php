@@ -34,12 +34,12 @@ class gross_profit_percentage_report
     // per-category breakdown queries can be wired in later.
     private $categories = ['EGC', 'EVC', 'PVC', 'FOIL', 'FILTER', 'MACHINE', 'RAW MATS', 'SPARE PARTS', 'PACKAGING'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -91,9 +91,9 @@ class gross_profit_percentage_report
 
         $query = "select sum(x.beginning) as beginning, sum(x.ending) as ending,
             sum(x.sales) as sales, sum(x.gsales) as gsales, sum(x.discount) as discount,
-            0 as purchases, 0 as opex
+            sum(x.purchases) as purchases, 0 as opex
             from
-            (select sum(gdetail.db - gdetail.cr) as beginning, 0 as ending, 0 as sales, 0 as gsales, 0 as discount
+            (select sum(gdetail.db - gdetail.cr) as beginning, 0 as ending, 0 as sales, 0 as gsales, 0 as discount, 0 as purchases
             from glhead as head
             left join gldetail as gdetail on gdetail.trno = head.trno
             left join coa on coa.acnoid = gdetail.acnoid
@@ -102,7 +102,7 @@ class gross_profit_percentage_report
 
             union all
 
-            select 0 as beginning, sum(gdetail.db - gdetail.cr) as ending, 0 as sales, 0 as gsales, 0 as discount
+            select 0 as beginning, sum(gdetail.db - gdetail.cr) as ending, 0 as sales, 0 as gsales, 0 as discount, 0 as purchases
             from glhead as head
             left join gldetail as gdetail on gdetail.trno = head.trno
             left join coa on coa.acnoid = gdetail.acnoid
@@ -112,21 +112,37 @@ class gross_profit_percentage_report
             union all
 
             select 0 as beginning, 0 as ending, sum(stock.ext) as sales, sum(stock.isamt*stock.isqty) as gsales,
-            sum((stock.isamt*stock.isqty)-stock.ext) as discount
+            sum((stock.isamt*stock.isqty)-stock.ext) as discount, 0 as purchases
             from lahead as head
             left join lastock as stock on stock.trno = head.trno
             left join item on item.itemid = stock.itemid
-            where head.doc in ('sj','mj','sd','se','sf')
+            where head.doc = 'SJ'
             and date(head.dateid) between '$start' and '$end'
 
             union all
 
             select 0 as beginning, 0 as ending, sum(stock.ext) as sales, sum(stock.isamt*stock.isqty) as gsales,
-            sum((stock.isamt*stock.isqty)-stock.ext) as discount
+            sum((stock.isamt*stock.isqty)-stock.ext) as discount, 0 as purchases
             from glhead as head
             left join glstock as stock on stock.trno = head.trno
             left join item on item.itemid = stock.itemid
-            where head.doc in ('sj','mj','sd','se','sf')
+            where head.doc = 'SJ'
+            and date(head.dateid) between '$start' and '$end'
+
+            union all
+
+            select 0 as beginning, 0 as ending, 0 as sales, 0 as gsales, 0 as discount, sum(stock.ext) as purchases
+            from lahead as head
+            left join lastock as stock on stock.trno = head.trno
+            where head.doc = 'RR'
+            and date(head.dateid) between '$start' and '$end'
+
+            union all
+
+            select 0 as beginning, 0 as ending, 0 as sales, 0 as gsales, 0 as discount, sum(stock.ext) as purchases
+            from glhead as head
+            left join glstock as stock on stock.trno = head.trno
+            where head.doc = 'RR'
             and date(head.dateid) between '$start' and '$end'
             ) as x";
 

@@ -34,10 +34,10 @@ class aj
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -51,7 +51,7 @@ class aj
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
 
     return array('col1' => $col1);
@@ -112,7 +112,7 @@ class aj
     if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_aj_layout($params, $data);
     } else if ($params['params']['dataparams']['print'] == "PDFM") {
-      
+
       return $this->nathina_AJ_PDF($params, $data);
     }
   }
@@ -121,7 +121,7 @@ class aj
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -135,7 +135,7 @@ class aj
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -144,7 +144,7 @@ class aj
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
-    
+
 
     PDF::SetFont($font, '', 9);
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
@@ -154,7 +154,7 @@ class aj
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);
@@ -252,7 +252,7 @@ class aj
         $loc =  $data[$i]['loc'];
         $expiry =  $data[$i]['expiry'];
 
-        
+
 
         $arr_barcode = $this->reporter->fixcolumn([$barcode], '17', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '15', 0);
@@ -261,7 +261,7 @@ class aj
         $arr_swh = $this->reporter->fixcolumn([$swh], '17', 0);
         $arr_loc = $this->reporter->fixcolumn([$loc], '14', 0);
         $arr_expiry = $this->reporter->fixcolumn([$expiry], '14', 0);
-        
+
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_qty, $arr_uom, $arr_itemname, $arr_swh, $arr_loc, $arr_expiry]);
 
@@ -282,7 +282,6 @@ class aj
 
         if (PDF::getY() > 900) {
           $this->nathina_AJ_header_PDF($params, $data);
-          
         }
       }
     }
@@ -453,7 +452,7 @@ class aj
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -467,7 +466,7 @@ class aj
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -476,7 +475,7 @@ class aj
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
-    
+
 
     PDF::SetFont($font, '', 9);
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
@@ -486,7 +485,7 @@ class aj
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);
@@ -596,7 +595,6 @@ class aj
 
         if (PDF::getY() > 900) {
           $this->default_AJ_header_PDF($params, $data);
-          
         }
       }
     }

@@ -34,10 +34,10 @@ class replenish
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -47,11 +47,11 @@ class replenish
   public function createTab($config)
   {
     $allowapprove = $this->othersClass->checkAccess($config['params']['user'], 5089);
-    $columns =['dateid','rem', 'ref','amount', 'deduction','itemname' ];
+    $columns = ['dateid', 'rem', 'ref', 'amount', 'deduction', 'itemname'];
 
     foreach ($columns as $key => $value) {
-          $$value = $key;
-      }
+      $$value = $key;
+    }
 
     $tab = [
       $this->gridname => [
@@ -67,14 +67,14 @@ class replenish
     $obj[0][$this->gridname]['columns'][$rem]['type'] = 'label';
     $obj[0][$this->gridname]['columns'][$ref]['type'] = 'label';
     $obj[0][$this->gridname]['columns'][$amount]['type'] = 'label';
-    $obj[0][$this->gridname]['columns'][$deduction]['type'] = 'label'; 
-    $obj[0][$this->gridname]['columns'][$dateid]['type'] = 'label'; 
-    
+    $obj[0][$this->gridname]['columns'][$deduction]['type'] = 'label';
+    $obj[0][$this->gridname]['columns'][$dateid]['type'] = 'label';
+
     $obj[0][$this->gridname]['columns'][$rem]['style']  = 'width:200px;whiteSpace: normal;min-width:200px;';
     $obj[0][$this->gridname]['columns'][$ref]['style']  = 'width:90px;whiteSpace: normal;min-width:90px;';
     $obj[0][$this->gridname]['columns'][$amount]['style']  = 'text-align:right; align:text-right; width:100px;whiteSpace: normal;min-width:100px;';
     $obj[0][$this->gridname]['columns'][$deduction]['style']  = 'text-align:right; align:text-right; width:120px;whiteSpace: normal;min-width:120px;';
-   
+
     return $obj;
   }
 
@@ -103,11 +103,11 @@ class replenish
   {
     if (isset($config['params']['row'])) {
       $trno = $config['params']['row']['trno'];
-    }else{
-      $trno= $config['params']['clientid'];
+    } else {
+      $trno = $config['params']['clientid'];
     }
 
-    $center =$config['params']['center'];
+    $center = $config['params']['center'];
 
     $qry = "select concat(head.trno,d.line) as keyid,date(head.dateid) as dateid,head.trno,d.line,d.rem,d.ref,format(d.amount,2) as amount,format(d.deduction,2) as deduction,
     case when d.isreplenish = 1 then 'true' else 'false' end as isreplenish
@@ -122,7 +122,7 @@ class replenish
     left join htchead as head on head.trno=d.trno
     left join transnum as num on num.trno = head.trno
     where head.doc='TC' and d.isreplenish =0 and num.center =? ";
-    $data = $this->coreFunctions->opentable($qry,[$center,$center]);
+    $data = $this->coreFunctions->opentable($qry, [$center, $center]);
     return $data;
   } //end function
 
@@ -133,55 +133,55 @@ class replenish
     $user = $config['params']['user'];
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
-    $trno= $config['params']['trno'];
+    $trno = $config['params']['trno'];
 
-    $isposted = $this->othersClass->isposted2($trno,"transnum");
+    $isposted = $this->othersClass->isposted2($trno, "transnum");
 
-    if ($isposted){
+    if ($isposted) {
       return ['status' => false, 'msg' => 'Cannot replenish, transaction already posted.'];
     }
-    
-    $runningbal =0;
-    $end = $this->coreFunctions->getfieldvalue("tchead","endingbal","trno=?",[$rows[0]['trno']]);
+
+    $runningbal = 0;
+    $end = $this->coreFunctions->getfieldvalue("tchead", "endingbal", "trno=?", [$rows[0]['trno']]);
     // if ($begbal!=0){
     //     $runningbal = $begbal;
     // }
 
-     $dateTables = ['tcdetail','tchead'];
-     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $dateTables = ['tcdetail', 'tchead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($rows as $key) {
       $config['params']['row']['trno'] = $rows[0]['trno'];
       $this->coreFunctions->execqry('update tcdetail set isreplenish=1,replenishdate=now() where trno=? and line=?', 'update', [$key['trno'], $key['line']]);
       $this->coreFunctions->execqry('update htcdetail set isreplenish=1,replenishdate=now() where trno=? and line=?', 'update', [$key['trno'], $key['line']]);
-    
+
       $amount = $this->othersClass->sanitizekeyfieldFast('amt',  $key['amount'], $lookups);
       $deduction = $this->othersClass->sanitizekeyfieldFast('amt',  $key['deduction'], $lookups);
-      $runningbal = $runningbal +($deduction  - $amount);
+      $runningbal = $runningbal + ($deduction  - $amount);
     }
 
     $runningbal = $this->othersClass->sanitizekeyfieldFast('amt', $runningbal, $lookups);
 
-    $line = $this->coreFunctions->getfieldvalue("tcdetail","max(line)+1","trno=?",[$trno]);
+    $line = $this->coreFunctions->getfieldvalue("tcdetail", "max(line)+1", "trno=?", [$trno]);
 
-    $r['trno']=$trno;
-    $r['line']=$line;
-    $r['amount']=$this->othersClass->sanitizekeyfieldFast('amt', $runningbal, $lookups);
+    $r['trno'] = $trno;
+    $r['line'] = $line;
+    $r['amount'] = $this->othersClass->sanitizekeyfieldFast('amt', $runningbal, $lookups);
     $r['deduction'] = 0;
     $r['isreplenish'] = 1;
     $r['rem'] = 'Replenishment';
     $r['ref'] = 'Replenishment';
-    $r['encodedby']=$config['params']['user'];
-    $r['encodeddate']=$current_timestamp;
+    $r['encodedby'] = $config['params']['user'];
+    $r['encodeddate'] = $current_timestamp;
 
-    $this->coreFunctions->sbcinsert("tcdetail",$r);
-    $this->coreFunctions->sbcupdate("tchead",["endingbal"=> $runningbal+$end],["trno" => $trno]);
+    $this->coreFunctions->sbcinsert("tcdetail", $r);
+    $this->coreFunctions->sbcupdate("tchead", ["endingbal" => $runningbal + $end], ["trno" => $trno]);
 
     $this->logger->sbcwritelog($trno, $config, 'REPLENISH', 'REPLENISH');
 
     $data = $this->data($config);
-    return ['status' => true, 'msg' => 'Successfully updated.', 'data' => $data,'reloadhead' => true];
+    return ['status' => true, 'msg' => 'Successfully updated.', 'data' => $data, 'reloadhead' => true];
   } //end function
 
-  
+
 } //end class

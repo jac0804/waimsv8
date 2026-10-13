@@ -34,10 +34,10 @@ class pv
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -62,17 +62,17 @@ class pv
         ['label' => 'BIR Form 2307 (New)', 'value' => '3', 'color' => 'blue']
       ]
     );
-    
+
     return array('col1' => $col1);
   }
 
   public function reportparamsdata($config)
   {
     $user = $config['params']['user'];
-    $qry="select name from useraccess where username='$user'";
+    $qry = "select name from useraccess where username='$user'";
     $name = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
 
-    if((isset($name[0]['name']) ? $name[0]['name'] : '')!=''){
+    if ((isset($name[0]['name']) ? $name[0]['name'] : '') != '') {
       $user = $name[0]['name'];
     }
     return $this->coreFunctions->opentable(
@@ -97,7 +97,7 @@ class pv
         case 0: // VOUCHER
           $str = $this->rpt_DEFAULT_CCVOUCHER_LAYOUT1($data, $config);
           break;
-   
+
         case 2:
           $str = $this->rpt_CV_WTAXREPORT($data, $config);
           break;
@@ -109,13 +109,13 @@ class pv
 
       switch ($config['params']['dataparams']['reporttype']) {
         case 0: // VOUCHER
-    
+
           $str = $this->PDF_maxipro_voucher_layout($data, $config);
           break;
         case 1: //NEW VOUCHER PRINTOUT
           $str = $this->PDF_CCVOUCHER_LAYOUT2($data, $config);
           break;
-       
+
         case 2:
           $str = $this->PDF_CV_WTAXREPORT($data, $config);
           break;
@@ -158,7 +158,7 @@ class pv
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n\n\n", '', 'C');
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '40', '20', 120, 65);
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '40', '20', 120, 65);
 
 
     PDF::SetFont($fontbold, '', 15);
@@ -195,12 +195,11 @@ class pv
     PDF::MultiCell(700, 3, '', '', 'L', false);
 
     $jcref = '';
-    $jc=explode(',',$data[0]['jcref']);
+    $jc = explode(',', $data[0]['jcref']);
     foreach ($jc as $key => $ref) {
-      if($ref!=''){
-        $jcref .=$ref."\n";
+      if ($ref != '') {
+        $jcref .= $ref . "\n";
       }
-      
     }
 
     PDF::SetFont($fontbold, '', 11);
@@ -213,13 +212,13 @@ class pv
     PDF::MultiCell(10, 10, "", '', 'R', false, 0, '',  '');
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(130, 10, (isset($jcref) ? $jcref : ''), 'B', 'L', false);
-    
+
     PDF::MultiCell(0, 0, "\n\n\n");
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(50, 15, '', '', 'C', false, 0);
     PDF::MultiCell(500, 15, 'PARTICULARS', 'TBL', 'C', false, 0);
-    PDF::MultiCell(120, 15, 'AMOUNT', 'TBL', 'R', false,0);
-    PDF::MultiCell(10, 15, '', 'TBR', 'R', false,0);
+    PDF::MultiCell(120, 15, 'AMOUNT', 'TBL', 'R', false, 0);
+    PDF::MultiCell(10, 15, '', 'TBR', 'R', false, 0);
     PDF::MultiCell(20, 15, '', '', 'R', false);
   }
 
@@ -270,35 +269,35 @@ class pv
     PDF::MultiCell(10, 15, '', 'TL', 'L', false, 0);
     PDF::MultiCell(490, 15, $remarks, 'T', 'L', false, 0);
     PDF::SetFont('dejavusans', '', 11, '', true);
-    PDF::MultiCell(20, 15, "<span>&#8369;</span>", 'TL', 'C', false, 0, '', '', false, 1,true);
+    PDF::MultiCell(20, 15, "<span>&#8369;</span>", 'TL', 'C', false, 0, '', '', false, 1, true);
     PDF::SetFont($font, '', 11);
-    PDF::MultiCell(100, 15, number_format($totaldb,2), 'T', 'R', false,0);
-    PDF::MultiCell(10, 15, '', 'TR', 'R', false,0);
+    PDF::MultiCell(100, 15, number_format($totaldb, 2), 'T', 'R', false, 0);
+    PDF::MultiCell(10, 15, '', 'TR', 'R', false, 0);
     PDF::MultiCell(20, 15, '', '', 'R', false);
 
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(50, 15, '', '', 'C', false, 0);
     PDF::MultiCell(500, 15, '', 'L', 'C', false, 0);
-    PDF::MultiCell(120, 15, '', 'L', 'R', false,0);
-    PDF::MultiCell(10, 15, '', 'R', 'R', false,0);
+    PDF::MultiCell(120, 15, '', 'L', 'R', false, 0);
+    PDF::MultiCell(10, 15, '', 'R', 'R', false, 0);
     PDF::MultiCell(20, 15, '', '', 'R', false);
 
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(50, 15, '', '', 'C', false, 0);
     PDF::MultiCell(500, 15, '', 'L', 'C', false, 0);
-    PDF::MultiCell(120, 15, '', 'L', 'R', false,0);
-    PDF::MultiCell(10, 15, '', 'R', 'R', false,0);
+    PDF::MultiCell(120, 15, '', 'L', 'R', false, 0);
+    PDF::MultiCell(10, 15, '', 'R', 'R', false, 0);
     PDF::MultiCell(20, 15, '', '', 'R', false);
-    
+
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(50, 15, '', '', 'C', false, 0);
     PDF::MultiCell(10, 15, '', 'TBL', 'L', false, 0);
     PDF::MultiCell(490, 15, 'Totals', 'TB', 'L', false, 0);
     PDF::SetFont('dejavusans', '', 11, '', true);
-    PDF::MultiCell(20, 15, "<span>&#8369;</span>", 'TBL', 'C', false, 0, '', '', false, 1,true);
+    PDF::MultiCell(20, 15, "<span>&#8369;</span>", 'TBL', 'C', false, 0, '', '', false, 1, true);
     PDF::SetFont($font, '', 11);
-    PDF::MultiCell(100, 15, number_format($totaldb,2), 'TB', 'R', false,0);
-    PDF::MultiCell(10, 15, '', 'TBR', 'R', false,0);
+    PDF::MultiCell(100, 15, number_format($totaldb, 2), 'TB', 'R', false, 0);
+    PDF::MultiCell(10, 15, '', 'TBR', 'R', false, 0);
     PDF::MultiCell(20, 15, '', '', 'R', false);
 
     PDF::MultiCell(0, 0, "\n\n");
@@ -342,15 +341,15 @@ class pv
         $accode = $data[$i]['acno'];
       }
 
-      if($data[$i]['db']!=0){
-        $dbcur="<span>&#8369;</span>";
-      }else{
-        $dbcur='';
+      if ($data[$i]['db'] != 0) {
+        $dbcur = "<span>&#8369;</span>";
+      } else {
+        $dbcur = '';
       }
-      if($data[$i]['cr']!=0){
-        $crcur="<span>&#8369;</span>";
-      }else{
-        $crcur='';
+      if ($data[$i]['cr'] != 0) {
+        $crcur = "<span>&#8369;</span>";
+      } else {
+        $crcur = '';
       }
 
       PDF::SetFont($font, '', 9);
@@ -359,12 +358,12 @@ class pv
       PDF::MultiCell(10, 15, '', 'L', 'C', false, 0);
       PDF::MultiCell(290, 15, $acname, '', 'L', false, 0);
       PDF::SetFont('dejavusans', '', 11, '', true);
-      PDF::MultiCell(20, 15, $dbcur, 'L', 'C', false, 0, '', '', false, 1,true);
+      PDF::MultiCell(20, 15, $dbcur, 'L', 'C', false, 0, '', '', false, 1, true);
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(90, 15, $debit, '', 'R', false, 0);
       PDF::MultiCell(10, 15, '', '', 'R', false, 0);
       PDF::SetFont('dejavusans', '', 11, '', true);
-      PDF::MultiCell(20, 15, $crcur, 'L', 'C', false, 0, '', '', false, 1,true);
+      PDF::MultiCell(20, 15, $crcur, 'L', 'C', false, 0, '', '', false, 1, true);
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(90, 15, $credit, '', 'R', false, 0);
       PDF::MultiCell(10, 15, '', 'R', 'R', false, 0);
@@ -388,7 +387,7 @@ class pv
     PDF::MultiCell(53, 0, '', '', 'L', false, 0);
     PDF::MultiCell(250, 0, 'Prepared By: ', '', 'L', false, 0);
     PDF::MultiCell(103, 0, '', '', 'L', false, 0);
-    PDF::MultiCell(250, 0, 'Checked By: ', '', 'L',false,0);
+    PDF::MultiCell(250, 0, 'Checked By: ', '', 'L', false, 0);
     PDF::MultiCell(53, 0, '', '', 'L');
 
 
@@ -398,7 +397,7 @@ class pv
     PDF::MultiCell(83, 0, '', '', 'L', false, 0);
     PDF::MultiCell(170, 0, $params['params']['dataparams']['prepared'], 'B', 'C', false, 0);
     PDF::MultiCell(183, 0, '', '', 'L', false, 0);
-    PDF::MultiCell(170, 0, $params['params']['dataparams']['checked'], 'B', 'C',false,0);
+    PDF::MultiCell(170, 0, $params['params']['dataparams']['checked'], 'B', 'C', false, 0);
     PDF::MultiCell(103, 0, '', '', 'L');
 
 
@@ -438,7 +437,7 @@ class pv
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n\n\n", '', 'C');
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '45', '35', 100, 40);
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '45', '35', 100, 40);
 
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(300, 25, $this->modulename, '', 'L', false, 0);
@@ -594,13 +593,13 @@ class pv
     PDF::SetMargins(40, 40);
 
     PDF::MultiCell(0, 0, "\n");
-    
+
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n\n\n", '', 'C');
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '40', '20', 120, 65);
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '40', '20', 120, 65);
 
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(300, 15, $this->modulename, '', 'L', false);
@@ -650,7 +649,7 @@ class pv
 
     $countarr = 0;
     $countarrrem = 0;
-    $countarracct=0;
+    $countarracct = 0;
 
     if (!empty($data)) {
 
@@ -727,9 +726,9 @@ class pv
         ////////////////////// end rem
 
         if ($data[$i]['jcdocno'] == "") {
-            $jcdocno =  $data[$i]['acnoname'];
+          $jcdocno =  $data[$i]['acnoname'];
         } else {
-            $jcdocno =  $data[$i]['jcdocno'];
+          $jcdocno =  $data[$i]['jcdocno'];
         }
 
         ///////////////// start acct
@@ -781,52 +780,51 @@ class pv
           $maxrow = $countarracct;
         }
 
-     
-          for ($r = 0; $r < $maxrow; $r++) {
-            if ($r == 0) {
-             
-              $debit = number_format($data[$i]['db'], $decimalcurr);
-              if ($debit == 0) {
-                $debit = '';
-              }
-              $credit = number_format($data[$i]['cr'], $decimalcurr);
-              if ($credit == 0) {
-                $credit = '';
-              }
-            } else {
+
+        for ($r = 0; $r < $maxrow; $r++) {
+          if ($r == 0) {
+
+            $debit = number_format($data[$i]['db'], $decimalcurr);
+            if ($debit == 0) {
               $debit = '';
+            }
+            $credit = number_format($data[$i]['cr'], $decimalcurr);
+            if ($credit == 0) {
               $credit = '';
             }
-
-            
-            if ($data[$i]['refx'] == 0 && $data[$i]['acnoid'] == 5182) {
-              PDF::SetFont($font, '', $fontsize);
-              PDF::setCellPadding($left, $top, $right, $bottom);
-              PDF::MultiCell(300, 0, isset($acctname[$r]) ? ' ' . $acctname[$r] : '', 'LR', 'L', false, 0, '', '', true, 1);
-              PDF::MultiCell(100, 0, isset($remname[$r]) ? ' ' . $remname[$r] : '', 'LR', 'L', false, 0, '', '', false, 1);
-              PDF::MultiCell(100, 0, '', 'LR', 'R', false, 0, '', '', false, 1);
-              PDF::MultiCell(100, 0, '', 'LR', 'R', false, 0, '', '', false, 1);
-              PDF::MultiCell(100, 0, $credit . ' ', 'LR', 'R', false, 1, '', '', false, 1);
-            } else {
-              
-              PDF::SetFont($font, '', $fontsize);
-              PDF::setCellPadding($left, $top, $right, $bottom);
-              if ($data[$i]['refx'] == 0) {
-                PDF::MultiCell(300, 0, isset($acctname[$r]) ? ' ' . $acctname[$r] : '', 'LR', 'L', false, 0, '', '', true, 1);
-              } else {
-                PDF::MultiCell(100, 0, isset($acctname[$r]) ? ' ' . $acctname[$r] : '', 'LR', 'L', false, 0, '', '', true, 1);
-                PDF::MultiCell(200, 0, isset($wdescname[$r]) ? ' ' . $wdescname[$r] : '', 'LR', 'L', false, 0, '', '', false, 1);
-              }
-              
-              PDF::MultiCell(100, 0, isset($remname[$r]) ? ' ' . $remname[$r] : '', 'LR', 'L', false, 0, '', '', false, 1);
-              PDF::MultiCell(100, 0, $debit . ' ', 'LR', 'R', false, 0, '', '', false, 1);
-              PDF::MultiCell(100, 0, $credit . ' ', 'LR', 'R', false, 0, '', '', false, 1);
-              PDF::MultiCell(100, 0, '', 'LR', 'R', false, 1, '', '', false, 1);
-            }
-            
+          } else {
+            $debit = '';
+            $credit = '';
           }
-          PDF::SetFont($font, '', 0);
-          PDF::MultiCell(700, 0, '', 'LRB', 'L');
+
+
+          if ($data[$i]['refx'] == 0 && $data[$i]['acnoid'] == 5182) {
+            PDF::SetFont($font, '', $fontsize);
+            PDF::setCellPadding($left, $top, $right, $bottom);
+            PDF::MultiCell(300, 0, isset($acctname[$r]) ? ' ' . $acctname[$r] : '', 'LR', 'L', false, 0, '', '', true, 1);
+            PDF::MultiCell(100, 0, isset($remname[$r]) ? ' ' . $remname[$r] : '', 'LR', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(100, 0, '', 'LR', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(100, 0, '', 'LR', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(100, 0, $credit . ' ', 'LR', 'R', false, 1, '', '', false, 1);
+          } else {
+
+            PDF::SetFont($font, '', $fontsize);
+            PDF::setCellPadding($left, $top, $right, $bottom);
+            if ($data[$i]['refx'] == 0) {
+              PDF::MultiCell(300, 0, isset($acctname[$r]) ? ' ' . $acctname[$r] : '', 'LR', 'L', false, 0, '', '', true, 1);
+            } else {
+              PDF::MultiCell(100, 0, isset($acctname[$r]) ? ' ' . $acctname[$r] : '', 'LR', 'L', false, 0, '', '', true, 1);
+              PDF::MultiCell(200, 0, isset($wdescname[$r]) ? ' ' . $wdescname[$r] : '', 'LR', 'L', false, 0, '', '', false, 1);
+            }
+
+            PDF::MultiCell(100, 0, isset($remname[$r]) ? ' ' . $remname[$r] : '', 'LR', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(100, 0, $debit . ' ', 'LR', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(100, 0, $credit . ' ', 'LR', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(100, 0, '', 'LR', 'R', false, 1, '', '', false, 1);
+          }
+        }
+        PDF::SetFont($font, '', 0);
+        PDF::MultiCell(700, 0, '', 'LRB', 'L');
 
         if (intVal($i) + 1 == $page) {
           $page += $count;
@@ -917,7 +915,7 @@ class pv
     PDF::MultiCell(780, 0, '', 'LR', 'C', false);
     PDF::MultiCell(780, 0, '', 'LR', 'C', false);
     PDF::MultiCell(780, 0, '', 'LR', 'C', false);
-   
+
 
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(705, 0, '', 'L', 'R', false, 0);
@@ -928,7 +926,7 @@ class pv
     //2nd row
 
     PDF::SetFont($font, '', 9);
-  
+
     PDF::MultiCell(780, 10, '', 'T', '', false);
     PDF::MultiCell(780, 10, '', 'T', '', false, 1, 10, 143);
     PDF::MultiCell(780, 10, '', 'T', '', false, 1, 10, 144);
@@ -1077,7 +1075,7 @@ class pv
     PDF::MultiCell(30, 22, '2', 'L', 'C', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(125, 22, 'Tax Payer', '', 'L', false, 0);
-    PDF::MultiCell(220, 30, (isset($data['head'][0]['tin'])? $data['head'][0]['tin']:''), 'TBLR', 'C', false, 0, 165, 252);
+    PDF::MultiCell(220, 30, (isset($data['head'][0]['tin']) ? $data['head'][0]['tin'] : ''), 'TBLR', 'C', false, 0, 165, 252);
     PDF::MultiCell(405, 30, '', 'R', 'C', false);
 
     //8th row -> 2 Identification
@@ -1110,7 +1108,7 @@ class pv
     PDF::MultiCell(30, 25, '4A', '', 'R', false, 0, 575, 353);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(70, 25, 'Zip Code', '', 'L', false, 0, 605, 353);
-    PDF::MultiCell(100, 30, (isset($data['res'][0]['zipcode'])? $data['res'][0]['zipcode']:''), 'TBLR', 'C', false, 0, 675, 348);
+    PDF::MultiCell(100, 30, (isset($data['res'][0]['zipcode']) ? $data['res'][0]['zipcode'] : ''), 'TBLR', 'C', false, 0, 675, 348);
     PDF::MultiCell(15, 30, '', 'R', 'C', false);
 
     //12th row -> blank 
@@ -1153,7 +1151,7 @@ class pv
     PDF::MultiCell(30, 22, '6', 'L', 'C', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(125, 22, 'Tax Payer', '', 'L', false, 0);
-    PDF::MultiCell(220, 30, (isset($data['head'][0]['payortin'])? $data['head'][0]['payortin']:''), 'TBLR', 'L', false, 0, 165, 455);
+    PDF::MultiCell(220, 30, (isset($data['head'][0]['payortin']) ? $data['head'][0]['payortin'] : ''), 'TBLR', 'L', false, 0, 165, 455);
     PDF::MultiCell(405, 30, '', 'R', 'C', false);
 
     //18th row
@@ -1166,7 +1164,7 @@ class pv
     PDF::MultiCell(30, 26, '7', 'L', 'C', false, 0, 10, 505);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(125, 26, "Payee's Name", '', 'L', false, 0, 40, 505);
-    PDF::MultiCell(610, 30, (isset($data['head'][0]['payorcompname'])? $data['head'][0]['payorcompname']:''), 'TBLR', 'L', false, 0, 165, 495);
+    PDF::MultiCell(610, 30, (isset($data['head'][0]['payorcompname']) ? $data['head'][0]['payorcompname'] : ''), 'TBLR', 'L', false, 0, 165, 495);
     PDF::MultiCell(15, 30, '', 'R', 'C', false);
 
     //20th row
@@ -1178,12 +1176,12 @@ class pv
     PDF::MultiCell(30, 25, '8', 'L', 'C', false, 0, 10, 540);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(125, 25, "Registered Address", '', 'L', false, 0, 40, 540);
-    PDF::MultiCell(410, 30, (isset($data['head'][0]['payoraddress'])? $data['head'][0]['payoraddress']:''), 'TBLR', 'L', false, 0, 165, 540);
+    PDF::MultiCell(410, 30, (isset($data['head'][0]['payoraddress']) ? $data['head'][0]['payoraddress'] : ''), 'TBLR', 'L', false, 0, 165, 540);
     PDF::SetFont($fontbold, '', 11);
     PDF::MultiCell(30, 25, '8A', '', 'R', false, 0, 575, 540);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(70, 25, 'Zip Code', '', 'L', false, 0, 605, 540);
-    PDF::MultiCell(100, 30, (isset($data['head'][0]['payorzipcode'])? $data['head'][0]['payorzipcode']:''), 'TBLR', 'C', false, 0, 675, 540);
+    PDF::MultiCell(100, 30, (isset($data['head'][0]['payorzipcode']) ? $data['head'][0]['payorzipcode'] : ''), 'TBLR', 'C', false, 0, 675, 540);
     PDF::MultiCell(15, 30, '', 'R', 'C', false);
 
     //22nd row -> blank 
@@ -1385,13 +1383,13 @@ class pv
     //41st Signature Line
     PDF::MultiCell(10, 20, '', 'L', 'R', false, 0);
     if ($params['params']['dataparams']['payor'] == '') {
-      PDF::MultiCell(395, 20, (isset($data['head'][0]['payorcompname'])? $data['head'][0]['payorcompname']:''), 'B', 'C', false, 0);
+      PDF::MultiCell(395, 20, (isset($data['head'][0]['payorcompname']) ? $data['head'][0]['payorcompname'] : ''), 'B', 'C', false, 0);
     } else {
       PDF::MultiCell(395, 20, ucwords($params['params']['dataparams']['payor']), 'B', 'C', false, 0);
     }
     PDF::MultiCell(15, 20, '', '', 'R', false, 0);
     if ($params['params']['dataparams']['tin'] == '') {
-      PDF::MultiCell(165, 20, (isset($data['head'][0]['payortin'])? $data['head'][0]['payortin']:''), 'B', 'C', false, 0);
+      PDF::MultiCell(165, 20, (isset($data['head'][0]['payortin']) ? $data['head'][0]['payortin'] : ''), 'B', 'C', false, 0);
     } else {
       PDF::MultiCell(165, 20, $params['params']['dataparams']['tin'], 'B', 'C', false, 0);
     }
@@ -1735,7 +1733,7 @@ class pv
     PDF::MultiCell(50, 25, '6', '', 'C', false, 0, 10, 335);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(200, 25, 'Tax Payer Identification Number (TIN)', '', 'C', false, 0);
-    PDF::MultiCell(520, 18, (isset($data['head'][0]['payortin'])? $data['head'][0]['payortin']:''), 'LTBR', 'L', false, 0);
+    PDF::MultiCell(520, 18, (isset($data['head'][0]['payortin']) ? $data['head'][0]['payortin'] : ''), 'LTBR', 'L', false, 0);
     PDF::MultiCell(10, 25, '', '', 'C', false);
 
     //Row 15
@@ -1747,7 +1745,7 @@ class pv
 
     //Row 16
     PDF::MultiCell(50, 18, '', 'L', '', false, 0);
-    PDF::MultiCell(720, 18, (isset($data['head'][0]['payorcompname'])? $data['head'][0]['payorcompname']:''), 'LTRB', 'L', false, 0);
+    PDF::MultiCell(720, 18, (isset($data['head'][0]['payorcompname']) ? $data['head'][0]['payorcompname'] : ''), 'LTRB', 'L', false, 0);
     PDF::MultiCell(10, 18, "", 'R', 'L', false);
 
 
@@ -1764,9 +1762,9 @@ class pv
 
     //Row 18
     PDF::MultiCell(50, 18, '', 'L', '', false, 0);
-    PDF::MultiCell(630, 18, (isset($data['head'][0]['payoraddress'])? $data['head'][0]['payoraddress']:''), 'LTRB', 'L', false, 0);
+    PDF::MultiCell(630, 18, (isset($data['head'][0]['payoraddress']) ? $data['head'][0]['payoraddress'] : ''), 'LTRB', 'L', false, 0);
     PDF::MultiCell(10, 18, "", '', 'L', false, 0);
-    PDF::MultiCell(80, 18, (isset($data['head'][0]['payorzipcode'])? $data['head'][0]['payorzipcode']:''), 'LTRB', 'C', false, 0);
+    PDF::MultiCell(80, 18, (isset($data['head'][0]['payorzipcode']) ? $data['head'][0]['payorzipcode'] : ''), 'LTRB', 'C', false, 0);
     PDF::MultiCell(10, 18, "", 'R', 'L', false);
 
 
@@ -2005,7 +2003,7 @@ class pv
   public function report_default_query($filters)
   {
     $trno = $filters['params']['dataid'];
-    
+
     switch ($filters['params']['dataparams']['reporttype']) {
       case 1:
         $query = "select head.trno,date(head.dateid) as dateid, right(head.docno,12) as docno,client.client,client.clientname,
@@ -2138,11 +2136,10 @@ class pv
             } //end if
             $finalarrs[$key]['month'] = $y['month'];
           }
-          
         } //end for each
-        
 
-        if(empty($result1)){
+
+        if (empty($result1)) {
           $returnarr[0]['payee'] = '';
           $returnarr[0]['tin'] = '';
           $returnarr[0]['payortin'] = '';
@@ -2152,7 +2149,7 @@ class pv
           $returnarr[0]['payorcompname'] = '';
           $returnarr[0]['payoraddress'] = '';
           $returnarr[0]['payorzipcode'] = '';
-          }else{
+        } else {
           $returnarr[0]['payee'] = $result1[0]['clientname'];
           $returnarr[0]['tin'] = $result1[0]['tin'];
           $returnarr[0]['payortin'] = $result1[0]['payortin'];
@@ -2162,7 +2159,7 @@ class pv
           $returnarr[0]['payorcompname'] = $result1[0]['payorcompname'];
           $returnarr[0]['payoraddress'] = $result1[0]['payoraddress'];
           $returnarr[0]['payorzipcode'] = $result1[0]['payorzipcode'];
-          }
+        }
 
         $result = ['head' => $returnarr, 'detail' => $finalarrs, 'res' => $result1];
         break;
@@ -2196,14 +2193,14 @@ class pv
           left join client as dclient on dclient.clientid=detail.clientid
           left join projectmasterfile as proj on proj.line=head.projectid
           where head.doc='pv' and md5(head.trno)='" . md5($trno) . "'";
-          
+
         $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
         break;
     } // end switch
     return $result;
   }
 
-  
+
   // OLD FORMATS
   public function rpt_default_header($data, $filters)
   {
@@ -3535,7 +3532,7 @@ class pv
     $str .= $this->reporter->col('2', '20', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
 
     $str .= $this->reporter->col('Tax Payer Identification Number (TIN)', '150', null, false, '2px solid ', '', 'L', 'Century Gothic', '10', '', '', '3px');
-  
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['tin']) ? $data['head'][0]['tin'] : ''), '400', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 

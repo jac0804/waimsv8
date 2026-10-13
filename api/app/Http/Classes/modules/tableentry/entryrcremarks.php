@@ -33,10 +33,10 @@ class entryrcremarks
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -126,7 +126,7 @@ class entryrcremarks
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         $data3 = [
           'trno' => $data2['trno'],
@@ -158,7 +158,7 @@ class entryrcremarks
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfieldFasts($value2, $data[$key][$value2],$lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFasts($value2, $data[$key][$value2], $lookups);
         }
         if ($data2['line'] != 0) {
           $this->coreFunctions->sbcupdate($this->table, $data2, ['trno' => $data2['trno'], 'line' => $data2['line'], 'cline' => $data2['cline']]);

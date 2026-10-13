@@ -43,7 +43,7 @@ class pd
   public $damt = 'rrcost';
   public $hamt = 'cost';
   private $stockselect;
-  private $fields = ['trno',  'docno',  'dateid', 'rem', 'itemid', 'qty', 'uom',  'sotrno', 'soline', 'wh',  'client','clientname'];
+  private $fields = ['trno',  'docno',  'dateid', 'rem', 'itemid', 'qty', 'uom',  'sotrno', 'soline', 'wh',  'client', 'clientname'];
   private $except = ['trno', 'dateid'];
   public $showfilteroption = true;
   public $showfilter = true;
@@ -58,11 +58,11 @@ class pd
     ['val' => 'all', 'label' => 'All', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -93,7 +93,7 @@ class pd
 
   public function createdoclisting($config)
   {
-    $getcols = ['action', 'lblstatus', 'listdocument', 'listdate', 'listpddocno','itemname','postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+    $getcols = ['action', 'lblstatus', 'listdocument', 'listdate', 'listpddocno', 'itemname', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
     foreach ($getcols as $key => $value) {
       $$value = $key;
     }
@@ -235,7 +235,7 @@ class pd
 
   public function createHeadField($config)
   {
-    $fields = ['docno', 'sodocno','clientname']; //'pidocno',
+    $fields = ['docno', 'sodocno', 'clientname']; //'pidocno',
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'clientname.class', 'sbccsreadonly');
     data_set($col1, 'docno.label', 'Transaction#');
@@ -246,19 +246,19 @@ class pd
     data_set($col1, 'sodocno.lookupclass', 'pendingsopddetail');
     data_set($col1, 'sodocno.readonly', true);
     data_set($col1, 'sodocno.required', true);
-   
 
-    $fields = ['dateid','barcode', 'itemname'];
+
+    $fields = ['dateid', 'barcode', 'itemname'];
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'barcode.class', 'sbccsreadonly');
     data_set($col2, 'barcode.type', 'input');
     data_set($col2, 'itemname.class', 'sbccsreadonly');
     data_set($col2, 'itemname.label', 'Itemname');
-  
+
 
     $fields = [['qty', 'uom'], 'dwhname'];
     $col3 = $this->fieldClass->create($fields);
-   
+
     data_set($col3, 'uom.class', 'sbccsreadonly');
     data_set($col3, 'qty.class', 'sbccsreadonly');
     data_set($col3, 'dwhname.required', true);
@@ -453,24 +453,24 @@ class pd
       createdate, createby, editby, editdate, viewby, viewdate, itemid, uom, qty, sotrno, soline from " . $this->head . " where trno=? limit 1";
     $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
     if ($posthead) {
-        $qry = "insert into " . $this->hstock . "(trno, line, barcode, itemname, uom, wh, disc, rem, cost, rrqty, rrcost, qty,
+      $qry = "insert into " . $this->hstock . "(trno, line, barcode, itemname, uom, wh, disc, rem, cost, rrqty, rrcost, qty,
           ext, qa, void, refx, linex, ref,itemid, encodeddate, encodedby, editdate, editby)
           select trno, line, barcode, itemname, uom, wh, disc, rem, cost, rrqty, rrcost, qty, ext, qa, void, refx, linex,
           ref, itemid, encodeddate, encodedby, editdate, editby from " . $this->stock . " where trno=?";
-        if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
-          $date = $this->othersClass->getCurrentTimeStamp();
-          $data = ['postdate' => $date, 'postedby' => $config['params']['user'], 'statid' => 12];
-          $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
-          $this->coreFunctions->execqry("delete from " . $this->stock . " where trno=?", "delete", [$trno]);
-          $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
-          $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
-          $this->othersClass->sbctransferlog($trno, $config, $this->htablelogs);
-          return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully posted.'];
-        } else {
-          $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", 'delete', [$trno]);
-          return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Posting stock'];
-        }
-      }else {
+      if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
+        $date = $this->othersClass->getCurrentTimeStamp();
+        $data = ['postdate' => $date, 'postedby' => $config['params']['user'], 'statid' => 12];
+        $this->coreFunctions->sbcupdate($this->tablenum, $data, ['trno' => $trno]);
+        $this->coreFunctions->execqry("delete from " . $this->stock . " where trno=?", "delete", [$trno]);
+        $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", "delete", [$trno]);
+        $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
+        $this->othersClass->sbctransferlog($trno, $config, $this->htablelogs);
+        return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully posted.'];
+      } else {
+        $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", 'delete', [$trno]);
+        return ['trno' => $trno, 'status' => false, 'msg' => 'Error on Posting stock'];
+      }
+    } else {
       return ['status' => false, 'msg' => 'Error on Posting Head'];
     }
   } //end function
@@ -485,7 +485,7 @@ class pd
     if (!empty($data)) {
       return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED, either already served or have item voided...'];
     }
-    
+
     $docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
 
     $qry = "insert into " . $this->head . "(trno, doc, docno, client, clientname, dateid, wh, rem, 
@@ -494,21 +494,20 @@ class pd
       createdate, createby, editby, editdate, viewby, viewdate, itemid, uom, qty, sotrno, soline from " . $this->hhead . " where trno=? limit 1";
     $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
     if ($posthead) {
-        $qry = "insert into " . $this->stock . "(trno, line, barcode, itemname, uom, wh, disc, rem, cost, rrqty, rrcost, qty,
+      $qry = "insert into " . $this->stock . "(trno, line, barcode, itemname, uom, wh, disc, rem, cost, rrqty, rrcost, qty,
           ext, qa, void, refx, linex, ref,itemid, encodeddate, encodedby, editdate, editby)
           select trno, line, barcode, itemname, uom, wh, disc, rem, cost, rrqty, rrcost, qty, ext, qa, void, refx, linex,
           ref, itemid, encodeddate, encodedby, editdate, editby from " . $this->hstock . " where trno=?";
-        if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
-          $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null where trno=?", 'update', [$trno]);
-          $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
-          $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
-          $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
-          return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
-        } else {
-          $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", 'delete', [$trno]);
-          return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED, stock problems...'];
-        }
-      
+      if ($this->coreFunctions->execqry($qry, 'insert', [$trno])) {
+        $this->coreFunctions->execqry("update " . $this->tablenum . " set postdate=null where trno=?", 'update', [$trno]);
+        $this->coreFunctions->execqry("delete from " . $this->hstock . " where trno=?", "delete", [$trno]);
+        $this->coreFunctions->execqry("delete from " . $this->hhead . " where trno=?", "delete", [$trno]);
+        $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
+        return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
+      } else {
+        $this->coreFunctions->execqry("delete from " . $this->head . " where trno=?", 'delete', [$trno]);
+        return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED, stock problems...'];
+      }
     } else {
       return ['status' => false, 'msg' => 'UNPOST FAILED'];
     }
@@ -516,9 +515,9 @@ class pd
 
   public function createTab($access, $config)
   {
-    $column = ['action', 'barcode','itemname', 'rrqty',  'uom' ,   'wh'];
+    $column = ['action', 'barcode', 'itemname', 'rrqty',  'uom',   'wh'];
     // 'amt1', 'rrcost', 'disc',  'cost',   'netamt',  'ext', 'prevamt',  'prevdate'  'whname', 'served', 'qa','rem', 'ref',   'poref',  'stage', 'void','stock_projectname',   'partno', 'subcode',   'boxcount', 'loc'
-    $sortcolumn = ['action', 'barcode','itemname', 'rrqty',  'uom' ,   'wh'];
+    $sortcolumn = ['action', 'barcode', 'itemname', 'rrqty',  'uom',   'wh'];
     $headgridbtns = []; //'itemvoiding', 'viewdiagram'
     foreach ($column as $key => $value) {
       $$value = $key;
@@ -774,7 +773,7 @@ class pd
     $computedata = $this->othersClass->computestock($amt, $disc, $qty, $factor);
     $ext = number_format($computedata['ext'], $this->companysetup->getdecimal('currency', $config['params']), '.', '');
     $cost = number_format($computedata['amt'] * $forex, $this->companysetup->getdecimal('price', $config['params']), '.', '');
-   
+
     $data = [
       'trno' => $trno,
       'line' => $line,
@@ -795,7 +794,7 @@ class pd
       'ref' => $ref
     ];
 
-  
+
     foreach ($data as $key => $value) {
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
@@ -831,7 +830,6 @@ class pd
       // }
       return $return;
     }
-  
   } // end function
 
   public function addallitem($config)
@@ -964,7 +962,7 @@ class pd
     // if ($data[0]->refx !== 0) {
     //   $this->setserveditems($data[0]->refx, $data[0]->linex);
     // }
-    
+
     $data = json_decode(json_encode($data), true);
     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED - Line:' . $line . ' Barcode:' . $data[0]['barcode'] . ' Qty:' . $data[0]['rrqty'] . ' Amt:' . $data[0]['rrcost'] . ' Disc:' . $data[0]['disc'] . ' WH:' . $data[0]['wh'] . ' Ext:' . $data[0]['ext']);
     return ['status' => true, 'msg' => 'Item was successfully deleted.'];

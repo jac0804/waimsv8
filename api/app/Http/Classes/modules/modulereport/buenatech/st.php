@@ -39,9 +39,9 @@ class st
 
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -80,9 +80,9 @@ class st
 
     public function report_default_query($trno)
     {
-       
 
-            $query= "select date(head.dateid) as dateid, head.docno, client.client, client.clientname as destinationwh,
+
+        $query = "select date(head.dateid) as dateid, head.docno, client.client, client.clientname as destinationwh,
             source.client as sourcecode, source.clientname as source,
             jo.docno as jodocno,head.rem,  jo.qty as hqty, jo.uom as huom,jo.itemid, item2.barcode as hbarcode,item2.itemname as hitemname,
             item.barcode,item.itemname,head.rem,
@@ -200,12 +200,12 @@ class st
         PDF::MultiCell(80, 20, "Itemname : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(104, 20, (isset($data[0]['hitemname']) ? $data[0]['hitemname'] : ''), 'B', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-       
+
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(70, 20, "Barcode : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(102, 20, (isset($data[0]['hbarcode']) ? $data[0]['hbarcode'] : ''), 'B', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-        
+
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(70, 20, "UOM : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
         PDF::SetFont($fontbold, '', $fontsize);
@@ -221,7 +221,7 @@ class st
         PDF::MultiCell(80, 20, "Job Order # : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(620, 20, (isset($data[0]['jodocno']) ? $data[0]['jodocno'] : ''), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-       
+
 
         PDF::MultiCell(0, 0, "\n\n");
 
@@ -281,7 +281,7 @@ class st
             $arr_disc = $this->reporter->fixcolumn([$disc], '13', 0);
             $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
 
-            $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_itemname,$arr_sourcewh,$arr_qty, $arr_uom, $arr_amt, $arr_disc, $arr_ext]);
+            $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_itemname, $arr_sourcewh, $arr_qty, $arr_uom, $arr_amt, $arr_disc, $arr_ext]);
 
             for ($r = 0; $r < $maxrow; $r++) {
                 PDF::SetFont($font, '', $fontsize);

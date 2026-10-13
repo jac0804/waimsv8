@@ -34,9 +34,9 @@ class st
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -325,7 +325,7 @@ class st
     PDF::MultiCell(80, 0, "Destination: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(470, 0, (isset($data[0]['destination']) ? $data[0]['destination'] : ''), 'B', 'L', false, 0, '',  '');
-   
+
 
     PDF::MultiCell(0, 0, "\n\n\n");
 
@@ -347,7 +347,7 @@ class st
 
   public function default_ST_PDF($params, $data)
   {
-   
+
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
     $count = $page = 31;
     $totalext = 0;

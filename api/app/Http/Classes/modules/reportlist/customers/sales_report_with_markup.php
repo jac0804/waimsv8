@@ -30,12 +30,12 @@ class sales_report_with_markup
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -144,14 +144,14 @@ class sales_report_with_markup
       $filter .= " and item.itemid='$itemid'";
     }
 
-    if($companyid == 47){//kstar
-      $itemdesc =" concat(item.itemname,' - ',item.sizeid,' - ',item.color) ";
+    if ($companyid == 47) { //kstar
+      $itemdesc = " concat(item.itemname,' - ',item.sizeid,' - ',item.color) ";
     }
-    
+
 
     $query = "
       select dateid, docno, agentname,barcode, itemname, qty, uom, amt, disc, ext, (cost * qty) as cost, (amt-cost) as markup,  (((amt-cost)/amt) * 100) as markupper  from (
-        select date(head.dateid) as dateid, head.docno, ifnull(agent.clientname,'') as agentname,  ifnull(".$itemdesc.",'') as itemname,
+        select date(head.dateid) as dateid, head.docno, ifnull(agent.clientname,'') as agentname,  ifnull(" . $itemdesc . ",'') as itemname,
         sum(iss) as qty, stock.uom, sum(stock.amt) as amt, stock.disc, sum(stock.ext) as ext, sum(stock.cost) as cost,item.barcode
         from lahead as head
         left join lastock as stock on head.trno = stock.trno

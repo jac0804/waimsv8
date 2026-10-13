@@ -36,12 +36,12 @@ class pay_slip
   // layoutsize: reportWidth
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '700'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -649,7 +649,7 @@ class pay_slip
     // QUERY
     $clientid     = $config['params']['dataparams']['clientid'];
     $client     = $config['params']['dataparams']['client'];
-    $dclientname= $config['params']['dataparams']['dclientname'];
+    $dclientname = $config['params']['dataparams']['dclientname'];
     $deptid     = $config['params']['dataparams']['deptid'];
     $divid     = $config['params']['dataparams']['divid'];
     $divname     = $config['params']['dataparams']['divname'];
@@ -10617,7 +10617,7 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
             }
 
             // Only add if display_qty is not 0 or it's a monetary item
-            if ($display_qty != 0 || $earn->alias == 'ALLOWANCE' || $earn->alias == '13PAY'|| $earn->db != 0) {
+            if ($display_qty != 0 || $earn->alias == 'ALLOWANCE' || $earn->alias == '13PAY' || $earn->db != 0) {
               $earn_rows[] = array(
                 'codename' => $earn->codename,
                 'code' => $earn->code,

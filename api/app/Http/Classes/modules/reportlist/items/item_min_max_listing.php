@@ -29,12 +29,12 @@ class item_min_max_listing
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -71,7 +71,7 @@ class item_min_max_listing
     unset($col1['labeldata']['divsion']);
     data_set($col1, 'class.name', 'classic');
     data_set($col1, 'divsion.name', 'stockgrp');
-    
+
     $fields = ['print'];
     $col2 = $this->fieldClass->create($fields);
 

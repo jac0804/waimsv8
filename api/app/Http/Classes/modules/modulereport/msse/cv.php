@@ -37,9 +37,9 @@ class cv
   private $reporter;
   private $reportheader;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -469,7 +469,7 @@ class cv
         $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_pdate, $arr_debit, $arr_credit]);
 
         for ($r = 0; $r < $maxrow; $r++) {
-     
+
 
           PDF::SetFont($fontbold, '', $fontsize);
           PDF::MultiCell(170, 5, (isset($arr_acno[$r]) ? $arr_acno[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);

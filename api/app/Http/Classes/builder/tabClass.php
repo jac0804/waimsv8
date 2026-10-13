@@ -21,9 +21,13 @@ class tabClass
   private $othersClass;
   private $gridcolumnClass;
   private $gridbuttonClass;
+  private $params = null;
 
 
-  public function __construct() {} // end function
+  public function __construct($params = null)
+  {
+    $this->params = $params;
+  } // end function
 
   public function tabArray()
   {
@@ -2921,6 +2925,19 @@ class tabClass
           } else {
             $tab[$key]['rowperpage'] = 25;
           }
+          //get custom label for grid column
+          if (!empty($this->params)) {
+            $custom_labels = $this->othersClass->getCustomLabels($this->params);
+
+            if (!empty($custom_labels) && isset($tab[$key]['columns'])) {
+              foreach ($tab[$key]['columns'] as $i => $col) {
+                if (isset($col['name'], $custom_labels[$col['name']])) {
+                  $tab[$key]['columns'][$i]['label'] = $custom_labels[$col['name']];
+                }
+              }
+            }
+          }
+
           break;
         case 'sbc_showgrid':
         case 'sbc_checkboxgrid':

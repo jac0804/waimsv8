@@ -88,11 +88,11 @@ class sh
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -864,11 +864,11 @@ class sh
 
   public function autoadditem($config)
   {
-      $companyid = $config['params']['companyid'];
-      $dateTables = ['rrstatus'];
-      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-      $qty = $this->othersClass->sanitizekeyfieldFast('qty', $config['params']['data']['qty'], $lookups);
-      $wh = $this->othersClass->sanitizekeyfieldFast('qty', $config['params']['data']['wh'], $lookups);
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['rrstatus'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $config['params']['data']['qty'], $lookups);
+    $wh = $this->othersClass->sanitizekeyfieldFast('qty', $config['params']['data']['wh'], $lookups);
 
     if ($qty != 0) {
       $qry = "select sum(rrstatus.bal) as bal,rrstatus.locid,rrstatus.palletid,client.client as wh from rrstatus left join client on client.clientid=rrstatus.whid where client.client='" . $wh . "' and rrstatus.itemid=" . $config['params']['data']['itemid'] . " and rrstatus.bal>0 and rrstatus.bal>=" . $qty . " group by rrstatus.locid,rrstatus.palletid,client.client";
@@ -1087,10 +1087,10 @@ class sh
     }
     $dateTables = ['lastock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-   
+
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
-   
+
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -1134,7 +1134,7 @@ class sh
     ];
 
     foreach ($data as $key => $value) {
-        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

@@ -29,12 +29,12 @@ class sales_per_sales_group_per_person
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -155,7 +155,7 @@ class sales_per_sales_group_per_person
         where ext is not null
         group by  a.sgroup,a.igroup,a.sperson,a.agentid,m
         order by  a.sgroup,a.sperson,a.igroup";
-        
+
     return $query;
   }
 

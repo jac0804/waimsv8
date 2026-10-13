@@ -38,13 +38,69 @@ class stockcard
   private $stockselect;
 
   private $fields = [
-    'barcode', 'picture', 'itemname', 'uom', 'cost', 'itemrem', 'shortname',
-    'part', 'model', 'class', 'brand', 'groupid', 'critical', 'reorder',
-    'category', 'subcat', 'body', 'sizeid', 'color', 'asset', 'liability', 'revenue', 'expense',
-    'isinactive', 'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial',
-    'markup', 'foramt', 'supplier', 'partno', 'subcode', 'packaging', 'islabor', 'dqty',
-    'ispositem', 'isprintable', 'projectid', 'moq', 'mmoq', 'linkdept', 'amt', 'amt2', 'famt', 'amt4', 'amt5', 'amt6', 'amt7', 'amt8', 'amt9',
-    'disc', 'disc2', 'disc3', 'disc4', 'disc5', 'disc6', 'disc7', 'disc8', 'disc9', 'foramt'
+    'barcode',
+    'picture',
+    'itemname',
+    'uom',
+    'cost',
+    'itemrem',
+    'shortname',
+    'part',
+    'model',
+    'class',
+    'brand',
+    'groupid',
+    'critical',
+    'reorder',
+    'category',
+    'subcat',
+    'body',
+    'sizeid',
+    'color',
+    'asset',
+    'liability',
+    'revenue',
+    'expense',
+    'isinactive',
+    'isvat',
+    'isimport',
+    'fg_isfinishedgood',
+    'fg_isequipmenttool',
+    'isnoninv',
+    'isserial',
+    'markup',
+    'foramt',
+    'supplier',
+    'partno',
+    'subcode',
+    'packaging',
+    'islabor',
+    'dqty',
+    'ispositem',
+    'isprintable',
+    'projectid',
+    'moq',
+    'mmoq',
+    'linkdept',
+    'amt',
+    'amt2',
+    'famt',
+    'amt4',
+    'amt5',
+    'amt6',
+    'amt7',
+    'amt8',
+    'amt9',
+    'disc',
+    'disc2',
+    'disc3',
+    'disc4',
+    'disc5',
+    'disc6',
+    'disc7',
+    'disc8',
+    'disc9',
+    'foramt'
   ];
   private $except = ['itemid', 'itemrem'];
   private $blnfields = ['isinactive', 'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial', 'islabor', 'ispositem', 'isprintable'];
@@ -55,11 +111,11 @@ class stockcard
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -88,8 +144,8 @@ class stockcard
     }
 
     $stockbuttons = ['view', 'listingshowbalance'];
-    if($companyid==60 ){//transpower
-     array_push($stockbuttons, 'intransaction','poitemhistory','soitemhistory');
+    if ($companyid == 60) { //transpower
+      array_push($stockbuttons, 'intransaction', 'poitemhistory', 'soitemhistory');
     }
 
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
@@ -108,9 +164,9 @@ class stockcard
       $cols[$foramt]['type'] = 'coldel';
     }
 
-    if($companyid==60 ){//transpower
-       $cols[$action]['btns']['poitemhistory']['action'] = 'customformdialog';
-       $cols[$action]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
+    if ($companyid == 60) { //transpower
+      $cols[$action]['btns']['poitemhistory']['action'] = 'customformdialog';
+      $cols[$action]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
     }
     $cols = $this->tabClass->delcollisting($cols);
 
@@ -255,17 +311,16 @@ class stockcard
     data_set($col2, 'sizeid.type', 'input');
     data_set($col2, 'color.type', 'input');
 
-   
-    if($companyid==60){//transpower
-       $allowview = $this->othersClass->checkAccess($config['params']['user'], 5488);
-       $fields = [['amt5', 'disc5'],['amt7', 'disc7'],['amt2', 'disc2'],['amt', 'disc'],  ['famt', 'disc3'], ['amt6', 'disc6'],['amt4', 'disc4']]; 
-        
-       if(!$allowview){
-           $fields = [['amt5', 'disc5'],['amt7', 'disc7'],['amt2', 'disc2'],['amt', 'disc']]; 
-        }
-     
-    }else{
-     $fields = [['amt', 'disc'], ['famt', 'disc3'], ['amt2', 'disc2'], ['amt4', 'disc4'], ['amt5', 'disc5'], ['amt6', 'disc6'], ['amt7', 'disc7'], ['amt8', 'disc8'], ['amt9', 'disc9']];
+
+    if ($companyid == 60) { //transpower
+      $allowview = $this->othersClass->checkAccess($config['params']['user'], 5488);
+      $fields = [['amt5', 'disc5'], ['amt7', 'disc7'], ['amt2', 'disc2'], ['amt', 'disc'],  ['famt', 'disc3'], ['amt6', 'disc6'], ['amt4', 'disc4']];
+
+      if (!$allowview) {
+        $fields = [['amt5', 'disc5'], ['amt7', 'disc7'], ['amt2', 'disc2'], ['amt', 'disc']];
+      }
+    } else {
+      $fields = [['amt', 'disc'], ['famt', 'disc3'], ['amt2', 'disc2'], ['amt4', 'disc4'], ['amt5', 'disc5'], ['amt6', 'disc6'], ['amt7', 'disc7'], ['amt8', 'disc8'], ['amt9', 'disc9']];
     }
 
     $col3 = $this->fieldClass->create($fields);
@@ -286,7 +341,7 @@ class stockcard
       data_set($col3, 'famt.label', 'SI Cash Price');
     }
 
-     if($companyid==60){//transpower
+    if ($companyid == 60) { //transpower
       data_set($col3, 'amt.label', 'Base Price');
       data_set($col3, 'disc.label', 'Base Discount');
       data_set($col3, 'amt2.label', 'Wholesale Price');
@@ -301,7 +356,7 @@ class stockcard
       data_set($col3, 'disc6.label', 'Lowest Discount');
       data_set($col3, 'amt7.label', 'DR Price');
       data_set($col3, 'disc7.label', 'DR Discount');
-     }
+    }
 
     $fields = ['picture', 'rem'];
     $col4 = $this->fieldClass->create($fields);

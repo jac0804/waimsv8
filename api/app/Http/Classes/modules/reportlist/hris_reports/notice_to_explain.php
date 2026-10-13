@@ -32,12 +32,12 @@ class notice_to_explain
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -114,10 +114,11 @@ class notice_to_explain
       $filter .= " and emp.client = '$client'";
     }
 
-    if ($deptname !=''){
-    if ($deptid != 0) {
-      $filter1 .= " and dept.clientid = $deptid";
-    }}
+    if ($deptname != '') {
+      if ($deptid != 0) {
+        $filter1 .= " and dept.clientid = $deptid";
+      }
+    }
     // head.fempjob,
     $query = "select head.trno, head.docno, head.empid, date(head.dateid) as dateid,
                     head.artid,femp.client as fempcode, femp.clientname as fempname,

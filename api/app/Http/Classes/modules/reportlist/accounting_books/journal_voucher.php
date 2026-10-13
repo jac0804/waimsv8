@@ -31,12 +31,12 @@ class journal_voucher
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -687,7 +687,7 @@ class journal_voucher
           break;
         default:
           $str .= $this->reporter->col('DOCUMENT #', 120, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
-          $str .= $this->reporter->col('PAYEE NAME PARTICULARS', 220, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', ''); 
+          $str .= $this->reporter->col('PAYEE NAME PARTICULARS', 220, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('DATE', 80, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('ACCNT CODE', 70, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('ACCOUNT DESCRIPTION', 180, null, '', '1px solid ', 'B', 'l', $font, $fontsize, 'B', '', '');
@@ -860,7 +860,7 @@ class journal_voucher
         $rem = "";
       } else {
         if ($docno != "") {
-           //Sub total
+          //Sub total
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->addline();
           $str .= $this->reporter->col('', 120, null, '', '1px solid ', 'T', '', $font, $fontsize10, '', '', '');

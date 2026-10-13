@@ -30,31 +30,31 @@ class receivables_trial_balance_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'P', 'format' => 'letter', 'layoutSize' => '1200'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
     public function createHeadField($config)
     {
         $companyid = $config['params']['companyid'];
-    $fields = ['radioprint','start', 'end'];
-    $col1 = $this->fieldClass->create($fields);
-    data_set($col1, 'start.type', 'date');
-    data_set($col1, 'end.type', 'date');
+        $fields = ['radioprint', 'start', 'end'];
+        $col1 = $this->fieldClass->create($fields);
+        data_set($col1, 'start.type', 'date');
+        data_set($col1, 'end.type', 'date');
 
 
-    $fields = ['print'];
-    $col2 = $this->fieldClass->create($fields);
+        $fields = ['print'];
+        $col2 = $this->fieldClass->create($fields);
 
-    return array('col1' => $col1, 'col2' => $col2);
+        return array('col1' => $col1, 'col2' => $col2);
     }
 
-     public function paramsdata($config)
+    public function paramsdata($config)
     {
         // NAME NG INPUT YUNG NAKA ALIAS
         return $this->coreFunctions->opentable("select 
@@ -74,7 +74,7 @@ class receivables_trial_balance_report
     {
         return [];
     }
-    
+
     public function reportplotting($config)
     {
         $data = $this->data_query($config);
@@ -142,7 +142,7 @@ class receivables_trial_balance_report
 
         return $this->coreFunctions->opentable($query);
     }
-    
+
     public function displayHeader($config, $recordCount)
     {
         $center     = $config['params']['center'];
@@ -150,7 +150,7 @@ class receivables_trial_balance_report
         $companyid  = $config['params']['companyid'];
         $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-      
+
         $str = '';
         $layoutsize = '900';
         $font = 'Tahoma';
@@ -167,13 +167,12 @@ class receivables_trial_balance_report
         $str .= $this->reporter->col('Receivables Trial Balance Report', '800', null, false, '', '', 'C', $font, '15', 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Date From :  ' . date("d-M-Y", strtotime($start)) . ' to ' . date("d-M-Y", strtotime($end)),'800',null,false,'','','C',$font,$fontsize,'');
+        $str .= $this->reporter->col('Date From :  ' . date("d-M-Y", strtotime($start)) . ' to ' . date("d-M-Y", strtotime($end)), '800', null, false, '', '', 'C', $font, $fontsize, '');
         $str .= $this->reporter->endtable();
 
         $str .= '<br/><br/>';
 
         return $str;
-
     }
 
     public function reportDefaultLayout($config, $result)
@@ -195,7 +194,7 @@ class receivables_trial_balance_report
 
         // get data from query result
         $row = $result[0];
-        $beginning  = number_format($row->balance , 2);
+        $beginning  = number_format($row->balance, 2);
         $sales      = number_format($row->sales, 2);
         $dmemo      = number_format($row->dmemo, 2);
         $total = number_format($row->balance + $row->sales + $row->dmemo, 2);
@@ -245,7 +244,7 @@ class receivables_trial_balance_report
         $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '');
         $str .= $this->reporter->col('Debit Memo (DM)', '250', null, false, $border, '', 'L', $font, $fontsize, '');
         $str .= $this->reporter->col('', '50', null, false, $border, '', 'R', $font, $fontsize, '');
-        $str .= $this->reporter->col('P ' . $dmemo, '250', null, false,$border, 'B', 'R', $font, $fontsize, '');
+        $str .= $this->reporter->col('P ' . $dmemo, '250', null, false, $border, 'B', 'R', $font, $fontsize, '');
         $str .= $this->reporter->col('', '300', null, false, $border, '', 'R', $font, $fontsize, '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
@@ -289,7 +288,7 @@ class receivables_trial_balance_report
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
-        
+
         // credit memo
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
@@ -336,5 +335,4 @@ class receivables_trial_balance_report
         $str .= $this->reporter->endreport();
         return $str;
     }
-  
 }//end class

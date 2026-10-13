@@ -34,9 +34,9 @@ class rr
   private $othersClass;
   private $logger;
   private $reporter;
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -47,21 +47,21 @@ class rr
 
   public function createreportfilter($config)
   {
-      $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
-      $col1 = $this->fieldClass->create($fields);
-    
-      data_set($col1, 'radioprint.options', [
-        ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-        // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
-      ]);
-      return array('col1' => $col1);
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
+
+    data_set($col1, 'radioprint.options', [
+      ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
+      // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
+    ]);
+    return array('col1' => $col1);
   }
 
 
 
   public function reportparamsdata($config)
   {
-      $paramstr = "select
+    $paramstr = "select
       'PDFM' as print, 
       '' as prepared,
       '' as approved,
@@ -102,12 +102,11 @@ class rr
 
   public function reportplotting($params, $data)
   {
-      if ($params['params']['dataparams']['print'] == "default") {
-        return $this->default_RR_layout($params, $data);
-      } else if ($params['params']['dataparams']['print'] == "PDFM") {
-        return $this->default_RR_PDF($params, $data);
-      }
-    
+    if ($params['params']['dataparams']['print'] == "default") {
+      return $this->default_RR_layout($params, $data);
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
+      return $this->default_RR_PDF($params, $data);
+    }
   }
 
   public function default_header($params, $data)
@@ -465,10 +464,4 @@ class rr
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
- 
-
-
-
-
 }

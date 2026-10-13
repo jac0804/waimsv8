@@ -42,10 +42,10 @@ class entryexpiration
     private $logger;
     private $reportheader;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -123,7 +123,7 @@ class entryexpiration
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
                 if ($data[$key]['line'] == 0 && $data[$key]['days'] != '') {
                     $qry = "select days from expiration where days = '" . $data[$key]['days'] . "' limit 1";
@@ -156,7 +156,7 @@ class entryexpiration
                             } else {
                                 update:
                                 if (isset($resultdata[0]['days']) && $resultdata[0]['days'] != $data[$key]['expiry']) {
-                                // if ($resultdata[0]['days'] != $data[$key]['expiry']) {
+                                    // if ($resultdata[0]['days'] != $data[$key]['expiry']) {
                                     $count = $this->checkusedexpiry($data[$key]['line']);
                                     if ($count != 0) {
                                         return ['status' => false, 'msg' => "Can't be Change Already used."];
@@ -225,10 +225,10 @@ class entryexpiration
                         }
                         return ['status' => false, 'msg' => ' Expiration ( ' . $resultdata[0]['days'] . ' )' . ' is already exist', 'data' => [$resultdata], 'rowid' => [$row['line'] . ' -- ' . $resultdata[0]['line']]];
                     } else {
-                        
+
                         update:
-                            if (isset($resultdata[0]['days']) && $resultdata[0]['expiry'] != $row['expiry']) {
-                        // if ($resultdata[0]['expiry'] != $row['expiry']) {
+                        if (isset($resultdata[0]['days']) && $resultdata[0]['expiry'] != $row['expiry']) {
+                            // if ($resultdata[0]['expiry'] != $row['expiry']) {
                             $count = $this->checkusedexpiry($row['line']);
                             if ($count != 0) {
                                 return ['status' => false, 'msg' => "Can't be Change Already used."];

@@ -44,7 +44,11 @@ class mm
     public $htablelogs = 'htransnum_log';
     private $stockselect;
     private $fields = [
-        'trno', 'docno', 'dateid', 'rem', 'itemid'
+        'trno',
+        'docno',
+        'dateid',
+        'rem',
+        'itemid'
     ];
     private $otherfield = [];
     private $except = ['trno', 'dateid'];
@@ -60,11 +64,11 @@ class mm
         ['val' => 'posted', 'label' => 'Posted', 'color' => 'orange'],
         ['val' => 'all', 'label' => 'All', 'color' => 'primary']
     ];
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -262,7 +266,15 @@ class mm
         $tab = [
             $this->gridname => [
                 'gridcolumns' => [
-                    'action', 'barcode', 'othcode', 'itemname', 'specs', 'uom', 'category', 'subcat_name', 'isgeneric'
+                    'action',
+                    'barcode',
+                    'othcode',
+                    'itemname',
+                    'specs',
+                    'uom',
+                    'category',
+                    'subcat_name',
+                    'isgeneric'
                 ]
             ]
 

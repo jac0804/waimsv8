@@ -37,9 +37,9 @@ class pr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -128,7 +128,7 @@ class pr
         left join item on item.itemid = stock.itemid
         left join model_masterfile as m on m.model_id = item.model
         where head.doc='PR' and head.trno='$trno'";
-    
+
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn
@@ -473,7 +473,7 @@ class pr
               PDF::MultiCell(110, 18, ' ' . (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
               PDF::MultiCell(80, 18, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
               PDF::MultiCell(80, 18, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-              PDF::MultiCell(200, 18, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false,0, '',  '', true, 0, false, true, 0, 'M', false);
+              PDF::MultiCell(200, 18, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
               PDF::MultiCell(100, 18, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : '-'), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
               PDF::MultiCell(130, 18, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : '-'), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
               break;
@@ -481,7 +481,7 @@ class pr
               PDF::MultiCell(110, 18, ' ' . (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
               PDF::MultiCell(80, 18, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
               PDF::MultiCell(80, 18, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-              PDF::MultiCell(250, 18, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false,0, '',  '', true, 0, false, true, 0, 'M', false);
+              PDF::MultiCell(250, 18, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
               PDF::MultiCell(80, 18, ' ', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
               PDF::MultiCell(100, 18, ' ', '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
               // PDF::MultiCell(80, 18, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);

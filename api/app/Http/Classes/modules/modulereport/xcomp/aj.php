@@ -34,9 +34,9 @@ class aj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -309,7 +309,7 @@ class aj
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 0, "Customer: ", '', 'L', false, 0, '', '');
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(470, 0, (isset($data[0]['client']) ? $data[0]['client'].' - '.$data[0]['custname'] : ''), 'B', 'L', false, 0, '', '');
+    PDF::MultiCell(470, 0, (isset($data[0]['client']) ? $data[0]['client'] . ' - ' . $data[0]['custname'] : ''), 'B', 'L', false, 0, '', '');
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 0, "Yourref: ", '', 'L', false, 0, '', '');
     PDF::SetFont($font, '', $fontsize);
@@ -394,7 +394,7 @@ class aj
         $arr_itemname = $this->reporter->fixcolumn([$itemname], '50', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
         $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
-        if($viewcost == '1') {
+        if ($viewcost == '1') {
           $arr_cost = $this->reporter->fixcolumn([$cost], '13', 0);
           $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
           $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_itemname, $arr_qty, $arr_uom, $arr_cost, $arr_ext]);

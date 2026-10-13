@@ -40,9 +40,9 @@ class po
 
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -580,7 +580,7 @@ class po
                                                                                     select createby as user from hpohead where trno = $trno) as s ");
         $prep = $this->coreFunctions->datareader("select name as value from useraccess where username = '$prepared'");
 
-        $approve= $params['params']['dataparams']['approved'];
+        $approve = $params['params']['dataparams']['approved'];
         if ($approve == '') {
             $approved = 'Jonathan Go';
         } else {
@@ -695,7 +695,7 @@ class po
         PDF::MultiCell(210, 15, (isset($data[0]['exp']) ? $data[0]['exp'] : ''), '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
         $add = isset($data[0]['address']) ? $data[0]['address'] : '';
-       
+
         $maxChars = 50;
         $adds = strlen($add);
         $firstLine = '';
@@ -2365,9 +2365,9 @@ class po
                                                                                     select createby as user from hpohead where trno = $trno) as s ");
         $prep = $this->coreFunctions->datareader("select name as value from useraccess where username = '$prepared'");
 
-         $approve= $params['params']['dataparams']['approved'];
+        $approve = $params['params']['dataparams']['approved'];
 
-         if ($approve == '') {
+        if ($approve == '') {
             $approved = 'Jonathan Go';
         } else {
             $approved = $approve;

@@ -34,10 +34,10 @@ class viewndahistorydetails
 
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -55,8 +55,16 @@ class viewndahistorydetails
     public function createTab($config)
     {
         $getcols = [
-            'docno', 'memodocno', 'gudescription', 'description', 'penalty', 'startdate', 'enddate', 'amt',
-            'details', 'findings'
+            'docno',
+            'memodocno',
+            'gudescription',
+            'description',
+            'penalty',
+            'startdate',
+            'enddate',
+            'amt',
+            'details',
+            'findings'
         ];
 
         foreach ($getcols as $key => $value) {

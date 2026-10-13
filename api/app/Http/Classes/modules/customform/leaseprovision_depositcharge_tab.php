@@ -50,8 +50,22 @@ class leaseprovision_depositcharge_tab
   // Remarks - rem
 
   private $fields = [
-    'leaserate', 'acrate', 'cusarate', 'ewcharges', 'concharges', 'fencecharge', 'powercharges',
-    'watercharges', 'housekeeping', 'docstamp', 'consbond', 'emeterdep', 'servicedep', 'secdep', 'rem', 'secdepmos'
+    'leaserate',
+    'acrate',
+    'cusarate',
+    'ewcharges',
+    'concharges',
+    'fencecharge',
+    'powercharges',
+    'watercharges',
+    'housekeeping',
+    'docstamp',
+    'consbond',
+    'emeterdep',
+    'servicedep',
+    'secdep',
+    'rem',
+    'secdepmos'
   ];
   private $table = 'tenantinfo';
 
@@ -61,10 +75,10 @@ class leaseprovision_depositcharge_tab
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -84,8 +98,16 @@ class leaseprovision_depositcharge_tab
 
 
     $fields = [
-      'leaserate', 'acrate', 'cusarate', 'ewcharges', 'concharges', 'fencecharge',
-      'powercharges', 'watercharges', 'housekeeping', 'refresh'
+      'leaserate',
+      'acrate',
+      'cusarate',
+      'ewcharges',
+      'concharges',
+      'fencecharge',
+      'powercharges',
+      'watercharges',
+      'housekeeping',
+      'refresh'
     ];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'refresh.label', 'SAVE');
@@ -180,7 +202,7 @@ class leaseprovision_depositcharge_tab
 
     $data = [];
     foreach ($this->fields as $fieldname) {
-       $data[$fieldname] = $this->othersClass->sanitizekeyfieldFast($fieldname, $config['params']['dataparams'][$fieldname],$lookups);
+      $data[$fieldname] = $this->othersClass->sanitizekeyfieldFast($fieldname, $config['params']['dataparams'][$fieldname], $lookups);
     }
     $data['clientid'] = $clientid;
 

@@ -29,12 +29,12 @@ class sales_in_details
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -214,7 +214,7 @@ class sales_in_details
                 group by head.dateid, head.docno, head.clientname, head.ourref, item.partno, item.itemname, stock.disc, wh.client, head.createby,head.rem2
                 order by docno $sorting";
                 break;
-        }   
+        }
 
         return $query;
     }

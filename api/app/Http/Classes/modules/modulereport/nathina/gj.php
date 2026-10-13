@@ -34,10 +34,10 @@ class gj
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -51,7 +51,7 @@ class gj
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
 
     return array('col1' => $col1);
@@ -124,7 +124,7 @@ class gj
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('GENERAL JOURNAL', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '18', 'B', '', '');
     $str .= $this->reporter->col('DOCUMENT # :', '100', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', 'B', '', '');
     $str .= $this->reporter->col((isset($result[0]->docno) ? $result[0]->docno : ''), '100', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '13', '', '', '') . '<br />';
@@ -154,10 +154,10 @@ class gj
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->printline();
-    
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('ACCT.#', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('ACCOUNT NAME', '350', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('REFERENCE&nbsp#', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
@@ -255,7 +255,7 @@ class gj
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -269,7 +269,7 @@ class gj
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -278,7 +278,7 @@ class gj
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
-    
+
 
     PDF::SetFont($font, '', 9);
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
@@ -288,7 +288,7 @@ class gj
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);
@@ -409,7 +409,6 @@ class gj
 
         if (PDF::getY() > 900) {
           $this->default_GJ_header_PDF($params, $data);
-          
         }
       }
     }

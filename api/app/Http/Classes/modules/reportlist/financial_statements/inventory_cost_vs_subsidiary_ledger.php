@@ -29,12 +29,12 @@ class inventory_cost_vs_subsidiary_ledger
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -98,8 +98,8 @@ class inventory_cost_vs_subsidiary_ledger
     $end          = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
     $center    = $config['params']['center'];
-  
-          $query = "select head.docno,   date(head.dateid) as dateid, sum(d.db - d.cr) as cos,
+
+    $query = "select head.docno,   date(head.dateid) as dateid, sum(d.db - d.cr) as cos,
                (select sum(stock.cost * stock.qty) from glstock as stock
                 where stock.trno = head.trno and stock.iss = 0) as totalinv
                 from glhead as head

@@ -38,10 +38,10 @@ class en_levels
   public $showclosebtn = false;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -131,7 +131,7 @@ class en_levels
         if ($data[$key]['line'] == 0) {
           $check = $this->checkLevel($data[$key], 'new');
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data2['levels'];
+            $msg .= "\n Duplicate entry for " . $data2['levels'];
           } else {
             $line = $this->coreFunctions->insertGetId($this->table, $data2);
             $this->logger->sbcmasterlog($data[$key]['line'], $config, ' CREATE - ' . $data[$key]['levels']);
@@ -139,7 +139,7 @@ class en_levels
         } else {
           $check = $this->checkLevel($data[$key]);
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data2['levels'];
+            $msg .= "\n Duplicate entry for " . $data2['levels'];
           } else {
             $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data2['editby'] = $config['params']['user'];
@@ -149,7 +149,7 @@ class en_levels
       } // end if
     } // foreach
     $returndata = $this->loaddata($config);
-    return ['status' => true, 'msg' => 'All saved successfully.'.$msg, 'data' => $returndata];
+    return ['status' => true, 'msg' => 'All saved successfully.' . $msg, 'data' => $returndata];
   } // end function  
 
   public function save($config)
@@ -164,11 +164,11 @@ class en_levels
     foreach ($this->fields as $key => $value) {
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
-    
+
     if ($row['line'] == 0) {
       $check = $this->checkLevel($row, 'new');
-      if($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$data['levels'], 'row' => []];
+      if ($check) {
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $data['levels'], 'row' => []];
       } else {
         $line = $this->coreFunctions->insertGetId($this->table, $data);
         if ($line != 0) {
@@ -181,8 +181,8 @@ class en_levels
       }
     } else {
       $check = $this->checkLevel($row);
-      if($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$data['levels'], 'row' => []];
+      if ($check) {
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $data['levels'], 'row' => []];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
@@ -196,11 +196,11 @@ class en_levels
     }
   } //end function
 
-  public function checkLevel ($data, $type = 'update')
+  public function checkLevel($data, $type = 'update')
   {
-    $qry = "select line as value from en_levels where levels='".$data['levels']."'";
+    $qry = "select line as value from en_levels where levels='" . $data['levels'] . "'";
     if ($type == 'update') {
-      $qry = "select line as value from en_levels where levels='".$data['levels']."' and line <> ".$data['line'];
+      $qry = "select line as value from en_levels where levels='" . $data['levels'] . "' and line <> " . $data['line'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check == '') {

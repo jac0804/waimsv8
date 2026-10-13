@@ -1572,7 +1572,7 @@ class payroll
 		$this->coreFunctions->sbcaddcolumngrp(["multiapprover"], ["editdate", "encodedate"], "DATETIME DEFAULT NULL", 0);
 
 		$this->coreFunctions->sbcaddcolumn("obapplication", "dateid2", "DATETIME DEFAULT NULL", 0);
-		$this->coreFunctions->sbcaddcolumn("batch", "isportal", "TINYINT(2) NOT NULL DEFAULT '0'", 0);
+		$this->coreFunctions->sbcaddcolumngrp(["batch"], ["isportal", "isallowonly"], "TINYINT(2) NOT NULL DEFAULT '0'", 0);
 
 		$this->coreFunctions->sbcaddcolumn("paydeletelogs", "isnotexist", "TINYINT(2) NOT NULL DEFAULT '0'", 0);
 		$this->coreFunctions->sbcaddcolumn("waims_notice", "title", "VARCHAR(100) NOT NULL DEFAULT ''", 1);
@@ -2000,5 +2000,7 @@ class payroll
 
 		$qry = "CREATE TABLE `hddfirearms` LIKE `ddfirearms`";
 		$this->coreFunctions->sbccreatetable("hddfirearms", $qry);
+
+		$this->coreFunctions->sbcaddcolumngrp(["dddetail", "hdddetail"], ["tmshifts"], "varchar(100) NOT NULL DEFAULT ''", 0);
 	} //end function
 } // end class

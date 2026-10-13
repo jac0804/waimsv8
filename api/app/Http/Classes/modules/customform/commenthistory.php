@@ -33,10 +33,10 @@ class commenthistory
   public $tablelogs_del = 'del_masterfile_log';
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -46,7 +46,7 @@ class commenthistory
 
   public function createTab($config)
   {
-  
+
     $tab = [
       $this->gridname => ['action' => 'taskentry', 'lookupclass' => 'historicalcomments', 'label' => 'LIST']
     ];
@@ -94,7 +94,7 @@ class commenthistory
     }
 
     $qry = "select '$trno' as tmtrno,'$line' as tmline,'' as createby,'' as createdate,'' as rem, '" . $otherTrnoField . "' as othertrnofield, " . $otherTrnoVal . " as othertrnoval";
-   
+
     $data = $this->coreFunctions->opentable($qry);
     return $data;
   }

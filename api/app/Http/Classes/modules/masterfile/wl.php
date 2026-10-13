@@ -77,11 +77,11 @@ class wl
     private $reporter;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -347,7 +347,7 @@ class wl
 
         $dateTables = ['client', 'clientinfo'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-        
+
         if ($isupdate) {
             unset($this->fields[0]);
         }

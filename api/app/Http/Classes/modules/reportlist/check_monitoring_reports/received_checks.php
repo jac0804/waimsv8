@@ -31,12 +31,12 @@ class received_checks
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -61,25 +61,25 @@ class received_checks
     data_set($col2, 'dateid.readonly', false);
 
     if ($companyid == 72) { //hahsy
-      $fields = ['radioposttype', 'radioreporttype','pref'];
+      $fields = ['radioposttype', 'radioreporttype', 'pref'];
       $col3 = $this->fieldClass->create($fields);
       data_set($col3, 'radioreporttype.label', 'Date Based On');
       data_set($col3, 'radioreporttype.options', [
         ['label' => 'Collection Date', 'value' => '0', 'color' => 'pink'],
         ['label' => 'Check Date', 'value' => '1', 'color' => 'pink']
       ]);
-    }else {
-    $fields = ['radioposttype', 'radioreporttype'];
-    $col3 = $this->fieldClass->create($fields);
-    data_set($col3, 'radioreporttype.label', 'Date based on:');
-    data_set(
-      $col3,
-      'radioreporttype.options',
-      [
-        ['label' => 'Transaction Date', 'value' => '0', 'color' => 'pink'],
-        ['label' => 'Check Date', 'value' => '1', 'color' => 'pink']
-      ]
-    );
+    } else {
+      $fields = ['radioposttype', 'radioreporttype'];
+      $col3 = $this->fieldClass->create($fields);
+      data_set($col3, 'radioreporttype.label', 'Date based on:');
+      data_set(
+        $col3,
+        'radioreporttype.options',
+        [
+          ['label' => 'Transaction Date', 'value' => '0', 'color' => 'pink'],
+          ['label' => 'Check Date', 'value' => '1', 'color' => 'pink']
+        ]
+      );
     }
 
     data_set(

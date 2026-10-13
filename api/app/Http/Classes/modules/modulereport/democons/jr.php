@@ -34,10 +34,10 @@ class jr
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -290,7 +290,7 @@ class jr
 
   public function maxipro_layout_PDF($params, $data)
   {
-   
+
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
     $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
@@ -342,7 +342,7 @@ class jr
     PDF::SetTextColor(0, 0, 0);
     PDF::SetFont($font, '', $fontsize);
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '50', '20', 120, 65);
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '50', '20', 120, 65);
 
 
     PDF::MultiCell(0, 0, "\n");

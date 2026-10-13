@@ -32,11 +32,11 @@ class rr
   private $othersClass;
   private $logger;
   private $reporter;
-  
 
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -50,7 +50,7 @@ class rr
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
     return array('col1' => $col1);
   }
@@ -125,11 +125,11 @@ class rr
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col($this->modulename, '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
     $str .= $this->reporter->col('DOCUMENT # :', '120', null, false, $border, '', 'L', $font, '13', 'B', '', '');
     $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : '') . QrCode::size(100)->generate($data[0]['docno'] . '-' . $data[0]['trno']), '100', null, false, $border, 'B', 'L', $font, '13', '', '', '') . '<br />';
-    
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable('800');
@@ -156,10 +156,10 @@ class rr
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->printline();
-    
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('QTY', '50px', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('UNIT', '50px', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('D E S C R I P T I O N', '400px', null, false, $border, 'B', 'L', $font, '12', 'B', '30px', '8px');
@@ -213,7 +213,7 @@ class rr
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
         $str .= $this->default_header($params, $data);
-        
+
         $str .= $this->reporter->printline();
         $page = $page + $count;
       }
@@ -260,7 +260,7 @@ class rr
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    
+
     $str .= $this->reporter->endreport();
 
     return $str;
@@ -272,7 +272,7 @@ class rr
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -286,7 +286,7 @@ class rr
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -295,7 +295,7 @@ class rr
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
-    
+
 
     PDF::SetFont($font, '', 9);
 
@@ -306,7 +306,7 @@ class rr
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);
@@ -315,7 +315,7 @@ class rr
       'padding' => 0,
     );
 
-    
+
     PDF::MultiCell(80, 0, "Docno #: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', 10);
     PDF::MultiCell(100, 0, $data[0]['docno'], 'B', 'L', false, 0, '',  '');

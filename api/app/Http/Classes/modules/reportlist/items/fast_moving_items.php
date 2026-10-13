@@ -30,12 +30,12 @@ class fast_moving_items
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -813,34 +813,34 @@ class fast_moving_items
     $str .= $this->reporter->begintable($layoutsize);
 
     $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('Item :' . $barcode, '150', null, false, $border, '', 'L', 'Verdana', $font_size, '', '', '');
-      $str .= $this->reporter->col('Group :' . $groupname, '200', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('Brand :' . $brandname, '200', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('Class' . $classname, null, null, '', $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('Transaction: ' . strtoupper($posttype), null, null, '', $border, '', 'l', $font, $font_size, '', '', '');
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->startrow(null, null, '', $border, '', 'R', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('Item Type : ' . strtoupper($itemtype), null, null, '', $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('WH : ' . $whname, null, null, '', $border, '', 'L', $font, $font_size, '', '', '');
-      if ($categoryname == '') {
-        $str .= $this->reporter->col('Category : ALL', '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
-      } else {
-        $str .= $this->reporter->col('Category : ' . $categoryname, '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
-      }
+    $str .= $this->reporter->col('Item :' . $barcode, '150', null, false, $border, '', 'L', 'Verdana', $font_size, '', '', '');
+    $str .= $this->reporter->col('Group :' . $groupname, '200', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Brand :' . $brandname, '200', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Class' . $classname, null, null, '', $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Transaction: ' . strtoupper($posttype), null, null, '', $border, '', 'l', $font, $font_size, '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow(null, null, '', $border, '', 'R', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Item Type : ' . strtoupper($itemtype), null, null, '', $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('WH : ' . $whname, null, null, '', $border, '', 'L', $font, $font_size, '', '', '');
+    if ($categoryname == '') {
+      $str .= $this->reporter->col('Category : ALL', '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+    } else {
+      $str .= $this->reporter->col('Category : ' . $categoryname, '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+    }
 
-      if ($subcatname == '') {
-        $str .= $this->reporter->col('Sub-Category: ALL', '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
-      } else {
-        $subcatname =  $config['params']['dataparams']['subcatname'];
-        $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
-      }
+    if ($subcatname == '') {
+      $str .= $this->reporter->col('Sub-Category: ALL', '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+    } else {
+      $subcatname =  $config['params']['dataparams']['subcatname'];
+      $str .= $this->reporter->col('Sub-Category : ' . $subcatname, '200', null, false, '1px solid ', '', 'L', $font, $font_size, '', $padding, $margin);
+    }
 
 
-      $str .= $this->reporter->col('', null, null, '', $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('', null, null, '', $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('', null, null, '', $border, '', 'l', $font, $font_size, '', '', '');
-      $str .= $this->reporter->pagenumber('Page');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->col('', null, null, '', $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('', null, null, '', $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('', null, null, '', $border, '', 'l', $font, $font_size, '', '', '');
+    $str .= $this->reporter->pagenumber('Page');
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     return $str;
   }
@@ -892,7 +892,7 @@ class fast_moving_items
     $str .= $this->CDO_displayHeader($config);
 
     $str .= $this->CDO_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $config);
-    
+
     $count = 0;
     $grandtotal = 0;
     foreach ($result as $key => $data) {
@@ -1193,7 +1193,7 @@ class fast_moving_items
     $whid = '';
     if ($wh != '') $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$wh]);
     $whfilter = "";
-    if ($whid != '') {      
+    if ($whid != '') {
       $whfilter = " and stock.whid='" . $whid . "'";
     }
     $asof = " and head.dateid<='$end'";

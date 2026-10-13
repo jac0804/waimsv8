@@ -32,30 +32,30 @@ class employee_infraction_report
 
   public $reportParams = ['orientation' => 'L', 'format' => 'legal', 'layoutSize' => '1200'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
-   public function createHeadField($config)
+  public function createHeadField($config)
   {
     $companyid = $config['params']['companyid'];
-    $fields = ['radioprint', 'divrep', 'deptrep','year'];
+    $fields = ['radioprint', 'divrep', 'deptrep', 'year'];
 
     $col1 = $this->fieldClass->create($fields);
 
-      data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
-      data_set($col1, 'divrep.label', 'Company');
-      data_set($col1, 'deptrep.lookupclass', 'lookupddeptname');
-      data_set($col1, 'deptrep.label', 'Department');
+    data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
+    data_set($col1, 'divrep.label', 'Company');
+    data_set($col1, 'deptrep.lookupclass', 'lookupddeptname');
+    data_set($col1, 'deptrep.label', 'Department');
 
-      data_set($col1, 'year.lookupclass', 'year');
-      data_set($col1, 'year.label', 'Year');
-    
+    data_set($col1, 'year.lookupclass', 'year');
+    data_set($col1, 'year.label', 'Year');
+
 
     $fields = ['print'];
     $col2 = $this->fieldClass->create($fields);
@@ -85,7 +85,7 @@ class employee_infraction_report
   {
     return [];
   }
-  
+
   public function reportdata($config)
   {
     $str = $this->reportplotting($config);
@@ -99,7 +99,7 @@ class employee_infraction_report
     return $this->reportDefaultLayout($config);
   }
 
-    public function reportDefault($config)
+  public function reportDefault($config)
   {
     // QUERY
     $divid     = $config['params']['dataparams']['divid'];
@@ -112,13 +112,15 @@ class employee_infraction_report
 
 
     if ($divname != '') {
-        if ($divid != 0) {
-            $filter .= " and e.divid = $divid";
-    }}
+      if ($divid != 0) {
+        $filter .= " and e.divid = $divid";
+      }
+    }
     if ($deptname != '') {
-        if ($deptid != 0) {
-            $filter .= " and e.deptid = $deptid";
-    }}
+      if ($deptid != 0) {
+        $filter .= " and e.deptid = $deptid";
+      }
+    }
 
     if ($year1 != 0) {
       $filter .= " and year(dp.dateid) = $year1";
@@ -168,7 +170,7 @@ class employee_infraction_report
     return $this->coreFunctions->opentable($query);
   }
 
-    public function displayHeader($config)
+  public function displayHeader($config)
   {
     $border = '1px solid';
     $font = 'Century Gothic';
@@ -179,7 +181,7 @@ class employee_infraction_report
     $year1       = $config['params']['dataparams']['year'];
     $fontcolor = '#FFFFFF'; //white
     $bgcolors = '#000000'; //black
-    $layoutsize=1400;
+    $layoutsize = 1400;
 
     $str = '';
 
@@ -190,43 +192,43 @@ class employee_infraction_report
     $str .= $this->reporter->endtable();
 
     $str .= '<br/><br/>';
-   
+
     $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
-    $str .= $this->reporter->col('Employee Infraction Report',100, null, false, $border, '', 'L', $font, '18', 'B', '', '');
+    $str .= $this->reporter->col('Employee Infraction Report', 100, null, false, $border, '', 'L', $font, '18', 'B', '', '');
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Count of DISCIPLINARY ACTION',100, null, false, $border, '', 'L', $font, '15', 'B', '', '');
+    $str .= $this->reporter->col('Count of DISCIPLINARY ACTION', 100, null, false, $border, '', 'L', $font, '15', 'B', '', '');
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Year '.$year1,100, null, false, $border, '', 'L', $font, '18', 'B', '', '');
+    $str .= $this->reporter->col('Year ' . $year1, 100, null, false, $border, '', 'L', $font, '18', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable(($this->reportParams['layoutSize']));
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('DEPARTMENT',225, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
-    $str .= $this->reporter->col('January',75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
-    $str .= $this->reporter->col('February',75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
-    $str .= $this->reporter->col('March',75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
-    $str .= $this->reporter->col('April',75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
-    $str .= $this->reporter->col('May',75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
-    $str .= $this->reporter->col('June',75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
-    $str .= $this->reporter->col('July',75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
-    $str .= $this->reporter->col('August',75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
-    $str .= $this->reporter->col('September',75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
-    $str .= $this->reporter->col('October',75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
-    $str .= $this->reporter->col('November',75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
-    $str .= $this->reporter->col('December',75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
-    $str .= $this->reporter->col('Grand Total',75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('DEPARTMENT', 225, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('January', 75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('February', 75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('March', 75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('April', 75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('May', 75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('June', 75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('July', 75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('August', 75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('September', 75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('October', 75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('November', 75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('December', 75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
+    $str .= $this->reporter->col('Grand Total', 75, null, $bgcolors, $border, 'TRL', 'C', $font, $font_size, 'B', $fontcolor, '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     return $str;
   }
 
-    public function reportDefaultLayout($config)
+  public function reportDefaultLayout($config)
   {
     $result = $this->reportDefault($config);
 
@@ -237,132 +239,126 @@ class employee_infraction_report
     $page = 55;
     $str = '';
     $border2 = '1px solid';
-    $totalJan=0;
-    $totalFeb=0;
-    $totalMar=0;
-    $totalApr=0;
-    $totalMay=0;
-    $totalJun=0;
-    $totalJuly=0;
-    $totalAug=0;
-    $totalSep=0;
-    $totalOct=0;
-    $totalNov=0;
-    $totalDec=0;
-    $total=0;
-    $layoutsize=1400;
-    
+    $totalJan = 0;
+    $totalFeb = 0;
+    $totalMar = 0;
+    $totalApr = 0;
+    $totalMay = 0;
+    $totalJun = 0;
+    $totalJuly = 0;
+    $totalAug = 0;
+    $totalSep = 0;
+    $totalOct = 0;
+    $totalNov = 0;
+    $totalDec = 0;
+    $total = 0;
+    $layoutsize = 1400;
+
 
     if (empty($result)) {
-     return $this->othersClass->emptydata($config);
+      return $this->othersClass->emptydata($config);
     }
-      $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '40px;margin-top:5px;');
+    $str .= $this->reporter->beginreport($layoutsize, null, false,  false, '', '', '', '', '', '', '', '40px;margin-top:5px;');
 
-      $str .= $this->displayHeader($config);
+    $str .= $this->displayHeader($config);
 
-      $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
+    $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
 
-     foreach ($result as $key => $data) {
-      $totalmonth=0;
+    foreach ($result as $key => $data) {
+      $totalmonth = 0;
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      $str .= $this->reporter->col($data->clientname,225, null, false, $border, 'TRBL', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->moJan,75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->moFeb,75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');  
-      $str .= $this->reporter->col($data->moMar,75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');  
-      $str .= $this->reporter->col($data->moApr,75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', ''); 
-      $str .= $this->reporter->col($data->moMay,75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->moJun,75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', ''); 
-      $str .= $this->reporter->col($data->moJuly,75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');  
-      $str .= $this->reporter->col($data->moAug,75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');  
-      $str .= $this->reporter->col($data->moSep,75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', ''); 
-      $str .= $this->reporter->col($data->moOct,75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->moNov,75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->moDec,75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
-      $totalmonth+=($data->moJan+$data->moFeb+$data->moMar+$data->moApr+$data->moMay+$data->moJun+$data->moJuly+$data->moAug+$data->moSep+$data->moOct+$data->moNov+$data->moDec);
-      $str .= $this->reporter->col($totalmonth,75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->clientname, 225, null, false, $border, 'TRBL', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->moJan, 75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->moFeb, 75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->moMar, 75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->moApr, 75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->moMay, 75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->moJun, 75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->moJuly, 75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->moAug, 75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->moSep, 75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->moOct, 75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->moNov, 75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->moDec, 75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
+      $totalmonth += ($data->moJan + $data->moFeb + $data->moMar + $data->moApr + $data->moMay + $data->moJun + $data->moJuly + $data->moAug + $data->moSep + $data->moOct + $data->moNov + $data->moDec);
+      $str .= $this->reporter->col($totalmonth, 75, null, false, $border, 'TRB', 'C', $font, $font_size, '', '', '');
       $str .= $this->reporter->endrow();
-  
 
-      $totalJan+=($data->moJan);
-      $totalFeb+=($data->moFeb); 
-      $totalMar+=($data->moMar); 
-      $totalApr+=($data->moApr); 
-      $totalMay+=($data->moMay); 
-      $totalJun+=($data->moJun); 
-      $totalJuly+=($data->moJuly); 
-      $totalAug+=($data->moAug); 
-      $totalOct+=($data->moOct); 
-      $totalNov+=($data->moNov); 
-      $totalDec+=($data->moDec);  
-      $total+=($data->moJan+$data->moFeb+$data->moMar+$data->moApr+$data->moMay+$data->moJun+$data->moJuly+$data->moAug+$data->moSep+$data->moOct+$data->moNov+$data->moDec);
 
-      
+      $totalJan += ($data->moJan);
+      $totalFeb += ($data->moFeb);
+      $totalMar += ($data->moMar);
+      $totalApr += ($data->moApr);
+      $totalMay += ($data->moMay);
+      $totalJun += ($data->moJun);
+      $totalJuly += ($data->moJuly);
+      $totalAug += ($data->moAug);
+      $totalOct += ($data->moOct);
+      $totalNov += ($data->moNov);
+      $totalDec += ($data->moDec);
+      $total += ($data->moJan + $data->moFeb + $data->moMar + $data->moApr + $data->moMay + $data->moJun + $data->moJuly + $data->moAug + $data->moSep + $data->moOct + $data->moNov + $data->moDec);
     }
 
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('Grand Total',225, null, false, $border, 'LBR', 'L', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($totalJan == 0 ? '-' :$totalJan,75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($totalFeb == 0 ? '-' :$totalFeb,75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($totalMar == 0 ? '-' :$totalMar,75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($totalApr == 0 ? '-' :$totalApr,75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($totalMay == 0 ? '-' :$totalMay,75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($totalJun == 0 ? '-' :$totalJun,75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($totalJuly == 0 ? '-' :$totalJuly,75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($totalAug == 0 ? '-' :$totalAug,75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($totalSep == 0 ? '-' :$totalSep,75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($totalOct == 0 ? '-' :$totalOct,75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($totalNov == 0 ? '-' :$totalNov,75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($totalDec == 0 ? '-' :$totalDec,75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->col($total == 0 ? '-' :$total,75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->endtable();
-      $str .= $this->reporter->endreport();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Grand Total', 225, null, false, $border, 'LBR', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($totalJan == 0 ? '-' : $totalJan, 75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($totalFeb == 0 ? '-' : $totalFeb, 75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($totalMar == 0 ? '-' : $totalMar, 75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($totalApr == 0 ? '-' : $totalApr, 75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($totalMay == 0 ? '-' : $totalMay, 75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($totalJun == 0 ? '-' : $totalJun, 75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($totalJuly == 0 ? '-' : $totalJuly, 75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($totalAug == 0 ? '-' : $totalAug, 75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($totalSep == 0 ? '-' : $totalSep, 75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($totalOct == 0 ? '-' : $totalOct, 75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($totalNov == 0 ? '-' : $totalNov, 75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($totalDec == 0 ? '-' : $totalDec, 75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col($total == 0 ? '-' : $total, 75, null, false, $border, 'BR', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endreport();
 
-   //insight
+    //insight
     $months = [
-    'January'   => $totalJan,
-    'February'  => $totalFeb,
-    'March'     => $totalMar,
-    'April'     => $totalApr,
-    'May'       => $totalMay,
-    'June'      => $totalJun,
-    'July'      => $totalJuly,
-    'August'    => $totalAug,
-    'September' => $totalSep,
-    'October'   => $totalOct,
-    'November'  => $totalNov,
-    'December'  => $totalDec,
+      'January'   => $totalJan,
+      'February'  => $totalFeb,
+      'March'     => $totalMar,
+      'April'     => $totalApr,
+      'May'       => $totalMay,
+      'June'      => $totalJun,
+      'July'      => $totalJuly,
+      'August'    => $totalAug,
+      'September' => $totalSep,
+      'October'   => $totalOct,
+      'November'  => $totalNov,
+      'December'  => $totalDec,
     ];
     $year1       = $config['params']['dataparams']['year'];
     $monthsWithValue = array_filter($months, function ($val) {
-    return $val > 0;
+      return $val > 0;
     });
 
     $monthNames = array_keys($monthsWithValue);
 
-    $startMonth = reset($monthNames); 
-    $endMonth   = end($monthNames); 
-    $period = '<b>'.$startMonth.'</b> to <b>'.$endMonth.'</b> '.$year1;
-      
+    $startMonth = reset($monthNames);
+    $endMonth   = end($monthNames);
+    $period = '<b>' . $startMonth . '</b> to <b>' . $endMonth . '</b> ' . $year1;
+
     $str .= $this->reporter->beginreport($this->reportParams['layoutSize']);
     $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('•Key Insight',225, null, false, $border, '', 'L', $font, '15', 'B', '', '');
+    $str .= $this->reporter->col('•Key Insight', 225, null, false, $border, '', 'L', $font, '15', 'B', '', '');
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable(600);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('🡢Total case:',103, null, false, $border, '', 'L', $font, '12', 'B', '', '');
-    $str .= $this->reporter->col($total.' disciplinary actions from '.$period.'.',497, null, false, $border, '', 'L', $font, '12', '', '', '');
+    $str .= $this->reporter->col('🡢Total case:', 103, null, false, $border, '', 'L', $font, '12', 'B', '', '');
+    $str .= $this->reporter->col($total . ' disciplinary actions from ' . $period . '.', 497, null, false, $border, '', 'L', $font, '12', '', '', '');
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();
 
     return $str;
-
   }
-  
-
-
 }//end class

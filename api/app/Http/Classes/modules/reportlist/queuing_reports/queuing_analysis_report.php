@@ -32,12 +32,12 @@ class queuing_analysis_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
     public function createHeadField($config)
@@ -657,7 +657,7 @@ class queuing_analysis_report
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('TOTAL', '334', null, false, $border, 'TB', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col($totalserved, '333', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col( ($countavg > 0) ? round($totalavg / $countavg, 0) : 0 . '(avg)', '333', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col(($countavg > 0) ? round($totalavg / $countavg, 0) : 0 . '(avg)', '333', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         $str .= '<br></br>';

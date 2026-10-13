@@ -35,10 +35,10 @@ class soinput
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -122,7 +122,7 @@ class soinput
         }
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
-          $data['proformainvoice'] = $this->othersClass->sanitizekeyfieldFast("proformainvoice", $proformainvoice, $lookups);
+        $data['proformainvoice'] = $this->othersClass->sanitizekeyfieldFast("proformainvoice", $proformainvoice, $lookups);
         $this->coreFunctions->sbcupdate($table, $data, ['trno' => $trno]);
         exithere:
         $config['params']['trno'] = $trno;

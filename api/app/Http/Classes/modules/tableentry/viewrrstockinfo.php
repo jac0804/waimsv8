@@ -30,10 +30,10 @@ class viewrrstockinfo
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -231,7 +231,7 @@ class viewrrstockinfo
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         $paytrno = 0;
         if ($data[$key]['ispaid'] == "true") {

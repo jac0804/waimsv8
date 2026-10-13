@@ -30,12 +30,12 @@ class asset_location
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1200'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -140,7 +140,7 @@ class asset_location
       $filter .= " and cl.clientid = '$empid'";
     }
     if ($whname != '') {
-      $filter .= " and wh.clientid = '$whid'"; 
+      $filter .= " and wh.clientid = '$whid'";
     }
     if ($itemname != '') {
       $filter .= " and item.itemid = '$itemid'";

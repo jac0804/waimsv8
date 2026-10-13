@@ -34,10 +34,10 @@ class viewloanapplication
     public $fields = ['status', 'status2', 'approvedby_disapprovedby', 'approvedby_disapprovedby2', 'date_approved_disapproved', 'date_approved_disapproved2', 'disapproved_remarks', 'disapproved_remarks2'];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -63,9 +63,9 @@ class viewloanapplication
         $url = 'App\Http\Classes\modules\payroll\\' . 'loanapplicationportal';
         $approversetup = $this->coreFunctions->datareader("select approverseq as value from moduleapproval where modulename='LOAN'");
         if ($approversetup == '') {
-          $approversetup = app($url)->approvers($config['params']);
+            $approversetup = app($url)->approvers($config['params']);
         } else {
-          $approversetup = explode(',', $approversetup);
+            $approversetup = explode(',', $approversetup);
         }
         $approveby = $config['params']['row']['approvedby2'];
         $fapprover = $this->coreFunctions->getfieldvalue("client", "clientname", "client=?", [$approveby]);
@@ -231,7 +231,7 @@ class viewloanapplication
             foreach ($this->fields as $key2) {
                 if (isset($data[$key2])) {
                     $tempdata[$key2] = $data[$key2];
-                     $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
+                    $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $tempdata[$key2], $lookups);
                 }
             }
             $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

@@ -64,11 +64,11 @@ class sf
   private $helpClass;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -914,12 +914,12 @@ class sf
 
   public function autoadditem($config)
   {
-     $companyid = $config['params']['companyid'];
-     $dateTables = ['rrstatus'];
-     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['rrstatus'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $config['params']['data']['qty'], $lookups);
-     $wh = $this->othersClass->sanitizekeyfieldFast('qty', $config['params']['data']['wh'], $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $config['params']['data']['qty'], $lookups);
+    $wh = $this->othersClass->sanitizekeyfieldFast('qty', $config['params']['data']['wh'], $lookups);
 
 
 
@@ -1207,10 +1207,10 @@ class sf
       $config['params']['line'] = $line;
     }
 
-     $dateTables = ['lastock'];
-     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
-     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor, item.isnoninv
     from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
@@ -1802,8 +1802,8 @@ class sf
       }
     }
 
-   $dateTables = ['ladetail'];
-   $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     if (!empty($this->acctg)) {
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();

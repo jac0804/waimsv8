@@ -35,18 +35,18 @@ class end_of_contract_report
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
     public function createHeadField($config)
     {
-        $fields = ['radioprint', 'divrep', 'deptrep', 'sectrep','start', 'end'];
+        $fields = ['radioprint', 'divrep', 'deptrep', 'sectrep', 'start', 'end'];
         $col1 = $this->fieldClass->create($fields);
 
         data_set($col1, 'radioprint.options', [
@@ -148,19 +148,19 @@ class end_of_contract_report
 
         if ($deptname !== "") {
             $department = $deptname;
-        }else {
+        } else {
             $department = "All Departments";
         }
 
         if ($divname !== "") {
             $division = $divname;
-        }else {
+        } else {
             $division = "All Company";
         }
 
         if ($sectname !== "") {
             $section = $sectname;
-        }else {
+        } else {
             $section = "All Sections";
         }
 

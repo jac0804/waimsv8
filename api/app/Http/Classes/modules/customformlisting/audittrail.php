@@ -34,11 +34,11 @@ class audittrail
   public $showclosebtn = false;
   public $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -178,19 +178,42 @@ class audittrail
     $modulename   = $config['params']['dataparams']['moduledesc'];
 
     $module = "";
+    $module2 = "";
     $username = "";
+    $username2 = "";
     if ($modulename != "") {
       $module = " and cntnum.doc ='$doc'";
+      $module2 = " and tl.doc ='$doc'";
     }
 
     if ($user != "") {
       $username = " and tl.userid ='$user'";
+      $username2 = " and tl.user ='$user'";
     }
 
     $doc_filter = "and profile.doc='SED'";
 
     if ($doc == '') {
       $doc = 'ALL';
+    }
+
+    $payroll_logunion = "";
+    if ($config['params']['companyid'] == 62) {
+      $payroll_logunion = "
+        union all
+        select tl.doc,'' as task,tl.task as oldversion,tl.user as userid,tl.dateid, '' as clientname, '' as client,tl.doc as master, '' as docno
+        from payroll_log as tl
+        where  date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
+        and date_format('$date2','%Y-%m-%d') $username2 $module2
+        and tl.doc in ('EARNINGDEDUCTIONSETUP','ADVANCESETUP','LEAVEAPPLICATION','LOANAPPLICATION','PAYROLLPROCESS', 'EMPTIMECARD', 'EMPTIMECARDPERDAY',
+        'ENTRYOTAPPROVAL', 'TIMEADJ', 'TIMEREC', 'PAYROLLENTRY')
+        union all
+        select tl.doc,'' as task,tl.task as oldversion,tl.user as userid,tl.dateid, '' as clientname, '' as client,tl.doc as master, '' as docno
+        from masterfile_log as tl
+        where  date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
+        and date_format('$date2','%Y-%m-%d') $username2 $module2
+        and tl.doc in ('ALLOWANCESETUP','BATCHSETUP')
+      ";
     }
 
     switch ($doc) {
@@ -245,9 +268,40 @@ class audittrail
         from del_table_log as tl
         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $username
+        $payroll_logunion
         order by dateid";
 
         break;
+
+      case 'EARNINGDEDUCTIONSETUP':
+      case 'ADVANCESETUP':
+      case 'LEAVEAPPLICATION':
+      case 'LOANAPPLICATION':
+      case 'PAYROLLPROCESS':
+      case 'EMPTIMECARD':
+      case 'EMPTIMECARDPERDAY':
+      case 'ENTRYOTAPPROVAL':
+      case 'TIMEADJ':
+      case 'TIMEREC':
+      case 'PAYROLLENTRY':
+        return
+          "select tl.doc,'' as task,tl.task as oldversion,tl.user as userid,tl.dateid, '' as clientname, '' as client,'' as master, '' as docno
+          from payroll_log as tl
+          where  date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
+          and date_format('$date2','%Y-%m-%d') and tl.doc = '$doc' $username2
+          order by tl.dateid";
+        break;
+
+      case 'ALLOWANCESETUP':
+      case 'BATCHSETUP':
+        return
+          "select tl.doc,'' as task,tl.task as oldversion,tl.user as userid,tl.dateid, '' as clientname, '' as client,'' as master, '' as docno
+          from masterfile_log as tl
+          where  date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
+          and date_format('$date2','%Y-%m-%d') and tl.doc = '$doc' $username2
+          order by tl.dateid";
+        break;
+
       case "PO":
       case "SO":
       case "JO":
@@ -260,28 +314,28 @@ class audittrail
         return
           "select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master, cntnum.docno
         from transnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno 
-         left join profile on profile.psection=cntnum.doc
-         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') 
-         and date_format('$date2','%Y-%m-%d') $module $username 
-         union all
-         select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master, cntnum.docno
+        left join profile on profile.psection=cntnum.doc
+        where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') 
+        and date_format('$date2','%Y-%m-%d') $module $username 
+        union all
+        select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master, cntnum.docno
         from htransnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno 
-         left join profile on profile.psection=cntnum.doc
-         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') 
-         and date_format('$date2','%Y-%m-%d') $module $username 
-         union all
-         select '' as clientname, '' as client, cntnum.doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,profile.master,  tl.docno
-         from del_transnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno 
-         left join profile on profile.psection=cntnum.doc
-         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
-         and date_format('$date2','%Y-%m-%d') $module $username 
-         union all 
+        left join profile on profile.psection=cntnum.doc
+        where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') 
+        and date_format('$date2','%Y-%m-%d') $module $username 
+        union all
+        select '' as clientname, '' as client, cntnum.doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,profile.master,  tl.docno
+        from del_transnum_log as tl left join transnum as cntnum on cntnum.trno = tl.trno 
+        left join profile on profile.psection=cntnum.doc
+        where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
+        and date_format('$date2','%Y-%m-%d') $module $username 
+        union all 
         select '' as clientname, '' as client, '' as doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,'' as master,  tl.docno
         from del_table_log as tl
         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $username
-         
-         order by dateid";
+        
+        order by dateid";
         break;
       case "SJ":
       case "CM":
@@ -303,21 +357,21 @@ class audittrail
         return
           "select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master, cntnum.docno
         from table_log as tl left join cntnum on cntnum.trno = tl.trno 
-         left join profile on profile.psection=cntnum.doc
-         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') 
-         and date_format('$date2','%Y-%m-%d') $module $username 
-         union all
-         select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master, cntnum.docno
+        left join profile on profile.psection=cntnum.doc
+        where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') 
+        and date_format('$date2','%Y-%m-%d') $module $username 
+        union all
+        select '' as clientname, '' as client, cntnum.doc,tl.field as task,tl.oldversion,tl.userid,tl.dateid,profile.master, cntnum.docno
         from htable_log as tl left join cntnum on cntnum.trno = tl.trno 
-         left join profile on profile.psection=cntnum.doc
-         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') 
-         and date_format('$date2','%Y-%m-%d') $module $username 
-         union all
+        left join profile on profile.psection=cntnum.doc
+        where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d') 
+        and date_format('$date2','%Y-%m-%d') $module $username 
+        union all
         select '' as clientname, '' as client, '' as doc,CONCAT('DELETE ',tl.field) as task,tl.docno as oldversion,tl.userid,tl.dateid,'' as master, tl.docno
         from del_table_log as tl
         where date_format(tl.dateid,'%Y-%m-%d') between date_format('$date1','%Y-%m-%d')
         and date_format('$date2','%Y-%m-%d') $username
-         order by dateid";
+        order by dateid";
         break;
       case "CL":
         return

@@ -64,11 +64,11 @@ class sd
   private $helpClass;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -1160,10 +1160,10 @@ class sd
       $config['params']['line'] = $line;
     }
 
-       $dateTables = ['lastock'];
-       $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-       $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
-       $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv
     from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
@@ -1756,16 +1756,16 @@ class sd
         $this->distribution($params, $config);
       }
     }
-    
-  
+
+
     $dateTables = ['ladetail'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-     
+
     if (!empty($this->acctg)) {
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-            $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];

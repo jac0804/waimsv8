@@ -31,15 +31,17 @@ class emptimecardperday
   public $style = 'width:100%;max-width:100%;';
   public $issearchshow = true;
   public $showclosebtn = false;
+  private $logger;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
+    $this->logger = new Logger;
   }
 
   public function getAttrib()
@@ -69,9 +71,25 @@ class emptimecardperday
   {
     $tab = [$this->gridname => [
       'gridcolumns' => [
-        'empcode', 'empname', 'dateid', 'daytype', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout',
-        'actualin', 'actualbrkout', 'actualbrkin', 'actualout',
-        'reghrs', 'absdays', 'latehrs', 'underhrs', 'othrs', 'ndiffhrs', 'ndiffot'
+        'empcode',
+        'empname',
+        'dateid',
+        'daytype',
+        'schedin',
+        'schedbrkout',
+        'schedbrkin',
+        'schedout',
+        'actualin',
+        'actualbrkout',
+        'actualbrkin',
+        'actualout',
+        'reghrs',
+        'absdays',
+        'latehrs',
+        'underhrs',
+        'othrs',
+        'ndiffhrs',
+        'ndiffot'
       ]
     ]];
 
@@ -209,7 +227,7 @@ class emptimecardperday
     $companyid = $config['params']['companyid'];
     $dateTables = ["timecard"];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-    
+
     $rows = $config['params']['rows'];
     foreach ($rows as $key => $val) {
       if ($val["bgcolor"] != "") {
@@ -218,11 +236,12 @@ class emptimecardperday
         unset($val["empname"]);
         unset($val["empcode"]);
         foreach ($val as $k => $v) {
-          $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k],$lookups);
+          $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k], $lookups);
           if ($k == 'dateid') {
             $val[$k] = date_format(date_create($val[$k]), "Y-m-d");
           }
         }
+        $this->logger->sbcmasterlog2($val["empid"], $config, 'Update timecard for ' . $val["empid"] . ' on ' . $val["dateid"], 'payroll_log');
         $this->coreFunctions->sbcupdate("timecard", $val, ['dateid' => $val["dateid"], 'empid' => $val["empid"]]);
       }
     }

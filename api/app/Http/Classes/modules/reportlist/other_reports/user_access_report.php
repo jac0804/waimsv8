@@ -28,12 +28,12 @@ class user_access_report
   public $style = 'width:1200px;max-width:1200px;';
   public $directprint = false;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -304,7 +304,7 @@ class user_access_report
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->page_break();
           $str .= $this->reporter->begintable($layoutsize);
-         // $str .= $this->displayHeader($config);
+          // $str .= $this->displayHeader($config);
           $page = $page + $count;
         } //end if
       }

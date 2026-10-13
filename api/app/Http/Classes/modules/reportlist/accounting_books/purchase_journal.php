@@ -32,12 +32,12 @@ class purchase_journal
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -288,9 +288,9 @@ class purchase_journal
         case 39: //CBBSI
           $reportdata = $this->MSJOY_PURCHASE_JOURNAL_DETAILED($result, $config);
           break;
-       case 29: //sbc
+        case 29: //sbc
           $reportdata = $this->SBC_PJ_DETAILED($result, $config);
-        break;
+          break;
         default:
           $reportdata =  $this->DEFAULT_PURCHASE_JOURNAL_DETAILED($result, $config);
           break;
@@ -655,7 +655,7 @@ class purchase_journal
   {
     $str = '';
     $reporttype = $params['params']['dataparams']['reporttype'];
-    
+
     if ($reporttype == 1) { //detailed
       switch ($params['params']['companyid']) {
         case 10: //afti
@@ -686,7 +686,7 @@ class purchase_journal
           break;
       }
     } else { //summarized
-      $layoutsize='800';
+      $layoutsize = '800';
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('ACCOUNT CODE', 100, null, false, '1px solid ', 'B', 'L', $font, $fontsize, 'B', '', '');
@@ -750,7 +750,7 @@ class purchase_journal
       $str .= $this->reporter->endtable();
     } else {
 
-       $layoutsize='800';
+      $layoutsize = '800';
 
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
@@ -783,11 +783,8 @@ class purchase_journal
       $str .= $this->reporter->pagenumber('Page');
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
-    
+
       $str .= $this->reporter->printline();
-     
-
-
     } //end iflayoutsize
 
     return $str;
@@ -935,7 +932,7 @@ class purchase_journal
   {
     $border = '1px solid';
     $font = $this->companysetup->getrptfont($params['params']);
-  
+
     $fontsize11 = 11;
     $str = '';
     $count = 60;
@@ -948,7 +945,7 @@ class purchase_journal
     $str .= $this->reporter->beginreport();
     $str .= $this->GENERATE_DEFAULT_HEADER($params);
 
-    $layoutsize=$this->reportParams['layoutSize'];
+    $layoutsize = $this->reportParams['layoutSize'];
     $fontsize10 = 10;
     $str .= $this->default_table_cols($layoutsize, $border, $font, $fontsize11, $params);
     $totalsdb = 0;
@@ -1002,7 +999,7 @@ class purchase_journal
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-   
+
     $str .= $this->reporter->printline();
     $str .= $this->reporter->endreport();
     return $str;
@@ -1078,7 +1075,7 @@ class purchase_journal
   {
     $border = '1px solid';
     $font = $this->companysetup->getrptfont($params['params']);
-  
+
     $str = '';
     $count = 60;
     $page = 59;
@@ -1090,8 +1087,8 @@ class purchase_journal
     $str .= $this->reporter->beginreport();
     $str .= $this->SBC_DEFAULT_HEADER($params);
 
-    
-    $layoutsize='1000';
+
+    $layoutsize = '1000';
     $fontsize = 11;
     $str .= $this->sbc_table_cols($layoutsize, $border, $font, $fontsize, $params);
     $totalsdb = 0;
@@ -1150,7 +1147,7 @@ class purchase_journal
     $str .= $this->reporter->col('', $layoutsize, null, false, '1px solid ', 'B', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-    
+
     $str .= $this->reporter->endreport();
     return $str;
   } //end fn
@@ -1332,8 +1329,8 @@ class purchase_journal
       $str .= $this->reporter->endtable();
     } else {
 
-    
-       
+
+
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->letterhead($center1, $username, $params);
@@ -1366,15 +1363,12 @@ class purchase_journal
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
-    
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', $layoutsize, null, false, '1px solid ', 'T', 'L', $font, $fontsize10, '', '', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-     
 
-
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('', $layoutsize, null, false, '1px solid ', 'T', 'L', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
     } //end iflayoutsize
 
     return $str;
@@ -1388,22 +1382,21 @@ class purchase_journal
     $reporttype = $params['params']['dataparams']['reporttype'];
     $layoutsize = 1000;
     if ($reporttype == 1) { //detailed
-    
-          $str .= $this->reporter->begintable($layoutsize);
-          $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('DATE', '80', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
-          $str .= $this->reporter->col('DOC #', '80', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
-          $str .= $this->reporter->col('SUPPLIER NAME', '360', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
-          $str .= $this->reporter->col('INVENTORY DEBIT', '120', null, false, '1px solid ', 'TB', 'RT', $font, $fontsize, 'B', '', '5px');
-          $str .= $this->reporter->col('A/P CREDIT', '100', null, false, '1px solid ', 'TB', 'RT', $font, $fontsize, 'B', '', '5px');
-          $str .= $this->reporter->col('ACCNT DESCRIPTION', '160', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
-          $str .= $this->reporter->col('DEBIT', '100', null, false, '1px solid ', 'TB', 'R', $font, $fontsize, 'B', '', '5px');
-          $str .= $this->reporter->col('CREDIT', '100', null, false, '1px solid ', 'TB', 'R', $font, $fontsize, 'B', '', '5px');
-          $str .= $this->reporter->endrow();
-         
-      }  else { //summarized
-     
-     
+
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('DATE', '80', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
+      $str .= $this->reporter->col('DOC #', '80', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
+      $str .= $this->reporter->col('SUPPLIER NAME', '360', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
+      $str .= $this->reporter->col('INVENTORY DEBIT', '120', null, false, '1px solid ', 'TB', 'RT', $font, $fontsize, 'B', '', '5px');
+      $str .= $this->reporter->col('A/P CREDIT', '100', null, false, '1px solid ', 'TB', 'RT', $font, $fontsize, 'B', '', '5px');
+      $str .= $this->reporter->col('ACCNT DESCRIPTION', '160', null, false, '1px solid ', 'TB', 'C', $font, $fontsize, 'B', '', '5px');
+      $str .= $this->reporter->col('DEBIT', '100', null, false, '1px solid ', 'TB', 'R', $font, $fontsize, 'B', '', '5px');
+      $str .= $this->reporter->col('CREDIT', '100', null, false, '1px solid ', 'TB', 'R', $font, $fontsize, 'B', '', '5px');
+      $str .= $this->reporter->endrow();
+    } else { //summarized
+
+
       $str .= $this->reporter->begintable($layoutsize);
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('ACCOUNT CODE', 150, null, false, '1px solid ', 'B', 'L', $font, $fontsize, 'B', '', '');
@@ -1585,5 +1578,4 @@ class purchase_journal
 
     return $str;
   }
-
 }//end class

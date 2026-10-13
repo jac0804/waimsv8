@@ -64,10 +64,10 @@ class entryproject
   private $logger;
   private $reportheader;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -75,12 +75,22 @@ class entryproject
     $this->logger = new Logger;
     $this->lookupClass = new lookupClass;
     $this->reportheader = new reportheader;
+
+    $this->setModuleName($params);
   }
 
   public function getAttrib()
   {
     $attrib = array('load' => 859);
     return $attrib;
+  }
+
+  public function setModuleName($params)
+  {
+    $custom_labels = $this->othersClass->getCustomLabels($params);
+    if (isset($custom_labels['project'])) {
+      $this->modulename = $custom_labels['project'];
+    }
   }
 
   public function createTab($config)

@@ -97,11 +97,11 @@ class cr
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -1291,10 +1291,10 @@ class cr
 
   private function getdetailselect($config)
   {
-    $addselect ='';
+    $addselect = '';
     $systype = $this->companysetup->getsystemtype($config['params']);
-    if($systype == 'REALESTATE'){
-      $addselect =',d.phaseid, ph.code as phasename,
+    if ($systype == 'REALESTATE') {
+      $addselect = ',d.phaseid, ph.code as phasename,
       d.modelid, hm.model as housemodel, 
       d.blklotid, bl.blk, bl.lot,      
       am.line as amenity,
@@ -1309,7 +1309,7 @@ class cr
       d.project,ifnull(proj.name,'') as projectname,d.cur,d.forex,proj.code as project,    
       case d.isewt when 0 then 'false' else 'true' end as isewt,case d.isvat when 0 then 'false' else 'true' end as isvat,case d.isvewt when 0 then 'false' else 'true' end as isvewt,
       d.ewtcode,d.ewtrate,d.damt,'' as bgcolor,case d.void when 1 then 'bg-red-2' else '' end as  errcolor, case d.void when 0 then 'false' else 'true' end as void
-      " .$addselect;
+      " . $addselect;
     return $qry;
   }
 
@@ -1319,9 +1319,9 @@ class cr
     $sqlselect = $this->getdetailselect($config);
 
     $systype = $this->companysetup->getsystemtype($config['params']);
-    $addleftjoin ='';
-    
-    if($systype == 'REALESTATE'){
+    $addleftjoin = '';
+
+    if ($systype == 'REALESTATE') {
       $addleftjoin = "left join phase as ph on ph.line = d.phaseid
       left join housemodel as hm on hm.line = d.modelid
       left join blklot as bl on bl.line = d.blklotid
@@ -1335,7 +1335,7 @@ class cr
     left join client on client.client=d.client
     left join projectmasterfile as proj on proj.line = d.projectid
     
-    ".$addleftjoin."
+    " . $addleftjoin . "
 
     left join coa on coa.acnoid=d.acnoid
     where d.trno=?
@@ -1357,7 +1357,7 @@ class cr
     left join client on client.client=d.client
     left join projectmasterfile as proj on proj.line = d.projectid
     
-     ".$addleftjoin."
+     " . $addleftjoin . "
 
     left join coa on coa.acnoid=d.acnoid
     where d.trno=?
@@ -1368,7 +1368,7 @@ class cr
     left join client on client.clientid=d.clientid
     left join projectmasterfile as proj on proj.line = d.projectid
     
-     ".$addleftjoin."
+     " . $addleftjoin . "
 
     left join coa on coa.acnoid=d.acnoid
     where d.trno=? order by sortline,line
@@ -2199,7 +2199,6 @@ class cr
           $this->sqlquery->setupdatebal($data[$key]->refx, $data[$key]->linex, $data[$key]->acno, $config);
         }
       }
-
     }
 
     if ($companyid == 40) { //cdo
@@ -2229,7 +2228,7 @@ class cr
         $this->coreFunctions->sbcupdate('hrhdetail', ['ortrno' => 0, 'orline' => 0], ['trno' => $data[0]->refx, 'line' => $data[0]->linex]);
       }
     }
-    
+
     if ($config['params']['companyid'] == 19) { //housegem
       $bal = $this->coreFunctions->datareader("select sum(db-cr) as value from ladetail where trno=?", [$trno]);
       if ($bal == '') {

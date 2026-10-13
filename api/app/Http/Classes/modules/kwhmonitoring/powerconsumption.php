@@ -36,10 +36,10 @@ class powerconsumption
 
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -98,7 +98,7 @@ class powerconsumption
     {
         $data = $config['params']['data'];
 
-        
+
         $companyid = $config['params']['companyid'];
         $dateTables = ['powercat'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);

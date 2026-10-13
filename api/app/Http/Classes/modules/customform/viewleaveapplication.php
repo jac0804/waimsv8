@@ -32,10 +32,10 @@ class viewleaveapplication
   public $issearchshow = true;
   public $showclosebtn = true;
   public $fields = ['status', 'status2', 'date_approved_disapproved', 'date_approved_disapproved2', 'approvedby_disapprovedby', 'approvedby_disapprovedby2', 'disapproved_remarks', 'disapproved_remarks2', 'catid'];
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;

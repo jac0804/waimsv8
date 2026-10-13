@@ -33,10 +33,10 @@ class viewear
     public $showclosebtn = true;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -253,7 +253,7 @@ class viewear
         $companyid = $config['params']['companyid'];
         $line = $config['params']['dataparams']['line'];
         $data = [];
-        $tablename='';
+        $tablename = '';
         $head = $config['params']['dataparams'];
         $filter = ['line' => $line];
         $condition = 'line=?';
@@ -277,7 +277,7 @@ class viewear
                 $tablename = 'obapplication';
                 $dateTables = [$tablename];
                 $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-                
+
                 $data = [
                     'dateid' =>  $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'], $lookups),
                     'dateid2' =>  $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid2'] . " " . $head['itime1'], $lookups)
@@ -306,7 +306,7 @@ class viewear
                 $tablename = 'undertime';
                 $dateTables = [$tablename];
                 $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-                
+
                 $data = [
                     'dateid' => $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'], $lookups),
                     'dateid2' =>  $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid2'] . " " . $head['itime1'], $lookups)
@@ -327,8 +327,8 @@ class viewear
                 break;
         }
 
-         $dateTables = [$tablename];
-         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        $dateTables = [$tablename];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key => $value) {
             if (array_key_exists($key, $head)) {

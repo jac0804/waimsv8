@@ -30,14 +30,14 @@ class entrytraining
   private $logger;
   private $othersClass;
   public $style = 'width:100%;';
-  private $fields = ['empid', 'venue', 'title', 'dateid','istraining'];
+  private $fields = ['empid', 'venue', 'title', 'dateid', 'istraining'];
   public $showclosebtn = false;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -60,9 +60,9 @@ class entrytraining
     }
 
     $tab = [$this->gridname => ['gridcolumns' => $cols]];
-  
+
     $stockbuttons = ['save', 'delete'];
-      
+
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     // action
     $obj[0][$this->gridname]['columns'][$venue]['label'] = "Training School";
@@ -78,8 +78,8 @@ class entrytraining
   public function createtabbutton($config)
   {
     // $tbuttons = ['addrecord','saveallentry', 'masterfilelogs'];
-    
-    $tbuttons = ['addrecord', 'saveallentry','masterfilelogs'];
+
+    $tbuttons = ['addrecord', 'saveallentry', 'masterfilelogs'];
     $obj = $this->tabClass->createtabbutton($tbuttons);
 
     return $obj;
@@ -114,7 +114,7 @@ class entrytraining
     $data = [];
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['trno'] == 0) {
       $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -141,7 +141,7 @@ class entrytraining
     } else {
       $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
       $data['editby'] = $config['params']['user'];
-      if ($this->coreFunctions->sbcupdate($this->table, $data, ['trno' => $row['trno'],'empid'=>$row['empid']]) == 1) {
+      if ($this->coreFunctions->sbcupdate($this->table, $data, ['trno' => $row['trno'], 'empid' => $row['empid']]) == 1) {
         $returnrow = $this->loaddataperrecord($row['empid'], $row['trno']);
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
       } else {
@@ -162,7 +162,7 @@ class entrytraining
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         if ($data[$key]['trno'] == 0) {
 
@@ -193,7 +193,7 @@ class entrytraining
 
   public function delete($config)
   {
-    $row = $config['params']['row']; 
+    $row = $config['params']['row'];
     $qry = "delete from " . $this->table . " where empid=? and trno=? and istraining =1";
     $this->coreFunctions->execqry($qry, 'delete', [$row['empid'], $row['trno']]);
 
@@ -248,7 +248,7 @@ class entrytraining
 
   public function lookuplogs($config)
   {
-    $empid=$config['params']['tableid'];
+    $empid = $config['params']['tableid'];
 
     $lookupsetup = array(
       'type' => 'show',
@@ -268,7 +268,7 @@ class entrytraining
       from " . $this->tablelogs . "
       where doc = ? and trno = ?
       order by dateid desc";
-    $data = $this->coreFunctions->opentable($qry, [$doc,$empid]);
+    $data = $this->coreFunctions->opentable($qry, [$doc, $empid]);
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols];
   }

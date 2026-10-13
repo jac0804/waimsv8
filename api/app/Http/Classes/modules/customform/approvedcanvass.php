@@ -33,10 +33,10 @@ class approvedcanvass
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -323,7 +323,7 @@ class approvedcanvass
 
     foreach ($rows as $key) {
       if ($config['params']['companyid'] == 16) { //ati
-        if ($key['status'] == 1) { 
+        if ($key['status'] == 1) {
           if ($key['waivedqty'] == 0) {
 
             $basetotal = $key['rrqty2'] * $key['factor'];
@@ -433,7 +433,7 @@ class approvedcanvass
         $dateTables = ['hcdstock'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-        
+
 
         $key['rrcost'] = $this->othersClass->sanitizekeyfieldFast('amt',  $key['rrcost'], $lookups);
         $key['rrqty'] = $this->othersClass->sanitizekeyfieldFast('qty',  $key['rrqty'], $lookups);
@@ -538,7 +538,7 @@ class approvedcanvass
 
       foreach ($stockinfo as $key2 => $value) {
         $stockinfo[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value, $lookups);
-        }
+      }
       $this->coreFunctions->sbcupdate('hstockinfotrans', $stockinfo, ['trno' => $key['trno'], 'line' => $key['line']]);
     }
 

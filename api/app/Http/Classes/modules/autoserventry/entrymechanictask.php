@@ -34,10 +34,10 @@ class entrymechanictask
     private $enrollmentlookup;
     private $logger;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -104,7 +104,7 @@ class entrymechanictask
     }
     public function loaddata($config)
     {
-        $mechanicid=$config['params']['tableid'];
+        $mechanicid = $config['params']['tableid'];
         $filtersearch = "";
         $searchfield  = ['head.docno', 'date(head.dateid)', 'jt.docno', 'jt.jobtitle', 'jobs.jobcode', 'jobs.description', 'cvh.mileage'];
 

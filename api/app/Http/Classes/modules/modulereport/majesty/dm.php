@@ -34,9 +34,9 @@ class dm
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -99,7 +99,7 @@ class dm
   left join item on item.itemid=stock.itemid
   left join model_masterfile as m on m.model_id = item.model
   where head.doc='dm' and head.trno ='$trno' ";
-    
+
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
@@ -179,7 +179,7 @@ class dm
   public function default_dm_layout($params, $data)
   {
     $companyid = $params['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency',$params['params']);
+    $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
     $center = $params['params']['center'];
     $username = $params['params']['user'];

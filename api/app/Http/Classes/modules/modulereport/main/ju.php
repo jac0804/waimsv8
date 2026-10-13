@@ -36,9 +36,9 @@ class ju
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -73,7 +73,7 @@ class ju
     }
 
     public function generateResult($config) // query
-    {  
+    {
         $query = "
         select head.trno as brgy,
         head.docno,date(head.dateid) as dateid,head.clientname as complainant,head.address as complainant_address,head.contact as complainant_contact,head.ownername as respondent,
@@ -130,19 +130,19 @@ class ju
         if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
             $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
             $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
-                $isTimes = file_exists(database_path() . '/images/fonts/times.TTF');
-                $isTimesBold = file_exists(database_path() . '/images/fonts/timesbd.TTF');
-                if ($isTimes && $isTimesBold) {
-                    $fonttimes = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/times.TTF');
-                    $fonttimesbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/timesbd.TTF');
-                    $fontbody = 9;
-                    $fontsize = 12;
-                } else {
-                    $fonttimes = $font; 
-                    $fonttimesbold = $fontbold; 
-                    $fontbody = 8;
-                    $fontsize = 11;
-                }
+            $isTimes = file_exists(database_path() . '/images/fonts/times.TTF');
+            $isTimesBold = file_exists(database_path() . '/images/fonts/timesbd.TTF');
+            if ($isTimes && $isTimesBold) {
+                $fonttimes = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/times.TTF');
+                $fonttimesbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/timesbd.TTF');
+                $fontbody = 9;
+                $fontsize = 12;
+            } else {
+                $fonttimes = $font;
+                $fonttimesbold = $fontbold;
+                $fontbody = 8;
+                $fontsize = 11;
+            }
         }
         PDF::SetTitle($this->modulename);
         PDF::SetAuthor('Solutionbase Corp.');
@@ -153,26 +153,26 @@ class ju
         PDF::SetMargins(20, 20);
         PDF::SetAlpha(1);
         //532 
-        PDF::MultiCell(0, 0, '', '', ''); 
+        PDF::MultiCell(0, 0, '', '', '');
         PDF::SetFont($fonttimes, '', $fontbody);
         PDF::MultiCell(0, 0, "\n", '', '');
         PDF::MultiCell(0, 15, 'NATIONAL CAPITAL REGION', '', 'C', false);
         PDF::MultiCell(0, 15, 'QUEZON CITY', '', 'C', false);
         PDF::SetFont($fonttimesbold, '', $fontsize);
-        PDF::MultiCell(0,15, strtoupper($headerdata[0]->name), '', 'C');
+        PDF::MultiCell(0, 15, strtoupper($headerdata[0]->name), '', 'C');
         PDF::SetFont($fonttimes, '', $fontbody);
         PDF::MultiCell(45, 15, '', '', '', false, 0);
         PDF::MultiCell(80, 15, 'Hawak Kamay para sa Kaunlaran', '', 'C', false, 0);
         PDF::MultiCell(45, 15, '', '', '', false, 0);
-        PDF::MultiCell(232, 15, strtoupper($headerdata[0]->address), '', 'C', false,0);
+        PDF::MultiCell(232, 15, strtoupper($headerdata[0]->address), '', 'C', false, 0);
         PDF::MultiCell(45, 15, '', '', '', false, 0);
-        PDF::MultiCell(80, 15, '     Q.C ITO       Tulong-Tulong Tayo', '', 'C',false,0);
+        PDF::MultiCell(80, 15, '     Q.C ITO       Tulong-Tulong Tayo', '', 'C', false, 0);
         PDF::MultiCell(45, 15, '', '', '', false);
         if (file_exists($logo2)) { //temp logo
-            PDF::Image($logo2, 80,20, 60, 60);
+            PDF::Image($logo2, 80, 20, 60, 60);
         }
         if (file_exists($logo1)) { //temp logo
-            PDF::Image($logo1, 480,20, 60, 60);
+            PDF::Image($logo1, 480, 20, 60, 60);
         }
         PDF::MultiCell(0, 0, "\n", '', '');
         PDF::SetFont($fonttimesbold, '', $fontsize);
@@ -186,13 +186,13 @@ class ju
             $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
             $fontsize = 11;
             $fontsub = 9;
-        }  
+        }
         $this->default_PDF_header($config, $data);
         //client
         $header = !empty($data) ? $data[0] : null;
         $brgy = isset($header->brgy) ? (string)$header->brgy : ''; //into -> string
         $dateid = isset($header->dateid) ? $header->dateid : '';
-            $formattedDate = !empty($dateid)  ? date('m-d-Y', strtotime($dateid)) : '';
+        $formattedDate = !empty($dateid)  ? date('m-d-Y', strtotime($dateid)) : '';
         $complainant = isset($header->complainant) ? $header->complainant : '';
         $complainant_address = isset($header->complainant_address) ? $header->complainant_address : '';
         $complainant_contact = isset($header->complainant_contact) ? $header->complainant_contact : '';
@@ -222,17 +222,17 @@ class ju
         //572
 
         PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(150, 15, (isset($arr_complainant[0]) ? $arr_complainant[0] : ''), 'B', 'L', false, 0);// variable
+        PDF::MultiCell(150, 15, (isset($arr_complainant[0]) ? $arr_complainant[0] : ''), 'B', 'L', false, 0); // variable
         PDF::MultiCell(212, 15, '', '', 'L', false, 0); //212
-        PDF::SetFont($font, '', $fontsize); 
+        PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(70, 15, 'Brgy Case No:', '', 'L', false, 0);
         PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(140, 15, (isset($arr_brgy[0]) ? $arr_brgy[0] : ''), 'B', 'C', false);// variable
+        PDF::MultiCell(140, 15, (isset($arr_brgy[0]) ? $arr_brgy[0] : ''), 'B', 'C', false); // variable
 
         PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(150, 15, (isset($arr_complainant_address[0]) ? $arr_complainant_address[0] : ''), 'B', 'L', false);// variable
+        PDF::MultiCell(150, 15, (isset($arr_complainant_address[0]) ? $arr_complainant_address[0] : ''), 'B', 'L', false); // variable
         PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(150, 15, (isset($arr_complainant_contact[0]) ? $arr_complainant_contact[0] : ''), 'B', 'L', false);// variable
+        PDF::MultiCell(150, 15, (isset($arr_complainant_contact[0]) ? $arr_complainant_contact[0] : ''), 'B', 'L', false); // variable
 
         PDF::SetFont($font, '', $fontsub);
         PDF::MultiCell(150, 15, 'Complaint/s', '', 'L', false, 0);
@@ -240,22 +240,22 @@ class ju
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(60, 15, 'For:', '', 'L', false, 0);
         PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(150, 15, (isset($arr_for[0]) ? $arr_for[0] : ''), 'B', 'L', false);//variable
+        PDF::MultiCell(150, 15, (isset($arr_for[0]) ? $arr_for[0] : ''), 'B', 'L', false); //variable
         PDF::MultiCell(0, 15, "\n", '', '');
 
-        PDF::MultiCell(150, 15, '-against-', '', 'C', false); 
+        PDF::MultiCell(150, 15, '-against-', '', 'C', false);
         PDF::MultiCell(0, 15, "\n", '', '');
 
         PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(150, 15, (isset($arr_respondent[0]) ? $arr_respondent[0] : ''), 'B', 'L', false, 0);// variable
+        PDF::MultiCell(150, 15, (isset($arr_respondent[0]) ? $arr_respondent[0] : ''), 'B', 'L', false, 0); // variable
         PDF::MultiCell(212, 15, '', '', 'L', false, 0);
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(60, 15, 'Desk Officer:', '', 'L', false, 0);
         PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(150, 15, (isset($arr_entered_by[0]) ? $arr_entered_by[0] : ''), 'B', 'L', false);//variable
-        PDF::MultiCell(150, 15, (isset($arr_respondent_address[0]) ? $arr_respondent_address[0] : ''), 'B', 'L', false);// variable
+        PDF::MultiCell(150, 15, (isset($arr_entered_by[0]) ? $arr_entered_by[0] : ''), 'B', 'L', false); //variable
+        PDF::MultiCell(150, 15, (isset($arr_respondent_address[0]) ? $arr_respondent_address[0] : ''), 'B', 'L', false); // variable
         PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(150, 15, (isset($arr_respondent_contact[0]) ? $arr_respondent_contact[0] : ''), 'B', 'L', false);// variable
+        PDF::MultiCell(150, 15, (isset($arr_respondent_contact[0]) ? $arr_respondent_contact[0] : ''), 'B', 'L', false); // variable
 
         PDF::SetFont($font, '', $fontsub);
         PDF::MultiCell(150, 15, 'Respondents/s', '', 'L', false, 0);
@@ -263,14 +263,14 @@ class ju
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(60, 15, 'Date:', '', 'L', false, 0);
         PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(150, 15, $formattedDate, 'B', 'L', false);//variable
+        PDF::MultiCell(150, 15, $formattedDate, 'B', 'L', false); //variable
         PDF::MultiCell(0, 15, "\n\n", '', '');
 
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(0, 15, 'C O M P L A I N T / R E K L A M O', '', 'C', false);
         PDF::MultiCell(0, 15, "\n", '', '');
 
-        PDF::SetFont($font, '', $fontsize); 
+        PDF::SetFont($font, '', $fontsize);
         //variable for the 'complaint'
         $paragraph = isset($arr_facts[0]) ? $arr_facts[0] : '';
         $lines = PDF::getNumLines($paragraph, 0); // number of printed rows
@@ -302,23 +302,20 @@ class ju
         PDF::MultiCell(0, 15, "\n\n\n\n", '', '');
 
 
-        PDF::MultiCell(170, 0, '', '', 'L', false, 0); 
-        PDF::MultiCell(170, 0, '', '', 'L', false, 0); 
+        PDF::MultiCell(170, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(170, 0, '', '', 'L', false, 0);
         PDF::MultiCell(232, 0, 'Conformed', '', 'L', false); //variable
         PDF::MultiCell(0, 15, "\n\n", '', '');
 
-        PDF::MultiCell(170, 0, '', '', 'L', false, 0); 
-        PDF::MultiCell(170, 0, '', '', 'L', false, 0); 
+        PDF::MultiCell(170, 0, '', '', 'L', false, 0);
+        PDF::MultiCell(170, 0, '', '', 'L', false, 0);
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(232, 0, (isset($arr_brgyname[0]) ? $arr_brgyname[0] : ''), 'B', 'C', false); //variable
-        PDF::MultiCell(170, 0, '', '', 'L', false, 0); 
+        PDF::MultiCell(170, 0, '', '', 'L', false, 0);
         PDF::MultiCell(170, 0, '', '', 'L', false, 0);
         PDF::SetFont($font, '', $fontsub);
         PDF::MultiCell(232, 0, 'Punong Barangay', ' ', 'C', false); //variable
 
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
-
-
-
 }

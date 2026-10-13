@@ -34,9 +34,9 @@ class sj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -171,7 +171,7 @@ class sj
     left join client as wh on wh.clientid=head.whid
     left join hcntnuminfo as hinfo on hinfo.trno = head.trno
     where head.doc='sj' and head.trno='$trno' and stock.iscomponent=0 order by line";
-    
+
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn
@@ -233,80 +233,80 @@ class sj
     PDF::SetFont($fontbold, '', $fontsize);
 
     // if ($bir == 0) {
-      PDF::MultiCell(50, 0, '', '', 'L', 0, 0, '-5', '132'); 
-
-      
-      if (isset($data[0]['bref'])) {
-        if($data[0]['bref']=='ND'){
-          PDF::MultiCell(15, 0, $data[0]['area1'], '', 'C', 0, 0, '', '');
-          PDF::MultiCell(15, 0, $data[0]['area2'], '', 'C', 0, 0, '', '');
-          PDF::MultiCell(15, 0, $data[0]['area3'], '', 'C', 0, 0, '', '');
-          PDF::MultiCell(10, 0, '', '', 'C', 0, 0, '', ''); 
-
-          PDF::MultiCell(15, 0, $data[0]['not4'], '', 'C', 0, 0, '', '');
-          PDF::MultiCell(15, 0, $data[0]['not5'], '', 'C', 0, 0, '', '');
-          PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', ''); 
-
-          PDF::MultiCell(15, 0, $data[0]['not6'], '', 'C', 0, 0, '', '');
-          PDF::MultiCell(15, 0, $data[0]['not7'], '', 'C', 0, 0, '', '');
-          PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', ''); 
-
-          PDF::MultiCell(15, 0, $data[0]['not8'], '', 'C', 0, 0, '', '');
-          PDF::MultiCell(15, 0, $data[0]['not9'], '', 'C', 0, 0, '', '');
-          PDF::MultiCell(15, 0, $data[0]['not10'], '', 'C', 0, 0, '', ''); 
-        }else{
-          PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
-          PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
-          PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
-          PDF::MultiCell(10, 0, '', '', 'C', 0, 0, '', ''); 
-
-          PDF::setFontSpacing(4);
-          PDF::MultiCell(42, 0, $data[0]['bir4'] . $data[0]['bir5'] . $data[0]['bir6'], '', 'C', 0, 0, '58', '');
+    PDF::MultiCell(50, 0, '', '', 'L', 0, 0, '-5', '132');
 
 
-          PDF::MultiCell(30, 0, $data[0]['bir7'] . $data[0]['bir8'], '', 'C', 0, 0, '', '');
+    if (isset($data[0]['bref'])) {
+      if ($data[0]['bref'] == 'ND') {
+        PDF::MultiCell(15, 0, $data[0]['area1'], '', 'C', 0, 0, '', '');
+        PDF::MultiCell(15, 0, $data[0]['area2'], '', 'C', 0, 0, '', '');
+        PDF::MultiCell(15, 0, $data[0]['area3'], '', 'C', 0, 0, '', '');
+        PDF::MultiCell(10, 0, '', '', 'C', 0, 0, '', '');
 
-          PDF::MultiCell(30, 0, $data[0]['bir9'] . $data[0]['bir10'], '', 'C', 0, 0, '', '');
+        PDF::MultiCell(15, 0, $data[0]['not4'], '', 'C', 0, 0, '', '');
+        PDF::MultiCell(15, 0, $data[0]['not5'], '', 'C', 0, 0, '', '');
+        PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
 
-          PDF::MultiCell(42, 0, $data[0]['bir11'] . $data[0]['bir12'] . $data[0]['bir13'], '', 'C', 0, 0, '', '');
+        PDF::MultiCell(15, 0, $data[0]['not6'], '', 'C', 0, 0, '', '');
+        PDF::MultiCell(15, 0, $data[0]['not7'], '', 'C', 0, 0, '', '');
+        PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
 
-          PDF::setFontSpacing(0);
-          PDF::MultiCell(15, 0, '', '', 'L', 0, 0, '', ''); 
-        }
-      }else{
+        PDF::MultiCell(15, 0, $data[0]['not8'], '', 'C', 0, 0, '', '');
+        PDF::MultiCell(15, 0, $data[0]['not9'], '', 'C', 0, 0, '', '');
+        PDF::MultiCell(15, 0, $data[0]['not10'], '', 'C', 0, 0, '', '');
+      } else {
         PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
         PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
         PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
         PDF::MultiCell(10, 0, '', '', 'C', 0, 0, '', '');
-        
-        
-        PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
-        PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
-        PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', ''); 
 
-        PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
-        PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
-        PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', ''); 
+        PDF::setFontSpacing(4);
+        PDF::MultiCell(42, 0, $data[0]['bir4'] . $data[0]['bir5'] . $data[0]['bir6'], '', 'C', 0, 0, '58', '');
 
-        PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
-        PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
-        PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
+
+        PDF::MultiCell(30, 0, $data[0]['bir7'] . $data[0]['bir8'], '', 'C', 0, 0, '', '');
+
+        PDF::MultiCell(30, 0, $data[0]['bir9'] . $data[0]['bir10'], '', 'C', 0, 0, '', '');
+
+        PDF::MultiCell(42, 0, $data[0]['bir11'] . $data[0]['bir12'] . $data[0]['bir13'], '', 'C', 0, 0, '', '');
+
+        PDF::setFontSpacing(0);
+        PDF::MultiCell(15, 0, '', '', 'L', 0, 0, '', '');
       }
-      
+    } else {
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
+      PDF::MultiCell(10, 0, '', '', 'C', 0, 0, '', '');
 
-      // PDF::MultiCell(15, 0, $data[0]['not4'], '', 'C', 0, 0, '', '');
-      // PDF::MultiCell(15, 0, $data[0]['not5'], '', 'C', 0, 0, '', '');
-      // PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', ''); 
 
-      // PDF::MultiCell(15, 0, $data[0]['not6'], '', 'C', 0, 0, '', '');
-      // PDF::MultiCell(15, 0, $data[0]['not7'], '', 'C', 0, 0, '', '');
-      // PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', ''); 
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
 
-      // PDF::MultiCell(15, 0, $data[0]['not8'], '', 'C', 0, 0, '', '');
-      // PDF::MultiCell(15, 0, $data[0]['not9'], '', 'C', 0, 0, '', '');
-      // PDF::MultiCell(15, 0, $data[0]['not10'], '', 'C', 0, 0, '', ''); 
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
 
-      // PDF::MultiCell(35, 0, '', '', 'L', 0, 0, '', ''); 
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
+    }
+
+
+    // PDF::MultiCell(15, 0, $data[0]['not4'], '', 'C', 0, 0, '', '');
+    // PDF::MultiCell(15, 0, $data[0]['not5'], '', 'C', 0, 0, '', '');
+    // PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', ''); 
+
+    // PDF::MultiCell(15, 0, $data[0]['not6'], '', 'C', 0, 0, '', '');
+    // PDF::MultiCell(15, 0, $data[0]['not7'], '', 'C', 0, 0, '', '');
+    // PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', ''); 
+
+    // PDF::MultiCell(15, 0, $data[0]['not8'], '', 'C', 0, 0, '', '');
+    // PDF::MultiCell(15, 0, $data[0]['not9'], '', 'C', 0, 0, '', '');
+    // PDF::MultiCell(15, 0, $data[0]['not10'], '', 'C', 0, 0, '', ''); 
+
+    // PDF::MultiCell(35, 0, '', '', 'L', 0, 0, '', ''); 
     // } 
     // else {
     //   PDF::MultiCell(50, 0, '', '', 'L', 0, 0, '-5', '130'); 
@@ -494,52 +494,52 @@ class sj
 
 
     if ($bir == 0) {
-      PDF::MultiCell(35, 0, '', 'L', 'L', 0, 0, '', ''); 
+      PDF::MultiCell(35, 0, '', 'L', 'L', 0, 0, '', '');
 
       PDF::MultiCell(15, 0, $data[0]['area1'], 'TBLR', 'C', 0, 0, '', '');
       PDF::MultiCell(15, 0, $data[0]['area2'], 'TBLR', 'C', 0, 0, '', '');
       PDF::MultiCell(15, 0, $data[0]['area3'], 'TBLR', 'C', 0, 0, '', '');
-      PDF::MultiCell(10, 0, '', '', 'C', 0, 0, '', ''); 
+      PDF::MultiCell(10, 0, '', '', 'C', 0, 0, '', '');
 
       PDF::MultiCell(15, 0, $data[0]['not4'], 'TBLR', 'C', 0, 0, '', '');
       PDF::MultiCell(15, 0, $data[0]['not5'], 'TBLR', 'C', 0, 0, '', '');
-      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', ''); 
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
 
       PDF::MultiCell(15, 0, $data[0]['not6'], 'TBLR', 'C', 0, 0, '', '');
       PDF::MultiCell(15, 0, $data[0]['not7'], 'TBLR', 'C', 0, 0, '', '');
-      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', ''); 
+      PDF::MultiCell(15, 0, '', '', 'C', 0, 0, '', '');
 
       PDF::MultiCell(15, 0, $data[0]['not8'], 'TBLR', 'C', 0, 0, '', '');
       PDF::MultiCell(15, 0, $data[0]['not9'], 'TBLR', 'C', 0, 0, '', '');
-      PDF::MultiCell(15, 0, $data[0]['not10'], 'TBLR', 'C', 0, 0, '', ''); 
+      PDF::MultiCell(15, 0, $data[0]['not10'], 'TBLR', 'C', 0, 0, '', '');
 
-      PDF::MultiCell(35, 0, '', '', 'L', 0, 0, '', ''); 
+      PDF::MultiCell(35, 0, '', '', 'L', 0, 0, '', '');
     } else {
-      PDF::MultiCell(15, 0, '', 'L', 'L', 0, 0, '', ''); 
+      PDF::MultiCell(15, 0, '', 'L', 'L', 0, 0, '', '');
 
       PDF::MultiCell(15, 0, $data[0]['area1'], 'TBLR', 'C', 0, 0, '', '');
       PDF::MultiCell(15, 0, $data[0]['area2'], 'TBLR', 'C', 0, 0, '', '');
       PDF::MultiCell(15, 0, $data[0]['area3'], 'TBLR', 'C', 0, 0, '', '');
-      PDF::MultiCell(10, 0, '', '', 'C', 0, 0, '', ''); 
+      PDF::MultiCell(10, 0, '', '', 'C', 0, 0, '', '');
 
       PDF::MultiCell(15, 0, $data[0]['bir4'], 'TBLR', 'C', 0, 0, '', '');
       PDF::MultiCell(15, 0, $data[0]['bir5'], 'TBLR', 'C', 0, 0, '', '');
       PDF::MultiCell(15, 0, $data[0]['bir6'], 'TBLR', 'C', 0, 0, '', '');
-      PDF::MultiCell(7, 0, '', '', 'C', 0, 0, '', ''); 
+      PDF::MultiCell(7, 0, '', '', 'C', 0, 0, '', '');
 
       PDF::MultiCell(15, 0, $data[0]['bir7'], 'TBLR', 'C', 0, 0, '', '');
       PDF::MultiCell(15, 0, $data[0]['bir8'], 'TBLR', 'C', 0, 0, '', '');
-      PDF::MultiCell(8, 0, '', '', 'C', 0, 0, '', ''); 
+      PDF::MultiCell(8, 0, '', '', 'C', 0, 0, '', '');
 
       PDF::MultiCell(15, 0, $data[0]['bir9'], 'TBLR', 'C', 0, 0, '', '');
       PDF::MultiCell(15, 0, $data[0]['bir10'], 'TBLR', 'C', 0, 0, '', '');
-      PDF::MultiCell(10, 0, '', '', 'C', 0, 0, '', ''); 
+      PDF::MultiCell(10, 0, '', '', 'C', 0, 0, '', '');
 
       PDF::MultiCell(15, 0, $data[0]['bir11'], 'TBLR', 'C', 0, 0, '', '');
       PDF::MultiCell(15, 0, $data[0]['bir12'], 'TBLR', 'C', 0, 0, '', '');
-      PDF::MultiCell(15, 0, $data[0]['bir13'], 'TBLR', 'C', 0, 0, '', ''); 
+      PDF::MultiCell(15, 0, $data[0]['bir13'], 'TBLR', 'C', 0, 0, '', '');
 
-      PDF::MultiCell(15, 0, '', '', 'L', 0, 0, '', ''); 
+      PDF::MultiCell(15, 0, '', '', 'L', 0, 0, '', '');
     }
 
 

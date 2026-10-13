@@ -32,10 +32,10 @@ class entrycredentials
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -179,7 +179,7 @@ class entrycredentials
   {
     $data = [];
     $row = $config['params']['row'];
-    
+
     $companyid = $config['params']['companyid'];
     $dateTables = [$table];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);

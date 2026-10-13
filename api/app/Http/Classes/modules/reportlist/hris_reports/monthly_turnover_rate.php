@@ -31,12 +31,12 @@ class monthly_turnover_rate
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -95,7 +95,8 @@ class monthly_turnover_rate
     public function totalemp($config)
     {
         $year = $config['params']['dataparams']['year'];
-        $query = "select count(empid) as totalemp from employee where year(hired) <'" . $year . "' ";
+        $division = $config['params']['dataparams']['divid'];
+        $query = "select count(empid) as totalemp from employee where year(hired) <'" . $year . "' and divid=$division";
         return $this->coreFunctions->opentable($query);
     }
 
@@ -115,11 +116,12 @@ class monthly_turnover_rate
     {
         // QUERY
         $year = $config['params']['dataparams']['year'];
+        $division = $config['params']['dataparams']['divid'];
         // $query = "select count(clr.trno) as total, month(clr.dateid) as month from hclearance as clr where year(clr.dateid) <='" . $year . "'
         //           group by month(clr.dateid)";
         // $query = "select count(clr.empid) as total, month(clr.resigned) as month from employee as clr where year(clr.resigned) <='" . $year . "' group by month(clr.resigned)";
 
-        $query = "select count(clr.empid) as total, month(clr.hired) as month from employee as clr where year(clr.hired) ='" . $year . "' group by month(clr.hired)";
+        $query = "select count(clr.empid) as total, month(clr.hired) as month from employee as clr where year(clr.hired) ='" . $year . "' and clr.divid=$division group by month(clr.hired)";
         return $this->coreFunctions->opentable($query);
     }
 
@@ -130,7 +132,7 @@ class monthly_turnover_rate
         $result = $this->reportdefault($config); // hired per month
         $totalemployee = $this->totalemp($config);
         $month = $this->month($config);
-
+        $division = $config['params']['dataparams']['divid'];
         $border = '1px solid #c0c0c0 !important';
         $font = 'century gothic';
         $font_size = '10';
@@ -154,7 +156,7 @@ class monthly_turnover_rate
         $query = "select count(empid) as totalemp 
               from employee 
               where resigned is not null 
-              and year(resigned) < '" . $year . "'";
+              and year(resigned) < '" . $year . "' and divid=$division";
         $seperated = $this->coreFunctions->opentable($query);
         $prevseparated = isset($seperated[0]->totalemp) ? $seperated[0]->totalemp : 0;
 
@@ -165,7 +167,7 @@ class monthly_turnover_rate
         $query = "select month(resigned) as month, count(empid) as total
               from employee
               where resigned is not null
-              and year(resigned) = '" . $year . "'
+              and year(resigned) = '" . $year . "' and divid=$division
               group by month(resigned)";
         $separatedmonthly = $this->coreFunctions->opentable($query);
 
@@ -216,8 +218,11 @@ class monthly_turnover_rate
             $prevSeparated = $totalseparated;
             $runningtotalemp = $tlemployee;
         }
-
-        $aveturnover = number_format($totalturnoverrate / $monthcount, 2);
+        if ($monthcount > 0) {
+            $aveturnover = number_format($totalturnoverrate / $monthcount, 2);
+        } else {
+            $aveturnover = number_format(0, 2);
+        }
         $average = $aveturnover . ' %';
         $totalturnoverrate = $totalturnoverrate . ' %';
         $str .= $this->reporter->endtable();

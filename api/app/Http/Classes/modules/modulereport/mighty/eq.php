@@ -35,9 +35,9 @@ class eq
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -437,14 +437,14 @@ class eq
         for ($r = 0; $r < $maxrow; $r++) {
 
           PDF::SetFont($font, '', $fontsize);
-            PDF::MultiCell(100, 15, ' ' . (isset($arr_category[$r]) ? $arr_category[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(80, 15, ' ' . (isset($arr_stime[$r]) ? $arr_stime[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(80, 15, ' ' . (isset($arr_etime[$r]) ? $arr_etime[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(80, 15, ' ' . (isset($arr_duration[$r]) ? $arr_duration[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(80, 15, ' ' . (isset($arr_mstart[$r]) ? $arr_mstart[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(80, 15, ' ' . (isset($arr_mend[$r]) ? $arr_mend[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);            
-            PDF::MultiCell(80, 15, ' ' . (isset($arr_distance[$r]) ? $arr_distance[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(140, 15, ' ' . (isset($arr_fconsumption[$r]) ? $arr_fconsumption[$r] : ''), '', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(100, 15, ' ' . (isset($arr_category[$r]) ? $arr_category[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(80, 15, ' ' . (isset($arr_stime[$r]) ? $arr_stime[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(80, 15, ' ' . (isset($arr_etime[$r]) ? $arr_etime[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(80, 15, ' ' . (isset($arr_duration[$r]) ? $arr_duration[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(80, 15, ' ' . (isset($arr_mstart[$r]) ? $arr_mstart[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(80, 15, ' ' . (isset($arr_mend[$r]) ? $arr_mend[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(80, 15, ' ' . (isset($arr_distance[$r]) ? $arr_distance[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(140, 15, ' ' . (isset($arr_fconsumption[$r]) ? $arr_fconsumption[$r] : ''), '', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
         }
 
         if (PDF::getY() > 900) {

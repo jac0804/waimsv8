@@ -52,11 +52,11 @@ class bq
   private $reporter;
   private $helpClass;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -253,7 +253,7 @@ class bq
 
     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
 
-    if(!$islocation) {
+    if (!$islocation) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
     }
 
@@ -830,7 +830,7 @@ class bq
     }
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
-    
+
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;

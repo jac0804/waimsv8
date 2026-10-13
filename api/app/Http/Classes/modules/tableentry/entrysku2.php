@@ -31,15 +31,15 @@ class entrysku2
   public $style = 'width:100%;';
   public $tablelogs = 'masterfile_log';
   public $tablelogs_del = 'del_masterfile_log';
-  private $fields = ['itemid', 'clientid', 'sku','uom2', 'disc', 'amt','issupplier'];
+  private $fields = ['itemid', 'clientid', 'sku', 'uom2', 'disc', 'amt', 'issupplier'];
   public $showclosebtn = false;
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -58,13 +58,13 @@ class entrysku2
   public function createTab($config)
   {
     $tableid = $config['params']['tableid'];
-    $companyid= $config['params']['companyid'];
+    $companyid = $config['params']['companyid'];
     $doc = $config['params']['doc'];
-    
-    if($companyid == 72 && $doc == 'CUSTOMER' ){ //hahsy
+
+    if ($companyid == 72 && $doc == 'CUSTOMER') { //hahsy
       $this->modulename = 'SPECIAL ITEM PRICE';
-      $column = ['action', 'barcode', 'itemname','amt', 'disc'];
-    }else{
+      $column = ['action', 'barcode', 'itemname', 'amt', 'disc'];
+    } else {
       $item = $this->othersClass->getitemname($tableid);
       $this->modulename = $this->modulename . ' ~ ' . $item[0]->barcode . ' ~ ' . $item[0]->itemname;
       $column = ['action', 'client', 'wh', 'sku', 'uom2', 'amt', 'disc', 'netamt'];
@@ -92,9 +92,7 @@ class entrysku2
       $obj[0][$this->gridname]['columns'][$itemname]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
       $obj[0][$this->gridname]['columns'][$amt]['style'] = "width:150px;whiteSpace: normal;min-width:200px;";
       $obj[0][$this->gridname]['columns'][$disc]['style'] = "width:150px;whiteSpace: normal;min-width:200px;";
-
-
-    }else{
+    } else {
 
       $obj[0][$this->gridname]['columns'][$client]['style'] = "width:100px;whiteSpace: normal;min-width:200px;";
       $obj[0][$this->gridname]['columns'][$wh]['style'] = "width:100px;whiteSpace: normal;min-width:150px;";
@@ -120,10 +118,9 @@ class entrysku2
       $obj[0][$this->gridname]['columns'][$uom2]['lookupclass'] = 'lookupuom';
       $obj[0][$this->gridname]['columns'][$uom2]['action'] = 'lookupsetup';
       $obj[0][$this->gridname]['columns'][$uom2]['label'] = "Uom";
-
     }
-    
-       
+
+
     return $obj;
   }
 
@@ -143,21 +140,20 @@ class entrysku2
     $doc = $config['params']['doc'];
     $data = [];
     $data['line'] = 0;
-   
+
     if ($companyid == 72 && $doc == 'CUSTOMER') { //hahsy
       $data['itemid'] = 0;
       $data['barcode'] = '';
       $data['itemname'] = '';
       $data['issupplier'] = 0;
       $data['clientid'] = $config['params']['tableid'];
-    
-    }else{
+    } else {
       $data['itemid'] = $config['params']['tableid'];
       $data['issupplier'] = 1;
       $data['clientid'] = 0;
     }
 
-   
+
     $data['client'] = '';
     $data['wh'] = '';
     $data['sku'] = '';
@@ -181,31 +177,30 @@ class entrysku2
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
 
         if ($companyid != 72 && $doc != 'CUSTOMER') { //not hahsy
           if ($data[$key]['line'] == 0 && $data[$key]['wh'] != '') {
-              $qry = "select cl.clientname from sku
+            $qry = "select cl.clientname from sku
                       left join client  as cl on cl.clientid=sku.clientid where sku.clientid = '" . $data[$key]['clientid'] . "' and sku.itemid=  '" . $data[$key]['itemid'] . "'  and sku.issupplier=1 limit 1";
-              $opendata = $this->coreFunctions->opentable($qry);
-              $resultdata =  json_decode(json_encode($opendata), true);
-              if (!empty($resultdata[0]['clientname'])) {
-                        if (trim($resultdata[0]['clientname']) == trim($data[$key]['wh'])) {
-                            return ['status' => false, 'msg' => ' Supplier ( ' . $resultdata[0]['clientname'] . ' )' . ' already exist.', 'data' => [$resultdata]];
-                        }
-                    }
-                
+            $opendata = $this->coreFunctions->opentable($qry);
+            $resultdata =  json_decode(json_encode($opendata), true);
+            if (!empty($resultdata[0]['clientname'])) {
+              if (trim($resultdata[0]['clientname']) == trim($data[$key]['wh'])) {
+                return ['status' => false, 'msg' => ' Supplier ( ' . $resultdata[0]['clientname'] . ' )' . ' already exist.', 'data' => [$resultdata]];
+              }
+            }
+          }
         }
-      }
 
-         
+
         if ($data[$key]['line'] == 0) {
           $status = $this->coreFunctions->insertGetId($this->table, $data2);
 
           $params = $config;
           $params['params']['doc'] = strtoupper("skuentry_tab");
-        
+
           if ($companyid == 72 && $doc == 'CUSTOMER') { //hahsy
             $this->logger->sbcmasterlog(
               $tableid,
@@ -215,8 +210,10 @@ class entrysku2
                 . ', AMOUNT: ' . $data[$key]['amt']
                 . ', DISCOUNT: ' . $data[$key]['disc']
             );
-          }else{
-            $this->logger->sbcmasterlog($tableid,$params,
+          } else {
+            $this->logger->sbcmasterlog(
+              $tableid,
+              $params,
               ' CREATE - LINE: ' . $status . ''
                 . ', SUPPLIER: ' . $data[$key]['wh']
                 . ', SKU: ' . $data[$key]['sku']
@@ -224,10 +221,7 @@ class entrysku2
                 . ', UOM: ' . $data[$key]['uom2']
                 . ', DISCOUNT: ' . $data[$key]['disc']
             );
-
           }
-          
-          
         } else {
 
           if ($companyid == 72 && $doc == 'CUSTOMER') { //hahsy
@@ -236,8 +230,7 @@ class entrysku2
             $data2['editby'] = $config['params']['user'];
             $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
             $this->logger->sbcmasterlog($data[$key]['line'], $config, ' UPDATE - ' . $data[$key]['itemname']);
-       
-          }else{
+          } else {
 
             if ($data[$key]['line'] != 0 && $data[$key]['wh'] != '') {
               $qry = "select cl.clientname,sku.line from sku
@@ -261,9 +254,7 @@ class entrysku2
                 goto update;
               }
             }
-
           }
-           
         }
       } // end if
     } // foreach
@@ -282,7 +273,7 @@ class entrysku2
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     if ($companyid != 72 && $doc != 'CUSTOMER') {
@@ -298,8 +289,8 @@ class entrysku2
         }
       }
     }
-   
-  
+
+
 
     if ($row['line'] == 0) { //insert
       $line = $this->coreFunctions->insertGetId($this->table, $data);
@@ -317,8 +308,8 @@ class entrysku2
               . ', AMOUNT: ' . $row['amt']
               . ', DISCOUNT: ' . $row['disc']
           );
-       }else{
-           $this->logger->sbcmasterlog(
+        } else {
+          $this->logger->sbcmasterlog(
             $tableid,
             $params,
             ' CREATE - LINE: ' . $line . ''
@@ -328,8 +319,7 @@ class entrysku2
               . ', UOM: ' . $row['uom2']
               . ', DISCOUNT: ' . $row['disc']
           );
-
-       }
+        }
 
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
       } else {
@@ -364,17 +354,16 @@ class entrysku2
             goto update;
           }
         }
-
       }
-       
 
 
-    
+
+
       if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
         if ($companyid == 72 && $doc == 'CUSTOMER') { // hahsy
           $this->logger->sbcmasterlog($row['line'], $config, ' UPDATE - ' . $row['itemname']);
         }
-          $returnrow = $this->loaddataperrecord($config, $row['line']);
+        $returnrow = $this->loaddataperrecord($config, $row['line']);
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
       } else {
         return ['status' => false, 'msg' => 'Saving failed.'];
@@ -407,7 +396,7 @@ class entrysku2
           . ', AMOUNT: ' . $row['amt']
           . ', DISCOUNT: ' . $row['disc']
       );
-    }else{
+    } else {
       $this->logger->sbcmasterlog(
         $tableid,
         $params,
@@ -417,9 +406,8 @@ class entrysku2
           . ', AMOUNT: ' . $row['amt']
           . ', DISCOUNT: ' . $row['disc']
       );
-
     }
- 
+
     return ['status' => true, 'msg' => 'Successfully deleted.'];
   }
 
@@ -431,13 +419,13 @@ class entrysku2
 
     $tableid = $config['params']['tableid'];
     $colfield = 'itemid';
-          
-   
+
+
     if ($companyid == 72 && $doc == 'CUSTOMER') { //hahsy
-      $qry= " select sku.line,sku.clientid,sku.itemid,item.itemname,format(sku.amt,2) as amt,sku.disc,item.barcode,
+      $qry = " select sku.line,sku.clientid,sku.itemid,item.itemname,format(sku.amt,2) as amt,sku.disc,item.barcode,
               sku.sku,sku.uom2,sku.issupplier,'' as bgcolor  from " . $this->table . "
               left join item on item.itemid = sku.itemid where  sku.clientid= " . $tableid . "  and sku.line=? ";
-    }else{
+    } else {
 
       $qry = "select sku.line, sku.itemid, sku.clientid, sku.sku, format(sum(sku.amt),2) as amt,  sku.disc,  
           client.clientname as wh, '' as bgcolor,client.client,sku.uom2,
@@ -449,7 +437,6 @@ class entrysku2
           where sku." . $colfield . " = " . $tableid . "  and sku.issupplier=1  and sku.line=?
           group by sku.line,  sku.itemid,     sku.clientid, sku.sku, client.clientname,sku.disc,client.client,sku.issupplier,sku.uom2
           order by sku.line";
-
     }
     $data = $this->coreFunctions->opentable($qry, [$line]);
     return $data;
@@ -467,7 +454,7 @@ class entrysku2
               sku.sku,sku.uom2,sku.issupplier,'' as bgcolor  from " . $this->table . "
               left join item on item.itemid = sku.itemid where sku.clientid= " . $tableid . "";
     } else {
-    $qry = "select sku.line, sku.itemid, sku.clientid, sku.sku, format(sum(sku.amt),2) as amt,  sku.disc, 
+      $qry = "select sku.line, sku.itemid, sku.clientid, sku.sku, format(sum(sku.amt),2) as amt,  sku.disc, 
             client.clientname as wh, '' as bgcolor ,client.client,sku.uom2,
             format(sum(case when sku.disc like '%\%%'  then sku.amt - (sku.amt * cast(replace(sku.disc, '%', '') as decimal(12,2)) / 100)
             when sku.disc <> '' and sku.disc is not null  then sku.amt - cast(sku.disc as decimal(12,2)) else sku.amt end),2) as netamt,sku.issupplier
@@ -494,10 +481,10 @@ class entrysku2
         break;
       case 'lookuplogs':
         return $this->lookuplogs($config);
-      break;
+        break;
       case 'lookupuom':
         return $this->lookupuom($config);
-      break;
+        break;
       case 'lookupitem':
         return $this->lookupitem($config);
         break;
@@ -519,10 +506,12 @@ class entrysku2
     );
     $plotsetup = array(
       'plottype' => 'plotgrid',
-      'plotting' => ['itemid' =>'itemid', 'barcode' => 'barcode', 'itemname'=>'itemname']
+      'plotting' => ['itemid' => 'itemid', 'barcode' => 'barcode', 'itemname' => 'itemname']
     );
-    $cols = [['name' => 'barcode', 'label' => 'Barcode', 'align' => 'left', 'field' => 'barcode', 'sortable' => true, 'style' => 'font-size:16px;'],
-             ['name' => 'itemname', 'label' => 'Itemname', 'align' => 'left', 'field' => 'itemname', 'sortable' => true, 'style' => 'font-size:16px;']];
+    $cols = [
+      ['name' => 'barcode', 'label' => 'Barcode', 'align' => 'left', 'field' => 'barcode', 'sortable' => true, 'style' => 'font-size:16px;'],
+      ['name' => 'itemname', 'label' => 'Itemname', 'align' => 'left', 'field' => 'itemname', 'sortable' => true, 'style' => 'font-size:16px;']
+    ];
     $qry = "select itemid, barcode, itemname from item where  isinactive = 0";
     $data = $this->coreFunctions->opentable($qry);
     $index = $config['params']['index'];
@@ -566,7 +555,7 @@ class entrysku2
     );
 
     $trno = $config['params']['tableid'];
-      $qry = "
+    $qry = "
       select trno, doc, task, log.user, dateid, 
       if(pic='','blank_user.png',pic) as pic
       from " . $this->tablelogs . " as log
@@ -579,7 +568,7 @@ class entrysku2
       left join useraccess as u on u.username=log.user
       where log.doc = '" . $doc . "' and log.trno = '" . $trno . "'";
 
-      $qry = $qry . " order by dateid desc";
+    $qry = $qry . " order by dateid desc";
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, $qry];
   }
@@ -597,7 +586,7 @@ class entrysku2
 
     $plotsetup = array(
       'plottype' => 'plotgrid',
-      'plotting' => ['clientid' => 'clientid', 'wh' => 'clientname', 'client'=>'client']
+      'plotting' => ['clientid' => 'clientid', 'wh' => 'clientname', 'client' => 'client']
     );
 
     $cols = array(

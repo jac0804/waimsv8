@@ -38,9 +38,9 @@ class ch
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -242,7 +242,7 @@ class ch
           case '3': //HANDYMAN
           case '8': //OVER ALL
             return $this->overall_layout_PDF($params, $data); //overall_layout_PDF puregold_layout_PDF
-            break;  
+            break;
           case '2': //THE D.I.Y   
             return $this->diy_layout_PDF($params, $data);
             break;
@@ -1741,11 +1741,11 @@ class ch
         for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           // PDF::MultiCell(5, 10, '', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(70, 10, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);//95
+          PDF::MultiCell(70, 10, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false); //95
           PDF::MultiCell(44, 10, ' ', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           // PDF::MultiCell(5, 10, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::SetFont($font, '', 9);
-          PDF::MultiCell(331, 10, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);//326
+          PDF::MultiCell(331, 10, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false); //326
           PDF::SetFont($font, '', $fontsize);
 
           // PDF::MultiCell(50, 10, ' ', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
@@ -1759,12 +1759,12 @@ class ch
         if ($rowCount >= $pageLimit && $i < count($data) - 1) {
           $this->nwilcon_footer($params, $data, $totalext);
           $this->nwilcon_header_PDF($params, $data); //nwilcon_header_PDF
-         
+
           $rowCount = 0; // reset counter
         }
       }
     }
-     $vatable = 0;
+    $vatable = 0;
     $vatamt = 0;
 
     if ($data[0]['vattype'] == 'VATABLE') {
@@ -1781,7 +1781,7 @@ class ch
     PDF::MultiCell(422, 0, '', '', 'R', false, 0);
     PDF::MultiCell(100, 0, number_format($vatable, $decimalcurr), '', 'R');
     PDF::MultiCell(238, 0, ' ', '', 'R', false, 1);
-   
+
     //VAT
     PDF::SetXY(20, 432);
     PDF::SetFont($font, '', $fontsize);
@@ -1920,10 +1920,10 @@ class ch
     PDF::SetSubject($this->modulename . ' Module Report');
     PDF::setPageUnit('px');
     PDF::AddPage('p', [800, 1000]);
-    if($reporttype==4){
-    PDF::SetMargins(20, 40); //720
-    }else{
-    PDF::SetMargins(40, 40); //720
+    if ($reporttype == 4) {
+      PDF::SetMargins(20, 40); //720
+    } else {
+      PDF::SetMargins(40, 40); //720
     }
 
     // PDF::SetFont($font, '', 9);
@@ -2053,11 +2053,11 @@ class ch
     // PDF::MultiCell(372, 20, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     // PDF::MultiCell(80, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     // PDF::MultiCell(150, 20, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
-      $contact=isset($data[0]['clientname']) ? $data[0]['clientname'] : '';
 
-    if($reporttype==3){ //handyman
-      $contact=isset($data[0]['contact']) ? $data[0]['contact'] : '';
+    $contact = isset($data[0]['clientname']) ? $data[0]['clientname'] : '';
+
+    if ($reporttype == 3) { //handyman
+      $contact = isset($data[0]['contact']) ? $data[0]['contact'] : '';
     }
 
     PDF::SetXY(40, 169); //172
@@ -2133,11 +2133,11 @@ class ch
     PDF::MultiCell(230, 20, (isset($data[0]['ourref']) ? $data[0]['ourref'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(45, 20, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-   if($reporttype==4){
-    PDF::SetXY(20, 225); //264 
-   }else{
-    PDF::SetXY(40, 225); //264 
-   }
+    if ($reporttype == 4) {
+      PDF::SetXY(20, 225); //264 
+    } else {
+      PDF::SetXY(40, 225); //264 
+    }
   }
 
   public function nwilcon_footer($params, $data, $totalext)
@@ -2153,14 +2153,14 @@ class ch
     $prepared = $params['params']['dataparams']['prepared'];
     $checked = $params['params']['dataparams']['approved'];
     $received = $params['params']['dataparams']['received'];
-    
+
 
 
     $border = "1px solid ";
     $fontsize = "10";
     $font = 'helvetica';
 
-     $vatable = 0;
+    $vatable = 0;
     $vatamt = 0;
 
     if ($data[0]['vattype'] == 'VATABLE') {
@@ -2177,7 +2177,7 @@ class ch
     PDF::MultiCell(422, 0, '', '', 'R', false, 0);
     PDF::MultiCell(100, 0, number_format($vatable, $decimalcurr), '', 'R');
     PDF::MultiCell(238, 0, ' ', '', 'R', false, 1);
-   
+
     //VAT
     PDF::SetXY(20, 432);
     PDF::SetFont($font, '', $fontsize);
@@ -3145,14 +3145,14 @@ class ch
 
 
     //LESS VAT
-    PDF::SetXY(40, 490);//495
+    PDF::SetXY(40, 490); //495
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(406, 0, '', '', 'R', false, 0);
     PDF::MultiCell(100, 0, number_format($vatamt, $decimalcurr), '', 'R');
     PDF::MultiCell(214, 15, ' ', '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
 
     //AMOUNT NET OF VAT
-    PDF::SetXY(40, 505);//510
+    PDF::SetXY(40, 505); //510
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(406, 0, '', '', 'R', false, 0);
     PDF::MultiCell(100, 0, number_format($vatable, $decimalcurr), '', 'R');
@@ -3191,7 +3191,7 @@ class ch
 
     $totaldue = $totalext - $withholdingTax;
     //TOTAL AMOUNT DUE
-    PDF::SetXY(40, 567);//570
+    PDF::SetXY(40, 567); //570
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(406, 0, '', '', 'R', false, 0);
     PDF::MultiCell(100, 0, number_format($totaldue, $decimalcurr), '', 'R');
@@ -3204,7 +3204,7 @@ class ch
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(5, 0, '', '', 'R', false, 0);
     // PDF::MultiCell(160, 0, '', '', 'R', false, 0);
-     PDF::MultiCell(173, 0, '', '', 'R', false, 0);
+    PDF::MultiCell(173, 0, '', '', 'R', false, 0);
     PDF::MultiCell(150, 0, strtoupper($received), '', 'C', false, 0);
     // PDF::MultiCell(208, 0, strtoupper($received), '', 'C', false, 0);
     PDF::MultiCell(145, 0, '', '', 'R', false, 0);
@@ -3620,121 +3620,117 @@ class ch
     //   $y += $lineHeight;
     // }
 
-        // Kunin ang address at alisin ang spaces sa unahan at dulo
-          $add = trim($data[0]['address']);
+    // Kunin ang address at alisin ang spaces sa unahan at dulo
+    $add = trim($data[0]['address']);
 
-          // Pinakamalaking font size na pwedeng gamitin
-          $fontSize = 9;
+    // Pinakamalaking font size na pwedeng gamitin
+    $fontSize = 9;
 
-          // Pinakamaliit na font size na pwedeng ibaba
-          $minFontSize = 7.5;
+    // Pinakamaliit na font size na pwedeng ibaba
+    $minFontSize = 7.5;
 
-          // Maximum na lapad ng address
-          $maxWidth = 312;
+    // Maximum na lapad ng address
+    $maxWidth = 312;
 
-          // Hanggang 3 lines lang ang pinapayagan.
-          // Kapag naging 4 lines, saka lang liliit ang font.
-          $maxLines = 3;
-
-
-          // Hanapin ang pinakamalaking font size na kasya
-          // sa maximum na 3 lines
-
-          while ($fontSize >= $minFontSize) {
-
-              // I-set ang kasalukuyang font size
-              PDF::SetFont($font, '', $fontSize);
-
-              // Hatiin ang address kada salita
-              $words = explode(' ', $add);
-
-              // Lalagyan ng bawat line
-              $lines = array();
-
-              // Kasalukuyang binubuong line
-              $line = '';
-
-              // Isa-isang idagdag ang bawat salita
-              foreach ($words as $word) {
-
-                  // Subukang idagdag ang susunod na salita
-                  $testLine = trim($line . ' ' . $word);
-
-                  // Kapag kasya pa sa maximum width
-                  if (PDF::GetStringWidth($testLine) <= $maxWidth) {
-
-                      // Idagdag ang salita sa current line
-                      $line = $testLine;
-
-                  } else {
-
-                      // Hindi na kasya
-                      // I-save ang current line
-                      $lines[] = $line;
-
-                      // Simulan ang bagong line
-                      $line = $word;
-                  }
-              }
-
-              // Idagdag ang huling line
-              if ($line != '') {
-                  $lines[] = $line;
-              }
-
-              // Kapag 3 lines o mas kaunti,
-              // huwag nang paliitin ang font.
-              if (count($lines) <= $maxLines) {
-                  break;
-              }
-
-              // Kapag umabot sa 4 lines,
-              // bawasan ang font size ng 0.5
-              $fontSize -= 0.5;
-          }
+    // Hanggang 3 lines lang ang pinapayagan.
+    // Kapag naging 4 lines, saka lang liliit ang font.
+    $maxLines = 3;
 
 
-          // Line spacing depende sa font size
-          if ($fontSize == 9) {
+    // Hanapin ang pinakamalaking font size na kasya
+    // sa maximum na 3 lines
 
-              // Normal spacing
-              $lineHeight = 10;
+    while ($fontSize >= $minFontSize) {
 
-          } elseif ($fontSize >= 8) {
+      // I-set ang kasalukuyang font size
+      PDF::SetFont($font, '', $fontSize);
 
-              $lineHeight = 9.5;
+      // Hatiin ang address kada salita
+      $words = explode(' ', $add);
 
-          } elseif ($fontSize >= 7.5) {
+      // Lalagyan ng bawat line
+      $lines = array();
 
-              $lineHeight = 8;
+      // Kasalukuyang binubuong line
+      $line = '';
 
-          } else {
+      // Isa-isang idagdag ang bawat salita
+      foreach ($words as $word) {
 
-              // Safety
-              $lineHeight = $fontSize * 1.5;
-          }
+        // Subukang idagdag ang susunod na salita
+        $testLine = trim($line . ' ' . $word);
+
+        // Kapag kasya pa sa maximum width
+        if (PDF::GetStringWidth($testLine) <= $maxWidth) {
+
+          // Idagdag ang salita sa current line
+          $line = $testLine;
+        } else {
+
+          // Hindi na kasya
+          // I-save ang current line
+          $lines[] = $line;
+
+          // Simulan ang bagong line
+          $line = $word;
+        }
+      }
+
+      // Idagdag ang huling line
+      if ($line != '') {
+        $lines[] = $line;
+      }
+
+      // Kapag 3 lines o mas kaunti,
+      // huwag nang paliitin ang font.
+      if (count($lines) <= $maxLines) {
+        break;
+      }
+
+      // Kapag umabot sa 4 lines,
+      // bawasan ang font size ng 0.5
+      $fontSize -= 0.5;
+    }
+
+
+    // Line spacing depende sa font size
+    if ($fontSize == 9) {
+
+      // Normal spacing
+      $lineHeight = 10;
+    } elseif ($fontSize >= 8) {
+
+      $lineHeight = 9.5;
+    } elseif ($fontSize >= 7.5) {
+
+      $lineHeight = 8;
+    } else {
+
+      // Safety
+      $lineHeight = $fontSize * 1.5;
+    }
 
 
 
-          // var_dump([
-          //     'Final Font Size' => $fontSize,
-          //     'Total Lines'     => count($lines),
-          //     'Lines'           => $lines
-          // ]);
-          // exit;
+    // var_dump([
+    //     'Final Font Size' => $fontSize,
+    //     'Total Lines'     => count($lines),
+    //     'Lines'           => $lines
+    // ]);
+    // exit;
 
-          $y = 145;
+    $y = 145;
 
-          foreach ($lines as $line) {
+    foreach ($lines as $line) {
 
-              PDF::SetXY(40, $y);
+      PDF::SetXY(40, $y);
 
-              PDF::MultiCell(65, $lineHeight, '', '', 'L', false, 0);
-              PDF::MultiCell(425, $lineHeight, $line, '', 'L', false, 1);
+      PDF::MultiCell(65, $lineHeight, '', '', 'L', false, 0);
+      PDF::MultiCell(425, $lineHeight, $line, '', 'L', false, 1);
 
-              // Lipat pababa para sa susunod na line
-              $y += $lineHeight;
-          }
+      // Lipat pababa para sa susunod na line
+      $y += $lineHeight;
+    }
 
     PDF::SetXY(40, 173); //172
     PDF::SetFont($font, '', $fontsize);
@@ -3825,7 +3821,7 @@ class ch
   //////////////////////
 
 
-    public function fixrite_header_PDF($params, $data)
+  public function fixrite_header_PDF($params, $data)
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
@@ -3880,122 +3876,118 @@ class ch
     PDF::MultiCell(118, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(150, 20, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-   
-        // Kunin ang address at alisin ang spaces sa unahan at dulo
-          $add = trim($data[0]['address']);
 
-          // Pinakamalaking font size na pwedeng gamitin
-          $fontSize = 9;
+    // Kunin ang address at alisin ang spaces sa unahan at dulo
+    $add = trim($data[0]['address']);
 
-          // Pinakamaliit na font size na pwedeng ibaba
-          $minFontSize = 7.5;
+    // Pinakamalaking font size na pwedeng gamitin
+    $fontSize = 9;
 
-          // Maximum na lapad ng address
-          $maxWidth = 312;
+    // Pinakamaliit na font size na pwedeng ibaba
+    $minFontSize = 7.5;
 
-          // Hanggang 3 lines lang ang pinapayagan.
-          // Kapag naging 4 lines, saka lang liliit ang font.
-          $maxLines = 3;
+    // Maximum na lapad ng address
+    $maxWidth = 312;
 
-
-          // Hanapin ang pinakamalaking font size na kasya
-          // sa maximum na 3 lines
-
-          while ($fontSize >= $minFontSize) {
-
-              // I-set ang kasalukuyang font size
-              PDF::SetFont($font, '', $fontSize);
-
-              // Hatiin ang address kada salita
-              $words = explode(' ', $add);
-
-              // Lalagyan ng bawat line
-              $lines = array();
-
-              // Kasalukuyang binubuong line
-              $line = '';
-
-              // Isa-isang idagdag ang bawat salita
-              foreach ($words as $word) {
-
-                  // Subukang idagdag ang susunod na salita
-                  $testLine = trim($line . ' ' . $word);
-
-                  // Kapag kasya pa sa maximum width
-                  if (PDF::GetStringWidth($testLine) <= $maxWidth) {
-
-                      // Idagdag ang salita sa current line
-                      $line = $testLine;
-
-                  } else {
-
-                      // Hindi na kasya
-                      // I-save ang current line
-                      $lines[] = $line;
-
-                      // Simulan ang bagong line
-                      $line = $word;
-                  }
-              }
-
-              // Idagdag ang huling line
-              if ($line != '') {
-                  $lines[] = $line;
-              }
-
-              // Kapag 3 lines o mas kaunti,
-              // huwag nang paliitin ang font.
-              if (count($lines) <= $maxLines) {
-                  break;
-              }
-
-              // Kapag umabot sa 4 lines,
-              // bawasan ang font size ng 0.5
-              $fontSize -= 0.5;
-          }
+    // Hanggang 3 lines lang ang pinapayagan.
+    // Kapag naging 4 lines, saka lang liliit ang font.
+    $maxLines = 3;
 
 
-          // Line spacing depende sa font size
-          if ($fontSize == 9) {
+    // Hanapin ang pinakamalaking font size na kasya
+    // sa maximum na 3 lines
 
-              // Normal spacing
-              $lineHeight = 10;
+    while ($fontSize >= $minFontSize) {
 
-          } elseif ($fontSize >= 8) {
+      // I-set ang kasalukuyang font size
+      PDF::SetFont($font, '', $fontSize);
 
-              $lineHeight = 9.5;
+      // Hatiin ang address kada salita
+      $words = explode(' ', $add);
 
-          } elseif ($fontSize >= 7.5) {
+      // Lalagyan ng bawat line
+      $lines = array();
 
-              $lineHeight = 8;
+      // Kasalukuyang binubuong line
+      $line = '';
 
-          } else {
+      // Isa-isang idagdag ang bawat salita
+      foreach ($words as $word) {
 
-              // Safety
-              $lineHeight = $fontSize * 1.5;
-          }
+        // Subukang idagdag ang susunod na salita
+        $testLine = trim($line . ' ' . $word);
+
+        // Kapag kasya pa sa maximum width
+        if (PDF::GetStringWidth($testLine) <= $maxWidth) {
+
+          // Idagdag ang salita sa current line
+          $line = $testLine;
+        } else {
+
+          // Hindi na kasya
+          // I-save ang current line
+          $lines[] = $line;
+
+          // Simulan ang bagong line
+          $line = $word;
+        }
+      }
+
+      // Idagdag ang huling line
+      if ($line != '') {
+        $lines[] = $line;
+      }
+
+      // Kapag 3 lines o mas kaunti,
+      // huwag nang paliitin ang font.
+      if (count($lines) <= $maxLines) {
+        break;
+      }
+
+      // Kapag umabot sa 4 lines,
+      // bawasan ang font size ng 0.5
+      $fontSize -= 0.5;
+    }
+
+
+    // Line spacing depende sa font size
+    if ($fontSize == 9) {
+
+      // Normal spacing
+      $lineHeight = 10;
+    } elseif ($fontSize >= 8) {
+
+      $lineHeight = 9.5;
+    } elseif ($fontSize >= 7.5) {
+
+      $lineHeight = 8;
+    } else {
+
+      // Safety
+      $lineHeight = $fontSize * 1.5;
+    }
 
 
 
-          // var_dump([
-          //     'Final Font Size' => $fontSize,
-          //     'Total Lines'     => count($lines),
-          //     'Lines'           => $lines
-          // ]);
-          // exit;
+    // var_dump([
+    //     'Final Font Size' => $fontSize,
+    //     'Total Lines'     => count($lines),
+    //     'Lines'           => $lines
+    // ]);
+    // exit;
 
-          $y = 145;
+    $y = 145;
 
-          foreach ($lines as $line) {
+    foreach ($lines as $line) {
 
-              PDF::SetXY(40, $y);
+      PDF::SetXY(40, $y);
 
-              PDF::MultiCell(65, $lineHeight, '', '', 'L', false, 0);
-              PDF::MultiCell(425, $lineHeight, $line, '', 'L', false, 1);
+      PDF::MultiCell(65, $lineHeight, '', '', 'L', false, 0);
+      PDF::MultiCell(425, $lineHeight, $line, '', 'L', false, 1);
 
-              // Lipat pababa para sa susunod na line
-              $y += $lineHeight;
-          }
+      // Lipat pababa para sa susunod na line
+      $y += $lineHeight;
+    }
 
     PDF::SetXY(40, 173); //172
     PDF::SetFont($font, '', $fontsize);
@@ -4074,7 +4066,7 @@ class ch
   }
 
 
-   public function fixrite_layout_PDF($params, $data)
+  public function fixrite_layout_PDF($params, $data)
   {
     $companyid = $params['params']['companyid'];
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
@@ -4125,7 +4117,7 @@ class ch
         $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
         $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
 
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_ext, $arr_qty,$arr_uom]);
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_ext, $arr_qty, $arr_uom]);
         for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', 10);
           // PDF::MultiCell(10, 18, '', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
@@ -4158,8 +4150,8 @@ class ch
     $prepared = $params['params']['dataparams']['prepared'];
     $checked = $params['params']['dataparams']['approved'];
     $received = $params['params']['dataparams']['received'];
-    
-    
+
+
     //VATABLE SALES
     PDF::SetXY(40, 418);
     PDF::SetFont($font, '', $fontsize);
@@ -4426,10 +4418,5 @@ class ch
     PDF::MultiCell(75, 0, '', '', 'R', false, 0);
     PDF::MultiCell(137, 0, '', '', 'R');
     PDF::MultiCell(20, 15, ' ', '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
-
-
   }
 }
-
-
-

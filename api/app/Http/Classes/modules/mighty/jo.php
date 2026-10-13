@@ -48,7 +48,14 @@ class jo
     public $damt = 'isamt';
     public $hamt = 'amt';
     private $fields = [
-        'trno', 'docno', 'dateid', 'client', 'clientname', 'rem', 'wh', 'projectid',
+        'trno',
+        'docno',
+        'dateid',
+        'client',
+        'clientname',
+        'rem',
+        'wh',
+        'projectid',
     ];
     private $except = ['trno', 'dateid'];
     public $showfilteroption = true;
@@ -57,11 +64,11 @@ class jo
     private $reporter;
     private $helpClass;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -280,8 +287,8 @@ class jo
 
         $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
 
-         if (!$islocation) {
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        if (!$islocation) {
+            $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
         }
         return $obj;
     }
@@ -459,7 +466,7 @@ class jo
         $companyid = $config['params']['companyid'];
         $dateTables = [$this->head];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-        
+
         $head = $config['params']['head'];
         $data = [];
         $dataothers = [];
@@ -471,7 +478,7 @@ class jo
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }
@@ -497,7 +504,7 @@ class jo
         $dataothers['mileage'] = $head['mileage'];
         $arrcols = array_keys($dataothers);
         foreach ($arrcols as $key) {
-            $dataothers[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataothers[$key],$lookups);
+            $dataothers[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataothers[$key], $lookups);
         }
         $infotransexist = $this->coreFunctions->getfieldvalue("headinfotrans", "trno", "trno=?", [$head['trno']]);
         if ($infotransexist == '') {

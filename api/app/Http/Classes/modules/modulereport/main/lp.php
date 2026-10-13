@@ -32,10 +32,10 @@ class lp
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -49,11 +49,11 @@ class lp
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
-    data_set($col1,'prepared.label','Prepared by Position');
-    data_set($col1,'noted.label','Noted by');
-    data_set($col1,'notedby1.label','Noted by Position');
+    data_set($col1, 'prepared.label', 'Prepared by Position');
+    data_set($col1, 'noted.label', 'Noted by');
+    data_set($col1, 'notedby1.label', 'Noted by Position');
     return array('col1' => $col1);
   }
 
@@ -115,14 +115,15 @@ class lp
     return $result;
   } //end fn
 
-  public function reportplotting($params, $data) {
-    
-    if($params['params']['dataparams']['print'] == "PDFM") {
+  public function reportplotting($params, $data)
+  {
+
+    if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_LP_PDF($params, $data);
     }
   }
-  
-  
+
+
 
 
 
@@ -130,7 +131,7 @@ class lp
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -145,7 +146,7 @@ class lp
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -154,7 +155,7 @@ class lp
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(70, 70);
 
-    
+
 
     PDF::SetFont($fontbold, '', $fontsize11);
     $style = array(
@@ -162,7 +163,7 @@ class lp
       'padding' => 0,
     );
 
-    
+
     PDF::MultiCell(660, 0, "\n\n\n\n\n\n\n", '', 'C');
     PDF::SetFont($font, '', $fontsize11);
     PDF::MultiCell(500, 0, "", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
@@ -184,63 +185,63 @@ class lp
     PDF::MultiCell(660, 0, $data[0]['email'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(660, 0, "\n\n", '', 'C');
-    PDF::MultiCell(660, 0, '  This is a formal proposal regarding your business at the '.$headerdata[0]->name, '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(660, 0, ' in '.$headerdata[0]->address.'. Please find the following terms and conditions:', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(660, 0, '  This is a formal proposal regarding your business at the ' . $headerdata[0]->name, '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(660, 0, ' in ' . $headerdata[0]->address . '. Please find the following terms and conditions:', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(660, 0, "\n\n", '', 'C');
     PDF::MultiCell(160, 0, 'Trade Name ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['clientname'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['clientname'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Nature of Business ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['category'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['category'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Location ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['loc'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['loc'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Unit No ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['loccode'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['loccode'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Floor Area ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['area'].' sqm', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['area'] . ' sqm', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Term of Contract ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['contract'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['contract'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Rental Escalation ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['escalation'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['escalation'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Lease Term ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    $startdate=date_format(date_create($data[0]['start']),'F d, Y');
-    $enddate=date_format(date_create($data[0]['enddate']),'F d, Y');
-    PDF::MultiCell(500, 0, ':  '.$startdate.' - '.$enddate.' or start of operations whichever
+    $startdate = date_format(date_create($data[0]['start']), 'F d, Y');
+    $enddate = date_format(date_create($data[0]['enddate']), 'F d, Y');
+    PDF::MultiCell(500, 0, ':  ' . $startdate . ' - ' . $enddate . ' or start of operations whichever
     comes first.', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Fixed Monthly Rent ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    
-    PDF::SetFont($fontbold, '', $fontsize11);
-    PDF::MultiCell(500, 0, ':  P '.number_format($data[0]['fixedmonthlyrent'],2).'/month computed at P '.number_format($data[0]['fixedmonthlyrent']/$data[0]['area'],2).'/sqm', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+    PDF::SetFont($fontbold, '', $fontsize11);
+    PDF::MultiCell(500, 0, ':  P ' . number_format($data[0]['fixedmonthlyrent'], 2) . '/month computed at P ' . number_format($data[0]['fixedmonthlyrent'] / $data[0]['area'], 2) . '/sqm', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+
+
     PDF::SetFont($font, '', $fontsize10);
     PDF::MultiCell(160, 0, 'Security Deposit ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  P '.$data[0]['secdep'].' or representing '.$data[0]['secdepmos'].' months rental (No VAT) which', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  P ' . $data[0]['secdep'] . ' or representing ' . $data[0]['secdepmos'] . ' months rental (No VAT) which', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   shall be refunded sixty (60) days after the expiration of the lease contract', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   and shall not be used for payment of monthly rentals.', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   ', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, '   '.$data[0]['rem'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, '   ' . $data[0]['rem'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   The Security Deposit shall be forfeited in favor of the lessor upon:', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '     a) Cancellation of the agreement after the lessee have signed and', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
@@ -249,90 +250,90 @@ class lp
 
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '     b) Failure to occupy the base premises for the full term of the lease.', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '     c) Pre - termination of contract for whatever reason.', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   ', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
     PDF::SetFont($fontbold, '', $fontsize11);
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   This should be paid upon signing of this Award Notice. ', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   ', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::SetFont($font, '', $fontsize10);
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   All cheques shall be submitted together with signed Award Notice
-    and made payable to '.strtoupper($headerdata[0]->name), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    and made payable to ' . strtoupper($headerdata[0]->name), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::setPageUnit('px');
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(70, 70);
-    
 
-    
+
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   ', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Construction Bond ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['consbond'].' , a cash bond equivalent to one (1) month fixed rental (No VAT) and', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['consbond'] . ' , a cash bond equivalent to one (1) month fixed rental (No VAT) and', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   shall be paid before the start of construction and shall be refunded 30', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   days after correction of construction deficiencies and completion of all', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   governmental & mall requirements. Any unpaid construction charges', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   shall be deducted from the bond.', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
 
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   ', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   ', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
 
     PDF::MultiCell(160, 0, 'Document Stamp Tax ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['docstamp'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['docstamp'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Aircon Charges ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['acrate'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['acrate'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'CUSA ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['cusarate'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['cusarate'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Electric and Water Charges ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['ewcharges'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['ewcharges'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Electric Meter Deposit ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['emeter'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['emeter'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Service Bill Deposit ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['servicedep'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['servicedep'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Construction Charges ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['concharges'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['concharges'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Est. Cost of Plywood Fencing ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['fencecharge'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['fencecharge'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Est. Power Charges ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['powercharges'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['powercharges'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Est. Water Charges ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['watercharges'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['watercharges'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Housekeeping/Debris Hauling ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(500, 0, ':  '.$data[0]['housekeeping'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(500, 0, ':  ' . $data[0]['housekeeping'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, 'Construction Plans ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, ':  Complete plans to be submitted for approval of developer’s architect prior', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
@@ -345,16 +346,16 @@ class lp
 
     PDF::MultiCell(160, 0, 'Cancellation ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, ':  Should you fail to commence operation within thirty (30) days From', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-     
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   effectivity of the lease, we shall have the right to unilaterally cancel this', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   agreement and all deposits received by us will not be refunded. We', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   therefore reserve the right to offer the same premises to a third party .', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   ', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
@@ -362,12 +363,12 @@ class lp
     PDF::MultiCell(160, 0, 'Lease Contract ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, ':  Lease Contract to be signed and submitted to MALL ADMIN OFFICE on', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   or before the start of lease.', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     PDF::MultiCell(660, 0, "\n\n", '', 'C');
-    
+
     PDF::MultiCell(660, 0, 'If the foregoing is acceptable to you, please sign on the space provided below to signify your conformity ', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(660, 0, 'and return a signed copy to us not later than five (5) days so we can facilitate lease documentation. In ', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(660, 0, 'the event we do not receive the signed copy within the above period, we shall assume you are no ', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
@@ -377,12 +378,12 @@ class lp
     PDF::MultiCell(660, 0, 'This letter only sets forth the highlights of the contract of lease which we will jointly execute. The', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(660, 0, 'Contract of Lease will incorporate all our standard terms and condition.', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::setPageUnit('px');
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(70, 70);
 
-    
+
     PDF::MultiCell(160, 0, ' ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(500, 0, '   ', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
@@ -395,26 +396,26 @@ class lp
     PDF::MultiCell(330, 0, $username, '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(330, 0, $data[0]['clientname'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
-    
+
+
     PDF::MultiCell(330, 0, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(330, 0, $data[0]['position'], '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
 
-    
+
     PDF::MultiCell(330, 0, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(50, 0, 'Date  ', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(280, 0, '', 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::MultiCell(330, 0, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(330, 0, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::MultiCell(330, 0, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(330, 0, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::MultiCell(330, 0, 'Noted by:', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(330, 0, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
@@ -424,27 +425,21 @@ class lp
     PDF::MultiCell(330, 0, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(330, 0, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::MultiCell(330, 0, $params['params']['dataparams']['noted'], '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(330, 0, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
     PDF::MultiCell(330, 0, $params['params']['dataparams']['notedby1'], '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(330, 0, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::MultiCell(330, 0, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(330, 0, '', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-    
+
 
     PDF::MultiCell(660, 0, 'NOTE: All rental and other charges are exclusive of Value Added Tax, which shall be for the account of the
     ', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(660, 0, 'Lessee.', '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-
-    
-    
-
-    
-
   }
 
   public function default_LP_PDF($params, $data)
@@ -474,11 +469,8 @@ class lp
     $countarr = 0;
 
 
-    
+
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
-
-
 }

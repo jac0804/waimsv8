@@ -74,11 +74,11 @@ class re
         ['val' => 'all', 'label' => 'All', 'color' => 'primary']
     ];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -624,7 +624,7 @@ class re
     private function getstockselect($config)
     {
 
-    // CONCAT(GROUP_CONCAT(rc.checkno separator '\\n\\r'),'\\n\\r',stock.rcchecks) as checkno
+        // CONCAT(GROUP_CONCAT(rc.checkno separator '\\n\\r'),'\\n\\r',stock.rcchecks) as checkno
         $sqlselect = "select stock.trno,stock.line,stock.acnoid,format(stock.amount,2) as amount,stock.refx,stock.linex,
                     stock.rctrno,stock.rcline,coa.acnoname,beh.docno as ref,
                     stock.rem,be.trno as betrno,be.line as beline,stock.clientid,c.clientname as client,'' as bgcolor,'' as errcolor,
@@ -718,7 +718,7 @@ class re
     {
         $rows = $config['params']['rows'];
         $trno = $config['params']['trno'];
-        
+
         $line = 0;
         $rline = 0;
         $status = true;
@@ -730,10 +730,10 @@ class re
             $data['refx'] = $rows[$key2]['refx'];
             $data['linex'] = $rows[$key2]['linex'];
             //last move
-            if($rows[$key2]['bank'] == 'CASH'){
+            if ($rows[$key2]['bank'] == 'CASH') {
                 $data['rhtrno'] = $rows[$key2]['rhtrno'];
                 $data['rhline'] = $rows[$key2]['rhline'];
-            }else {
+            } else {
                 $data['rctrno'] = $rows[$key2]['rctrno'];
                 $data['rcline'] = $rows[$key2]['rcline'];
             }
@@ -744,17 +744,17 @@ class re
                 if ($data['refx'] != 0) {
                     $this->coreFunctions->execqry("update hparticulars set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['refx'], $data['linex']]);
                 }
-                if($rows[$key2]['bank'] == 'CASH'){
+                if ($rows[$key2]['bank'] == 'CASH') {
                     $this->coreFunctions->execqry("update hrhdetail set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['rhtrno'], $data['rhline']]);
                     $checkno = $this->coreFunctions->datareader("select bank as value from hrhdetail where trno = " . $data['rhtrno'] . " and line  = " . $data['rhline'] . "");
                     $detail = "CASH";
                     $rline = $data['rhline'];
-                }else {
+                } else {
                     $this->coreFunctions->execqry("update hrcdetail set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['rctrno'], $data['rcline']]);
                     $checkno = $this->coreFunctions->datareader("select checkno as value from hrcdetail where trno = " . $data['rctrno'] . " and line  = " . $data['rcline'] . "");
                     $detail = "Check: " . $checkno;
                     $rline = $data['rcline'];
-                }     
+                }
                 $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'ADD - Line: ' . $rline . ' ' . $detail);
                 $line = $data['line'];
             } else {
@@ -826,10 +826,10 @@ class re
             $config['params']['data']['trno'] = $trno;
             $config['params']['data']['line'] = $data[$key]['reline'];
 
-            if($data[$key]['bank'] == 'CASH'){
+            if ($data[$key]['bank'] == 'CASH') {
                 $config['params']['data']['rhtrno'] = $data[$key]['trno'];
                 $config['params']['data']['rhline'] = $data[$key]['line'];
-            }else {
+            } else {
                 $config['params']['data']['rctrno'] = $data[$key]['trno'];
                 $config['params']['data']['rcline'] = $data[$key]['line'];
             }
@@ -911,13 +911,13 @@ class re
                     $this->coreFunctions->execqry("update hrcdetail set retrno = $trno where trno =? and line =? ", "update", [$rctrno, $rcline]);
                     $checkno = $this->coreFunctions->getfieldvalue($this->stock, 'checkno', 'trno=? and line =?', [$rctrno, $rcline]);
                     $detail = ' Check #: ' . $checkno;
-                }else {
+                } else {
                     $this->coreFunctions->execqry("update hrhdetail set retrno = $trno where trno =? and line =? ", "update", [$rhtrno, $rhline]); //received cash
                     $checkno = $this->coreFunctions->getfieldvalue('hrhdetail', 'bank', 'trno=? and line =?', [$rhtrno, $rhline]);
-                    $detail = ' '. $checkno;
+                    $detail = ' ' . $checkno;
                 }
-               
-            
+
+
                 $data2 =  $this->openstockline($config);
                 $this->logger->sbcwritelog($trno, $config, 'DETAIL', 'ADD - Line: ' . $line . $detail);
                 return ['status' => true, 'msg' => 'Successfully saved.', 'data' => $data2];

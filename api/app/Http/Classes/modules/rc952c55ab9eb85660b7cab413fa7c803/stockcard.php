@@ -84,11 +84,11 @@ class stockcard
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -633,7 +633,7 @@ class stockcard
         }
       }
 
-      if( $data['barcodeid'] !=""){
+      if ($data['barcodeid'] != "") {
         $exist  = $this->coreFunctions->datareader("select barcodeid as value from item where barcodeid = '" . $data['barcodeid'] . "' limit 1");
         if ($exist != "") {
           $this->logger->sbcwritelog($head['itemid'], $config, 'Update',  $data['barcodeid'] . " Item ID already exist.");

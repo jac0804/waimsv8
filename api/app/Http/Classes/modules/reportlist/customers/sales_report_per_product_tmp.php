@@ -32,12 +32,12 @@ class sales_report_per_product
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -108,7 +108,7 @@ class sales_report_per_product
 
     $query = $this->default_QUERY($config);
 
-    
+
     return $this->coreFunctions->opentable($query);
   }
 

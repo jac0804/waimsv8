@@ -29,12 +29,12 @@ class reorder_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -751,7 +751,7 @@ class reorder_report
       having (case when sum(qty-iss) <= " . $filter3 . " then 1 else 0 end) in (1)
       order by itemname";
     }
-    
+
     return $this->coreFunctions->opentable($query);
   }
 

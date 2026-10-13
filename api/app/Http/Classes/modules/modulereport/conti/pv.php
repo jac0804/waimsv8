@@ -35,9 +35,9 @@ class pv
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -123,7 +123,7 @@ class pv
         case 0: // VOUCHER
           $str = $this->rpt_DEFAULT_CCVOUCHER_LAYOUT1($data, $config);
           break;
-        
+
         case 2:
           $str = $this->rpt_CV_WTAXREPORT($data, $config);
           break;
@@ -137,7 +137,7 @@ class pv
         case 0: // VOUCHER
           $str = $this->PDF_DEFAULT_CCVOUCHER_LAYOUT1($data, $config);
           break;
-         
+
         case 2:
           $str = $this->PDF_CV_WTAXREPORT($data, $config);
           break;
@@ -217,7 +217,7 @@ class pv
 
   public function PDF_DEFAULT_CCVOUCHER_LAYOUT1($data, $params)
   {
-   
+
     $count = $page = 35;
     $totalext = 0;
 
@@ -951,7 +951,7 @@ class pv
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 
- 
+
 
 
   public function PDF_CV_WTAXREPORT_NEW($data, $params)
@@ -1262,7 +1262,7 @@ class pv
       PDF::MultiCell(80, $max_height, $key, 'LRB', '', false, 0);
 
       switch ($data['head'][0]['month']) {
-          // case '1': case '2': case '3':
+        // case '1': case '2': case '3':
         case '1':
         case '4':
         case '7':
@@ -1272,7 +1272,7 @@ class pv
           PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
           $totalwtx1 +=  $data['detail'][$key]['oamt'];
           break;
-          // case '4': case '5': case '6':
+        // case '4': case '5': case '6':
         case '2':
         case '5':
         case '8':
@@ -1589,7 +1589,6 @@ class pv
             } //end if
             $finalarrs[$key]['month'] = $y['month'];
           }
-          
         } //end for each
         if (empty($result1)) {
           $returnarr[0]['payee'] = '';
@@ -1705,7 +1704,7 @@ class pv
 
   public function rpt_default_header_ccvoucher($data, $filters)
   {
-  
+
 
     $center = $filters['params']['center'];
     $username = $filters['params']['user'];
@@ -1752,7 +1751,7 @@ class pv
 
   public function rpt_DEFAULT_CCVOUCHER_LAYOUT1($data, $filters)
   {
- 
+
 
     $center = $filters['params']['center'];
     $username = $filters['params']['user'];
@@ -2853,7 +2852,7 @@ class pv
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
- 
+
     $str .= $this->reporter->col('<img src ="' . $bir . '">', '135', null, false, '2px solid ', 'LRTB', 'C', 'Century Gothic', '11', '', '', '');
     $str .= $this->reporter->col('', '55', null, false, '2px solid ', 'TB', 'L', 'Century Gothic', '11', 'B', '', '');
     $str .= $this->reporter->col('Certificate of Creditable Tax <br> Withheld At Source', '450', null, false, '2px solid ', 'RTB', 'C', 'Century Gothic', '16', 'B', '', '');
@@ -2910,7 +2909,7 @@ class pv
         $str .= $this->reporter->col('01', '10', null, false, '2px solid', 'LRTB', 'C', 'Century Gothic', '10', 'B', '', '3px');
         $str .= $this->reporter->col((isset($data['head'][0]['yr']) ? $data['head'][0]['yr'] : ''), '10', null, false, '2px solid', 'LRTB', 'C', 'Century Gothic', '10', 'B', '', '3px');
 
-   
+
         $str .= $this->reporter->col('(MM/DD/YY)', '270', null, false, '2px solid ', 'R', 'L', 'Century Gothic', '10', '', '', '');
 
         $str .= $this->reporter->col('06', '10', null, false, '2px solid', 'LRTB', 'C', 'Century Gothic', '10', 'B', '', '3px');
@@ -3027,7 +3026,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
-   
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['payee']) ? $data['head'][0]['payee'] : ''), '760', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 
@@ -3053,7 +3052,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
-  
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['address']) ? $data['head'][0]['address'] : ''), '620', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
     $str .= $this->reporter->col('', '10', null, false, '2px solid ', 'R', 'C', 'Century Gothic', '10', '', '', '');
@@ -3082,7 +3081,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
-  
+
 
     $str .= $this->reporter->col('', '760', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '10px');
 
@@ -3104,7 +3103,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Part II-Payor Information', '800', null, false, '2px solid ', 'TLBR', 'C', 'Century Gothic', '10', 'B', '', '');
-   
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -3124,7 +3123,7 @@ class pv
     $str .= $this->reporter->col('6', '20', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
 
     $str .= $this->reporter->col('Tax Payer Identification Number (TIN)', '150', null, false, '2px solid ', '', 'L', 'Century Gothic', '10', '', '', '3px');
-   
+
     $str .= $this->reporter->col((isset($data['head'][0]['tin']) ? $data['head'][0]['tin'] : ''), '400', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 
     $str .= $this->reporter->col('', '10', null, false, '2px solid ', 'R', 'C', 'Century Gothic', '10', '', '', '');
@@ -3149,7 +3148,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
-   
+
     $str .= $this->reporter->col((isset($data['head'][0]['payee']) ? $data['head'][0]['payee'] : ''), '760', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 
     $str .= $this->reporter->col('', '10', null, false, '2px solid ', 'R', 'C', 'Century Gothic', '10', '', '', '');
@@ -3174,7 +3173,7 @@ class pv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
-  
+
     $str .= $this->reporter->col((isset($data['head'][0]['address']) ? $data['head'][0]['address'] : ''), '620', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
     $str .= $this->reporter->col('', '10', null, false, '2px solid ', 'R', 'C', 'Century Gothic', '10', '', '', '');
     $str .= $this->reporter->col((isset($data['res'][0]['zipcode']) ? $data['res'][0]['zipcode'] : ''), '50', null, false, '2px solid ', 'LRTB', 'C', 'Century Gothic', '10', 'B', '', '3px');
@@ -3563,7 +3562,7 @@ class pv
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Signature over Printed Name of Payee/Payee`s Authorized Representative/Tax Agent
             <br/>(Indicate Title/Designation and TIN)', '800', null, false, '2px solid ', 'LRB', 'C', 'Century Gothic', '10', '', '', '');
- 
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 

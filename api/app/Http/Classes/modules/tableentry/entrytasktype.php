@@ -35,17 +35,17 @@ class entrytasktype
   public $style = 'width:100%;';
   public $tablelogs = 'masterfile_log';
   public $tablelogs_del = 'del_masterfile_log';
-  private $fields = ['category','isdailytask'];
+  private $fields = ['category', 'isdailytask'];
   public $showclosebtn = false;
   private $reporter;
   public $logger;
   private $reportheader;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -64,7 +64,7 @@ class entrytasktype
 
   public function createTab($config)
   {
-    $columns = ['action', 'category','isdailytask'];
+    $columns = ['action', 'category', 'isdailytask'];
     $tab = [
       $this->gridname => [
         'gridcolumns' => $columns
@@ -73,7 +73,7 @@ class entrytasktype
 
     foreach ($columns as $key => $value) {
       $$value = $key;
-  }
+    }
 
     $stockbuttons = ['save', 'delete'];
 
@@ -121,10 +121,10 @@ class entrytasktype
   {
     $data = $config['params']['data'];
     $companyid = $config['params']['companyid'];
-  
+
     $dateTables = [$this->table];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-       
+
     foreach ($data as $key => $value) {
       if ($data[$key]['isdailytask'] == 'true') {
         $data[$key]['isdailytask'] = 1;
@@ -135,7 +135,7 @@ class entrytasktype
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
 
         if ($data[$key]['line'] == 0 && $data[$key]['category'] != '') {
@@ -154,7 +154,7 @@ class entrytasktype
 
 
         if ($data[$key]['line'] == 0) {
-          $data2['istasktype']=1;
+          $data2['istasktype'] = 1;
           $line = $this->coreFunctions->insertGetId($this->table, $data2);
           $this->logger->sbcmasterlog($line, $config, ' CREATE - ' . $data[$key]['category']);
         } else {
@@ -202,7 +202,7 @@ class entrytasktype
     }
 
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     if ($row['line'] == 0 && $row['category'] != '') {

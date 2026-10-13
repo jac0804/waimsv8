@@ -33,9 +33,9 @@ class rr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -95,11 +95,12 @@ class rr
   } //end fn
 
 
-  public function reportplotting($params, $data) { 
-     //return $this->default_RR_LAYOUT($params, $data);
+  public function reportplotting($params, $data)
+  {
+    //return $this->default_RR_LAYOUT($params, $data);
     return $this->vitaline_RR_PDF($params, $data);
   }
-  
+
   public function default_header($params, $data)
   {
     $this->modulename = app('App\Http\Classes\modules\purchase\rr')->modulename;
@@ -292,22 +293,22 @@ class rr
     // write2DBarcode(code, type, x, y, width, height, style, align)
 
     PDF::SetFont($font, '', 9);
-    PDF::MultiCell(0, 0, $username.' - '.date_format(date_create($current_timestamp),'m/d/Y H:i:s').'  '.strtoupper($headerdata[0]->name), '', 'L');
+    PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . strtoupper($headerdata[0]->name), '', 'L');
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);
-    
+
     $style = array(
       'border' => false,
       'padding' => 0,
     );
-    
+
     PDF::write2DBarcode(isset($data[0]['docno']) ? $data[0]['docno'] : "", 'QRCODE,H', 640, 15, 85, 85, $style, 'N');
     PDF::MultiCell(520, 0, "", '', 'L', false, 0, '',  '');
     PDF::MultiCell(80, 0, "Docno #: ", '', 'L', false, 0, '',  '');
@@ -381,24 +382,24 @@ class rr
         $maxrow = 1;
 
         $itemname = $data[$i]['itemname'];
-        $qty = number_format($data[$i]['qty'],$decimalqty);
+        $qty = number_format($data[$i]['qty'], $decimalqty);
         $uom = $data[$i]['uom'];
         $expiry = $data[$i]['expiry'];
-        $gross = number_format($data[$i]['gross'],$decimalcurr);
+        $gross = number_format($data[$i]['gross'], $decimalcurr);
         $disc = $data[$i]['disc'];
-        $ext = number_format($data[$i]['ext'],$decimalcurr);
+        $ext = number_format($data[$i]['ext'], $decimalcurr);
 
-        $arr_itemname = $this->reporter->fixcolumn([$itemname],'35',0);
-        $arr_qty = $this->reporter->fixcolumn([$qty],'13',0);
-        $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-        $arr_expiry = $this->reporter->fixcolumn([$expiry],'13',0);
-        $arr_gross = $this->reporter->fixcolumn([$gross],'13',0);
-        $arr_disc = $this->reporter->fixcolumn([$disc],'13',0);
-        $arr_ext = $this->reporter->fixcolumn([$ext],'13',0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '35', 0);
+        $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+        $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+        $arr_expiry = $this->reporter->fixcolumn([$expiry], '13', 0);
+        $arr_gross = $this->reporter->fixcolumn([$gross], '13', 0);
+        $arr_disc = $this->reporter->fixcolumn([$disc], '13', 0);
+        $arr_ext = $this->reporter->fixcolumn([$ext], '13', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_qty, $arr_uom, $arr_expiry, $arr_gross, $arr_disc, $arr_ext]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(50, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
           PDF::MultiCell(50, 0, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
@@ -441,5 +442,4 @@ class rr
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

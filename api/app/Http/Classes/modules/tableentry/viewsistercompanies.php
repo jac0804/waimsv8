@@ -35,10 +35,10 @@ class viewsistercompanies
     private $reporter;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -62,11 +62,11 @@ class viewsistercompanies
         // $parentname = $this->coreFunctions->getfieldvalue("client", "clientname", "clientid=?", [$parentid]);
         // $descriptions =$parentcode . ' - ' . $parentname;
 
-        $columns = ['code', 'clientname','client','customer'];
+        $columns = ['code', 'clientname', 'client', 'customer'];
         foreach ($columns as $key => $value) {
             $$value = $key;
         }
-        $tab = [$this->gridname => ['gridcolumns' => $columns   ] ];
+        $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
         $stockbuttons = [];
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
@@ -78,12 +78,12 @@ class viewsistercompanies
         $obj[0][$this->gridname]['columns'][$code]['label'] = "Parent Code & Type";
         $obj[0][$this->gridname]['columns'][$code]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$clientname]['label'] = "Parent Name";
-        $obj[0][$this->gridname]['columns'][$clientname]['readonly'] =true;
+        $obj[0][$this->gridname]['columns'][$clientname]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$client]['type'] = "input";
         $obj[0][$this->gridname]['columns'][$client]['label'] = "Customer Code & Type";
-        $obj[0][$this->gridname]['columns'][$client]['readonly'] =true;
+        $obj[0][$this->gridname]['columns'][$client]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$customer]['label'] = "Customer Name";
-        $obj[0][$this->gridname]['columns'][$customer]['readonly'] =true;
+        $obj[0][$this->gridname]['columns'][$customer]['readonly'] = true;
         // $this->modulename .= ' - ' . $descriptions;
         return $obj;
     }
@@ -100,16 +100,16 @@ class viewsistercompanies
     {
         $tableid = $config['params']['tableid'];
         $parentcode = $this->coreFunctions->getfieldvalue("client", "grpcode", "clientid=?", [$tableid]);
-        $parentid = $this->coreFunctions->getfieldvalue("client", "clientid", "client=?", [$parentcode],'', true);
+        $parentid = $this->coreFunctions->getfieldvalue("client", "clientid", "client=?", [$parentcode], '', true);
 
         $condition = '';
-        
-        if($parentid !=0){
+
+        if ($parentid != 0) {
             $condition = " where parent.clientid=$parentid and cl.clientid <>$parentid ";
         }
 
 
-        $qry="select concat(parent.type,' - ',parent.client) as code, parent.clientname, 
+        $qry = "select concat(parent.type,' - ',parent.client) as code, parent.clientname, 
                 concat(parent.client,' - ',parent.clientname) as description,
                 concat(cl.type,' - ',cl.client) as client, cl.clientname as customer
                 from client as cl

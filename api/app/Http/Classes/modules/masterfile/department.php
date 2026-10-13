@@ -16,6 +16,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use App\Http\Classes\SBCPDF;
+use App\Http\Classes\sbcscript\sbcscript;
 
 class department
 {
@@ -35,6 +36,7 @@ class department
   public $tablelogs = 'client_log';
   public $tablelogs_del = 'del_client_log';
   private $stockselect;
+  private $scbscript;
 
   private $fields = [
     'client',
@@ -72,17 +74,18 @@ class department
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
     $this->logger = new Logger;
     $this->sqlquery = new sqlquery;
     $this->reporter = new SBCPDF;
+    $this->scbscript = new sbcscript;
   }
 
   public function getAttrib()
@@ -185,7 +188,13 @@ class department
 
   public function createTab($access, $config)
   {
-    return [];
+    if ($config['params']['companyid'] == 67) { // yulick
+      $tab['tableentry'] = ['action' => 'tableentry', 'lookupclass' => 'entrysection', 'label' => 'SECTION', 'checkchanges' => 'tableentry'];
+      $obj = $this->tabClass->createtab($tab, []);
+      return $obj;
+    } else {
+      return [];
+    }
   }
 
   public function createTab2($access, $config)
@@ -199,7 +208,6 @@ class department
         $return['MEMBERS'] = ['icon' => 'fa fa-user', 'tab' => $obj];
         return $return;
         break;
-
       default:
         return [];
         break;
@@ -452,6 +460,13 @@ class department
       return ['clientid' => $clientid, 'status' => false, 'msg' => 'Already used in employee ledger...'];
     }
 
+    if ($config['params']['companyid'] == 67) {
+      $sect = $this->coreFunctions->datareader("select deptid as value from section where deptid=? limit 1", [$clientid]);
+      if ($sect != '') {
+        return ['clientid' => $clientid, 'status' => false, 'msg' => 'Section already exists for this department...'];
+      }
+    }
+
     $qry = "select clientid as value from client where clientid<? and isdepartment=1 order by clientid desc limit 1 ";
     $clientid2 = $this->coreFunctions->datareader($qry, [$clientid]);
     $this->coreFunctions->execqry('delete from client where clientid=?', 'delete', [$clientid]);
@@ -488,5 +503,10 @@ class department
     $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
 
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
+  }
+
+  public function sbcscript($config)
+  {
+    return $this->scbscript->department($config);
   }
 } //end class

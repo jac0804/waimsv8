@@ -39,10 +39,10 @@ class businesstype
     private $reporter;
     private $logger;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -175,8 +175,7 @@ class businesstype
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
-
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
 
                 if ($data[$key]['line'] == 0) {

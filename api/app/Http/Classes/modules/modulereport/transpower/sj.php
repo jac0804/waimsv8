@@ -38,9 +38,9 @@ class sj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -10210,12 +10210,12 @@ class sj
         $rdocno = ' - ' . $returndocno;
       }
 
-      
+
       PDF::SetFont($font, '',  $fontsize);
       PDF::MultiCell(70, 15, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, '', true);
       PDF::MultiCell(50, 15, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, '', true);
       PDF::MultiCell(320, 15, ' RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, '', true);
-      PDF::MultiCell(275, 15,  ' - '.number_format($qry[0]['ext'], $decimalcurr), '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::MultiCell(275, 15,  ' - ' . number_format($qry[0]['ext'], $decimalcurr), '', 'R', false, 1, '', '', true, 0, false, true, 0, 'B', true);
     }
 
     $dotted_style = array(
@@ -10248,8 +10248,8 @@ class sj
     PDF::setCellPaddings(0, 0, 0, 5);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(600, 10, 'GRAND TOTAL: ', 'B', 'R', false, 0);
-    PDF::MultiCell(115, 10, number_format($totalext, $decimalcurr), 'B', 'R', false,0);
-    PDF::MultiCell(5, 10,'', 'B', 'R');
+    PDF::MultiCell(115, 10, number_format($totalext, $decimalcurr), 'B', 'R', false, 0);
+    PDF::MultiCell(5, 10, '', 'B', 'R');
 
     //    PDF::SetFont($font, '', 5);
     // PDF::MultiCell(720, 0, '', '');
@@ -10436,10 +10436,10 @@ class sj
       PDF::MultiCell(320, 15, 'RETURN ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
       PDF::SetFont($font, '', 12);
       PDF::SetTextColor(7, 13, 246);
-      PDF::MultiCell(90, 15, ' - '.number_format($qry[0]['ext'], $decimalcurr), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+      PDF::MultiCell(90, 15, ' - ' . number_format($qry[0]['ext'], $decimalcurr), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'M', false);
       PDF::SetTextColor(0, 0, 0);
       PDF::MultiCell(90, 15, '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-      PDF::MultiCell(100, 15, ' - '.number_format($qry[0]['ext'], $decimalcurr), '', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+      PDF::MultiCell(100, 15, ' - ' . number_format($qry[0]['ext'], $decimalcurr), '', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
     }
 
     $dotted_style = array(
@@ -10639,7 +10639,7 @@ class sj
       if ($returndocno != '') {
         $rdocno = ' - ' . $returndocno;
       }
-    
+
       PDF::SetFont($font, '', $fontsize);
       PDF::MultiCell(70, 15, '', '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
       PDF::MultiCell(50, 15, '', '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
@@ -10647,7 +10647,7 @@ class sj
       PDF::MultiCell(330, 15, ' RETURN ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
       PDF::SetFont($font, '', 12);
       PDF::MultiCell(120, 15, '', '', 'R', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-      PDF::MultiCell(150, 15, ' - '.number_format($qry[0]['agentext'], $decimalcurr), '', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+      PDF::MultiCell(150, 15, ' - ' . number_format($qry[0]['agentext'], $decimalcurr), '', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
     }
 
     $dotted_style = array(
@@ -10846,7 +10846,7 @@ class sj
     $qry = $this->return_default_query($params, $data);
     if (!empty($qry) && (
       (isset($qry[0]['ext']) && floatval($qry[0]['ext']) != 0) ||
-      (isset($qry[0]['agentext']) && floatval($qry[0]['agentext']) != 0) )) {
+      (isset($qry[0]['agentext']) && floatval($qry[0]['agentext']) != 0))) {
       $totalext = $totalext - (isset($qry[0]['ext']) ? $qry[0]['ext'] : 0);
       $totalagntext = $totalagntext - (isset($qry[0]['agentext']) ? $qry[0]['agentext'] : 0);
       $returndocno = isset($data[0]['cmdocno']) ? $data[0]['cmdocno'] : '';
@@ -12233,44 +12233,44 @@ class sj
         }
       }
     }
-   
+
     $emptyRows = $pageLimit - $rowCount;
     $qry = $this->return_default_query($params, $data);
-      
-      if (!empty($qry) && isset($qry[0]['agentext']) && floatval($qry[0]['agentext']) != 0) {
-        $totalagntext -= (isset($qry[0]['agentext']) ? $qry[0]['agentext'] : 0); //minus return 
-        $returndocno = isset($data[0]['cmdocno']) ? $data[0]['cmdocno'] : '';
-        $rdocno = $returndocno != '' ? ' - ' . $returndocno : '';
+
+    if (!empty($qry) && isset($qry[0]['agentext']) && floatval($qry[0]['agentext']) != 0) {
+      $totalagntext -= (isset($qry[0]['agentext']) ? $qry[0]['agentext'] : 0); //minus return 
+      $returndocno = isset($data[0]['cmdocno']) ? $data[0]['cmdocno'] : '';
+      $rdocno = $returndocno != '' ? ' - ' . $returndocno : '';
 
       if ($emptyRows != 0) {
-          PDF::SetFont($font, '', 10.5);
-          PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::MultiCell(2, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::MultiCell(345, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::SetFont($font, '', 12);
-          PDF::MultiCell(70, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::MultiCell(94, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::SetFont($font, '', 12);
-          PDF::MultiCell(100, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::MultiCell(33, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
-          $emptyRows -= 1;
+        PDF::SetFont($font, '', 10.5);
+        PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(2, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(345, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::SetFont($font, '', 12);
+        PDF::MultiCell(70, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(94, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::SetFont($font, '', 12);
+        PDF::MultiCell(100, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(33, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
+        $emptyRows -= 1;
       } else {
-          $this->cash_sales_origamt_footer1($params, $data, $rowCount, $totalagntext);
-          $emptyRows = 0;
-          $this->headers($params, $data);
-          PDF::SetFont($font, '', 10.5);
-          PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::MultiCell(2, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::MultiCell(345, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::SetFont($font, '', 12);
-          PDF::MultiCell(70, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::MultiCell(94, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::SetFont($font, '', 12);
-          PDF::MultiCell(100, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-          PDF::MultiCell(33, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
-          $emptyRows += 12;
+        $this->cash_sales_origamt_footer1($params, $data, $rowCount, $totalagntext);
+        $emptyRows = 0;
+        $this->headers($params, $data);
+        PDF::SetFont($font, '', 10.5);
+        PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(2, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(345, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::SetFont($font, '', 12);
+        PDF::MultiCell(70, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(94, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::SetFont($font, '', 12);
+        PDF::MultiCell(100, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+        PDF::MultiCell(33, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
+        $emptyRows += 12;
       }
     }
 
@@ -14085,11 +14085,11 @@ class sj
         }
       }
     }
-    
+
 
     $emptyRows = $pageLimit - $rowCount;
 
-    $totalext=0;
+    $totalext = 0;
     $this->returnfunction($emptyRows, $params, $data, $totalext, $totalagntext, $rowCount);
 
     $vatable = 0;
@@ -17512,25 +17512,25 @@ class sj
     }
 
 
- 
+
     $qry = $this->return_default_query($params, $data);
     if (!empty($qry) && isset($qry[0]['agentext']) && floatval($qry[0]['agentext']) != 0) {
-    $totalext -= (isset($qry[0]['agentext']) ? $qry[0]['agentext'] : 0);
-    $returndocno = isset($data[0]['cmdocno']) ? $data[0]['cmdocno'] : '';
-    $rdocno = $returndocno != '' ? ' - ' . $returndocno : '';
+      $totalext -= (isset($qry[0]['agentext']) ? $qry[0]['agentext'] : 0);
+      $returndocno = isset($data[0]['cmdocno']) ? $data[0]['cmdocno'] : '';
+      $rdocno = $returndocno != '' ? ' - ' . $returndocno : '';
 
-    PDF::SetFont($font, '', 10.5);
-    PDF::MultiCell(25, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(365, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-    PDF::SetFont($font, '', 12);
-    PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(123, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-    PDF::SetFont($font, '', 12);
-    PDF::MultiCell(100, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(28, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::SetFont($font, '', 10.5);
+      PDF::MultiCell(25, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::MultiCell(365, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::SetFont($font, '', 12);
+      PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::MultiCell(123, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::SetFont($font, '', 12);
+      PDF::MultiCell(100, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::MultiCell(28, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
     }
-     
+
     $vatable = 0;
     $vatamt = 0;
 
@@ -17717,24 +17717,24 @@ class sj
     $qry = $this->return_default_query($params, $data);
     if (!empty($qry) && (
       (isset($qry[0]['ext']) && floatval($qry[0]['ext']) != 0) ||
-      (isset($qry[0]['agentext']) && floatval($qry[0]['agentext']) != 0) )) {
-    $totalext -= (isset($qry[0]['ext']) ? $qry[0]['ext'] : 0);
-    $totalagntext -= (isset($qry[0]['agentext']) ? $qry[0]['agentext'] : 0);
-    $returndocno = isset($data[0]['cmdocno']) ? $data[0]['cmdocno'] : '';
-    $rdocno = $returndocno != '' ? ' - ' . $returndocno : '';
+      (isset($qry[0]['agentext']) && floatval($qry[0]['agentext']) != 0))) {
+      $totalext -= (isset($qry[0]['ext']) ? $qry[0]['ext'] : 0);
+      $totalagntext -= (isset($qry[0]['agentext']) ? $qry[0]['agentext'] : 0);
+      $returndocno = isset($data[0]['cmdocno']) ? $data[0]['cmdocno'] : '';
+      $rdocno = $returndocno != '' ? ' - ' . $returndocno : '';
 
-    PDF::SetFont($font, '', 10.5);
-    PDF::MultiCell(25, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(345, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(85, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-    PDF::SetFont($font, '', 12);
-    PDF::SetTextColor(7, 13, 246);
-    PDF::MultiCell(75, 25, ' - ' . number_format($qry[0]['ext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-    PDF::SetTextColor(0, 0, 0);
-    PDF::MultiCell(81, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(33, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::SetFont($font, '', 10.5);
+      PDF::MultiCell(25, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::MultiCell(345, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::MultiCell(60, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::MultiCell(85, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::SetFont($font, '', 12);
+      PDF::SetTextColor(7, 13, 246);
+      PDF::MultiCell(75, 25, ' - ' . number_format($qry[0]['ext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::SetTextColor(0, 0, 0);
+      PDF::MultiCell(81, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+      PDF::MultiCell(33, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
     }
 
     $pwddisc = 0;
@@ -17859,7 +17859,7 @@ class sj
 
 
   public function returnfunction(&$emptyRows, $params, $data, &$totalext, &$totalagntext, $rowCount)
-{
+  {
     $companyid = $params['params']['companyid'];
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
     $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
@@ -17875,15 +17875,15 @@ class sj
     $fontsize = 13;
     $pageLimit = 19;
     if (Storage::disk('sbcpath')->exists('/fonts/verdana.ttf')) {
-        $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
-        $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
     }
 
     $fontcalibri = "";
     $fontboldcalibri = "";
     if (Storage::disk('sbcpath')->exists('/fonts/calibri.ttf')) {
-        $fontcalibri = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/calibri.ttf');
-        $fontboldcalibri = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/calibriB.ttf');
+      $fontcalibri = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/calibri.ttf');
+      $fontboldcalibri = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/calibriB.ttf');
     }
 
     $priceoption = $params['params']['dataparams']['isassettag'];
@@ -17891,118 +17891,104 @@ class sj
     $qry = $this->return_default_query($params, $data);
 
     if (empty($qry) || !isset($qry[0]['ext']) || floatval($qry[0]['ext']) == 0) {
-        return; // walang return na dapat i-process, wala nang gagawin pa
+      return; // walang return na dapat i-process, wala nang gagawin pa
     }
 
     $returndocno = isset($data[0]['cmdocno']) ? $data[0]['cmdocno'] : '';
     $rdocno = '';
     if ($returndocno != '') {
-        $rdocno = ' - ' . $returndocno;
+      $rdocno = ' - ' . $returndocno;
     }
 
-    
+
     switch ($priceoption) {
-    case '0': // Original Amount
+      case '0': // Original Amount
         switch ($pricelayoutoption) {
-            case '0': // Single Price Show
-                break;
-            case '1': // Orig. Amount and Agent Amount Show
-                break;
+          case '0': // Single Price Show
+            break;
+          case '1': // Orig. Amount and Agent Amount Show
+            break;
         }
         break;
-                //smartflex
-    case '1': // Agent Amount
+      //smartflex
+      case '1': // Agent Amount
         switch ($pricelayoutoption) {
-            case '0': // Single Price Show
-                if (empty($qry) || !isset($qry[0]['agentext']) || floatval($qry[0]['agentext']) == 0) {
-                    break; // labas lang sa loob switch, hindi sa buong function
-                }
-                if ($totalagntext != 0) {
-                    $totalagntext -= (isset($qry[0]['agentext']) ? $qry[0]['agentext'] : 0);
-                }
-                $returndocno = isset($data[0]['cmdocno']) ? $data[0]['cmdocno'] : '';
-                $rdocno = $returndocno != '' ? ' - ' . $returndocno : '';
+          case '0': // Single Price Show
+            if (empty($qry) || !isset($qry[0]['agentext']) || floatval($qry[0]['agentext']) == 0) {
+              break; // labas lang sa loob switch, hindi sa buong function
+            }
+            if ($totalagntext != 0) {
+              $totalagntext -= (isset($qry[0]['agentext']) ? $qry[0]['agentext'] : 0);
+            }
+            $returndocno = isset($data[0]['cmdocno']) ? $data[0]['cmdocno'] : '';
+            $rdocno = $returndocno != '' ? ' - ' . $returndocno : '';
 
-                if ($emptyRows != 0) {
-                    PDF::SetFont($font, '', 10.5);
-                    PDF::MultiCell(18, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::MultiCell(348, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::SetFont($font, '', 12);
-                    PDF::MultiCell(348, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::MultiCell(50, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
-                    $emptyRows -= 1;
-                } else {
-                    $this->sales_invoice_agentamt_footer1($params, $data, $rowCount, $totalagntext);
-                    $emptyRows = 0;
-                    $this->sales_invoice_header($params, $data);
-                    PDF::SetFont($font, '', 10.5);
-                    PDF::MultiCell(18, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::MultiCell(348, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::SetFont($font, '', 12);
-                    PDF::MultiCell(348, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::MultiCell(50, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
-                    $emptyRows += 12;
-                }
-                break;
+            if ($emptyRows != 0) {
+              PDF::SetFont($font, '', 10.5);
+              PDF::MultiCell(18, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::MultiCell(348, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::SetFont($font, '', 12);
+              PDF::MultiCell(348, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::MultiCell(50, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
+              $emptyRows -= 1;
+            } else {
+              $this->sales_invoice_agentamt_footer1($params, $data, $rowCount, $totalagntext);
+              $emptyRows = 0;
+              $this->sales_invoice_header($params, $data);
+              PDF::SetFont($font, '', 10.5);
+              PDF::MultiCell(18, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::MultiCell(348, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::SetFont($font, '', 12);
+              PDF::MultiCell(348, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::MultiCell(50, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
+              $emptyRows += 12;
+            }
+            break;
 
-            case '1': // Orig. Amount and Agent Amount Show
-               if (empty($qry) && (
-                  (isset($qry[0]['ext']) && floatval($qry[0]['ext']) == 0) ||
-                  (isset($qry[0]['agentext']) && floatval($qry[0]['agentext']) == 0) )) {
-                    break;
-                }
-                if ($totalext != 0) {
-                    $totalext -= (isset($qry[0]['ext']) ? $qry[0]['ext'] : 0);
-                }
-                if ($totalagntext != 0) {
-                    $totalagntext -= (isset($qry[0]['agentext']) ? $qry[0]['agentext'] : 0);
-                }
-                $returndocno = isset($data[0]['cmdocno']) ? $data[0]['cmdocno'] : '';
-                $rdocno = $returndocno != '' ? ' - ' . $returndocno : '';
+          case '1': // Orig. Amount and Agent Amount Show
+            if (empty($qry) && (
+              (isset($qry[0]['ext']) && floatval($qry[0]['ext']) == 0) ||
+              (isset($qry[0]['agentext']) && floatval($qry[0]['agentext']) == 0))) {
+              break;
+            }
+            if ($totalext != 0) {
+              $totalext -= (isset($qry[0]['ext']) ? $qry[0]['ext'] : 0);
+            }
+            if ($totalagntext != 0) {
+              $totalagntext -= (isset($qry[0]['agentext']) ? $qry[0]['agentext'] : 0);
+            }
+            $returndocno = isset($data[0]['cmdocno']) ? $data[0]['cmdocno'] : '';
+            $rdocno = $returndocno != '' ? ' - ' . $returndocno : '';
 
-                if ($emptyRows != 0) {
-                    PDF::SetFont($font, '', 10.5);
-                    PDF::MultiCell(18, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::MultiCell(348, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::SetFont($font, '', 12);
-                    PDF::SetTextColor(7, 13, 246);
-                    PDF::MultiCell(263, 25, ' - ' . number_format($qry[0]['ext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::SetTextColor(0, 0, 0);
-                    PDF::MultiCell(85, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::MultiCell(50, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
-                    $emptyRows -= 1;
-                } else {
-                    $this->sales_invoice_agnt2_footer($params, $data, $rowCount, $totalext, $totalagntext);
-                    $emptyRows = 0;
-                    $this->sales_invoice_header($params, $data);
-                    PDF::SetFont($font, '', 10.5);
-                    PDF::MultiCell(18, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::MultiCell(348, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::SetFont($font, '', 12);
-                    PDF::SetTextColor(7, 13, 246);
-                    PDF::MultiCell(263, 25, ' - ' . number_format($qry[0]['ext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::SetTextColor(0, 0, 0);
-                    PDF::MultiCell(85, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
-                    PDF::MultiCell(50, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
-                    $emptyRows += 12;
-                }
-                break;
+            if ($emptyRows != 0) {
+              PDF::SetFont($font, '', 10.5);
+              PDF::MultiCell(18, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::MultiCell(348, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::SetFont($font, '', 12);
+              PDF::SetTextColor(7, 13, 246);
+              PDF::MultiCell(263, 25, ' - ' . number_format($qry[0]['ext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::SetTextColor(0, 0, 0);
+              PDF::MultiCell(85, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::MultiCell(50, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
+              $emptyRows -= 1;
+            } else {
+              $this->sales_invoice_agnt2_footer($params, $data, $rowCount, $totalext, $totalagntext);
+              $emptyRows = 0;
+              $this->sales_invoice_header($params, $data);
+              PDF::SetFont($font, '', 10.5);
+              PDF::MultiCell(18, 25, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::MultiCell(348, 25, 'RETURN' . ' ' . $rdocno, '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::SetFont($font, '', 12);
+              PDF::SetTextColor(7, 13, 246);
+              PDF::MultiCell(263, 25, ' - ' . number_format($qry[0]['ext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::SetTextColor(0, 0, 0);
+              PDF::MultiCell(85, 25, ' - ' . number_format($qry[0]['agentext'], 2), '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
+              PDF::MultiCell(50, 25, '', '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
+              $emptyRows += 12;
+            }
+            break;
         }
         break;
+    }
+  }
 }
-
-   
-}
-
-
-
-
-
-}
-
-
-  
-
-
-
-

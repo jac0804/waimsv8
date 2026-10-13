@@ -22,7 +22,7 @@ class viewsjfinancing
   private $logger;
   public $modulename = 'Financing';
   public $gridname = 'customformacctg';
-  private $fields = ['downpayment', 'fmiscfee', 'interestrate', 'fma2', 'penalty', 'rebate', 'fma1','terms'];
+  private $fields = ['downpayment', 'fmiscfee', 'interestrate', 'fma2', 'penalty', 'rebate', 'fma1', 'terms'];
   private $table = 'cntnuminfo';
   private $htable = 'hcntnuminfo';
 
@@ -35,10 +35,10 @@ class viewsjfinancing
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -56,7 +56,7 @@ class viewsjfinancing
     $trno = $config['params']['clientid'];
     $isposted = $this->othersClass->isposted2($trno, "cntnum");
 
-    $fields = ['terms','downpayment', 'fmiscfee', 'fma1'];
+    $fields = ['terms', 'downpayment', 'fmiscfee', 'fma1'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'fmiscfee.readonly', false);
     data_set($col1, 'fma1.readonly', false);
@@ -192,7 +192,7 @@ class viewsjfinancing
                 select format(interest,2) as interest,format(principal,2) as principal,format(payment,2) as payment from hdetailinfo where trno =  " . $trno;
         $data = $this->coreFunctions->opentable($qry);
 
-        return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data,'txtdata' => $txtdata, 'qry' => $qry];
+        return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data, 'txtdata' => $txtdata, 'qry' => $qry];
         break;
     }
   }
@@ -222,7 +222,7 @@ class viewsjfinancing
         left join cntnuminfo as hinfo on hinfo.trno = head.trno left join terms on terms.terms = head.terms where head.trno = ?", [$trno]);
 
         if (!empty($data)) {
-          if(floatval($data[0]->amt) <> 0){
+          if (floatval($data[0]->amt) <> 0) {
             $data[0]->amt = $this->othersClass->sanitizekeyfieldFast('amt', $data[0]->amt, $lookups);
             $data[0]->fmiscfee = $this->othersClass->sanitizekeyfieldFast('amt', $data[0]->fmiscfee, $lookups);
             $data[0]->downpayment = $this->othersClass->sanitizekeyfieldFast('amt', $data[0]->downpayment, $lookups);
@@ -232,17 +232,16 @@ class viewsjfinancing
             $financeamt = ($data[0]->amt + $data[0]->fmiscfee) - $data[0]->downpayment;
             $ma = round($data[0]->factor * $financeamt, 0, PHP_ROUND_HALF_UP);
             $info['fma1'] = $ma;
-          }else{
+          } else {
             return ['status' => false, 'msg' => 'Update Not Allowed, Transaction has 0 value. Please select an MC Unit.', 'txtdata' => $data, 'data' => []];
           }
-          
         }
       }
 
       $exist = $this->coreFunctions->getfieldvalue("cntnuminfo", "trno", "trno=?", [$trno]);
       $ext = $this->coreFunctions->getfieldvalue("lastock", "ifnull(sum(ext),0)", "trno=?", [$trno]);
 
-      if($ext == 0){
+      if ($ext == 0) {
         $data = $this->getheaddata($config);
         return ['status' => false, 'msg' => 'Update Not Allowed, Transaction has 0 value. Please select an MC Unit.', 'txtdata' => $data, 'data' => []];
       }
@@ -258,7 +257,6 @@ class viewsjfinancing
           'CREATE',
           'CNTNUMINFO TRNO: ' . $info['trno']
         );
-        
       } else {
         $this->coreFunctions->sbcupdate('lahead', ["terms" => $info['terms']], ['trno' => $trno]);
         unset($info['terms']);
@@ -283,7 +281,7 @@ class viewsjfinancing
       return $this->compute($config);
     } else {
       $data = $this->getheaddata($config);
-      return ['status' => false, 'msg' => 'Update Not Allowed, Please Contact Admin.', 'txtdata' => $data, 'data' => [],'reloadhead' =>true];
+      return ['status' => false, 'msg' => 'Update Not Allowed, Please Contact Admin.', 'txtdata' => $data, 'data' => [], 'reloadhead' => true];
     }
   }
 
@@ -374,8 +372,6 @@ class viewsjfinancing
     $qry = "select format(interest,2) as interest,format(principal,2) as principal,format(payment,2) as payment from detailinfo where trno =  " . $trno;
     $data = $this->coreFunctions->opentable($qry);
 
-    return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data, 'txtdata' => $txtdata, 'qry' => $qry,'reloadhead' =>true];
+    return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data, 'txtdata' => $txtdata, 'qry' => $qry, 'reloadhead' => true];
   }
-
-
 }

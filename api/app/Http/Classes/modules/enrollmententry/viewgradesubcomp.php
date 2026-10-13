@@ -31,10 +31,10 @@ class viewgradesubcomp
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -88,7 +88,7 @@ class viewgradesubcomp
   public function saveallentry($config)
   {
     $data = $config['params']['data'];
-    
+
     $companyid = $config['params']['companyid'];
     $dateTables = ['en_gssubcomponent'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);

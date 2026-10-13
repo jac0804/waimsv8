@@ -33,12 +33,12 @@ class employment_status
 
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -123,9 +123,10 @@ class employment_status
             $filter .= " and emp.resignedtype = '$resigned'";
         }
         if ($divname != '') {
-        if ($divid != 0) {
-            $filter .= " and emp.divid = $divid";
-        }}
+            if ($divid != 0) {
+                $filter .= " and emp.divid = $divid";
+            }
+        }
 
         $query = "select concat(emp.emplast,', ',emp.empfirst,' ',emp.empmiddle) as employee,
            jt.jobtitle,clr.resignedtype as empstatus,date(clr.dateid) as dateid,branch.clientname as branch

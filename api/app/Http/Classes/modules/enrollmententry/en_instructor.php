@@ -56,11 +56,11 @@ class en_instructor
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -285,7 +285,7 @@ class en_instructor
     }
     $clientid = 0;
     $msg = '';
-    
+
     $companyid = $config['params']['companyid'];
     $dateTables = ['en_instructor'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -295,7 +295,6 @@ class en_instructor
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
-
         } //end if 
       }
     }
@@ -344,16 +343,16 @@ class en_instructor
     $doc = $config['params']['doc'];
     $client = $this->coreFunctions->getfieldvalue('client', 'client', 'clientid=?', [$clientid]);
     $qry = "select value from (
-      select trno as value from en_scsubject where instructorid=".$clientid." union all
-      select trno as value from en_sosubject where instructorid=".$clientid." union all
-      select trno as value from en_sjsubject where instructorid=".$clientid." union all
-      select trno as value from en_glsubject where instructorid=".$clientid." union all
-      select trno as value from en_adsubject where instructorid=".$clientid." union all
-      select trno as value from en_athead where adviserid=".$clientid." union all
-      select trno as value from en_glhead where adviserid=".$clientid." union all
-      select trno as value from en_gehead where adviserid=".$clientid." union all
-      select trno as value from en_gshead where adviserid=".$clientid." union all
-      select trno as value from en_srchead where adviserid=".$clientid."
+      select trno as value from en_scsubject where instructorid=" . $clientid . " union all
+      select trno as value from en_sosubject where instructorid=" . $clientid . " union all
+      select trno as value from en_sjsubject where instructorid=" . $clientid . " union all
+      select trno as value from en_glsubject where instructorid=" . $clientid . " union all
+      select trno as value from en_adsubject where instructorid=" . $clientid . " union all
+      select trno as value from en_athead where adviserid=" . $clientid . " union all
+      select trno as value from en_glhead where adviserid=" . $clientid . " union all
+      select trno as value from en_gehead where adviserid=" . $clientid . " union all
+      select trno as value from en_gshead where adviserid=" . $clientid . " union all
+      select trno as value from en_srchead where adviserid=" . $clientid . "
     ) as v";
     $exist = $this->coreFunctions->datareader($qry);
 
@@ -440,7 +439,7 @@ class en_instructor
 
   public function reportdata($config)
   {
-    
+
 
     $data = $this->report_default_query($config['params']['dataid']);
     if ($config['params']['dataparams']['print'] == "default") {
@@ -506,11 +505,11 @@ class en_instructor
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(70, 20, 'Department :', '', 'L', false, 0);
     PDF::SetFont($fontbold, '', 9);
-    PDF::MultiCell(730, 20, (isset($data[0]['deptcode']) ? '('.$data[0]['deptcode'].')' : '') .  (isset($data[0]['department']) ? $data[0]['department'] : ''), '', 'L', false);
+    PDF::MultiCell(730, 20, (isset($data[0]['deptcode']) ? '(' . $data[0]['deptcode'] . ')' : '') .  (isset($data[0]['department']) ? $data[0]['department'] : ''), '', 'L', false);
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(70, 20, 'Dean :', '', 'L', false, 0);
     PDF::SetFont($fontbold, '', 9);
-    PDF::MultiCell(730, 20, (isset($data[0]['deancode']) ? '('.$data[0]['deancode'].')' : '') .  (isset($data[0]['deanname']) ? $data[0]['deanname'] : ''), '', 'L', false);
+    PDF::MultiCell(730, 20, (isset($data[0]['deancode']) ? '(' . $data[0]['deancode'] . ')' : '') .  (isset($data[0]['deanname']) ? $data[0]['deanname'] : ''), '', 'L', false);
 
     // PDF::SetFont($font, '', 9);
     // PDF::MultiCell(800, 20, 'Dean :' .'(' . (isset($data[0]['deancode']) ? $data[0]['deancode'] : '') . ')' . (isset($data[0]['deanname']) ? $data[0]['deanname'] : ''), '', 'L', false);
@@ -590,14 +589,14 @@ class en_instructor
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Department:', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '1px');
-    $str .= $this->reporter->col((isset($data[0]['deptcode']) ? '('.$data[0]['deptcode'].')' : ''). '&nbsp;&nbsp;&nbsp;' . (isset($data[0]['department']) ? $data[0]['department'] : ''), '750', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '1px');
+    $str .= $this->reporter->col((isset($data[0]['deptcode']) ? '(' . $data[0]['deptcode'] . ')' : '') . '&nbsp;&nbsp;&nbsp;' . (isset($data[0]['department']) ? $data[0]['department'] : ''), '750', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '1px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Dean :', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '1px');
-    $str .= $this->reporter->col((isset($data[0]['deancode']) ? '('.$data[0]['deancode'].')' : ''). '&nbsp;&nbsp;&nbsp;' . (isset($data[0]['deanname']) ? $data[0]['deanname'] : ''), '750', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '1px');
+    $str .= $this->reporter->col((isset($data[0]['deancode']) ? '(' . $data[0]['deancode'] . ')' : '') . '&nbsp;&nbsp;&nbsp;' . (isset($data[0]['deanname']) ? $data[0]['deanname'] : ''), '750', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '1px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -616,7 +615,7 @@ class en_instructor
     $received = $params['params']['dataparams']['received'];
     $approved = $params['params']['dataparams']['approved'];
 
-    
+
     $str = '';
     $font = "Century Gothic ";
     $fontsize = "11";

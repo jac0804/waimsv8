@@ -29,12 +29,12 @@ class item_master_list
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '800'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -134,7 +134,7 @@ class item_master_list
     $groupname  = $config['params']['dataparams']['stockgrp'];
     $categoryname  = $config['params']['dataparams']['categoryname'];
     $subcatname =  $config['params']['dataparams']['subcatname'];
-    $brandname  = $config['params']['dataparams']['brandname'];   
+    $brandname  = $config['params']['dataparams']['brandname'];
     $classname  = $config['params']['dataparams']['classic'];
     $itemtype   = $config['params']['dataparams']['itemtype'];
     $itemstatus = $config['params']['dataparams']['itemstatus'];

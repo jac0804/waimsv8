@@ -29,9 +29,9 @@ class so
     private $reporter;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -41,7 +41,7 @@ class so
 
     public function createreportfilter()
     {
-    
+
         $fields = ['prepared', 'approved', 'checked', 'radioreporttype', 'radiolayoutformat', 'radioitemsort', 'radiosorting', 'print'];
         $col1 = $this->fieldClass->create($fields);
 

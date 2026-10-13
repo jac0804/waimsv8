@@ -32,9 +32,9 @@ class rr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -95,14 +95,15 @@ class rr
     return $result;
   } //end fn
 
-  public function reportplotting($params, $data) {
-    if($params['params']['dataparams']['print'] == "default") {
+  public function reportplotting($params, $data)
+  {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_RR_layout($params, $data);
-    } else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_RR_PDF($params, $data);
     }
   }
-  
+
   public function default_header($params, $data)
   {
     $this->modulename = app('App\Http\Classes\modules\purchase\rr')->modulename;
@@ -129,45 +130,45 @@ class rr
     //$str .= $this->reporter->col(DNS1D::getBarcodeHTML($data[0]['docno'].'-'.$data[0]['trno'], 'C39+', 1, 33, 'black', true), '100', null, false, $border, 'B', 'L', $font, '13', '', '', '').'<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-      $str .= $this->reporter->begintable('800');
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('SUPPLIER : ', '120', null, false, $border, '', 'L', $font, '12', 'B', '30px', '4px');
-        $str .= $this->reporter->col((isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '520', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
-        $str .= $this->reporter->col('DATE : ', '80', null, false, $border, '', 'L', $font, '12', 'B', '', '');
-        $str .= $this->reporter->col((isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '160', null, false, $border, 'B', 'R', $font, '12', '', '', '');
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->endtable();
-      $str .= $this->reporter->begintable('800');
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('ADDRESS : ', '120', null, false, $border, '', 'L', $font, '12', 'B', '30px', '4px');
-        $str .= $this->reporter->col((isset($data[0]['address']) ? $data[0]['address'] : ''), '520', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
-        $str .= $this->reporter->col('TERMS : ', '70', null, false, $border, '', 'L', $font, '12', 'B', '', '');
-        $str .= $this->reporter->col((isset($data[0]['terms']) ? $data[0]['terms'] : ''), '150', null, false, $border, 'B', 'R', $font, '12', '', '', '');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('SUPPLIER : ', '120', null, false, $border, '', 'L', $font, '12', 'B', '30px', '4px');
+    $str .= $this->reporter->col((isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '520', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
+    $str .= $this->reporter->col('DATE : ', '80', null, false, $border, '', 'L', $font, '12', 'B', '', '');
+    $str .= $this->reporter->col((isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '160', null, false, $border, 'B', 'R', $font, '12', '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('ADDRESS : ', '120', null, false, $border, '', 'L', $font, '12', 'B', '30px', '4px');
+    $str .= $this->reporter->col((isset($data[0]['address']) ? $data[0]['address'] : ''), '520', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
+    $str .= $this->reporter->col('TERMS : ', '70', null, false, $border, '', 'L', $font, '12', 'B', '', '');
+    $str .= $this->reporter->col((isset($data[0]['terms']) ? $data[0]['terms'] : ''), '150', null, false, $border, 'B', 'R', $font, '12', '', '', '');
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable('800');
-      $str .= $this->reporter->startrow(null, null, false, $border, '', 'R', $font, '10', '', '', '4px');
-      $str .= $this->reporter->pagenumber('Page');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow(null, null, false, $border, '', 'R', $font, '10', '', '', '4px');
+    $str .= $this->reporter->pagenumber('Page');
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->printline();
     //($w=null,$h=null, $bg=false,  $b=false, $al='',  $f='', $fs='',$fw='',$fc='',$pad='',$m='')
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-      //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-      $str .= $this->reporter->col('QTY', '50px', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
-      $str .= $this->reporter->col('UNIT', '50px', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
-      $str .= $this->reporter->col('D E S C R I P T I O N', '400px', null, false, $border, 'B', 'L', $font, '12', 'B', '30px', '8px');
-      $str .= $this->reporter->col('EXPIRY', '100px', null, false, $border, 'B', 'L', $font, '12', 'B', '30px', '8px');
-      $str .= $this->reporter->col('UNIT PRICE', '125px', null, false, $border, 'B', 'R', $font, '12', 'B', '30px', '8px');
-      $str .= $this->reporter->col('DISC', '50px', null, false, $border, 'B', 'L', $font, '12', 'B', '30px', '8px');
-      $str .= $this->reporter->col('TOTAL', '125px', null, false, $border, 'B', 'R', $font, '12', 'B', '30px', '8px');
+    //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
+    $str .= $this->reporter->col('QTY', '50px', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('UNIT', '50px', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('D E S C R I P T I O N', '400px', null, false, $border, 'B', 'L', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('EXPIRY', '100px', null, false, $border, 'B', 'L', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('UNIT PRICE', '125px', null, false, $border, 'B', 'R', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('DISC', '50px', null, false, $border, 'B', 'L', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('TOTAL', '125px', null, false, $border, 'B', 'R', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->endrow();
     return $str;
   }
-  
+
   public function default_RR_layout($params, $data)
   {
     $decimal = $this->companysetup->getdecimal('currency', $params['params']);
@@ -302,7 +303,7 @@ class rr
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -388,24 +389,24 @@ class rr
       $maxrow = 1;
 
       $barcode = $data[$i]['barcode'];
-      $qty = number_format($data[$i]['qty'],$decimalqty);
+      $qty = number_format($data[$i]['qty'], $decimalqty);
       $uom = $data[$i]['uom'];
       $itemname = $data[$i]['itemname'];
       $wh = $data[$i]['wh'];
       $loc = $data[$i]['loc'];
       $expiry = $data[$i]['expiry'];
 
-      $arr_barcode = $this->reporter->fixcolumn([$barcode],'16',0);
-      $arr_qty = $this->reporter->fixcolumn([$qty],'13',0);
-      $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-      $arr_itemname = $this->reporter->fixcolumn([$itemname],'40',0);
-      $arr_wh = $this->reporter->fixcolumn([$wh],'16',0);
-      $arr_loc = $this->reporter->fixcolumn([$loc],'16',0);
-      $arr_expiry = $this->reporter->fixcolumn([$expiry],'16',0);
+      $arr_barcode = $this->reporter->fixcolumn([$barcode], '16', 0);
+      $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+      $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+      $arr_itemname = $this->reporter->fixcolumn([$itemname], '40', 0);
+      $arr_wh = $this->reporter->fixcolumn([$wh], '16', 0);
+      $arr_loc = $this->reporter->fixcolumn([$loc], '16', 0);
+      $arr_expiry = $this->reporter->fixcolumn([$expiry], '16', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_qty, $arr_uom, $arr_itemname, $arr_wh, $arr_loc, $arr_expiry]);
 
-      for($r = 0; $r < $maxrow; $r++) {
+      for ($r = 0; $r < $maxrow; $r++) {
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(100, 0, (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(75, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
@@ -420,7 +421,6 @@ class rr
         $this->default_RR_header_PDF($params, $data);
         $page += $count;
       }
-
     }
 
     PDF::SetFont($font, '', 5);
@@ -449,10 +449,7 @@ class rr
     PDF::MultiCell(253, 0, $params['params']['dataparams']['prepared'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['received'], '', 'L');
-    
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
-
-
 }

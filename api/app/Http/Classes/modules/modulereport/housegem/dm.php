@@ -33,9 +33,9 @@ class dm
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -281,7 +281,7 @@ class dm
     // write2DBarcode(code, type, x, y, width, height, style, align)
 
     PDF::SetFont($font, '', 9);
-      PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . strtoupper($headerdata[0]->name), '', 'L');
+    PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . strtoupper($headerdata[0]->name), '', 'L');
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
@@ -380,7 +380,7 @@ class dm
         $arr_disc = $this->reporter->fixcolumn([$disc], '15', 0);
         $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
 
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_qty, $arr_uom,$arr_itemname, $arr_amt,$arr_disc, $arr_ext]);
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_qty, $arr_uom, $arr_itemname, $arr_amt, $arr_disc, $arr_ext]);
 
         for ($r = 0; $r < $maxrow; $r++) {
 
@@ -392,9 +392,8 @@ class dm
           PDF::MultiCell(85, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(85, 15, ' ' . (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(85, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
-  
         }
-        
+
         $totalext += $data[$i]['ext'];
 
         if (intVal($i) + 1 == $page) {

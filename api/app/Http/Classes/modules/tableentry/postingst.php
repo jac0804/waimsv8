@@ -42,10 +42,10 @@ class postingst
   public $showclosebtn = false;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -60,19 +60,19 @@ class postingst
 
   public function createTab($config)
   {
-    $gridcolumns = ['action', 'dateid', 'docno', 'loc2', 'loc','rem'];
+    $gridcolumns = ['action', 'dateid', 'docno', 'loc2', 'loc', 'rem'];
     $stockbuttons = ['viewtsdetail'];
     $tab = [$this->gridname => ['gridcolumns' => $gridcolumns]];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     $obj[0][$this->gridname]['columns'][0]['style'] = "width:40px;whiteSpace: normal;min-width:40px;";
-    $obj[0][$this->gridname]['columns'][3]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";    
-    $obj[0][$this->gridname]['columns'][4]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";    
-    $obj[0][$this->gridname]['columns'][5]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";    
+    $obj[0][$this->gridname]['columns'][3]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
+    $obj[0][$this->gridname]['columns'][4]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
+    $obj[0][$this->gridname]['columns'][5]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
     $obj[0][$this->gridname]['columns'][1]['type'] = 'label';
     $obj[0][$this->gridname]['columns'][2]['type'] = 'label';
     $obj[0][$this->gridname]['columns'][3]['type'] = 'label';
     $obj[0][$this->gridname]['columns'][4]['type'] = 'label';
-    $obj[0][$this->gridname]['columns'][5]['type'] = 'label';    
+    $obj[0][$this->gridname]['columns'][5]['type'] = 'label';
     $obj[0][$this->gridname]['columns'][4]['label'] = 'Source Location';
     return $obj;
   }
@@ -91,25 +91,15 @@ class postingst
     return $data;
   }
 
-  private function selectqry()
-  {
-  }
+  private function selectqry() {}
 
-  public function save($config)
-  {
-  } //end function
+  public function save($config) {} //end function
 
-  public function saveallentry($config)
-  {
-  }
+  public function saveallentry($config) {}
 
-  public function delete($config)
-  {
-  }
+  public function delete($config) {}
 
-  private function loaddataperrecord($trno, $line)
-  {
-  }
+  private function loaddataperrecord($trno, $line) {}
 
   public function loaddata($config)
   {
@@ -126,7 +116,5 @@ class postingst
     return $data;
   }
 
-  public function lookupsetup($config)
-  {
-  }
+  public function lookupsetup($config) {}
 } //end class

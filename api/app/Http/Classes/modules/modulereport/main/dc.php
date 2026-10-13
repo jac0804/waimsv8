@@ -43,8 +43,9 @@ class dc
   private $logger;
   private $reporter;
 
-  public function __construct() {
-    $this->fieldClass = new txtfieldClass;
+  public function __construct($params = null)
+  {
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -52,7 +53,8 @@ class dc
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter($config) {
+  public function createreportfilter($config)
+  {
     $fields = ['radioprint'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']]);
@@ -62,31 +64,35 @@ class dc
     return array('col1' => $col1, 'col2' => $col2);
   }
 
-  public function reportparamsdata($config) {
+  public function reportparamsdata($config)
+  {
     $paramstr = "select 'PDFM' as print";
     return $this->coreFunctions->opentable($paramstr);
   }
 
-  public function report_default_query($config) {
+  public function report_default_query($config)
+  {
     $trno = $config['params']['dataid'];
 
     $qry = "select head.docno, date(head.dateid) as dateid, head.collector, d.amount, d.client, client.clientname, head.isinclude
-      from ".$this->head." as head left join ".$this->detail." as d on d.trno=head.trno left join client on client.client=d.client
-        where head.trno=".$trno."
+      from " . $this->head . " as head left join " . $this->detail . " as d on d.trno=head.trno left join client on client.client=d.client
+        where head.trno=" . $trno . "
       union all
       select head.docno, date(head.dateid) as dateid, head.collector, d.amount, d.client, client.clientname, head.isinclude
-      from ".$this->hhead." as head left join ".$this->hdetail." as d on d.trno=head.trno left join client on client.client=d.client
-        where head.trno=".$trno;
+      from " . $this->hhead . " as head left join " . $this->hdetail . " as d on d.trno=head.trno left join client on client.client=d.client
+        where head.trno=" . $trno;
     $result = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
     return $result;
   } //end fn
 
 
-  public function reportplotting($params, $data) {
+  public function reportplotting($params, $data)
+  {
     return $this->default_DC_PDF($params, $data);
   }
 
-  public function default_DC_header_PDF($params, $data) {
+  public function default_DC_header_PDF($params, $data)
+  {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
@@ -97,12 +103,12 @@ class dc
     $font = "";
     $fontbold = "";
     $fontsize = 11;
-    
+
     if (Storage::disk('sbcpath')->exists('/fonts/calibri.ttf')) {
       $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/calibri.ttf');
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/calibriB.ttf');
     }
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -147,11 +153,11 @@ class dc
 
     PDF::MultiCell(720, 0, '', 'B', '', false, 1);
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(150, 0, 'Customer Code', ['B'=>['dash'=>1]], 'C', false, 0);
-    PDF::MultiCell(270, 0, 'Customer Name', ['B'=>['dash'=>1]], 'C', false, 0);
-    PDF::MultiCell(100, 0, 'Balance', ['B'=>['dash'=>1]], 'C', false, 0);
-    PDF::MultiCell(100, 0, 'Amount Paid', ['B'=>['dash'=>1]], 'C', false, 0);
-    PDF::MultiCell(100, 0, 'Remarks', ['B'=>['dash'=>1]], 'C', false, 1);
+    PDF::MultiCell(150, 0, 'Customer Code', ['B' => ['dash' => 1]], 'C', false, 0);
+    PDF::MultiCell(270, 0, 'Customer Name', ['B' => ['dash' => 1]], 'C', false, 0);
+    PDF::MultiCell(100, 0, 'Balance', ['B' => ['dash' => 1]], 'C', false, 0);
+    PDF::MultiCell(100, 0, 'Amount Paid', ['B' => ['dash' => 1]], 'C', false, 0);
+    PDF::MultiCell(100, 0, 'Remarks', ['B' => ['dash' => 1]], 'C', false, 1);
   } // end fn
 
   public function default_DC_PDF($params, $data)
@@ -172,33 +178,33 @@ class dc
     }
     $this->default_DC_header_PDF($params, $data);
     $totalamt = 0;
-    if(!empty($data)) {
-      foreach($data as $d) {
+    if (!empty($data)) {
+      foreach ($data as $d) {
         $maxrow = 1;
         $arr_client = $this->reporter->fixcolumn([$d['client']], '15', 0);
         $arr_clientname = $this->reporter->fixcolumn([$d['clientname']], '25', 0);
         $arr_amount = $this->reporter->fixcolumn([number_format($d['amount'], $decimalcurr)], '15', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_client, $arr_clientname, $arr_amount]);
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(150, 0, (isset($arr_client[$r]) ? $arr_client[$r] : ''), '', 'L', false, 0);
           PDF::MultiCell(270, 0, (isset($arr_clientname[$r]) ? $arr_clientname[$r] : ''), '', 'L', false, 0);
           PDF::MultiCell(100, 0, (isset($arr_amount[$r]) ? $arr_amount[$r] : ''), '', 'R', false, 0);
-          PDF::MultiCell(98, 0, '', ['B'=>['dash'=>0]], 'L', false, 0);
+          PDF::MultiCell(98, 0, '', ['B' => ['dash' => 0]], 'L', false, 0);
           PDF::MultiCell(4, 0, '', '', '', false, 0);
-          PDF::MultiCell(98, 0, '', ['B'=>['dash'=>0]], 'R', false);
+          PDF::MultiCell(98, 0, '', ['B' => ['dash' => 0]], 'R', false);
         }
         $totalamt += $d['amount'];
       }
     }
-    PDF::MultiCell(720, 0, '', ['B'=>['dash'=>1]], 'L', false);
+    PDF::MultiCell(720, 0, '', ['B' => ['dash' => 1]], 'L', false);
     PDF::MultiCell(720, 0, '', '', '', false);
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(150, 0, 'Grand Total', ['B'=>['dash'=>0]], 'L', false, 0);
-    PDF::MultiCell(270, 0, '', ['B'=>['dash'=>0]], 'L', false, 0);
-    PDF::MultiCell(100, 0, number_format($totalamt,$decimalcurr), ['B'=>['dash'=>0]], 'R', false, 0);
-    PDF::MultiCell(200, 0, '', ['B'=>['dash'=>0]], 'L', false);
+    PDF::MultiCell(150, 0, 'Grand Total', ['B' => ['dash' => 0]], 'L', false, 0);
+    PDF::MultiCell(270, 0, '', ['B' => ['dash' => 0]], 'L', false, 0);
+    PDF::MultiCell(100, 0, number_format($totalamt, $decimalcurr), ['B' => ['dash' => 0]], 'R', false, 0);
+    PDF::MultiCell(200, 0, '', ['B' => ['dash' => 0]], 'L', false);
 
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(720, 0, '', '', '', false);

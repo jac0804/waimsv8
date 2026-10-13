@@ -33,10 +33,10 @@ class viewservice
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -235,7 +235,7 @@ class viewservice
         $row = $config['params']['row'];
         $srow = $config['params']['sourcerow'];
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
         $query =  "select serviceline as value from counterservice where counterline = " . $srow['line'] . " and serviceline = " . $row['serviceline'] . "";

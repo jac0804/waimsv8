@@ -74,11 +74,11 @@ class mc
     ];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -1001,31 +1001,32 @@ class mc
         return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
     }
 
-    private function createcr($config){
-      $companyid = $config['params']['companyid'];
-      $trno = $config['params']['trno'];
+    private function createcr($config)
+    {
+        $companyid = $config['params']['companyid'];
+        $trno = $config['params']['trno'];
 
-      $isposted = $this->othersClass->isposted2($trno,$this->tablenum);
+        $isposted = $this->othersClass->isposted2($trno, $this->tablenum);
 
-      if(!$isposted){
-        return ['status' => false, 'msg' => 'Not yet Posted.'];
-      }
+        if (!$isposted) {
+            return ['status' => false, 'msg' => 'Not yet Posted.'];
+        }
 
-      $dateTables = ['lahead', 'ladetail'];
-      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        $dateTables = ['lahead', 'ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-      $exist = $this->coreFunctions->getfieldvalue($this->hhead,"crtrno","trno=?",[$trno],'',true);
-      if($exist !=0){
-        return ['status' => false, 'msg' => 'Already have CR.'];
-      }
+        $exist = $this->coreFunctions->getfieldvalue($this->hhead, "crtrno", "trno=?", [$trno], '', true);
+        if ($exist != 0) {
+            return ['status' => false, 'msg' => 'Already have CR.'];
+        }
 
-      $path = 'App\Http\Classes\modules\receivable\cr';
-      $qry = "";
+        $path = 'App\Http\Classes\modules\receivable\cr';
+        $qry = "";
 
-      $headd = $this->coreFunctions->opentable("select trnxtype,checkdate,checkinfo as checkno,amount from ".$this->hhead." where trno = ? ",[$trno]);
+        $headd = $this->coreFunctions->opentable("select trnxtype,checkdate,checkinfo as checkno,amount from " . $this->hhead . " where trno = ? ", [$trno]);
 
-      if ($headd[0]->trnxtype == 'Downpayment-MC' || $headd[0]->trnxtype == 'Downpayment-Spareparts') {
-        $qry = "select ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
+        if ($headd[0]->trnxtype == 'Downpayment-MC' || $headd[0]->trnxtype == 'Downpayment-Spareparts') {
+            $qry = "select ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
         head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
         ar.clientid,ar.db, ar.cr, ar.bal ,left(ar.dateid,10) as dateid,ar.fdb, ar.fcr,mcd.trno as mcrefx,head.docno as mcdocno,
         head.dateid as mcdate,sum(mcd.penalty) as penalty,num.center,cnum.center as arcenter,head.checkinfo as checkno,head.checkdate
@@ -1042,8 +1043,8 @@ class mc
         head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
         ar.clientid,ar.db, ar.cr, ar.bal ,ar.dateid,ar.fdb, ar.fcr,mcd.trno,head.docno,head.dateid,num.center,cnum.center  ,head.checkinfo,head.checkdate    
         order by dateid";
-      } else {
-        $qry = "select ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
+        } else {
+            $qry = "select ar.trno, ar.line,head.rem,head.amount,head.yourref,head.ourref,
         head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
         ar.clientid,ar.db, ar.cr, ar.bal ,left(ar.dateid,10) as dateid,ar.fdb, ar.fcr,mcd.trno as mcrefx,head.docno as mcdocno,head.dateid as mcdate,
         sum(mcd.penalty) as penalty,num.center,cnum.center as arcenter,head.checkinfo as checkno,head.checkdate
@@ -1077,125 +1078,126 @@ class mc
         head.doc,ctbl.client,ctbl.clientname,ar.docno,ar.trno,ar.line,ar.acnoid,coa.acno,coa.acnoname,coa.alias,num.center,
         ar.clientid,ar.db, ar.cr, ar.bal ,ar.dateid,ar.fdb, ar.fcr,mcd.trno,head.docno,head.dateid,num.center,cnum.center,head.checkinfo,head.checkdate
         order by dateid";
-      }
-    
-      $data = $this->coreFunctions->opentable($qry, [$trno, $trno]);
-      $data2 =[];
-      if (!empty($data)) {         
-            try{
-                $crtrno = $this->othersClass->generatecntnum($config, "cntnum", 'CR','CR');
+        }
+
+        $data = $this->coreFunctions->opentable($qry, [$trno, $trno]);
+        $data2 = [];
+        if (!empty($data)) {
+            try {
+                $crtrno = $this->othersClass->generatecntnum($config, "cntnum", 'CR', 'CR');
                 if ($crtrno != -1) {
                     $docno =  $this->coreFunctions->getfieldvalue("cntnum", 'docno', "trno=?", [$crtrno]);
-            
-                    $head = ['trno' => $crtrno, 
-                            'doc' => 'CR',
-                            'docno' => $docno,
-                            'client' => $data[0]->client, 
-                            'clientname' => $data[0]->clientname, 
-                            'dateid' => $data[0]->dateid, //date('Y-m-d'), 
-                            'yourref' => $data[0]->yourref, //crno
-                            'ourref' => $data[0]->ourref, //rfno
-                            'rem' => $data[0]->rem,
-                            'checkno' => $data[0]->checkno,
-                            'checkdate' => $data[0]->checkdate,
-                            'amount' => $data[0]->amount,
-                            'createby' => $config['params']['user'],
-                            'createdate'=> $this->othersClass->getCurrentTimeStamp()
-                            ];
-        
-                        foreach($head as $k => $value){
-                            $data2[$k] = $this->othersClass->sanitizekeyfieldFast($k, $head[$k], $lookups);
-                        }
-        
+
+                    $head = [
+                        'trno' => $crtrno,
+                        'doc' => 'CR',
+                        'docno' => $docno,
+                        'client' => $data[0]->client,
+                        'clientname' => $data[0]->clientname,
+                        'dateid' => $data[0]->dateid, //date('Y-m-d'), 
+                        'yourref' => $data[0]->yourref, //crno
+                        'ourref' => $data[0]->ourref, //rfno
+                        'rem' => $data[0]->rem,
+                        'checkno' => $data[0]->checkno,
+                        'checkdate' => $data[0]->checkdate,
+                        'amount' => $data[0]->amount,
+                        'createby' => $config['params']['user'],
+                        'createdate' => $this->othersClass->getCurrentTimeStamp()
+                    ];
+
+                    foreach ($head as $k => $value) {
+                        $data2[$k] = $this->othersClass->sanitizekeyfieldFast($k, $head[$k], $lookups);
+                    }
+
                     $inserthead = $this->coreFunctions->sbcinsert(app($path)->head, $data2);
-                    $config['params']['trno']=$crtrno;
+                    $config['params']['trno'] = $crtrno;
                     $line = 1;
-                    $d =[];
-                    $detail =[];
-                    if($inserthead){
-                        $this->logger->sbcwritelog($crtrno, $config, 'CREATE', $docno . ' - ' . $data[0]->client . ' - ' . $data[0]->clientname,app($path)->tablelogs);
+                    $d = [];
+                    $detail = [];
+                    if ($inserthead) {
+                        $this->logger->sbcwritelog($crtrno, $config, 'CREATE', $docno . ' - ' . $data[0]->client . ' - ' . $data[0]->clientname, app($path)->tablelogs);
                         //entries:
-                        $cash = $this->coreFunctions->getfieldvalue("coa","acnoid","alias = 'CA1'");
-                        foreach ($data as $key2 => $value2) {                            
+                        $cash = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias = 'CA1'");
+                        foreach ($data as $key2 => $value2) {
+                            $d['trno'] = $crtrno;
+                            $d['line'] = $line;
+                            $d['refx'] =  $data[$key2]->trno;
+                            $d['linex'] =  $data[$key2]->line;
+                            $d['client'] = $data[$key2]->client;
+                            $d['acnoid'] = $data[$key2]->acnoid;
+                            $d['postdate'] = $data[$key2]->dateid; //date('Y-m-d');
+                            $d['mcrefx'] = $data[$key2]->mcrefx;
+                            $d['checkno'] = '';
+                            $d['ref'] = $data[0]->docno;
+                            if ($data[$key2]->db != 0) {
+                                $d['cr'] = $data[$key2]->bal;
+                                $d['db'] = 0;
+                            } else {
+                                $d['db'] = $data[$key2]->bal;
+                                $d['cr'] = 0;
+                            }
+                            $d['rem'] = '';
+                            array_push($detail, $d);
+                            $line += 1;
+
+                            //other income
+                            if ($data[$key2]->alias == 'AP3' && $data[$key2]->dateid < $data[$key2]->mcdate) {
                                 $d['trno'] = $crtrno;
                                 $d['line'] = $line;
-                                $d['refx'] =  $data[$key2]->trno;
-                                $d['linex'] =  $data[$key2]->line;
+                                $d['refx'] =  0;
+                                $d['linex'] = 0;
                                 $d['client'] = $data[$key2]->client;
-                                $d['acnoid'] = $data[$key2]->acnoid;
-                                $d['postdate'] = $data[$key2]->dateid;//date('Y-m-d');
-                                $d['mcrefx'] = $data[$key2]->mcrefx;
-                                $d['checkno'] ='';
-                                $d['ref'] = $data[0]->docno;
-                                if($data[$key2]->db != 0){
-                                    $d['cr'] = $data[$key2]->bal;
-                                    $d['db'] = 0;
-                                }else{
-                                    $d['db'] = $data[$key2]->bal;
-                                    $d['cr'] = 0;
-                                }
+                                $d['acnoid'] = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='SA6'");
+                                $d['postdate'] = $data[$key2]->mcdate; //date('Y-m-d');
+                                $d['mcrefx'] = 0;
+                                $d['checkno'] = '';
+                                $d['ref'] = '';
+                                $d['type'] = 'R';
+                                $d['podate'] = $data[$key2]->dateid;
+                                $d['cr'] = $data[$key2]->bal;
+                                $d['db'] = 0;
+                                $d['rem'] = 'Unclaimed Rebate';
+                                array_push($detail, $d);
+                                $line += 1;
+                            }
+
+                            //unearned interest
+                            if ($data[$key2]->alias == 'AR2') {
+                                $d['trno'] = $crtrno;
+                                $d['line'] = $line;
+                                $d['refx'] =  0;
+                                $d['linex'] =  0;
+                                $d['client'] = $data[$key2]->client;
+                                $d['acnoid'] = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='SA3'");
+                                $d['postdate'] = $data[$key2]->mcdate; //date('Y-m-d');
+                                $d['mcrefx'] = 0;
+                                $d['checkno'] = '';
+                                $d['ref'] = '';
+                                $d['db'] = $data[$key2]->bal;
+                                $d['cr'] = 0;
                                 $d['rem'] = '';
                                 array_push($detail, $d);
-                                $line +=1;
+                                $line += 1;
 
-                                //other income
-                                if ($data[$key2]->alias == 'AP3' && $data[$key2]->dateid < $data[$key2]->mcdate) {
-                                    $d['trno'] = $crtrno;
-                                    $d['line'] = $line;
-                                    $d['refx'] =  0;
-                                    $d['linex'] = 0;
-                                    $d['client'] = $data[$key2]->client;
-                                    $d['acnoid'] =$this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='SA6'");
-                                    $d['postdate'] = $data[$key2]->mcdate;//date('Y-m-d');
-                                    $d['mcrefx'] =0;
-                                    $d['checkno'] ='';
-                                    $d['ref'] ='';
-                                    $d['type'] = 'R';
-                                    $d['podate'] =$data[$key2]->dateid;
-                                    $d['cr'] = $data[$key2]->bal;
-                                    $d['db'] = 0;
-                                    $d['rem'] = 'Unclaimed Rebate';
-                                    array_push($detail, $d);
-                                    $line +=1;
-                                }
-
-                                //unearned interest
-                                if ($data[$key2]->alias == 'AR2') {
-                                    $d['trno'] = $crtrno;
-                                    $d['line'] = $line;
-                                    $d['refx'] =  0;
-                                    $d['linex'] =  0;
-                                    $d['client'] = $data[$key2]->client;
-                                    $d['acnoid'] = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='SA3'");
-                                    $d['postdate'] = $data[$key2]->mcdate;//date('Y-m-d');
-                                    $d['mcrefx'] = 0;
-                                    $d['checkno'] ='';
-                                    $d['ref'] = '';
-                                    $d['db'] = $data[$key2]->bal;
-                                    $d['cr'] = 0;
-                                    $d['rem'] = '';
-                                    array_push($detail, $d);
-                                    $line +=1;
-
-                                    //int income
-                                    $d['trno'] = $crtrno;
-                                    $d['line'] = $line;
-                                    $d['refx'] =  0;
-                                    $d['linex'] =  0;
-                                    $d['client'] = $data[$key2]->client;
-                                    $d['acnoid'] = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='SA8'");
-                                    $d['postdate'] = $data[$key2]->mcdate;//date('Y-m-d');
-                                    $d['mcrefx'] = 0;
-                                    $d['checkno'] ='';
-                                    $d['ref'] = '';
-                                    $d['cr'] = $data[$key2]->bal;
-                                    $d['db'] = 0;
-                                    $d['rem'] = '';
-                                    array_push($detail, $d);
-                                    $line +=1;
-                                }                            
+                                //int income
+                                $d['trno'] = $crtrno;
+                                $d['line'] = $line;
+                                $d['refx'] =  0;
+                                $d['linex'] =  0;
+                                $d['client'] = $data[$key2]->client;
+                                $d['acnoid'] = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='SA8'");
+                                $d['postdate'] = $data[$key2]->mcdate; //date('Y-m-d');
+                                $d['mcrefx'] = 0;
+                                $d['checkno'] = '';
+                                $d['ref'] = '';
+                                $d['cr'] = $data[$key2]->bal;
+                                $d['db'] = 0;
+                                $d['rem'] = '';
+                                array_push($detail, $d);
+                                $line += 1;
+                            }
                         }
-                        
+
                         $pt = "select mcd.penalty,mc.dateid as mcdate,mcd.dateid from hmcdetail as mcd left join hmchead as mc on mc.trno = mcd.trno where mcd.trno = ? and mcd.penalty<>0";
                         $pdata = $this->coreFunctions->opentable($pt, [$trno]);
                         if (!empty($pdata)) {
@@ -1206,18 +1208,17 @@ class mc
                                 $d['linex'] =  0;
                                 $d['client'] = $data[0]->client;
                                 $d['acnoid'] = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='SA6'");
-                                $d['postdate'] = $data[0]->mcdate;//date('Y-m-d');
+                                $d['postdate'] = $data[0]->mcdate; //date('Y-m-d');
                                 $d['mcrefx'] = $data[0]->mcrefx;
-                                $d['checkno'] ='';
+                                $d['checkno'] = '';
                                 $d['ref'] = $data[0]->mcdocno;
-                                $d['cr'] =$pdata[$p]->penalty;
+                                $d['cr'] = $pdata[$p]->penalty;
                                 $d['db'] = 0;
                                 $d['rem'] = 'Penalty for AR Due ' . date("m/d/Y", strtotime($pdata[0]->dateid));
                                 $d['type'] = 'P';
-                                $d['podate'] =$data[$key2]->dateid;
+                                $d['podate'] = $data[$key2]->dateid;
                                 array_push($detail, $d);
-                                $line +=1;
-
+                                $line += 1;
                             }
                         }
 
@@ -1227,41 +1228,41 @@ class mc
                         $d['refx'] =  0;
                         $d['linex'] = 0;
                         $d['client'] = $data[$key2]->client;
-                        $d['acnoid'] =$this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='CA1'");
-                        $d['postdate'] = $headd[0]->checkdate ;//date('Y-m-d');
-                        $d['mcrefx'] =0;
-                        $d['checkno'] =$headd[0]->checkno; 
-                        $d['ref'] ='';
-                        $d['db'] = $headd[0]->amount ;
+                        $d['acnoid'] = $this->coreFunctions->getfieldvalue("coa", "acnoid", "alias='CA1'");
+                        $d['postdate'] = $headd[0]->checkdate; //date('Y-m-d');
+                        $d['mcrefx'] = 0;
+                        $d['checkno'] = $headd[0]->checkno;
+                        $d['ref'] = '';
+                        $d['db'] = $headd[0]->amount;
                         $d['cr'] = 0;
                         $d['rem'] = '';
                         array_push($detail, $d);
-                        $line +=1;
+                        $line += 1;
                         //var_dump($detail);
 
                         if (!empty($detail)) {
                             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
                             foreach ($detail as $key => $value) {
-                              foreach ($value as $key2 => $value2) {
-                                $detail[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
-                              }
-                              $detail[$key]['editdate'] = $current_timestamp;
-                              $detail[$key]['editby'] = $config['params']['user'];
-                              $detail[$key]['encodeddate'] = $current_timestamp;
-                              $detail[$key]['encodedby'] = $config['params']['user'];
-                  
-                              if ($this->coreFunctions->sbcinsert(app($path)->detail, $detail[$key]) == 1) {
-                                $this->logger->sbcwritelog($crtrno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION SUCCESS',app($path)->tablelogs);
-                                $this->logger->sbcwritelog($crtrno, $config, 'ACCTG', 'ADD - Line:' . $detail[$key]['line'] . ' Remarks:' . $detail[$key]['rem'] . ' DB:' . $detail[$key]['db'] . ' CR:' . $detail[$key]['cr'] . ' Client:' . $detail[$key]['client'] . ' Date:' . $detail[$key]['postdate'],app($path)->tablelogs);                               
-                              } else {
-                                $this->logger->sbcwritelog($crtrno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION FAILED',app($path)->tablelogs);
-                                return ['accounting' => [], 'status' => false, 'msg' => 'Entry Failed'];
-                              }
+                                foreach ($value as $key2 => $value2) {
+                                    $detail[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
+                                }
+                                $detail[$key]['editdate'] = $current_timestamp;
+                                $detail[$key]['editby'] = $config['params']['user'];
+                                $detail[$key]['encodeddate'] = $current_timestamp;
+                                $detail[$key]['encodedby'] = $config['params']['user'];
+
+                                if ($this->coreFunctions->sbcinsert(app($path)->detail, $detail[$key]) == 1) {
+                                    $this->logger->sbcwritelog($crtrno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION SUCCESS', app($path)->tablelogs);
+                                    $this->logger->sbcwritelog($crtrno, $config, 'ACCTG', 'ADD - Line:' . $detail[$key]['line'] . ' Remarks:' . $detail[$key]['rem'] . ' DB:' . $detail[$key]['db'] . ' CR:' . $detail[$key]['cr'] . ' Client:' . $detail[$key]['client'] . ' Date:' . $detail[$key]['postdate'], app($path)->tablelogs);
+                                } else {
+                                    $this->logger->sbcwritelog($crtrno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION FAILED', app($path)->tablelogs);
+                                    return ['accounting' => [], 'status' => false, 'msg' => 'Entry Failed'];
+                                }
                             } //for $detail                  
-                          }
+                        }
 
                         $msg = "Auto entry Successful";
-                        $this->coreFunctions->execqry("update ".$this->hhead." set crtrno = ".$crtrno.". where trno =".$trno,"update");
+                        $this->coreFunctions->execqry("update " . $this->hhead . " set crtrno = " . $crtrno . ". where trno =" . $trno, "update");
                         return ['status' => true, 'msg' => $msg];
 
                         //   $config['params']['trno'] = $crtrno;
@@ -1276,22 +1277,16 @@ class mc
                         //     $this->coreFunctions->execqry("update ".$this->hhead." set crtrno = ".$crtrno.". where trno =".$trno,"update");
                         //     return ['status' => true, 'msg' => $msg];
                         //   }                       
-                    
+
                     }
-            
-                            
-                }else{
+                } else {
                     return $crtrno;
                 }
-            }catch (Exception $e) {
+            } catch (Exception $e) {
                 return ['status' => false, 'msg' => $e->getMessage()];
             }
-    
-       
-  
-       
-      }else{
-        return ['status' => false, 'msg' => "Tagged SI Already Paid"];
-      }
+        } else {
+            return ['status' => false, 'msg' => "Tagged SI Already Paid"];
+        }
     }
 } //end class

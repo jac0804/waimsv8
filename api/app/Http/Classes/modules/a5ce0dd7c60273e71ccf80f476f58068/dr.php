@@ -68,11 +68,11 @@ class dr
         ['val' => 'all', 'label' => 'All', 'color' => 'primary']
     ];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -459,7 +459,7 @@ class dr
             unset($this->fields[1]);
             unset($head['docno']);
         }
-        
+
         $companyid = $config['params']['companyid'];
         $dateTables = [$this->head];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -1214,7 +1214,7 @@ class dr
 
             $config['params']['line'] = $line;
         }
-        
+
         $companyid = $config['params']['companyid'];
         $dateTables = [$this->stock];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);

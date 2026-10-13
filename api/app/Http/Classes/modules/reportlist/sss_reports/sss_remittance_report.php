@@ -32,12 +32,12 @@ class sss_remittance_report
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -118,12 +118,13 @@ class sss_remittance_report
     if ($client != "") {
       $filter .= " and e.client = '$client'";
     }
-    
+
     if ($department != '') {
-        if ($deptid != 0) {
-            $filter .= " and emp.deptid = $deptid";
-        }}
-    
+      if ($deptid != 0) {
+        $filter .= " and emp.deptid = $deptid";
+      }
+    }
+
     if ($divname != '') {
       if ($config['params']['companyid'] == 58) { //cdo
         $filter .= " and emp.contricompid = $divid";

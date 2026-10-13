@@ -37,10 +37,10 @@ class  tabstathistory
     public $sqlquery;
     public $constructionlookup;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -83,7 +83,7 @@ class  tabstathistory
         $obj[0][$this->gridname]['columns'][$createdate]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
 
         $obj[0][$this->gridname]['columns'][$rem]['readonly'] = true;
-        
+
 
         $obj[0][$this->gridname]['columns'][$deadline]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$status]['type'] = 'label';

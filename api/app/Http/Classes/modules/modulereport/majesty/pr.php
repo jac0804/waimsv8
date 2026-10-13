@@ -34,9 +34,9 @@ class pr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -44,7 +44,8 @@ class pr
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter($config){
+  public function createreportfilter($config)
+  {
 
     $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
     $col1 = $this->fieldClass->create($fields);
@@ -69,7 +70,8 @@ class pr
     );
   }
 
-  public function report_default_query($trno){
+  public function report_default_query($trno)
+  {
 
     $query = "select date(head.dateid) as dateid, head.docno, client.client, client.clientname, head.address, 
         head.terms,head.rem, item.barcode,
@@ -93,10 +95,11 @@ class pr
     return $result;
   } //end fn
 
-  public function reportplotting($params, $data) {
-    if($params['params']['dataparams']['print'] == "default") {
+  public function reportplotting($params, $data)
+  {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_pr_layout($params, $data);
-    } else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_PR_PDF($params, $data);
     }
   }
@@ -162,7 +165,7 @@ class pr
     $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('', '75', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('TOTAL', '100', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
-    
+
     return $str;
   }
 
@@ -202,7 +205,7 @@ class pr
       if ($this->reporter->linecounter == $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
-            $str .= $this->reportheader($params, $data);
+        $str .= $this->reportheader($params, $data);
         $str .= $this->reporter->endrow();
         $page = $page + $count;
       }
@@ -290,7 +293,7 @@ class pr
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -359,20 +362,20 @@ class pr
     for ($i = 0; $i < count($data); $i++) {
       $maxrow = 1;
       $barcode = $data[$i]['barcode'];
-      $qty = number_format($data[$i]['qty'],$decimalqty);
+      $qty = number_format($data[$i]['qty'], $decimalqty);
       $uom = $data[$i]['uom'];
       $itemname = $data[$i]['itemname'];
-      $ext = number_format($data[$i]['ext'],$decimalcurr);
+      $ext = number_format($data[$i]['ext'], $decimalcurr);
 
-      $arr_barcode = $this->reporter->fixcolumn([$barcode],'16',0);
-      $arr_qty = $this->reporter->fixcolumn([$qty],'13',0);
-      $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-      $arr_itemname = $this->reporter->fixcolumn([$itemname],'40',0);
-      $arr_ext = $this->reporter->fixcolumn([$ext],'13',0);
+      $arr_barcode = $this->reporter->fixcolumn([$barcode], '16', 0);
+      $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+      $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+      $arr_itemname = $this->reporter->fixcolumn([$itemname], '40', 0);
+      $arr_ext = $this->reporter->fixcolumn([$ext], '13', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_qty, $arr_uom, $arr_itemname, $arr_ext]);
 
-      for($r = 0; $r < $maxrow; $r++) {
+      for ($r = 0; $r < $maxrow; $r++) {
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(100, 0, (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(50, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);

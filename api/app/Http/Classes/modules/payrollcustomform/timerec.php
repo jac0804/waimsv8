@@ -31,15 +31,17 @@ class timerec
     public $style = 'width:100%;max-width:100%;';
     public $issearchshow = true;
     public $showclosebtn = false;
+    private $logger;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
+        $this->logger = new Logger;
     }
 
     public function getAttrib()
@@ -66,7 +68,9 @@ class timerec
     {
         $tab = [$this->gridname => [
             'gridcolumns' => [
-                'action', 'dateid', 'schedin'
+                'action',
+                'dateid',
+                'schedin'
             ]
         ]];
 
@@ -173,13 +177,15 @@ class timerec
         $companyid = $config['params']['companyid'];
         $dateTables = ['timerec'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        $empid = $config['params']['dataparams']['empid'];
+        $empname = $config['params']['dataparams']['empname'];
 
         $rows = $config['params']['rows'];
         foreach ($rows as $key => $val) {
             if ($val["bgcolor"] != "") {
                 unset($val["bgcolor"]);
                 foreach ($val as $k => $v) {
-                    $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k],$lookups);
+                    $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k], $lookups);
                 }
 
                 $timerec = [
@@ -188,6 +194,7 @@ class timerec
                     'userid' => $val['userid']
                 ];
 
+                $this->logger->sbcmasterlog2($empid, $config, 'UPDATE - Time in/out for ' . $empname . ' on ' . $val['dateid'] . ' to ' . $val['schedin'], 'payroll_log');
                 $this->coreFunctions->sbcupdate("timerec", $timerec, ['line' => $val["line"]]);
             }
         }
@@ -200,12 +207,15 @@ class timerec
     {
         $dateid = date('Y-m-d', strtotime($config['params']['dataparams']['dateid']));
         $idbarcode = $config['params']['dataparams']['idbarcode'];
+        $empid = $config['params']['dataparams']['empid'];
+        $empname = $config['params']['dataparams']['empname'];
 
         $timerec = [
             'curdate' => $dateid,
             'timeinout' => $dateid,
             'userid' => $idbarcode
         ];
+        $this->logger->sbcmasterlog2($empid, $config, 'CREATE - Time in/out for ' . $empname . ' on ' . $dateid, 'payroll_log');
         $this->coreFunctions->sbcinsert("timerec", $timerec);
     }
 

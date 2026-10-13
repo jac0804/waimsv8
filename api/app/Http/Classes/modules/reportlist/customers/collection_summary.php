@@ -29,12 +29,12 @@ class collection_summary
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -121,13 +121,13 @@ class collection_summary
             case '0': // POSTED
                 $query = $this->QUERY_POSTED($config); // POSTED                
                 break;
-            // case '1': // UNPOSTED
-            //     $query = $this->QUERY_UNPOSTED($config); // POSTED
-            //     break;
+                // case '1': // UNPOSTED
+                //     $query = $this->QUERY_UNPOSTED($config); // POSTED
+                //     break;
 
-            // case '2': // ALL
-            //     $query = $this->QUERY_ALL($config); // POSTED
-            //     break;
+                // case '2': // ALL
+                //     $query = $this->QUERY_ALL($config); // POSTED
+                //     break;
         }
 
         $result = $this->coreFunctions->opentable($query);
@@ -210,7 +210,7 @@ class collection_summary
     //                 left join cntnum on cntnum.trno = a.trno
     //                 where a.depodate is null and date(a.checkdate) <= '$end' $filter1
     //                 group by a.clientid
-                    
+
     //                 UNION ALL
 
     //                 select sum(a.db - cr) as checks, client.clientid
@@ -275,7 +275,7 @@ class collection_summary
     //                 left join cntnum on cntnum.trno = a.trno
     //                 where a.depodate is null and date(a.checkdate) <= '$end' $filter1
     //                 group by clientid
-                    
+
     //                 UNION ALL
 
     //                 select sum(a.db - cr) as checks, client.clientid
@@ -297,7 +297,7 @@ class collection_summary
     //                  left join glhead as head on head.trno=detail.trno
     //                  where detail.bal<>0 and date(detail.dateid) between '$start' and '$end' $filter $filter1) as x
     //                  group by clientid,client,clientname, name,crlimit  " . $addfield . " 
-               
+
     //                  UNION ALL
 
     //             select clientname, name, crlimit, sum(db) as db, sum(cr) as cr, sum(db) as balance,
@@ -308,7 +308,7 @@ class collection_summary
     //                     left join cntnum on cntnum.trno = a.trno
     //                     where a.depodate is null and date(a.checkdate) <= '$end' $filter1
     //                     group by clientid
-                        
+
     //                     UNION ALL
 
     //                     select sum(a.db - cr) as checks, client.clientid
@@ -461,7 +461,7 @@ class collection_summary
         $str .= $this->displayHeader_SUMMARIZED($config);
         $amt = null;
         foreach ($result as $key => $data) {
-            $bal =$data->balance;         
+            $bal = $data->balance;
 
             $uncleared = $data->pdc;
             $crlimit = $data->crlimit;
@@ -469,7 +469,7 @@ class collection_summary
             $bal =  number_format($data->balance, 2);
             if ($bal == 0) {
                 $bal = '-';
-            }            
+            }
 
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->addline();

@@ -57,11 +57,11 @@ class qt
   private $reporter;
   private $helpClass;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -143,10 +143,10 @@ class qt
     if ($companyid == 64) { // excelin
       $viewaccess = $this->othersClass->checkAccess($user, 6031);
       if ($viewaccess == '0') {
-          if (empty($user)) {
-              return ['data' => [], 'status' => false, 'msg' => 'Sorry, you`re not allowed to view transaction. Please setup first your Employee Code.'];
-          }
-          $condition .= " and head.createby = ? ";
+        if (empty($user)) {
+          return ['data' => [], 'status' => false, 'msg' => 'Sorry, you`re not allowed to view transaction. Please setup first your Employee Code.'];
+        }
+        $condition .= " and head.createby = ? ";
       }
     }
 
@@ -161,11 +161,11 @@ class qt
 
     $params = [$doc, $center, $date1, $date2];
     if ($companyid == 64 && $viewaccess == '0') {
-        $params[] = $user;
+      $params[] = $user;
     }
     $params = array_merge($params, [$doc, $center, $date1, $date2]);
     if ($companyid == 64 && $viewaccess == '0') {
-        $params[] = $user;
+      $params[] = $user;
     }
 
     $data = $this->coreFunctions->opentable($qry, $params);
@@ -279,9 +279,9 @@ class qt
     // $itemname = 9;
     // $barcode = 10;
 
-    if ($companyid == 64){
+    if ($companyid == 64) {
       $gridcolumn = ['action', 'isqty', 'uom', 'isamt', 'disc',  'ext', 'markup', 'disc2',  'rem', 'wh', 'qa', 'void', 'itemname', 'barcode'];
-    }else {
+    } else {
       $gridcolumn = ['action', 'isqty', 'uom', 'isamt', 'disc', 'ext', 'wh', 'qa', 'void', 'itemname', 'barcode'];
     }
 
@@ -326,10 +326,10 @@ class qt
       $obj[0]['inventory']['columns'][$disc]['readonly'] = true;
     }
 
-    if ($companyid == 64){ //excelin
-        $obj[0]['inventory']['columns'][$markup]['label'] = 'Customer Markup Price';
-        $obj[0]['inventory']['columns'][$markup]['readonly'] = false;
-        $obj[0]['inventory']['columns'][$disc2]['label'] = 'Customer Discount';
+    if ($companyid == 64) { //excelin
+      $obj[0]['inventory']['columns'][$markup]['label'] = 'Customer Markup Price';
+      $obj[0]['inventory']['columns'][$markup]['readonly'] = false;
+      $obj[0]['inventory']['columns'][$disc2]['label'] = 'Customer Discount';
     }
 
     return $obj;
@@ -382,7 +382,7 @@ class qt
       data_set($col3, 'ddeptname.label', 'Department');
     } else {
       $fields = [['yourref', 'ourref'], ['cur', 'forex']];
-      if ($companyid == 64){ //excelin
+      if ($companyid == 64) { //excelin
         array_push($fields, 'ismarkup');
       }
       $col3 = $this->fieldClass->create($fields);
@@ -507,17 +507,17 @@ class qt
           where head.trno = ? and num.center=? ";
 
     $head = $this->coreFunctions->opentable($qry, [$trno, $center, $trno, $center]);
-    
+
     if (!empty($head)) {
       if ($config['params']['companyid'] == 64) { //excelin
-          $viewaccess = $this->othersClass->checkAccess($config['params']['user'], 6031);
-          if ($viewaccess == '0') {
-              if ($head[0]->createby != $config['params']['user']) {
-                  $head[0]->trno = 0;
-                  $head[0]->docno = '';
-                  return ['status' => false, 'isnew' => false, 'head' => $head, 'griddata' => ['inventory' => []], 'msg' => 'Quotation was created by another user.'];
-              }
+        $viewaccess = $this->othersClass->checkAccess($config['params']['user'], 6031);
+        if ($viewaccess == '0') {
+          if ($head[0]->createby != $config['params']['user']) {
+            $head[0]->trno = 0;
+            $head[0]->docno = '';
+            return ['status' => false, 'isnew' => false, 'head' => $head, 'griddata' => ['inventory' => []], 'msg' => 'Quotation was created by another user.'];
           }
+        }
       }
       foreach ($this->blnfields as $key => $value) {
         if ($head[0]->$value) {
@@ -1097,7 +1097,7 @@ class qt
     $itemid = $config['params']['data']['itemid'];
     $trno = $config['params']['trno'];
     $disc = $config['params']['data']['disc'];
-    if($companyid==64){ //excelin
+    if ($companyid == 64) { //excelin
       $disc = $this->normalizedisc($disc);
     }
     $wh = $config['params']['data']['wh'];
@@ -1139,9 +1139,9 @@ class qt
     // }
     if (isset($config['params']['data']['disc2'])) {
       $custdisc = $config['params']['data']['disc2'];
-      if($companyid==64){ //excelin
-          $custdisc = $this->normalizedisc($config['params']['data']['disc2']);
-      } 
+      if ($companyid == 64) { //excelin
+        $custdisc = $this->normalizedisc($config['params']['data']['disc2']);
+      }
     }
 
     if (isset($config['params']['data']['markup'])) {

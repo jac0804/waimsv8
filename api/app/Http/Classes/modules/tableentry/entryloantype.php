@@ -35,17 +35,17 @@ class entryloantype
   public $style = 'width:100%;';
   public $tablelogs = 'masterfile_log';
   public $tablelogs_del = 'del_masterfile_log';
-  private $fields = ['category', 'reqtype', 'acnoid', 'isloantype','isdiminishing'];
+  private $fields = ['category', 'reqtype', 'acnoid', 'isloantype', 'isdiminishing'];
   public $showclosebtn = false;
   private $reporter;
   public $logger;
   private $reportheader;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -64,7 +64,7 @@ class entryloantype
 
   public function createTab($config)
   {
-    $columns = ['action', 'category', 'reqtype', 'acno','isdiminishing'];
+    $columns = ['action', 'category', 'reqtype', 'acno', 'isdiminishing'];
     $tab = [
       $this->gridname => [
         'gridcolumns' => $columns
@@ -73,7 +73,7 @@ class entryloantype
 
     foreach ($columns as $key => $value) {
       $$value = $key;
-  }
+    }
 
     $stockbuttons = ['save', 'delete', 'addsub'];
 
@@ -147,7 +147,7 @@ class entryloantype
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
 
         if ($data[$key]['line'] == 0 && $data[$key]['category'] != '') {
@@ -211,9 +211,9 @@ class entryloantype
     } else {
       $row['isdiminishing'] = 0;
     }
-    
+
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     if ($row['line'] == 0 && $row['category'] != '') {

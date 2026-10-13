@@ -29,10 +29,10 @@ class viewgridincentivesdealer
   public $issearchshow = true;
   public $showclosebtn = false;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -99,8 +99,8 @@ class viewgridincentivesdealer
     foreach ($data as $key => $value) {
       if ($value['added'] == 'true') {
 
-        $agentquota = $this->othersClass->sanitizekeyfieldFast('amt', $value['agentquota'],$lookups);
-        $sales = $this->othersClass->sanitizekeyfieldFast('amt', $value['amt'],$lookups);
+        $agentquota = $this->othersClass->sanitizekeyfieldFast('amt', $value['agentquota'], $lookups);
+        $sales = $this->othersClass->sanitizekeyfieldFast('amt', $value['amt'], $lookups);
       } else {
         array_push($return, $value);
       }

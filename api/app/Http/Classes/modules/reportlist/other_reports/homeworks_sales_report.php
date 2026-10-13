@@ -36,12 +36,12 @@ class homeworks_sales_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1200'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -406,8 +406,8 @@ class homeworks_sales_report
                                         $value->QTY_3 = $value->TOTAL_SOLD;
                                         $value->MOS3 = $value->cardcharge;
                                         break;
-                                     case '6MONS':
-                                     case '6MOS':
+                                    case '6MONS':
+                                    case '6MOS':
                                         $value->QTY_6 =  $value->TOTAL_SOLD;
                                         $value->MOS6 = $value->cardcharge;
                                         break;
@@ -528,13 +528,13 @@ class homeworks_sales_report
                             default:
                                 if (!empty($banktype) && $cardcharge != 0) {
                                     switch (strtoupper(str_replace(' ', '', $transaction->banktype))) {
-                                         case '3MONS':
-                                         case '3MOS':
+                                        case '3MONS':
+                                        case '3MOS':
                                             $tlqty3 += $transaction->TTL_SOLD;
                                             $tlmos3 += $transaction->cardcharge;
                                             break;
                                         case '6MONS':
-                                        case '6MOS':  
+                                        case '6MOS':
                                             $tlqty6 +=  $transaction->TTL_SOLD;
                                             $tlmos6 += $transaction->cardcharge;
                                             break;
@@ -694,7 +694,7 @@ class homeworks_sales_report
                                                 $tlmos3 += $transaction->cardcharge;
                                                 break;
                                             case '6MONS':
-                                            case '6MOS':  
+                                            case '6MOS':
                                                 $tlqty6 +=  $transaction->TTL_SOLD;
                                                 $tlmos6 += $transaction->cardcharge;
                                                 break;
@@ -821,8 +821,8 @@ class homeworks_sales_report
                                         $value->QTY_3 = $value->TTL_SOLD;
                                         $value->MOS3 = $value->cardcharge;
                                         break;
-                                  case '6MONS':
-                                  case '6MOS':
+                                    case '6MONS':
+                                    case '6MOS':
                                         $value->QTY_6 =  $value->TTL_SOLD;
                                         $value->MOS6 = $value->cardcharge;
                                         break;
@@ -916,7 +916,7 @@ class homeworks_sales_report
                                         $value->MOS3 = $value->cardcharge;
                                         break;
                                     case '6MONS':
-                                    case '6MOS': 
+                                    case '6MOS':
                                         $value->QTY_6 =  $value->TTL_SOLD;
                                         $value->MOS6 = $value->cardcharge;
                                         break;
@@ -1011,7 +1011,7 @@ class homeworks_sales_report
                                         $value->MOS3 = $value->cardcharge;
                                         break;
                                     case '6MONS':
-                                    case '6MOS':    
+                                    case '6MOS':
                                         $value->QTY_6 =  $value->TTL_SOLD;
                                         $value->MOS6 = $value->cardcharge;
                                         break;
@@ -1153,7 +1153,7 @@ class homeworks_sales_report
                                             case 'STRAIGHT':
                                             case 'DEBIT':
                                             case 'AUBGCASH':
-                                            case 'DEBIT/BANCNET':    
+                                            case 'DEBIT/BANCNET':
                                                 $tlqtystdb +=  $transaction->TTL_SOLD;
                                                 $tlstdb += $transaction->cardcharge;
                                                 break;
@@ -1296,12 +1296,12 @@ class homeworks_sales_report
                                     if (!empty($banktype) && $cardcharge != 0) {
                                         switch (strtoupper(str_replace(' ', '', $transaction->banktype))) {
                                             case '3MONS':
-                                            case '3MOS':     
+                                            case '3MOS':
                                                 $tlqty3 += $transaction->TTL_SOLD;
                                                 $tlmos3 += $transaction->cardcharge;
                                                 break;
                                             case '6MONS':
-                                            case '6MOS':       
+                                            case '6MOS':
                                                 $tlqty6 +=  $transaction->TTL_SOLD;
                                                 $tlmos6 += $transaction->cardcharge;
                                                 break;
@@ -1315,7 +1315,7 @@ class homeworks_sales_report
                                             case 'STRAIGHT':
                                             case 'DEBIT':
                                             case 'AUBGCASH':
-                                            case 'DEBIT/BANCNET':    
+                                            case 'DEBIT/BANCNET':
                                                 $tlqtystdb +=  $transaction->TTL_SOLD;
                                                 $tlstdb += $transaction->cardcharge;
                                                 break;
@@ -2072,8 +2072,8 @@ class homeworks_sales_report
                 where date(head.dateid) between '$start' and '$end'  and left(num.bref,3) in ('SJS','SRS') and  item.isinactive in $itemstatus $filter
                 group by center.name,supp.client, supp.clientname, item.barcode,item.itemname,info.terminalid,info.bankrate,info.banktype,num.bref,stock.isamt,stock.cost
                 $orderby ";
-             
-              // $this->coreFunctions->LogConsole($query);
+
+                // $this->coreFunctions->LogConsole($query);
                 // logger($query);
                 break;
             // case 'CSV':
@@ -2258,8 +2258,8 @@ class homeworks_sales_report
                     left join client as br on br.clientid=head.branch
                      where  date(head.dateid) between '$start' and '$end'  and left(num.bref,3) in ('SJS','SRS') and  item.isinactive in $itemstatus $filter
                     group by date(head.dateid),br.clientname, item.channel, supp.client, supp.clientname, info.terminalid, supp.client,info.bankrate,info.banktype,num.bref order by filter asc ";
-                    
-                    break;
+
+                break;
             // case 'CSV':
             //     $query = "select  supp.client as  `SUPPLIER_CODE`, supp.clientname as  `SUPPLIER_NAME`, date(head.dateid) as `DATE`,
             //         sum(stock.iss - stock.qty) as `TTL_SOLD`,
@@ -2541,7 +2541,7 @@ class homeworks_sales_report
                                 $mos3 = $data->cardcharge;
                                 break;
                             case '6MONS':
-                            case '6MOS':    
+                            case '6MOS':
                                 $qty6 =  $data->totalsold;
                                 $mos6 =  $data->cardcharge;
                                 break;
@@ -2554,8 +2554,8 @@ class homeworks_sales_report
                                 break;
                             case 'STRAIGHT':
                             case 'DEBIT':
-                            case 'AUBGCASH': 
-                            case 'DEBIT/BANCNET':      
+                            case 'AUBGCASH':
+                            case 'DEBIT/BANCNET':
                                 $qtyst =  $data->totalsold;
                                 $most =  $data->cardcharge;
                                 break;
@@ -3410,7 +3410,7 @@ class homeworks_sales_report
                                         $mos3 += $cardcharge;
                                         break;
                                     case '6MONS':
-                                    case '6MOS':     
+                                    case '6MOS':
                                         $qty6 += $data->totalsold;
                                         $mos6 += $cardcharge;
                                         break;
@@ -3424,7 +3424,7 @@ class homeworks_sales_report
                                     case 'STRAIGHT':
                                     case 'DEBIT':
                                     case 'AUBGCASH':
-                                    case 'DEBIT/BANCNET':    
+                                    case 'DEBIT/BANCNET':
                                         $qtyst += $data->totalsold;
                                         $most += $cardcharge;
                                         break;
@@ -4381,14 +4381,14 @@ class homeworks_sales_report
         // $letter= $this->reporter->letterhead($center, $username, $config);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col($headerdata[0]->name . ' ' . strtoupper($headerdata[0]->address), '600', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('', '1239', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');//939
+        $str .= $this->reporter->col('', '1239', null, false, $border, '', 'L', $font, $font_size, 'B', '', ''); //939
         $str .= $this->reporter->col($itemstatus . ' - VENDOR SUMMARY REPORT', '361', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Supplier: ' . $clientname, '1250', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');//950
+        $str .= $this->reporter->col('Supplier: ' . $clientname, '1250', null, false, $border, '', 'L', $font, $font_size, 'B', '', ''); //950
         $str .= $this->reporter->col('FROM:' . $start, '250', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
@@ -4414,7 +4414,7 @@ class homeworks_sales_report
         $str .= $this->reporter->startrow(); //23
         $str .= $this->reporter->col('Branch', '210', '', false, $border, 'B', 'C', $font, $font_size, 'B', '', ''); //60
         $str .= $this->reporter->col('Supplier Code', '50', '', false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('Supplier Name', '237', '', false, $border, 'B', 'C', $font, $font_size, 'B', '', '');//87
+        $str .= $this->reporter->col('Supplier Name', '237', '', false, $border, 'B', 'C', $font, $font_size, 'B', '', ''); //87
         $str .= $this->reporter->col('TTL Sold', '49', '', false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Srp', '49', '', false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
         $str .= $this->reporter->col('Disc', '49', '', false, $border, 'B', 'C', $font, $font_size, 'B', '', '');
@@ -4468,7 +4468,7 @@ class homeworks_sales_report
         foreach ($suppl as $supply) {
             $supplier[] = $supply->suppcode;
         }
-        
+
         $groupedData = [];
         foreach ($result as $data) {
             $groupedData[$data->channel][$data->filter][] = $data;
@@ -4572,12 +4572,12 @@ class homeworks_sales_report
                             if (!empty($banktype) && $cardcharge != 0) {
                                 switch (strtoupper(str_replace(' ', '', $data->banktype))) {
                                     case '3MONS':
-                                    case '3MOS':    
+                                    case '3MOS':
                                         $qty3 += $data->totalsold;
                                         $mos3 += $cardcharge;
                                         break;
                                     case '6MONS':
-                                    case '6MOS':     
+                                    case '6MOS':
                                         $qty6 += $data->totalsold;
                                         $mos6 += $cardcharge;
                                         break;
@@ -4591,7 +4591,7 @@ class homeworks_sales_report
                                     case 'STRAIGHT':
                                     case 'DEBIT':
                                     case 'AUBGCASH':
-                                    case 'DEBIT/BANCNET':     
+                                    case 'DEBIT/BANCNET':
                                         $qtyst += $data->totalsold;
                                         $most += $cardcharge;
                                         break;
@@ -5404,94 +5404,92 @@ class homeworks_sales_report
                 break;
         }
 
-        if($reptype !=2 ){//not vendor summary report
-            
-        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-        $dt = new DateTime($current_timestamp);
-        $date = $dt->format('d-M-y');
-        $username = $config['params']['user'];
+        if ($reptype != 2) { //not vendor summary report
 
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '1200', '', false, '1px dashed', 'B', '', $font, $font_size, '', '', '5px');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
+            $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+            $dt = new DateTime($current_timestamp);
+            $date = $dt->format('d-M-y');
+            $username = $config['params']['user'];
 
-
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($date, '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('Please examine your Monthly Sales Report immediately. If no discrepancy is ', '500', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        // $str .= $this->reporter->col("Page $page_count of  " . $final, '100', '', false, '', 'R', '', $font, $font_size);
-        $str .= $this->reporter->pagenumber('Page', null, null, false, $border, '', '', $font, $font_size, '', '', '');
-
-        $str .= $this->reporter->col('Sales report not valid without official Homeworks', '500', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col(' reported within 30 days from this bill\'s cut off date, the contents of this', '500', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('Dry Seal and valid signature.', '500', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($username, '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('statement will be considered correct. Thank you.', '500', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('', '500', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-        $str .= '</div>';
-
-        }else{//vendor summary report 
-
-        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-        $dt = new DateTime($current_timestamp);
-        $date = $dt->format('d-M-y');
-        $username = $config['params']['user'];
-
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '1500', '', false, '1px dashed', 'B', '', $font, $font_size, '', '', '5px');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', '1200', '', false, '1px dashed', 'B', '', $font, $font_size, '', '', '5px');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
 
 
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($date, '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('Please examine your Monthly Sales Report immediately. If no discrepancy is ', '650', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        // $str .= $this->reporter->col("Page $page_count of  " . $final, '100', '', false, '', 'R', '', $font, $font_size);
-        $str .= $this->reporter->pagenumber('Page', '100', null, false, $border, '', '', $font, $font_size, '', '', '');
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($date, '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('Please examine your Monthly Sales Report immediately. If no discrepancy is ', '500', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            // $str .= $this->reporter->col("Page $page_count of  " . $final, '100', '', false, '', 'R', '', $font, $font_size);
+            $str .= $this->reporter->pagenumber('Page', null, null, false, $border, '', '', $font, $font_size, '', '', '');
 
-        $str .= $this->reporter->col('Sales report not valid without official Homeworks', '650', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
+            $str .= $this->reporter->col('Sales report not valid without official Homeworks', '500', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
 
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col(' reported within 30 days from this bill\'s cut off date, the contents of this', '650', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('Dry Seal and valid signature.', '650', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+            $str .= $this->reporter->col(' reported within 30 days from this bill\'s cut off date, the contents of this', '500', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+            $str .= $this->reporter->col('Dry Seal and valid signature.', '500', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
 
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($username, '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('statement will be considered correct. Thank you.', '650', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
-        $str .= $this->reporter->col('', '650', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-        $str .= '</div>';
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($username, '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+            $str .= $this->reporter->col('statement will be considered correct. Thank you.', '500', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+            $str .= $this->reporter->col('', '500', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
+            $str .= '</div>';
+        } else { //vendor summary report 
 
+            $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+            $dt = new DateTime($current_timestamp);
+            $date = $dt->format('d-M-y');
+            $username = $config['params']['user'];
+
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', '1500', '', false, '1px dashed', 'B', '', $font, $font_size, '', '', '5px');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
+
+
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($date, '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('Please examine your Monthly Sales Report immediately. If no discrepancy is ', '650', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            // $str .= $this->reporter->col("Page $page_count of  " . $final, '100', '', false, '', 'R', '', $font, $font_size);
+            $str .= $this->reporter->pagenumber('Page', '100', null, false, $border, '', '', $font, $font_size, '', '', '');
+
+            $str .= $this->reporter->col('Sales report not valid without official Homeworks', '650', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
+
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+            $str .= $this->reporter->col(' reported within 30 days from this bill\'s cut off date, the contents of this', '650', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+            $str .= $this->reporter->col('Dry Seal and valid signature.', '650', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
+
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($username, '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+            $str .= $this->reporter->col('statement will be considered correct. Thank you.', '650', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $font_size, 'B', '', '');
+            $str .= $this->reporter->col('', '650', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
+            $str .= '</div>';
         }
         // $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         // $dt = new DateTime($current_timestamp);
@@ -5839,12 +5837,12 @@ class homeworks_sales_report
                     if (!empty($data->banktype) && $data->cardcharge != 0) {
                         switch (strtoupper(str_replace(' ', '', $data->banktype))) {
                             case '3MONS':
-                            case '3MOS':     
+                            case '3MOS':
                                 $qty3 = $data->totalsold;
                                 $mos3 = $data->cardcharge;
                                 break;
                             case '6MONS':
-                            case '6MOS':        
+                            case '6MOS':
                                 $qty6 =  $data->totalsold;
                                 $mos6 =  $data->cardcharge;
                                 break;
@@ -5858,7 +5856,7 @@ class homeworks_sales_report
                             case 'STRAIGHT':
                             case 'DEBIT':
                             case 'AUBGCASH':
-                            case 'DEBIT/BANCNET':     
+                            case 'DEBIT/BANCNET':
                                 $qtyst =  $data->totalsold;
                                 $most =  $data->cardcharge;
 
@@ -6911,12 +6909,12 @@ class homeworks_sales_report
                     if (!empty($data->banktype) && $data->cardcharge != 0) {
                         switch (strtoupper(str_replace(' ', '', $data->banktype))) {
                             case '3MONS':
-                            case '3MOS':    
+                            case '3MOS':
                                 $qty3 = $data->totalsold;
                                 $mos3 = $data->cardcharge;
                                 break;
                             case '6MONS':
-                            case '6MOS':       
+                            case '6MOS':
                                 $qty6 =  $data->totalsold;
                                 $mos6 =  $data->cardcharge;
                                 break;
@@ -6930,7 +6928,7 @@ class homeworks_sales_report
                             case 'STRAIGHT':
                             case 'DEBIT':
                             case 'AUBGCASH':
-                            case 'DEBIT/BANCNET':     
+                            case 'DEBIT/BANCNET':
                                 $qtyst =  $data->totalsold;
                                 $most =  $data->cardcharge;
 
@@ -7567,11 +7565,11 @@ class homeworks_sales_report
         $tl2srp = 0;
         $costlang = 0;
 
-        
-                // $gtotalsld = $gtotaldiscount =    $gtlssrp = 0;
-                // $gtl2srp =  $gcomm1here =  $ggross =   $gpercenthere =   $gcommm2 = $gnetp = $gtldqty3 = 0;
-                // $gtldmos3 =  $gtldqty6 =   $gtldmos6 =   $gtldqty9 =  $gtldmos9 =   $gtldqtyfzero = 0;
-                // $gtldfzero = $gtldqtyfreg =  $gtldfreg =   $gtldqtyst = $gtldmos = $gcostlang = 0;
+
+        // $gtotalsld = $gtotaldiscount =    $gtlssrp = 0;
+        // $gtl2srp =  $gcomm1here =  $ggross =   $gpercenthere =   $gcommm2 = $gnetp = $gtldqty3 = 0;
+        // $gtldmos3 =  $gtldqty6 =   $gtldmos6 =   $gtldqty9 =  $gtldmos9 =   $gtldqtyfzero = 0;
+        // $gtldfzero = $gtldqtyfreg =  $gtldfreg =   $gtldqtyst = $gtldmos = $gcostlang = 0;
 
         $suppcode = '';
         $supname = '';
@@ -7856,29 +7854,29 @@ class homeworks_sales_report
                         $str .= $this->reporter->endtable();
                         break;
 
-                 //test
-                // $gtotalsld += $totalsld;
-                // $gtotaldiscount +=$totaldiscount; 
-                // $gtlssrp += $tlssrp;
-                // $gtl2srp += $tl2srp; 
-                // $gcomm1here +=$comm1here;
-                // $ggross +=$gross;
-                // $gpercenthere +=$percenthere; 
-                // $gcommm2 += $commm2;
-                // $gnetp +=$netp; 
-                // $gtldqty3 += $tldqty3 ;
-                // $gtldmos3 +=$tldmos3;
-                // $gtldqty6 +=$tldqty6;  
-                // $gtldmos6 += $tldmos6;  
-                // $gtldqty9 +=$tldqty9;
-                // $gtldmos9 +=$tldmos9;
-                // $gtldqtyfzero +=$tldqtyfzero;
-                // $gtldfzero +=$tldfzero;
-                // $gtldqtyfreg +=$tldqtyfreg ;
-                // $gtldfreg +=$tldfreg;
-                // $gtldqtyst +=$tldqtyst;
-                // $gtldmos += $tldmos;
-                // $gcostlang +=$costlang;
+                        //test
+                        // $gtotalsld += $totalsld;
+                        // $gtotaldiscount +=$totaldiscount; 
+                        // $gtlssrp += $tlssrp;
+                        // $gtl2srp += $tl2srp; 
+                        // $gcomm1here +=$comm1here;
+                        // $ggross +=$gross;
+                        // $gpercenthere +=$percenthere; 
+                        // $gcommm2 += $commm2;
+                        // $gnetp +=$netp; 
+                        // $gtldqty3 += $tldqty3 ;
+                        // $gtldmos3 +=$tldmos3;
+                        // $gtldqty6 +=$tldqty6;  
+                        // $gtldmos6 += $tldmos6;  
+                        // $gtldqty9 +=$tldqty9;
+                        // $gtldmos9 +=$tldmos9;
+                        // $gtldqtyfzero +=$tldqtyfzero;
+                        // $gtldfzero +=$tldfzero;
+                        // $gtldqtyfreg +=$tldqtyfreg ;
+                        // $gtldfreg +=$tldfreg;
+                        // $gtldqtyst +=$tldqtyst;
+                        // $gtldmos += $tldmos;
+                        // $gcostlang +=$costlang;
 
                 }
 
@@ -7946,12 +7944,12 @@ class homeworks_sales_report
                     if (!empty($data->banktype) && $data->cardcharge != 0) {
                         switch (strtoupper(str_replace(' ', '', $data->banktype))) {
                             case '3MONS':
-                            case '3MOS':    
+                            case '3MOS':
                                 $qty3 = $data->totalsold;
                                 $mos3 = $data->cardcharge;
                                 break;
                             case '6MONS':
-                            case '6MOS':    
+                            case '6MOS':
                                 $qty6 =  $data->totalsold;
                                 $mos6 =  $data->cardcharge;
                                 break;
@@ -7965,7 +7963,7 @@ class homeworks_sales_report
                             case 'STRAIGHT':
                             case 'DEBIT':
                             case 'AUBGCASH':
-                            case 'DEBIT/BANCNET':      
+                            case 'DEBIT/BANCNET':
                                 $qtyst =  $data->totalsold;
                                 $most =  $data->cardcharge;
 
@@ -8222,29 +8220,29 @@ class homeworks_sales_report
             $costlang += $cost;
 
 
-                // $gtotalsld += $totalsold;
-                // $gtotaldiscount +=$discount; 
-                // $gtlssrp += $srp;
-                // $gtl2srp += $tlsrp; 
-                // $gcomm1here +=$comm1;
-                // $ggross +=$comap;
-                // $gpercenthere +=$percentage; 
-                // $gcommm2 += $grossap2;
-                // $gnetp +=$netpayable; 
+            // $gtotalsld += $totalsold;
+            // $gtotaldiscount +=$discount; 
+            // $gtlssrp += $srp;
+            // $gtl2srp += $tlsrp; 
+            // $gcomm1here +=$comm1;
+            // $ggross +=$comap;
+            // $gpercenthere +=$percentage; 
+            // $gcommm2 += $grossap2;
+            // $gnetp +=$netpayable; 
 
-                // $gtldqty3 += $qty3 ;
-                // $gtldmos3 +=$mos3;
-                // $gtldqty6 +=$qty6;  
-                // $gtldmos6 += $mos6;  
-                // $gtldqty9 +=$qty9;
-                // $gtldmos9 +=$mos9;
-                // $gtldqtyfzero +=$financezeroqty;
-                // $gtldfzero +=$financezero;
-                // $gtldqtyfreg +=$financeregularqty ;
-                // $gtldfreg +=$financeregular;
-                // $gtldqtyst +=$qtyst;
-                // $gtldmos += $most;
-                // $gcostlang +=$cost;
+            // $gtldqty3 += $qty3 ;
+            // $gtldmos3 +=$mos3;
+            // $gtldqty6 +=$qty6;  
+            // $gtldmos6 += $mos6;  
+            // $gtldqty9 +=$qty9;
+            // $gtldmos9 +=$mos9;
+            // $gtldqtyfzero +=$financezeroqty;
+            // $gtldfzero +=$financezero;
+            // $gtldqtyfreg +=$financeregularqty ;
+            // $gtldfreg +=$financeregular;
+            // $gtldqtyst +=$qtyst;
+            // $gtldmos += $most;
+            // $gcostlang +=$cost;
         } //end foreach
 
         if ($totalsld < 0) { //ito yung negative
@@ -9107,12 +9105,12 @@ class homeworks_sales_report
                             if (!empty($banktype) && $cardcharge != 0) {
                                 switch (strtoupper(str_replace(' ', '', $data->banktype))) {
                                     case '3MONS':
-                                    case '3MOS':    
+                                    case '3MOS':
                                         $qty3 += $data->totalsold;
                                         $mos3 += $cardcharge;
                                         break;
                                     case '6MONS':
-                                    case '6MOS':    
+                                    case '6MOS':
                                         $qty6 += $data->totalsold;
                                         $mos6 += $cardcharge;
                                         break;
@@ -9126,7 +9124,7 @@ class homeworks_sales_report
                                     case 'STRAIGHT':
                                     case 'DEBIT':
                                     case 'AUBGCASH':
-                                    case 'DEBIT/BANCNET':     
+                                    case 'DEBIT/BANCNET':
                                         $qtyst += $data->totalsold;
                                         $most += $cardcharge;
                                         break;

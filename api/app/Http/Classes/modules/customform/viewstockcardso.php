@@ -29,10 +29,10 @@ class viewstockcardso
   private $othersClass;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -42,20 +42,25 @@ class viewstockcardso
   public function createTab($config)
   {
     $companyid = $config['params']['companyid'];
-     if($config['params']['companyid'] == 60  && $config['params']['moduletype'] == 'INQUIRY'){
-        $itemid = $config['params']['row']['itemid'];
-        }else{
-        $itemid = $config['params']['clientid'];
-        }
+    if ($config['params']['companyid'] == 60  && $config['params']['moduletype'] == 'INQUIRY') {
+      $itemid = $config['params']['row']['itemid'];
+    } else {
+      $itemid = $config['params']['clientid'];
+    }
     $item = $this->othersClass->getitemname($itemid);
     $this->modulename = $this->modulename . ' ~ ' . $item[0]->barcode . ' ~ ' . $item[0]->itemname;
 
     $tab = [$this->gridname => [
       'gridcolumns' => [
-        'docno', 'dateid',
+        'docno',
+        'dateid',
         'listclientname',
-        'isqty', 'qa',
-        'bal', 'whname', 'void', 'rem'
+        'isqty',
+        'qa',
+        'bal',
+        'whname',
+        'void',
+        'rem'
       ]
     ]];
 
@@ -127,10 +132,10 @@ class viewstockcardso
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'dateid.readonly', false);
     data_set($col1, 'luom.lookupclass', 'uomledger');
-    
-    if($config['params']['companyid'] == 60 && $moduletype=='INQUIRY'){
-        data_set($col1, 'luom.addedparams', ['itemid']);
-      }
+
+    if ($config['params']['companyid'] == 60 && $moduletype == 'INQUIRY') {
+      data_set($col1, 'luom.addedparams', ['itemid']);
+    }
 
     $fields = ['wh'];
     $col2 = $this->fieldClass->create($fields);
@@ -146,10 +151,10 @@ class viewstockcardso
 
   public function paramsdata($config)
   {
-    if($config['params']['companyid']==60 && $config['params']['moduletype']=='INQUIRY'){//transpower
-       $itemid = $config['params']['row']['itemid'];
-    }else{
-       $itemid = $config['params']['clientid'];
+    if ($config['params']['companyid'] == 60 && $config['params']['moduletype'] == 'INQUIRY') { //transpower
+      $itemid = $config['params']['row']['itemid'];
+    } else {
+      $itemid = $config['params']['clientid'];
     }
     $uom = $this->coreFunctions->getfieldvalue('item', 'uom', 'itemid=?', [$itemid]);
     if ($config['params']['companyid'] == 17 || $config['params']['companyid'] == 28 || $config['params']['companyid'] == 60) { //unihome & xcomp & transpower
@@ -158,10 +163,10 @@ class viewstockcardso
       $wh = $this->companysetup->getwh($config['params']);
     }
 
-      $addf="";
-    if($config['params']['companyid'] == 60 &&  $config['params']['moduletype'] == 'INQUIRY'){
-       $row = $config['params']['row']['itemid'];
-      $addf= ", " . $row . "   as itemid" ;
+    $addf = "";
+    if ($config['params']['companyid'] == 60 &&  $config['params']['moduletype'] == 'INQUIRY') {
+      $row = $config['params']['row']['itemid'];
+      $addf = ", " . $row . "   as itemid";
     }
 
     $data = $this->getbal($config, $itemid, $wh, $uom);
@@ -191,10 +196,10 @@ class viewstockcardso
     $date = date("Y-m-d", strtotime($config['params']['dataparams']['dateid']));
     $uom = $config['params']['dataparams']['uom'];
     $wh = $config['params']['dataparams']['wh'];
-   
+
     if (isset($config['params']['dataparams']['itemid'])) {
       $itemid = $config['params']['dataparams']['itemid'];
-    }else{
+    } else {
       $itemid = $config['params']['itemid'];
     }
 
@@ -278,12 +283,12 @@ class viewstockcardso
     $qry = "";
   } //end function
 
-  public function sbcscript($config){
+  public function sbcscript($config)
+  {
     if ($config['params']['companyid'] == 60) { //transpower
       return $this->sbcscript->skcustomform($config);
     } else {
       return true;
-    }   
+    }
   }
-
 } //end class

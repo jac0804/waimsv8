@@ -34,12 +34,12 @@ class homeworks_for_sir_jon_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -451,27 +451,27 @@ class homeworks_for_sir_jon_report
                         default:
                             if (!empty($value->banktype) && $value->cardcharge != 0) {
                                 switch (strtoupper(str_replace(' ', '', $value->banktype))) {
-                                     case '3MONS':
-                                     case '3MOS':
+                                    case '3MONS':
+                                    case '3MOS':
                                         $value->QTY_3 = $value->TTL_SOLD;
                                         $value->MOS3 = $value->cardcharge;
                                         break;
-                                     case '6MONS':
-                                     case '6MOS':
+                                    case '6MONS':
+                                    case '6MOS':
                                         $value->QTY_6 =  $value->TTL_SOLD;
                                         $value->MOS6 = $value->cardcharge;
                                         break;
-                                      case '9MONS':
-                                      case '12MONS':
-                                      case '9MOS':
-                                      case '12MOS':
+                                    case '9MONS':
+                                    case '12MONS':
+                                    case '9MOS':
+                                    case '12MOS':
                                         $value->QTY_9 =  $value->TTL_SOLD;
                                         $value->MOS9_MOS12 =  $value->cardcharge;
                                         break;
                                     case 'STRAIGHT':
                                     case 'DEBIT':
                                     case 'AUBGCASH':
-                                    case 'DEBIT/BANCNET':     
+                                    case 'DEBIT/BANCNET':
                                         $value->QTY_D =  $value->TTL_SOLD;
                                         $value->DEBIT_STRAIGHT = $value->cardcharge;
                                         break;
@@ -546,12 +546,12 @@ class homeworks_for_sir_jon_report
                             if (!empty($value->banktype) && $value->cardcharge != 0) {
                                 switch (strtoupper(str_replace(' ', '', $value->banktype))) {
                                     case '3MONS':
-                                    case '3MOS':    
+                                    case '3MOS':
                                         $value->QTY_3 = $value->TTL_SOLD;
                                         $value->MOS3 = $value->cardcharge;
                                         break;
                                     case '6MONS':
-                                    case '6MOS':      
+                                    case '6MOS':
                                         $value->QTY_6 =  $value->TTL_SOLD;
                                         $value->MOS6 = $value->cardcharge;
                                         break;
@@ -565,7 +565,7 @@ class homeworks_for_sir_jon_report
                                     case 'STRAIGHT':
                                     case 'DEBIT':
                                     case 'AUBGCASH':
-                                    case 'DEBIT/BANCNET':     
+                                    case 'DEBIT/BANCNET':
                                         $value->QTY_D =  $value->TTL_SOLD;
                                         $value->DEBIT_STRAIGHT = $value->cardcharge;
                                         break;
@@ -942,7 +942,7 @@ class homeworks_for_sir_jon_report
                                 $mos3 = $data->cardcharge;
                                 break;
                             case '6MONS':
-                            case '6MOS':      
+                            case '6MOS':
                                 $qty6 =  $data->totalsold;
                                 $mos6 =  $data->cardcharge;
                                 break;
@@ -956,7 +956,7 @@ class homeworks_for_sir_jon_report
                             case 'STRAIGHT':
                             case 'DEBIT':
                             case 'AUBGCASH':
-                            case 'DEBIT/BANCNET':     
+                            case 'DEBIT/BANCNET':
                                 $qtyst =  $data->totalsold;
                                 $most =  $data->cardcharge;
 
@@ -1484,12 +1484,12 @@ class homeworks_for_sir_jon_report
                     if (!empty($data->banktype) && $data->cardcharge != 0) {
                         switch (strtoupper(str_replace(' ', '', $data->banktype))) {
                             case '3MONS':
-                            case '3MOS':    
+                            case '3MOS':
                                 $qty3 = $data->totalsold;
                                 $mos3 = $data->cardcharge;
                                 break;
                             case '6MONS':
-                            case '6MOS':     
+                            case '6MOS':
                                 $qty6 =  $data->totalsold;
                                 $mos6 =  $data->cardcharge;
                                 break;
@@ -1503,7 +1503,7 @@ class homeworks_for_sir_jon_report
                             case 'STRAIGHT':
                             case 'DEBIT':
                             case 'AUBGCASH':
-                            case 'DEBIT/BANCNET':     
+                            case 'DEBIT/BANCNET':
                                 $qtyst =  $data->totalsold;
                                 $most =  $data->cardcharge;
 
@@ -2040,12 +2040,12 @@ class homeworks_for_sir_jon_report
                     if (!empty($data->banktype) && $data->cardcharge != 0) {
                         switch (strtoupper(str_replace(' ', '', $data->banktype))) {
                             case '3MONS':
-                            case '3MOS':    
+                            case '3MOS':
                                 $qty3 = $data->totalsold;
                                 $mos3 = $data->cardcharge;
                                 break;
                             case '6MONS':
-                            case '6MOS':    
+                            case '6MOS':
                                 $qty6 =  $data->totalsold;
                                 $mos6 =  $data->cardcharge;
                                 break;

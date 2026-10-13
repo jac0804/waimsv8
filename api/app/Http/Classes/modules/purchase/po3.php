@@ -103,11 +103,11 @@ class po3
     ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -138,132 +138,132 @@ class po3
     $this->companies();
     $sorting = ['qcard', 'actionlist', 'dailynotif', 'sbcgraph', 'sbclist'];
     return [
-        'status' => true,
-        'msg' => 'Loaded Success',
-        'obj' => $this->config,
-        'sorting' => $sorting
+      'status' => true,
+      'msg' => 'Loaded Success',
+      'obj' => $this->config,
+      'sorting' => $sorting
     ];
   }
 
   private function modulecount($doc, $color, $caption, $center)
   {
-      $dateid = date('Y-m-d');
-      $count = $total = 0;
-      switch ($doc) {
-          case 'employee':
-              $count = $this->coreFunctions->datareader("select count(isactive) as value from employee where isactive=1");
-              break;
-          case 'regular':
-              $count = $this->coreFunctions->datareader("select count(e.empstatus) as value from employee as emp left join empstatentry as e on e.line=emp.empstatus where emp.isactive=1 and ucase(e.empstatus)='REGULAR'");
-              break;
-          case 'RR':
-              $qry = "select ifnull(count(glhead.trno), 0) as counting from glhead left join cntnum on cntnum.trno=glhead.trno where glhead.doc = '" . $doc . "' and cntnum.center='" . $center . "' and date(glhead.dateid) = '" . $dateid . "'";
-              $pap = $this->coreFunctions->opentable($qry);
-              $qry1 = "select ifnull(count(lahead.trno), 0) as counting from lahead left join cntnum on cntnum.trno=lahead.trno where lahead.doc = '" . $doc . "' and cntnum.center='" . $center . "' and date(lahead.dateid) = '" . $dateid . "'";
-              $uap = $this->coreFunctions->opentable($qry1);
-              $total = $pap[0]->counting + $uap[0]->counting;
-              break;
-      }
+    $dateid = date('Y-m-d');
+    $count = $total = 0;
+    switch ($doc) {
+      case 'employee':
+        $count = $this->coreFunctions->datareader("select count(isactive) as value from employee where isactive=1");
+        break;
+      case 'regular':
+        $count = $this->coreFunctions->datareader("select count(e.empstatus) as value from employee as emp left join empstatentry as e on e.line=emp.empstatus where emp.isactive=1 and ucase(e.empstatus)='REGULAR'");
+        break;
+      case 'RR':
+        $qry = "select ifnull(count(glhead.trno), 0) as counting from glhead left join cntnum on cntnum.trno=glhead.trno where glhead.doc = '" . $doc . "' and cntnum.center='" . $center . "' and date(glhead.dateid) = '" . $dateid . "'";
+        $pap = $this->coreFunctions->opentable($qry);
+        $qry1 = "select ifnull(count(lahead.trno), 0) as counting from lahead left join cntnum on cntnum.trno=lahead.trno where lahead.doc = '" . $doc . "' and cntnum.center='" . $center . "' and date(lahead.dateid) = '" . $dateid . "'";
+        $uap = $this->coreFunctions->opentable($qry1);
+        $total = $pap[0]->counting + $uap[0]->counting;
+        break;
+    }
 
-      if ($doc == 'RR') {
-          $this->config['qcard'][$doc] =
-          [
-              'class' => 'bg-' . $color . ' text-white',
-              'headalign' => 'right',
-              'title' => $doc . ' Transaction',
-              'subtitle' => $dateid . ' - ' . $total,
-              'titlesize' => '20px',
-              'subtitlesize' => '25px',
-              'object' => 'btn',
-              'isvertical' => true,
-              'align' => 'right',
-              'detail' => [
-                'btn1' => [
-                  'label' => 'Posted ' . $pap[0]->counting,
-                  'img' => '/images/employee/default_emp_portal.png',
-                  'type' => 'customform',
-                  'action' => 'loadrr',
-                  'lookupclass' => 'rrposted',
-                  'classid' => 'posted'
-                ],
-                'btn2' => [
-                  'label' => 'Unposted ' . $uap[0]->counting,
-                  'type' => 'customform',
-                  'action' => 'loadrr',
-                  'lookupclass' => 'rrunposted',
-                  'classid' => 'unposted'
-                ]
-              ]
-          ];
-      } else {
-          $this->config['qcard'][$doc] =
-              [
-                  'class' => 'bg-' . $color . ' text-white',
-                  'headalign' => 'left',
-                  'title' => $count,
-                  'subtitle' => $caption,
-                  'titlesize' => '20px',
-                  'subtitlesize' => '25px',
-                  'object' => 'btn',
-                  'isvertical' => true,
-                  'align' => 'right',
-                  'detail' => ['btn1' => [
-                      'label' => '100%',
-                      'type' => 'customform',
-                      'action' => $doc,
-                      'classid' => 'posted'
-                  ],]
-              ];
-      }
+    if ($doc == 'RR') {
+      $this->config['qcard'][$doc] =
+        [
+          'class' => 'bg-' . $color . ' text-white',
+          'headalign' => 'right',
+          'title' => $doc . ' Transaction',
+          'subtitle' => $dateid . ' - ' . $total,
+          'titlesize' => '20px',
+          'subtitlesize' => '25px',
+          'object' => 'btn',
+          'isvertical' => true,
+          'align' => 'right',
+          'detail' => [
+            'btn1' => [
+              'label' => 'Posted ' . $pap[0]->counting,
+              'img' => '/images/employee/default_emp_portal.png',
+              'type' => 'customform',
+              'action' => 'loadrr',
+              'lookupclass' => 'rrposted',
+              'classid' => 'posted'
+            ],
+            'btn2' => [
+              'label' => 'Unposted ' . $uap[0]->counting,
+              'type' => 'customform',
+              'action' => 'loadrr',
+              'lookupclass' => 'rrunposted',
+              'classid' => 'unposted'
+            ]
+          ]
+        ];
+    } else {
+      $this->config['qcard'][$doc] =
+        [
+          'class' => 'bg-' . $color . ' text-white',
+          'headalign' => 'left',
+          'title' => $count,
+          'subtitle' => $caption,
+          'titlesize' => '20px',
+          'subtitlesize' => '25px',
+          'object' => 'btn',
+          'isvertical' => true,
+          'align' => 'right',
+          'detail' => ['btn1' => [
+            'label' => '100%',
+            'type' => 'customform',
+            'action' => $doc,
+            'classid' => 'posted'
+          ],]
+        ];
+    }
   } // end function
 
   public function companies()
   {
 
-      $curdate = $this->othersClass->getCurrentDate();
+    $curdate = $this->othersClass->getCurrentDate();
 
-      $bday = $this->coreFunctions->opentable("select divname, '' as picture from division");
+    $bday = $this->coreFunctions->opentable("select divname, '' as picture from division");
 
-      $data = [];
+    $data = [];
 
-      $row1 = [];
-      $row2 = [];
-      $row3 = [];
+    $row1 = [];
+    $row2 = [];
+    $row3 = [];
 
-      foreach ($bday as $key => $value) {
+    foreach ($bday as $key => $value) {
 
-          if ($value->picture == '') {
-              $value->picture = 'images/employee/company_default.png';
-          } else {
-              $value->picture = ltrim($value->picture, '/');
-          }
-
-          $line = [
-              'subtitle' => $value->divname,
-              'subtitle2' => 'subtitle2',
-              'subtitle3' => ['text' => 'subtitle3', 'icon' => 'list', 'color' => 'red'],
-              'subtitle4' => 'subtitle4',
-              'dateid' => 'date',
-              'image' => Storage::disk('public')->url($value->picture)
-          ];
-
-          array_push($row1, $line);
+      if ($value->picture == '') {
+        $value->picture = 'images/employee/company_default.png';
+      } else {
+        $value->picture = ltrim($value->picture, '/');
       }
 
-      array_push($data, ['title' => [
-          'text' => "Total Employees: 2",
-          'icon' => 'star',
-          'bgcolor' => 'red-10',
-          'textcolor' => 'white'
-      ], 'data' => $row1]);
+      $line = [
+        'subtitle' => $value->divname,
+        'subtitle2' => 'subtitle2',
+        'subtitle3' => ['text' => 'subtitle3', 'icon' => 'list', 'color' => 'red'],
+        'subtitle4' => 'subtitle4',
+        'dateid' => 'date',
+        'image' => Storage::disk('public')->url($value->picture)
+      ];
 
-      $this->config['dailynotif']['companies'] = ['data' => $data, 'title' => ['text' => 'EMPLOYEE OVERVIEW 2025', 'icon' => 'rss_feed', 'bgcolor' => 'red-5', 'textcolor' => 'white']];
+      array_push($row1, $line);
+    }
+
+    array_push($data, ['title' => [
+      'text' => "Total Employees: 2",
+      'icon' => 'star',
+      'bgcolor' => 'red-10',
+      'textcolor' => 'white'
+    ], 'data' => $row1]);
+
+    $this->config['dailynotif']['companies'] = ['data' => $data, 'title' => ['text' => 'EMPLOYEE OVERVIEW 2025', 'icon' => 'rss_feed', 'bgcolor' => 'red-5', 'textcolor' => 'white']];
   }
 
   public function loadcustomform($config)
   {
     $this->config = $config;
-    switch($config['params']['action2']) {
+    switch ($config['params']['action2']) {
       case 'loadrr':
         $this->config['return'] = $this->loadrr($config);
         break;
@@ -278,12 +278,12 @@ class po3
     $tab = $this->rrcreateTab($config);
     $tabbtn = $this->rrcreatetabbutton($config);
     $modulename = 'UNPOSTED - RR TRANSACTION';
-    if($config['params']['classid'] == 'posted') $modulename = 'POSTED - RR TRANSACTION';
+    if ($config['params']['classid'] == 'posted') $modulename = 'POSTED - RR TRANSACTION';
     $gridname = 'customformacctg';
     $issearchshow = true;
     $showclosebtn = true;
     $style = 'width:1200px;max-width:1200px;';
-    return ['txtfield'=>$txtfield, 'txtdata'=>$txtdata, 'tab'=>$tab, 'tabbuttons'=>$tabbtn, 'status'=>true, 'msg'=>'Loaded Success', 'modulename'=>$modulename, 'doc'=>$this->config['params']['lookupclass'], 'action'=>$this->config['params']['action'], 'style'=>$style, 'gridname'=>$gridname, 'data'=>$data, 'issearchshow'=>$issearchshow, 'showclosebtn'=>$showclosebtn]; 
+    return ['txtfield' => $txtfield, 'txtdata' => $txtdata, 'tab' => $tab, 'tabbuttons' => $tabbtn, 'status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'doc' => $this->config['params']['lookupclass'], 'action' => $this->config['params']['action'], 'style' => $style, 'gridname' => $gridname, 'data' => $data, 'issearchshow' => $issearchshow, 'showclosebtn' => $showclosebtn];
   }
 
   public function rrcreatetabbutton($config)
@@ -337,7 +337,8 @@ class po3
     return $obj;
   }
 
-  public function execute(){
-   return response()->json($this->config['return'],200);  
+  public function execute()
+  {
+    return response()->json($this->config['return'], 200);
   } // end function
 } //end class

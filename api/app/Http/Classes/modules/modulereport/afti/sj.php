@@ -38,9 +38,9 @@ class sj
     private $logger;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -692,7 +692,7 @@ class sj
                 }
 
                 $linetotal = $datastock[$i]['qty'] * $unitprice;
-                
+
                 //09.05.2025
                 if ($options == 'salesinvoice') {
                     if ($forexparams != 1) {
@@ -792,15 +792,14 @@ class sj
                     $vatsales = $totalext + $linetotal;
                     $totalext = $totalext + $linetotal;
                 }
-
             }
         }
 
         $ewt = 0;
         $tamtdue = $totalext;
 
-    
-        if(!empty($datastock)){
+
+        if (!empty($datastock)) {
             if ($datastock[0]['ewtrate'] != 0) {
                 $ewt = $vatsales *  ($datastock[0]['ewtrate'] / 100);
             }
@@ -819,7 +818,7 @@ class sj
                 $tamtdue = round(($tamtdue - $ewt), 2);
             }
 
-            
+
 
             $cur = $data[0]['cur'];
             $nonvat = '0.00';
@@ -831,8 +830,8 @@ class sj
                     $cur = $currencyparams;
                 }
             }
-        }else{
-            $ewt =0;
+        } else {
+            $ewt = 0;
             $vat = 0;
             $cur = $data[0]['cur'];
             $nonvat = '0.00';
@@ -847,7 +846,7 @@ class sj
             $this->addrowsj('LR');
         } while (PDF::getY() < 620);
 
-        
+
 
 
         //1
@@ -856,7 +855,7 @@ class sj
         PDF::MultiCell(30, 10, " " . $cur, 'T', 'L', false, 0);
         if ($datastock[0]['vattype'] == 'VATABLE') {
             PDF::MultiCell(85, 10, number_format($vatsales, 2), 'TBR', 'R', false, 0);
-        }else{
+        } else {
             PDF::MultiCell(85, 10, '0.00', 'TBR', 'R', false, 0);
         }
         PDF::MultiCell(10, 10, '', 'T', 'R', false, 0);
@@ -1397,18 +1396,18 @@ class sj
             }
         }
 
-        if(!empty($datastock)){
+        if (!empty($datastock)) {
             if ($datastock[0]['vattype'] == 'VATABLE') {
                 $vat = $vatsales * .12;
                 $totalext = $vatsales + $vat;
             } else {
                 $vat = 0;
             }
-        }else{
+        } else {
             $vat = 0;
         }
 
-        
+
 
         if (PDF::getY() > 670) {
             $this->addrow('LRB');

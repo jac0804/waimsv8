@@ -41,9 +41,9 @@ class pq
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -203,7 +203,7 @@ class pq
       $str .= $this->reporter->col($data[$i]['acnoname'], '350', null, false, '1px solid ', '', 'L', 'Century Gothic', '11', '', '', '2px');
       $str .= $this->reporter->col($data[$i]['postdate'], '75', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '2px');
       $str .= $this->reporter->col($debit, '75', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '2px');
-    $str .= $this->reporter->col($data[$i]['remarks'], '75', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '2px');
+      $str .= $this->reporter->col($data[$i]['remarks'], '75', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '2px');
       $totaldb = $totaldb + $data[$i]['amt'];
 
       if ($this->reporter->linecounter == $page) {

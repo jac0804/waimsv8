@@ -22,9 +22,9 @@ class viewshowstockitems
   public $style = 'width:1000px;min-width:1000px;max-width:1000px;';
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->tabClass = new tabClass;
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;

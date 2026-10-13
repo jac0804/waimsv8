@@ -32,12 +32,12 @@ class signature_sheet
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -99,22 +99,23 @@ class signature_sheet
     $center = $config['params']['center'];
     $username = $config['params']['user'];
 
-    return $this->reportDefaultLayout($config);
+    if ($config['params']['companyid'] == 62) { // onesky
+      return $this->reportDefaultLayout_onesky($config);
+    } else {
+      return $this->reportDefaultLayout($config);
+    }
   }
 
   public function reportDefault($config)
   {
-    $client     = $config['params']['dataparams']['client'];
+    $client = $config['params']['dataparams']['client'];
     $divid = $config['params']['dataparams']['divid'];
     $deptid = $config['params']['dataparams']['deptid'];
     $divname = $config['params']['dataparams']['divname'];
-    $deptname = $config['params']['dataparams']['deptname'];  
-    $batchid      = $config['params']['dataparams']['line'];
-
+    $deptname = $config['params']['dataparams']['deptname'];
+    $batchid = $config['params']['dataparams']['line'];
 
     $filter = "";
-
-
 
     if ($client != "") {
       $filter .= " and e.client = '$client'";
@@ -125,15 +126,26 @@ class signature_sheet
     if ($divid != 0 && $divname != '') {
       $filter .= " and emp.divid = $divid";
     }
-
     if ($batchid != '') {
       $filter .= " and p.batchid = " . $batchid . " ";
     }
 
+    if ($config['params']['companyid'] == 62) { // onesky
+      $outerslct = "emplast,empfirst,empmiddle,";
+      $innerslct = "emp.emplast,emp.empfirst,emp.empmiddle,";
+      $groupBy = "divname,deptname,emplast,empfirst,empmiddle,clientname,client";
+      $orderBy = "divname,deptname,emplast,empfirst,empmiddle,clientname,client";
+    } else {
+      $outerslct = "";
+      $innerslct = "";
+      $groupBy = "clientname,client,divname,deptname";
+      $orderBy = "clientname,client";
+    }
 
-
-    $query = "select clientname,client,divname,deptname,sum(earnings) as earnings, sum(deductions) as deductions, sum(netpay) as netpay from ( 
+    $query = "select clientname,client,divname,deptname,$outerslct
+              sum(earnings) as earnings, sum(deductions) as deductions, sum(netpay) as netpay from ( 
               select e.clientname,e.client,d.divname,dept.clientname as deptname,
+              $innerslct
               (p.db) as earnings,(p.cr) as deductions,(p.db-p.cr) as netpay
               FROM paytrancurrent as p
               LEFT JOIN employee AS emp ON emp.empid=p.empid
@@ -145,6 +157,7 @@ class signature_sheet
               $filter
               union all
               select e.clientname,e.client,d.divname,dept.clientname as deptname,
+              $innerslct
               (p.db-p.cr) as earnings, 0 as deductions,(p.db-p.cr) as netpay
               FROM paytrancurrent as p
               LEFT JOIN employee AS emp ON emp.empid=p.empid
@@ -154,7 +167,9 @@ class signature_sheet
               left join paccount as pa on pa.line=p.acnoid
               where pa.alias in ('LATE','UNDERTIME','ABSENT')
               $filter
-              ) as x group by clientname,client,divname,deptname order by clientname,client";
+              ) as x
+              group by $groupBy
+              order by $orderBy";
 
     return $this->coreFunctions->opentable($query);
   }
@@ -173,8 +188,8 @@ class signature_sheet
     $division = $config['params']['dataparams']['divname'];
 
 
-    $center     = $config['params']['center'];
-    $username   = $config['params']['user'];
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
 
     $str = '';
     $layoutsize = '1000';
@@ -236,10 +251,10 @@ class signature_sheet
     return $str;
   }
 
-  public function default_table_col($config)
+  public function default_table_col_onesky($config)
   {
     $font = $this->companysetup->getrptfont($config['params']);
-    $font_size = '14';
+    $font_size = '12';
     $border = '1px dotted';
     $layoutsize = '1000';
 
@@ -247,11 +262,155 @@ class signature_sheet
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->addline();
+    $str .= $this->reporter->col('DEPARTMENT', '160', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('CODE', '180', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('EMPLOYEE NAME', '460', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('EMPLOYEE NAME', '300', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('NET PAY', '160', null, false, $border, 'TB', 'R', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', '10', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('SIGNATURE', '190', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    return $str;
+  }
+
+  public function reportDefaultLayout_onesky($config)
+  {
+    $result = $this->reportDefault($config);
+
+    $border = '';
+    $border_line = '';
+    $alignment = '';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $font_size = '12';
+    $padding = '';
+    $margin = '';
+
+    $count = 60;
+    $page = 59;
+    $layoutsize = '1000';
+
+    $str = '';
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->displayHeader($config);
+
+
+
+    $total = 0;
+    $division = '';
+    $totalEarnings = 0;
+    $totalDeductions = 0;
+    $totalNetpay = 0;
+    foreach ($result as $key => $data) {
+      $border = '1px solid';
+      if ($division == '' || $division != $data->divname) {
+        $division = $data->divname;
+
+        $str .= $this->default_group_head($config);
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->addline();
+        $str .= $this->reporter->col('COMPANY:' . ($division == '' ? 'ALL COMPANY' : $division), 1000, null, false, $border, '', 'L', $font, '13', '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        $str .= $this->default_table_col_onesky($config);
+      }
+      $str .= $this->reporter->begintable($layoutsize);
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->col('', '160', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('<br>', '180', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '300', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '160', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '10', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '190', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->endrow();
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->col($data->deptname, '160', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->client, '180', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->clientname, '300', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col(number_format($data->netpay, 2), '160', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '10', null, false, '1px dotted', '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '190', null, false, '1px dotted', 'B', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->endrow();
+
+      $totalEarnings += $data->earnings;
+      $totalDeductions += $data->deductions;
+      $totalNetpay += $data->netpay;
+      if ($this->reporter->linecounter == $page) {
+        $border = '1px dotted';
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '160', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('&nbsp', '180', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '300', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '160', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '10', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '190', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '160', null, false, $border, 'B', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '180', null, false, $border, 'B', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '300', null, false, $border, 'B', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '160', null, false, $border, 'B', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '10', null, false, $border, 'B', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '190', null, false, $border, 'B', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
+        $str .= $this->reporter->printline();
+        $str .= $this->displayHeader($config);
+        $str .= $this->default_group_head($config);
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->addline();
+        $str .= $this->reporter->col('COMPANY:' . ($division == '' ? 'ALL COMPANY' : $division), 1000, null, false, $border, '', 'L', $font, '13', '', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+        $str .= $this->default_table_col_onesky($config);
+        $page = $page + $count;
+      }
+    }
+
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '160', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('TOTAL', '180', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('', '300', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col(number_format($totalNetpay, 2), '160', null, false, $border, 'T', 'R', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('', '190', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->endrow();
+
+
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endreport();
+
+    return $str;
+  }
+
+  public function default_table_col($config)
+  {
+    $font = $this->companysetup->getrptfont($config['params']);
+    $font_size = '12';
+    $border = '1px dotted';
+
+    $str = '';
+    $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->addline();
+    $str .= $this->reporter->col('CODE', '125', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('EMPLOYEE NAME', '250', null, false, $border, 'TB', 'L', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('TOTAL EARNINGS', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('TOTAL DEDUCTIONS', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('NET PAY', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('SIGNATURE', '150', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     return $str;
@@ -265,7 +424,7 @@ class signature_sheet
     $border_line = '';
     $alignment = '';
     $font = $this->companysetup->getrptfont($config['params']);
-    $font_size = '14';
+    $font_size = '12';
     $padding = '';
     $margin = '';
 
@@ -307,20 +466,22 @@ class signature_sheet
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      $str .= $this->reporter->col('<br>', '180', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('', '460', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('', '160', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('', '10', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('', '190', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('<br>', '125', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '250', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '150', null, false, $border, '', 'L', $font, $font_size, '', '', '');
       $str .= $this->reporter->endrow();
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      $str .= $this->reporter->col($data->client, '180', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->clientname, '460', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col(number_format($data->netpay, 2), '160', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('', '10', null, false, '1px dotted', '', 'L', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col('', '190', null, false, '1px dotted', 'B', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->client, '125', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->clientname, '250', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col(number_format($data->earnings, 2), '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col(number_format($data->deductions, 2), '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col(number_format($data->netpay, 2), '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col('', '150', null, false, '1px dotted', 'B', 'L', $font, $font_size, '', '', '');
       $str .= $this->reporter->endrow();
 
       $totalEarnings += $data->earnings;
@@ -329,18 +490,20 @@ class signature_sheet
       if ($this->reporter->linecounter == $page) {
         $border = '1px dotted';
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('&nbsp', '180', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '460', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '160', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '10', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '190', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('&nbsp', '125', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '250', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'L', $font, $font_size, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '180', null, false, $border, 'B', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '460', null, false, $border, 'B', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '160', null, false, $border, 'B', 'R', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '10', null, false, $border, 'B', 'L', $font, $font_size, '', '', '');
-        $str .= $this->reporter->col('', '190', null, false, $border, 'B', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '125', null, false, $border, 'B', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '250', null, false, $border, 'B', 'L', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'R', $font, $font_size, '', '', '');
+        $str .= $this->reporter->col('', '150', null, false, $border, 'B', 'L', $font, $font_size, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -360,11 +523,12 @@ class signature_sheet
 
 
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('TOTAL', '180', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col('', '460', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col(number_format($totalNetpay, 2), '160', null, false, $border, 'T', 'R', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col('', '190', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('TOTAL', '125', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('', '250', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col(number_format($totalEarnings, 2), '100', null, false, $border, 'T', 'R', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col(number_format($totalDeductions, 2), '100', null, false, $border, 'T', 'R', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col(number_format($totalNetpay, 2), '100', null, false, $border, 'T', 'R', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('', '150', null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
     $str .= $this->reporter->endrow();
 
 

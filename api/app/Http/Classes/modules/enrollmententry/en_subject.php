@@ -41,8 +41,19 @@ class en_subject
   private $stockselect;
 
   private $fields = [
-    'subjectcode', 'subjectname', 'units', 'lecture', 'laboratory', 'hours', 'level',
-    'prereq1', 'prereq2', 'prereq3', 'prereq4', 'coreq', 'ischinese'
+    'subjectcode',
+    'subjectname',
+    'units',
+    'lecture',
+    'laboratory',
+    'hours',
+    'level',
+    'prereq1',
+    'prereq2',
+    'prereq3',
+    'prereq4',
+    'coreq',
+    'ischinese'
   ];
   private $except = ['clientid', 'client'];
   private $blnfields = [];
@@ -52,11 +63,11 @@ class en_subject
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -158,7 +169,10 @@ class en_subject
   public function createHeadField($config)
   {
     $fields = [
-      'client', 'subjectname', ['units', 'lecture'], ['laboratory', 'hours']
+      'client',
+      'subjectname',
+      ['units', 'lecture'],
+      ['laboratory', 'hours']
     ];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.class', 'csclient sbccsenablealways');
@@ -283,7 +297,7 @@ class en_subject
       if (isset($head[$key])) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if 
       }
     }
@@ -295,7 +309,7 @@ class en_subject
     if ($isupdate) {
       $check = $this->checkSubject($head);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate Subject entry for '.$data['subjectcode'].' - '.$data['subjectname'], 'clientid'=>$clientid];
+        return ['status' => false, 'msg' => 'Duplicate Subject entry for ' . $data['subjectcode'] . ' - ' . $data['subjectname'], 'clientid' => $clientid];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
@@ -305,7 +319,7 @@ class en_subject
     } else {
       $check = $this->checkSubject($head, 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate Subject entry for '.$data['subjectcode'].' - '.$data['subjectname'], 'clientid'=>$clientid];
+        return ['status' => false, 'msg' => 'Duplicate Subject entry for ' . $data['subjectcode'] . ' - ' . $data['subjectname'], 'clientid' => $clientid];
       } else {
         $clientid = $this->coreFunctions->insertGetId($this->head, $data);
         $this->logger->sbcmasterlog($clientid, $config, ' CREATE SUBJECT - ' . $data['subjectname']); // 
@@ -316,9 +330,9 @@ class en_subject
 
   public function checkSubject($data, $type = 'update')
   {
-    $qry = "select trno as value from en_subject where subjectcode='".$data['subjectcode']."'";
+    $qry = "select trno as value from en_subject where subjectcode='" . $data['subjectcode'] . "'";
     if ($type == 'update') {
-      $qry = "select trno as value from en_subject where subjectcode='".$data['subjectcode']."' and trno<>".$data['clientid'];
+      $qry = "select trno as value from en_subject where subjectcode='" . $data['subjectcode'] . "' and trno<>" . $data['clientid'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check != '') return true;
@@ -416,7 +430,7 @@ class en_subject
   private function report_default_query($config)
   {
     $trno = $config['params']['dataid'];
-    $query = "select subjectcode, subjectname, units, lecture from en_subject where trno=".$trno;
+    $query = "select subjectcode, subjectname, units, lecture from en_subject where trno=" . $trno;
     $result = $this->coreFunctions->opentable($query);
     return $result;
   } //end fn
@@ -424,7 +438,7 @@ class en_subject
   private function getSubjectequiv($config)
   {
     $qry = "select e.line, e.subjectid, e.subjectmain, s.subjectcode, s.subjectname, s.units , s.lecture
-    from en_subjectequivalent as e left join en_subject as s on s.trno=e.subjectid where e.subjectmain=".$config['params']['dataid'];
+    from en_subjectequivalent as e left join en_subject as s on s.trno=e.subjectid where e.subjectmain=" . $config['params']['dataid'];
     return $this->coreFunctions->opentable($qry);
   }
 
@@ -483,7 +497,7 @@ class en_subject
     PDF::SetFont($fontbold, '', 11);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
     PDF::SetFont($fontbold, '', 14);
-    PDF::MultiCell(800, 20, $this->modulename.' REPORT', '', 'L', false);
+    PDF::MultiCell(800, 20, $this->modulename . ' REPORT', '', 'L', false);
 
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(800, 20, "Page " . PDF::PageNo() . "  ", '', 'L', false);
@@ -538,7 +552,7 @@ class en_subject
     $i = 0;
     $subjequiv = $this->getSubjectequiv($filters);
     if (!empty($subjequiv)) {
-      foreach($subjequiv as $se) {
+      foreach ($subjequiv as $se) {
         $i++;
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(175, 0, (isset($se->subjectcode) ? $se->subjectcode : ''), '', 'L', false, 0);
@@ -597,16 +611,16 @@ class en_subject
     // $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('<b>Subject Code: </b>'.(isset($data[0]->subjectcode) ? $data[0]->subjectcode : ''), '500', null, false, '', 'B', 'L', $font, $fontsize, '', '30px', '4px');
-      $str .= $this->reporter->col('<b>Units: </b>'.(isset($data[0]->units) ? $data[0]->units : ''), '300', null, false, '', 'B', 'L', $font, $fontsize, '', '30px', '4px');
+    $str .= $this->reporter->col('<b>Subject Code: </b>' . (isset($data[0]->subjectcode) ? $data[0]->subjectcode : ''), '500', null, false, '', 'B', 'L', $font, $fontsize, '', '30px', '4px');
+    $str .= $this->reporter->col('<b>Units: </b>' . (isset($data[0]->units) ? $data[0]->units : ''), '300', null, false, '', 'B', 'L', $font, $fontsize, '', '30px', '4px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('<b>Name: </b>'.(isset($data[0]->subjectname) ? $data[0]->subjectname : ''), '500', null, false, '', 'B', 'L', $font, $fontsize, '', '30px', '4px');
-      $str .= $this->reporter->col('<b>Lecture: </b>'.(isset($data[0]->lecture) ? $data[0]->lecture : ''), '300', null, false, '', 'B', 'L', $font, $fontsize, '', '30px', '4px');
+    $str .= $this->reporter->col('<b>Name: </b>' . (isset($data[0]->subjectname) ? $data[0]->subjectname : ''), '500', null, false, '', 'B', 'L', $font, $fontsize, '', '30px', '4px');
+    $str .= $this->reporter->col('<b>Lecture: </b>' . (isset($data[0]->lecture) ? $data[0]->lecture : ''), '300', null, false, '', 'B', 'L', $font, $fontsize, '', '30px', '4px');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', '500', null, false, '', 'B', 'L', $font, $fontsize, 'B', '30px', '8px');
+    $str .= $this->reporter->col('', '500', null, false, '', 'B', 'L', $font, $fontsize, 'B', '30px', '8px');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->printline();

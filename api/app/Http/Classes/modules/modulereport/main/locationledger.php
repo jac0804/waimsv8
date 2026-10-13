@@ -34,10 +34,10 @@ class locationledger
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -45,14 +45,16 @@ class locationledger
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter(){
-    $fields = ['radioprint', 'prepared','approved', 'received','print'];
-    $col1 = $this->fieldClass->create($fields);        
+  public function createreportfilter()
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
 
-    return array('col1'=>$col1);
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable("select 
       'default' as print,
       '' as approved,
@@ -61,9 +63,10 @@ class locationledger
     ");
   }
 
-  public function report_default_query($filters){
+  public function report_default_query($filters)
+  {
     $trno = $filters['params']['dataid'];
-    $query="
+    $query = "
     select loc.line, loc.code, loc.name, loc.emeter, loc.wmeter, loc.semeter, loc.area as sqm,
     cl.client, cl.clientname
     from loc as loc
@@ -74,7 +77,8 @@ class locationledger
     return $result;
   }
 
-  public function reportplotting($params, $data) {
+  public function reportplotting($params, $data)
+  {
     return $this->default_locationledger_PDF($params, $data);
   }
 
@@ -116,7 +120,7 @@ class locationledger
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -128,7 +132,7 @@ class locationledger
     PDF::MultiCell(50, 0, "Name: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(500, 0, (isset($data[0]['name']) ? $data[0]['name'] : ''), 'B', 'L', false, 0, '',  '');
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 0, "Code #: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
@@ -147,7 +151,7 @@ class locationledger
     PDF::MultiCell(100, 0, "Water Meter #: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(200, 0, (isset($data[0]['wmeter']) ? $data[0]['wmeter'] : ''), 'B', 'L', false, 0, '',  '');
-    
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', $fontsize);
@@ -192,22 +196,22 @@ class locationledger
           or Field = 'approvedby'"); // get all table structure
         foreach ($structure as $skey => $sval) {
           // switch ($sval->Field) {
-            // case 'viewby':
-            // case 'editby':
-            // case 'createby':
-            // case 'createdby':
-            // case 'openby':
-            // case 'lockuser':
-            // case 'postedby':
-            // case 'encodedby':
-            // case 'users':
-            // case 'user':
-            // case 'userid':
-            // case 'approvedby':
-            //   if (substr($sval->Type, 0, 7) == "varchar") {
-                // $this->coreFunctions->execqry("UPDATE $tablename SET $sval->Field = '' WHERE $sval->Field IS NULL || $sval->Field = ''");
-                // $this->coreFunctions->sbcaddcolumn($tablename, $sval->Field, "varchar(200) NOT NULL DEFAULT ''", 1);
-              // }
+          // case 'viewby':
+          // case 'editby':
+          // case 'createby':
+          // case 'createdby':
+          // case 'openby':
+          // case 'lockuser':
+          // case 'postedby':
+          // case 'encodedby':
+          // case 'users':
+          // case 'user':
+          // case 'userid':
+          // case 'approvedby':
+          //   if (substr($sval->Type, 0, 7) == "varchar") {
+          // $this->coreFunctions->execqry("UPDATE $tablename SET $sval->Field = '' WHERE $sval->Field IS NULL || $sval->Field = ''");
+          // $this->coreFunctions->sbcaddcolumn($tablename, $sval->Field, "varchar(200) NOT NULL DEFAULT ''", 1);
+          // }
           //     break;
           // }
         }
@@ -237,11 +241,11 @@ class locationledger
 
     for ($i = 0; $i < count($data); $i++) {
       $maxrow = 1;
-      $arr_client = $this->reporter->fixcolumn([$data[$i]['client']],'35',0);
-      $arr_clientname = $this->reporter->fixcolumn([$data[$i]['clientname']],'35',0);
+      $arr_client = $this->reporter->fixcolumn([$data[$i]['client']], '35', 0);
+      $arr_clientname = $this->reporter->fixcolumn([$data[$i]['clientname']], '35', 0);
       $maxrow = $this->othersClass->getmaxcolumn([$arr_client, $arr_clientname]);
 
-      for($r = 0; $r < $maxrow; $r++) {
+      for ($r = 0; $r < $maxrow; $r++) {
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(350, 0, (isset($arr_client[$r]) ? $arr_client[$r] : ''), '', 'L', 0, 0, '', '');
         PDF::MultiCell(350, 0, (isset($arr_clientname[$r]) ? $arr_clientname[$r] : ''), '', 'L', 0, 0, '', '');
@@ -293,5 +297,4 @@ class locationledger
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

@@ -47,11 +47,11 @@ class pl
   public $showfilter = true;
   public $showcreatebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -327,7 +327,7 @@ class pl
       unset($this->fields[1]);
       unset($head['docno']);
     }
-    
+
     $dateTables = ['plhead'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
@@ -555,7 +555,7 @@ class pl
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
-    
+
     $dateTables = ['plstock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
@@ -904,7 +904,7 @@ class pl
     $data['nodes'] = $nodes;
     $data['links'] = $links;
 
-    return ['status' => true, 'msg' => 'Successfully fetched.', 'data' => $data];   
+    return ['status' => true, 'msg' => 'Successfully fetched.', 'data' => $data];
   }
 
   public function reportsetup($config)

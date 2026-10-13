@@ -36,9 +36,9 @@ class po
   private $logger;
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -894,8 +894,8 @@ class po
     PDF::MultiCell(760, 0, '', '', '', false, 1, '', '285'); //285
 
     $trno = $data[0]['trno'];
-    $total = "select sum(ext) as ext from (select sum(ext) as ext from postock where trno = $trno
-              union select sum(ext) as ext from hpostock where trno = $trno) as a ";
+    $total = "select sum(ext) as ext from (select sum(ext) as ext from postock where trno = $trno and void=0
+              union select sum(ext) as ext from hpostock where trno = $trno and void=0) as a ";
 
     $totresult = json_decode(json_encode($this->coreFunctions->opentable($total)), true);
 
@@ -1244,8 +1244,8 @@ class po
     PDF::MultiCell(700, 0, '', '', '', false, 1, '', '305'); //295
 
     $trno = $data[0]['trno'];
-    $total = "select sum(ext) as ext from (select sum(ext) as ext from postock where trno = $trno
-              union select sum(ext) as ext from hpostock where trno = $trno) as a ";
+    $total = "select sum(ext) as ext from (select sum(ext) as ext from postock where trno = $trno and void=0
+              union select sum(ext) as ext from hpostock where trno = $trno and void=0) as a ";
 
     $totresult = json_decode(json_encode($this->coreFunctions->opentable($total)), true);
 
@@ -1634,6 +1634,12 @@ class po
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_item, $arr_qty, $arr_netamt, $arr_ext]);
 
+        if ($data[$i]['ext'] > 0) {
+          $totalext += ($data[$i]['ext'] + $data[$i]['amt1'] + $data[$i]['amt2'] + $data[$i]['amt3'] + $data[$i]['amt4'] + $data[$i]['amt5']);
+        } else {
+          $lessamt += ($data[$i]['ext'] + $data[$i]['amt1'] + $data[$i]['amt2'] + $data[$i]['amt3'] + $data[$i]['amt4'] + $data[$i]['amt5']);
+        }
+
         if ($data[$i]['itemname'] == '') {
         } else {
           $totalperpage += $data[$i]['ext'];
@@ -1696,11 +1702,11 @@ class po
           }
         }
 
-        if ($data[$i]['ext'] > 0) {
-          $totalext += ($data[$i]['ext'] + $data[$i]['amt1'] + $data[$i]['amt2'] + $data[$i]['amt3'] + $data[$i]['amt4'] + $data[$i]['amt5']);
-        } else {
-          $lessamt += ($data[$i]['ext'] + $data[$i]['amt1'] + $data[$i]['amt2'] + $data[$i]['amt3'] + $data[$i]['amt4'] + $data[$i]['amt5']);
-        }
+        // if ($data[$i]['ext'] > 0) {
+        //   $totalext += ($data[$i]['ext'] + $data[$i]['amt1'] + $data[$i]['amt2'] + $data[$i]['amt3'] + $data[$i]['amt4'] + $data[$i]['amt5']);
+        // } else {
+        //   $lessamt += ($data[$i]['ext'] + $data[$i]['amt1'] + $data[$i]['amt2'] + $data[$i]['amt3'] + $data[$i]['amt4'] + $data[$i]['amt5']);
+        // }
       }
     }
     return PDF::Output($this->modulename . '.pdf', 'S');
@@ -1772,12 +1778,13 @@ class po
     PDF::MultiCell(175, 0, $data[0]['cur'] . ' ' . number_format($grandtotal, 2), '', 'R', false, 1, '625', '647');
 
     if ($lessamt != 0) {
+      PDF::SetFont('Arial', '', $fontsize);
       PDF::MultiCell(555, 0, '', '', 'C', false, 0);
       PDF::MultiCell(100, 0, 'Less: ', '', 'R', false, 0, '', '');
-      PDF::MultiCell(175, 0, number_format(abs($lessamt), 2), '', 'R', false, 1, '710', '650');
-      PDF::MultiCell(555, 0, '', '', 'C', false, 0);
-      PDF::MultiCell(100, 0, 'Total Amount:', '', 'R', false, 0, '', '');
-      PDF::MultiCell(175, 0, $data[0]['cur'] . ' ' . number_format($totalext + $lessamt, 2), '', 'R', false, 1, '710', '670');
+      PDF::MultiCell(175, 0, number_format(abs($lessamt), 2), '', 'R', false, 1, '625');
+      PDF::MultiCell(535, 0, '', '', 'C', false, 0);
+      PDF::MultiCell(120, 0, 'Total Amout:', '', 'R', false, 0, '', '');
+      PDF::MultiCell(175, 0, $data[0]['cur'] . ' ' . number_format($grandtotal + $lessamt, 2), '', 'R', false, 1, '625');
     }
 
     PDF::MultiCell(20, 0, '', '', 'L', false, 0);
@@ -1909,8 +1916,8 @@ class po
     PDF::MultiCell(700, 0, '', '', '', false, 1, '', '285');
 
     $trno = $data[0]['trno'];
-    $total = "select sum(ext) as ext from (select sum(ext) as ext from postock where trno = $trno
-              union select sum(ext) as ext from hpostock where trno = $trno) as a ";
+    $total = "select sum(ext) as ext from (select sum(ext) as ext from postock where trno = $trno and void=0
+              union select sum(ext) as ext from hpostock where trno = $trno and void=0) as a ";
 
     $totresult = json_decode(json_encode($this->coreFunctions->opentable($total)), true);
 

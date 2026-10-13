@@ -40,10 +40,10 @@ class ordertype
     private $reporter;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -102,7 +102,7 @@ class ordertype
     {
         $data = $config['params']['data'];
         $data2 = [];
-        
+
         $companyid = $config['params']['companyid'];
         $dateTables = [$this->table];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -110,9 +110,9 @@ class ordertype
         foreach ($data as $key => $value) {
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
-                $data2['isorder'] = $this->othersClass->sanitizekeyfieldFast('isorder', $data[$key]['isorder'],$lookups);
+                $data2['isorder'] = $this->othersClass->sanitizekeyfieldFast('isorder', $data[$key]['isorder'], $lookups);
 
                 if ($data[$key]['line'] == 0 && $data[$key]['category'] != '') {
                     $qry = "select category from reqcategory where category = '" . $data[$key]['category'] . "' limit 1";

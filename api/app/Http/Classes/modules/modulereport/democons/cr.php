@@ -34,10 +34,10 @@ class cr
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -103,7 +103,6 @@ class cr
   {
 
     return $this->Max_CR_PDF($params, $data);
-
   }
 
 
@@ -136,14 +135,14 @@ class cr
 
     PDF::MultiCell(0, 0, "\n");
 
-   
+
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n\n\n", '', 'C');
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '40', '20', 120, 65);
-   
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '40', '20', 120, 65);
+
 
     PDF::MultiCell(0, 0, "\n");
 

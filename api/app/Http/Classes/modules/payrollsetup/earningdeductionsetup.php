@@ -36,10 +36,10 @@ class earningdeductionsetup
   public $tablelogs_del = '';
   private $stockselect;
 
-  private $fields = ['docno', 'dateid', 'empid', 'remarks', 'acno', 'amt', 'w1', 'w2', 'w3', 'w4', 'w5', 'halt', 'priority', 'amortization', 'effdate', 'balance', 'pament', 'w13', 'acnoid', 'startdate', 'isdeductible','appno','amtinterest','grantdate'];
+  private $fields = ['docno', 'dateid', 'empid', 'remarks', 'acno', 'amt', 'w1', 'w2', 'w3', 'w4', 'w5', 'w8', 'halt', 'priority', 'amortization', 'effdate', 'balance', 'pament', 'w13', 'acnoid', 'startdate', 'isdeductible', 'appno', 'amtinterest', 'grantdate'];
   // 'remarks','acno','days','bal',
   private $except = ['clientid', 'client'];
-  private $blnfields = ['w1', 'w2', 'w3', 'w4', 'w5', 'halt', 'w13', 'isdeductible'];
+  private $blnfields = ['w1', 'w2', 'w3', 'w4', 'w5', 'w8', 'halt', 'w13', 'isdeductible'];
   public $showfilteroption = true;
   public $showfilter = false;
   public $showcreatebtn = true;
@@ -51,11 +51,11 @@ class earningdeductionsetup
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -174,7 +174,7 @@ class earningdeductionsetup
   public function createHeadField($config)
   {
     $ispayrolldetachment = $this->companysetup->getispayrolldetachment($config['params']);
-    
+
     $fields = ['client', 'dateid', 'remarks'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.class', 'csclient sbccsenablealways');
@@ -185,8 +185,8 @@ class earningdeductionsetup
     data_set($col1, 'remarks.type', 'ctextarea');
 
     $fields = ['empid', 'empcode', 'empname', 'acno', 'acnoname', 'priority'];
-    if($ispayrolldetachment){
-      array_push($fields,'appno');
+    if ($ispayrolldetachment) {
+      array_push($fields, 'appno');
     }
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'empname.action', 'lookupclient');
@@ -208,8 +208,8 @@ class earningdeductionsetup
       array_push($fields, 'startdate');
     }
     array_push($fields, 'amt', 'amortization', 'bal', 'effdate');
-    if($ispayrolldetachment){
-      array_push($fields,'grantdate','amtinterest');
+    if ($ispayrolldetachment) {
+      array_push($fields, 'grantdate', 'amtinterest');
     }
     $col3 = $this->fieldClass->create($fields);
     data_set($col3, 'amt.label', 'Amount');
@@ -222,6 +222,9 @@ class earningdeductionsetup
     data_set($col3, 'bal.type', 'cinput');
 
     $fields = [['w1', 'w4'], ['w2', 'w5'], ['w3', 'w13'], 'halt'];
+    if ($config['params']['companyid'] == 66) { // metrodragon
+      $fields = [['w1', 'w4'], ['w2', 'w5'], ['w3', 'w8'], ['halt', 'w13']];
+    }
     if ($config['params']['companyid'] == 68 || $config['params']['companyid'] == 62) { //JDA| onesky
       $fields = [['w1', 'w4'], ['w2', 'w5'], ['w3', 'w13'], ['halt', 'isdeductible']];
     }
@@ -263,6 +266,7 @@ class earningdeductionsetup
     $data[0]['w3'] = '0';
     $data[0]['w4'] = '0';
     $data[0]['w5'] = '0';
+    $data[0]['w8'] = '0';
     $data[0]['halt'] = '0';
     $data[0]['w13'] = '0';
     $data[0]['isdeductible'] = '0';
@@ -281,7 +285,7 @@ class earningdeductionsetup
     if ($clientid == 0) $clientid = $this->getlastclient();
 
     $qryselect = "select s.trno as clientid, s.docno as client, s.docno, s.dateid, s.empid, s.remarks, pac.code as acno, s.amt, s.paymode,
-                    w1,w2,w3,w4,w5,w13,halt,s.priority, s.earnded, s.amortization, s.effdate,s.payment,
+                    w1,w2,w3,w4,w5,w8,w13,halt,s.priority, s.earnded, s.amortization, s.effdate,s.payment,
                     concat(e.emplast,', ',e.empfirst,' ',e.empmiddle) as empname, pac.codename as acnoname, client.client as empcode,
                     balance, s.acnoid, pac.qty, s.startdate,isdeductible,s.appno,s.grantdate,s.amtinterest
                     ";
@@ -334,7 +338,7 @@ class earningdeductionsetup
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }

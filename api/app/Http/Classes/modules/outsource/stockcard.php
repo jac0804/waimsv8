@@ -37,12 +37,49 @@ class stockcard
   private $stockselect;
 
   private $fields = [
-    'barcode', 'picture', 'itemname', 'uom', 'cost', 'itemrem',
-    'part', 'model', 'class', 'brand', 'groupid', 'critical', 'reorder',
-    'category', 'subcat', 'body', 'sizeid', 'color', 'asset', 'liability', 'revenue', 'expense',
-    'isinactive', 'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial',
+    'barcode',
+    'picture',
+    'itemname',
+    'uom',
+    'cost',
+    'itemrem',
+    'part',
+    'model',
+    'class',
+    'brand',
+    'groupid',
+    'critical',
+    'reorder',
+    'category',
+    'subcat',
+    'body',
+    'sizeid',
+    'color',
+    'asset',
+    'liability',
+    'revenue',
+    'expense',
+    'isinactive',
+    'isvat',
+    'isimport',
+    'fg_isfinishedgood',
+    'fg_isequipmenttool',
+    'isnoninv',
+    'isserial',
     'foramt',
-    'supplier', 'partno', 'subcode', 'packaging', 'islabor', 'dqty', 'ispositem', 'projectid', 'isoutsource', 'moq', 'mmoq', 'inhouse', 'noncomm'
+    'supplier',
+    'partno',
+    'subcode',
+    'packaging',
+    'islabor',
+    'dqty',
+    'ispositem',
+    'projectid',
+    'isoutsource',
+    'moq',
+    'mmoq',
+    'inhouse',
+    'noncomm'
   ];
   private $except = ['itemid', 'itemrem'];
   private $blnfields = ['isinactive', 'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial', 'islabor', 'ispositem', 'noncomm'];
@@ -53,11 +90,11 @@ class stockcard
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -378,7 +415,7 @@ class stockcard
     //   'multiinput1' => ['inputcolumn' => ['col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4], 'label' => 'PRICE'],
     // ];
     // $obj = $this->tabClass->createtab($tab, []);
-    
+
     return [];
   }
 
@@ -977,7 +1014,7 @@ class stockcard
         $query = $this->QUERY_SO($config);
         break;
     }
-    
+
     return $this->coreFunctions->opentable($query);
   }
 
@@ -1894,7 +1931,7 @@ class stockcard
   public function report_default_SO($config)
   {
     $result = $this->QUERY_RESULT($config);
-    
+
     $center     = $config['params']['center'];
     $username   = $config['params']['user'];
     $itemid     = $config['params']['dataid'];

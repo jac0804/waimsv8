@@ -57,11 +57,11 @@ class pc
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -698,7 +698,7 @@ class pc
 
     if ($companyid == 72) { //hahsy
       data_set($col4, 'copypreviousstock.label', 'Copy Previous PC');
-      data_set($col4, 'copypreviousstock.confirmlabel', 'Do you want to copy the previous PC?');
+      data_set($col4, 'copypreviousstock.lookupclass', 'copyprev_item');
     }
     return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4];
   }

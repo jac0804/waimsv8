@@ -59,11 +59,11 @@ class otapplication
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -180,9 +180,7 @@ class otapplication
     return $buttons;
   } // createHeadbutton
 
-  public function createTab($access, $config)
-  {
-  }
+  public function createTab($access, $config) {}
 
   public function createtabbutton($config)
   {
@@ -191,9 +189,7 @@ class otapplication
     return $obj;
   }
 
-  public function createHeadField($config)
-  {
-  }
+  public function createHeadField($config) {}
 
 
   // -> print function

@@ -31,10 +31,10 @@ class viewannualsales
     private $reporter;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->reporter = new SBCPDF;
     }
@@ -49,16 +49,16 @@ class viewannualsales
 
     public function createTab($config)
     {
-         $columns = ['year', 'total', 'totalcost'];
+        $columns = ['year', 'total', 'totalcost'];
 
         foreach ($columns as $key => $value) {
             $$value = $key;
         }
-        $tab = [$this->gridname => ['gridcolumns' => $columns ]];
+        $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
         $stockbuttons = [];
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
-    
+
 
         $obj[0][$this->gridname]['columns'][$year]['label'] = "Year";
         $obj[0][$this->gridname]['columns'][$year]['type'] = "label";

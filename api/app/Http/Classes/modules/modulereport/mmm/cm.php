@@ -34,9 +34,9 @@ class cm
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -53,7 +53,7 @@ class cm
 
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
-      
+
     ]);
     return array('col1' => $col1);
   }
@@ -134,7 +134,7 @@ class cm
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col($this->modulename, '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
     $str .= $this->reporter->col('DOCUMENT # :', '120', null, false, $border, '', 'L', $font, '13', 'B', '', '');
     $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '100', null, false, $border, 'B', 'L', $font, '13', '', '', '') . '<br />';
@@ -164,10 +164,10 @@ class cm
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->printline();
-    
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('QTY', '50', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('UNIT', '50', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('D E S C R I P T I O N', '500', null, false, $border, 'B', 'L', $font, '12', 'B', '30px', '8px');
@@ -272,7 +272,7 @@ class cm
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -286,7 +286,7 @@ class cm
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -299,12 +299,12 @@ class cm
     PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . strtoupper($headerdata[0]->name), '', 'L');
     PDF::SetFont($fontbold, '', 14);
 
-    
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::Image('/images/mmm/3m.png', '45', '50', 180, 50, '', '', 'M', false, 300, 'M', false, false, 0, true, false, false);
     PDF::SetFont($fontbold, '', 14);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'L',false, 1, 210, 50);
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'L', false, 1, 210, 50);
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel), '', 'C');
 
@@ -326,7 +326,7 @@ class cm
     PDF::SetFont($font, '', 10);
     PDF::MultiCell(120, 20, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(60, 20, "Customer : ", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
@@ -337,7 +337,7 @@ class cm
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(120, 20, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
-    
+
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(60, 20, "Address : ", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
@@ -463,7 +463,7 @@ class cm
     PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['received'], '', 'L');
 
-    
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 }

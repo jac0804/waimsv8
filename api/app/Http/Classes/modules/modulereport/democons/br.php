@@ -42,10 +42,10 @@ class br
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -329,7 +329,7 @@ class br
 
     $padding = 8 * $itemlen;
 
- 
+
 
     $projectname = isset($data[0]['projectname']) ? $data[0]['projectname'] : '';
     $arrprojname = $this->reporter->fixcolumn([$projectname], 100, 0);
@@ -390,7 +390,7 @@ class br
 
   public function default_BR_PDF($params, $data)
   {
-    
+
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
     $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
@@ -415,30 +415,30 @@ class br
     if (!empty($data)) {
 
       for ($i = 0; $i < count($data); $i++) {
-       
+
         $maxrow = 1;
-       
+
         $particulars = $data[$i]['particulars'];
-        $qty = number_format($data[$i]['qty'],$decimalqty);
+        $qty = number_format($data[$i]['qty'], $decimalqty);
         $uom = $data[$i]['uom'];
-        $rrcost = number_format($data[$i]['rrcost'],$decimalcurr);
-        $ext = number_format($data[$i]['ext'],$decimalprice);
-        $amount = number_format($data[$i]['amount'],$decimalprice);
+        $rrcost = number_format($data[$i]['rrcost'], $decimalcurr);
+        $ext = number_format($data[$i]['ext'], $decimalprice);
+        $amount = number_format($data[$i]['amount'], $decimalprice);
         $rem = $data[$i]['rem'];
         $amount = $amount < 0 ? '' : $amount;
 
-        $arr_particulars = $this->reporter->fixcolumn([$particulars],'30',0);
-        $arr_qty = $this->reporter->fixcolumn([$qty],'13',0);
-        $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-        $arr_rrcost = $this->reporter->fixcolumn([$rrcost],'13',0);
-        $arr_ext = $this->reporter->fixcolumn([$ext],'13',0);
-        $arr_amount = $this->reporter->fixcolumn([$amount],'13',0);
-        $arr_rem = $this->reporter->fixcolumn([$rem],'16',0);
+        $arr_particulars = $this->reporter->fixcolumn([$particulars], '30', 0);
+        $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+        $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+        $arr_rrcost = $this->reporter->fixcolumn([$rrcost], '13', 0);
+        $arr_ext = $this->reporter->fixcolumn([$ext], '13', 0);
+        $arr_amount = $this->reporter->fixcolumn([$amount], '13', 0);
+        $arr_rem = $this->reporter->fixcolumn([$rem], '16', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_particulars, $arr_qty, $arr_uom, $arr_rrcost, $arr_ext, $arr_amount, $arr_rem]);
 
         $this->addrow('LRT');
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($fontbold, '', $fontsize);
           PDF::MultiCell(50, 0, $i + 1, 'L', 'C', false, 0, '', '', true, 1);
           PDF::SetFont($font, '', $fontsize);
@@ -453,7 +453,7 @@ class br
           PDF::MultiCell(250, 0, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), 'LR', 'L', false);
         }
 
-       
+
         $totalext += $data[$i]['ext'];
         $totalamt += $data[$i]['amount'];
 
@@ -480,7 +480,7 @@ class br
     PDF::MultiCell(100, 20, $totalamt . ' ', 'TLB', 'R', false, 0, '', '', false, 1);
     PDF::MultiCell(250, 20, '', 'TLBR', 'L', false, 1, '', '', false, 1);
 
-   
+
     PDF::MultiCell(0, 0, "\n");
 
 
@@ -512,7 +512,7 @@ class br
     PDF::MultiCell(200, 0, '', 'T', 'C', false, 0);
     PDF::MultiCell(50, 0, '', '', 'C');
 
-    
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 

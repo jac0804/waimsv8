@@ -31,10 +31,10 @@ class todo
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -63,9 +63,7 @@ class todo
     return $obj;
   }
 
-  public function createHeadField($config)
-  {
-  }
+  public function createHeadField($config) {}
 
   public function paramsdata($config)
   {
@@ -140,9 +138,7 @@ class todo
     return $this->paramsdata($config);
   }
 
-  public function loaddata($config)
-  {
-  }
+  public function loaddata($config) {}
 
 
   public function checkdoc($doc, $companyid)

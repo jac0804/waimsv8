@@ -36,10 +36,10 @@ class detachmentcontract
     public $tablelogs = 'masterfile_log';
     public $tablelogs_del = 'del_masterfile_log';
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -55,23 +55,32 @@ class detachmentcontract
 
     public function createHeadField($config)
     {
-        $fields = ['lblinvreq', ['lbltotalkg', 'num'],['lblshipping', 'year'],['lblbilling', 'numdays'],['lblacquisition', 'hours'],
-               ['lbldepreciation', 'monthsno'],['lbllocation','nodays'],['lblvehicleinfo', 'othrs'],['lblrem', 'workloc']];
-         $col1 = $this->fieldClass->create($fields);
+        $fields = [
+            'lblinvreq',
+            ['lbltotalkg', 'num'],
+            ['lblshipping', 'year'],
+            ['lblbilling', 'numdays'],
+            ['lblacquisition', 'hours'],
+            ['lbldepreciation', 'monthsno'],
+            ['lbllocation', 'nodays'],
+            ['lblvehicleinfo', 'othrs'],
+            ['lblrem', 'workloc']
+        ];
+        $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'lblinvreq.label', '.');
-        data_set($col1, 'lblinvreq.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);color:white;');
+        data_set($col1, 'lblinvreq.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);color:white;');
         data_set($col1, 'lbltotalkg.label', 'No. of Guards');
-        data_set($col1, 'lbltotalkg.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col1, 'lbltotalkg.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col1, 'num.name', 'noguards');
         data_set($col1, 'num.label', '');
 
         data_set($col1, 'lblshipping.label', 'Days in a Year');
-        data_set($col1, 'lblshipping.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col1, 'lblshipping.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col1, 'year.name', 'yrdays');
         data_set($col1, 'year.label', '');
 
         data_set($col1, 'lblbilling.label', 'Days in a Week');
-        data_set($col1, 'lblbilling.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col1, 'lblbilling.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col1, 'numdays.name', 'wkdays');
         data_set($col1, 'numdays.label', '');
         data_set($col1, 'numdays.class', 'csnumdays');
@@ -79,18 +88,18 @@ class detachmentcontract
 
 
         data_set($col1, 'lblacquisition.label', 'Duty Hours');
-        data_set($col1, 'lblacquisition.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col1, 'lblacquisition.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col1, 'hours.name', 'dutyhrs');
         data_set($col1, 'hours.label', '');
 
         data_set($col1, 'lbldepreciation.label', 'No. of Months');
-        data_set($col1, 'lbldepreciation.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col1, 'lbldepreciation.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col1, 'monthsno.name', 'mons');
         data_set($col1, 'monthsno.label', '');
 
 
         data_set($col1, 'lbllocation.label', 'No. of Days');
-        data_set($col1, 'lbllocation.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col1, 'lbllocation.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col1, 'nodays.name', 'days');
         data_set($col1, 'nodays.label', '');
         data_set($col1, 'nodays.readonly', false);
@@ -98,20 +107,28 @@ class detachmentcontract
 
 
         data_set($col1, 'lblvehicleinfo.label', 'No. of Hours');
-        data_set($col1, 'lblvehicleinfo.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col1, 'lblvehicleinfo.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col1, 'othrs.name', 'hrs');
         data_set($col1, 'othrs.label', '');
         data_set($col1, 'othrs.readonly', false);
 
         data_set($col1, 'lblrem.label', 'Excess Duty');
-        data_set($col1, 'lblrem.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col1, 'lblrem.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col1, 'workloc.name', 'excesshrs');
         data_set($col1, 'workloc.label', '');
 
 
-        $fields = ['lblsource',['lbldestination', 'basicrate'],['lblpassbook', 'tbasicrate'],['lblreconcile', 'othrsextra'],
-            ['lblearned', 'cola'],['lblcleared', 'apothrs'],['lblrecondate', 'paymentname'],['lblendingbal', 'opincentive'],
-            ['lblunclear', 'tallowrate']];
+        $fields = [
+            'lblsource',
+            ['lbldestination', 'basicrate'],
+            ['lblpassbook', 'tbasicrate'],
+            ['lblreconcile', 'othrsextra'],
+            ['lblearned', 'cola'],
+            ['lblcleared', 'apothrs'],
+            ['lblrecondate', 'paymentname'],
+            ['lblendingbal', 'opincentive'],
+            ['lblunclear', 'tallowrate']
+        ];
         $col2 = $this->fieldClass->create($fields);
 
 
@@ -119,30 +136,30 @@ class detachmentcontract
         data_set($col2, 'lblsource.style', 'font-weight:bold; font-size:15px; position:relative; top:8px;');
 
         data_set($col2, 'lbldestination.label', 'Daily Wage');
-        data_set($col2, 'lbldestination.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col2, 'lbldestination.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col2, 'basicrate.name', 'dailywage');
         data_set($col2, 'basicrate.label', '');
         data_set($col2, 'basicrate.class', 'csbasicrate');
         data_set($col2, 'basicrate.readonly', false);
 
         data_set($col2, 'lblpassbook.label', 'Basic Salary');
-        data_set($col2, 'lblpassbook.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col2, 'lblpassbook.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col2, 'tbasicrate.name', 'salary');
         data_set($col2, 'tbasicrate.label', '');
 
         data_set($col2, 'lblreconcile.label', 'Excess Hours Duty');
-        data_set($col2, 'lblreconcile.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col2, 'lblreconcile.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col2, 'othrsextra.name', 'excessduty');
         data_set($col2, 'othrsextra.label', '');
         data_set($col2, 'othrsextra.readonly', false);
 
         data_set($col2, 'lblearned.label', 'Night Pay / Cola');
-        data_set($col2, 'lblearned.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col2, 'lblearned.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col2, 'cola.label', '');
         data_set($col2, 'cola.readonly', false);
 
         data_set($col2, 'lblcleared.label', 'Overtime Pay');
-        data_set($col2, 'lblcleared.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col2, 'lblcleared.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col2, 'apothrs.name', 'otamt');
         data_set($col2, 'apothrs.label', '');
         data_set($col2, 'apothrs.class', 'csapothrs');
@@ -150,7 +167,7 @@ class detachmentcontract
 
 
         data_set($col2, 'lblrecondate.label', '13th Month Pay');
-        data_set($col2, 'lblrecondate.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col2, 'lblrecondate.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col2, 'paymentname.type', 'input');
         data_set($col2, 'paymentname.name', 'amt13th');
         data_set($col2, 'paymentname.class', 'cspaymentname');
@@ -159,75 +176,84 @@ class detachmentcontract
 
 
         data_set($col2, 'lblendingbal.label', '5 Days Incentive');
-        data_set($col2, 'lblendingbal.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col2, 'lblendingbal.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col2, 'opincentive.name', 'incentive');
         data_set($col2, 'opincentive.label', '');
 
         data_set($col2, 'lblunclear.label', 'Uniform Allowance');
-        data_set($col2, 'lblunclear.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col2, 'lblunclear.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col2, 'tallowrate.name', 'uniformamt');
         data_set($col2, 'tallowrate.label', '');
 
-       $fields = ['lblbranch',['lbldateid', 'leadfrom'],['lblreceived', 'sss'],['lblattached', 'phic'],['lblinvreq', 'hdmf'],
-              ['lblforapproval', 'escalation'],['lblapproved', 'agentcno'],['lbllocked', 'taxdef'],['lblitemdesc', 'fcontractprice'],
-              'refresh'];
-       $col3 = $this->fieldClass->create($fields);
+        $fields = [
+            'lblbranch',
+            ['lbldateid', 'leadfrom'],
+            ['lblreceived', 'sss'],
+            ['lblattached', 'phic'],
+            ['lblinvreq', 'hdmf'],
+            ['lblforapproval', 'escalation'],
+            ['lblapproved', 'agentcno'],
+            ['lbllocked', 'taxdef'],
+            ['lblitemdesc', 'fcontractprice'],
+            'refresh'
+        ];
+        $col3 = $this->fieldClass->create($fields);
 
         data_set($col3, 'lblbranch.label', 'AMOUNT TO GOV\'T IN FAVOR OF GUARD');
         data_set($col3, 'lblbranch.style', 'font-weight:bold; font-size:15px; position:relative; top:8px;');
 
         data_set($col3, 'lbldateid.label', 'Retirement');
-        data_set($col3, 'lbldateid.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col3, 'lbldateid.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col3, 'leadfrom.name', 'retireamt');
         data_set($col3, 'leadfrom.label', '');
 
         data_set($col3, 'lblreceived.label', 'SSS Cont.');
-        data_set($col3, 'lblreceived.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col3, 'lblreceived.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col3, 'sss.name', 'sssamt');
         data_set($col3, 'sss.label', '');
         data_set($col3, 'sss.readonly', false);
 
         data_set($col3, 'lblattached.label', 'PHIC Cont.');
-        data_set($col3, 'lblattached.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col3, 'lblattached.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col3, 'phic.name', 'phicamt');
         data_set($col3, 'phic.label', '');
         data_set($col3, 'phic.readonly', false);
 
         data_set($col3, 'lblinvreq.label', 'HDMF Cont.');
-        data_set($col3, 'lblinvreq.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col3, 'lblinvreq.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col3, 'hdmf.name', 'hdmfamt');
         data_set($col3, 'hdmf.label', '');
         data_set($col3, 'hdmf.readonly', false);
 
         data_set($col3, 'lblforapproval.label', 'ECC Cont.');
-        data_set($col3, 'lblforapproval.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col3, 'lblforapproval.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col3, 'escalation.name', 'eccamt');
         data_set($col3, 'escalation.label', '');
 
         data_set($col3, 'lblapproved.label', 'Agency Fee');
-        data_set($col3, 'lblapproved.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col3, 'lblapproved.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col3, 'agentcno.name', 'agencyfee');
         data_set($col3, 'agentcno.label', '');
         data_set($col3, 'agentcno.readonly', false);
 
         data_set($col3, 'lbllocked.label', '12% VAT');
-        data_set($col3, 'lbllocked.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col3, 'lbllocked.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col3, 'taxdef.name', 'agencyvat');
         data_set($col3, 'taxdef.label', '');
         data_set($col3, 'taxdef.readonly', true);
 
         data_set($col3, 'lblitemdesc.label', 'TOTAL CONTRACT');
-        data_set($col3, 'lblitemdesc.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);');
+        data_set($col3, 'lblitemdesc.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:right; transform:translateY(8px);');
         data_set($col3, 'fcontractprice.label', '');
-        
+
         data_set($col3, 'refresh.label', 'Save');
 
-        return array('col1' => $col1, 'col2'=>$col2, 'col3' => $col3);
+        return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3);
     }
 
     public function paramsdata($config)
     {
-        $divid= $config['params']['trno'];
+        $divid = $config['params']['trno'];
 
         $edit = $this->coreFunctions->getfieldvalue('divinfo', "editdate", "divid=?", [$divid]);
         //1st col
@@ -242,7 +268,7 @@ class detachmentcontract
 
         //2nd col
         $dailywage = $config['params']['addedparams']['dailywage'] ?: 0;
-     
+
         $salary = $config['params']['addedparams']['salary'] ?: 0;
         $excessduty = $config['params']['addedparams']['excessduty'] ?: 0;
         $cola = $config['params']['addedparams']['cola'] ?: 0;
@@ -276,7 +302,7 @@ class detachmentcontract
                                                              '' as lblbranch, '' as lbldateid,
                                                             '$retireamt' as retireamt,'$sssamt' as sssamt,'$phicamt' as phicamt,'$hdmfamt' as hdmfamt,
                                                              '$eccamt' as eccamt,'$agencyfee' as agencyfee,'$agencyvat' as agencyvat, '$fcontractprice' as fcontractprice,
-                                                             '$divid' as divid , '$editdate' as editdate"); 
+                                                             '$divid' as divid , '$editdate' as editdate");
     }
 
 
@@ -337,9 +363,9 @@ class detachmentcontract
         $eccamt = $config['params']['dataparams']['eccamt'];
         $agencyfee = $config['params']['dataparams']['agencyfee'];
         $agencyvat = $config['params']['dataparams']['agencyvat'];
-    
 
-        if($agencyfee !=0 ){
+
+        if ($agencyfee != 0) {
             $agencyvat = $agencyfee * 0.12;
         }
 
@@ -348,10 +374,10 @@ class detachmentcontract
         if ($existingdate != null) {
 
             // GET OLD DATA FROM divinfo
-            $olddata = $this->coreFunctions->opentable("select * from divinfo where divid=?",[$divid]);
+            $olddata = $this->coreFunctions->opentable("select * from divinfo where divid=?", [$divid]);
 
             // GET NEXT LINE
-            $getline = $this->coreFunctions->getfieldvalue("hdivinfo","line","1=1 order by line desc",[],'',true );
+            $getline = $this->coreFunctions->getfieldvalue("hdivinfo", "line", "1=1 order by line desc", [], '', true);
             $line = $getline + 1;
 
             // SAVE OLD DATA TO hdivinfo
@@ -395,7 +421,7 @@ class detachmentcontract
             $this->coreFunctions->sbcinsert('hdivinfo', $hdivinfodata);
 
             // VERIFY HISTORY INSERT
-            $getsavedhistory = $this->coreFunctions->getfieldvalue("hdivinfo","line","line=? and divid=?",[$line, $divid],'',true );
+            $getsavedhistory = $this->coreFunctions->getfieldvalue("hdivinfo", "line", "line=? and divid=?", [$line, $divid], '', true);
 
             if ($getsavedhistory == 0) {
                 $msg = 'Failed to transfer.';
@@ -411,7 +437,6 @@ class detachmentcontract
         // UPDATE divinfo USING NEW VALUES
         $editdate = $this->othersClass->getCurrentTimeStamp();
         $editby = $config['params']['user'];
-
         $divinfodata = [
             'noguards' => $noguards,
             'yrdays' => $yrdays,
@@ -442,8 +467,9 @@ class detachmentcontract
             'editdate' => $editdate,
             'editby' => $editby
         ];
-        $updatediv = $this->coreFunctions->sbcupdate('divinfo',$divinfodata,['divid' => $divid] );
-
+        $updatediv = $this->coreFunctions->sbcupdate('divinfo', $divinfodata, ['divid' => $divid]);
+        $divcode = $this->coreFunctions->getfieldvalue('division', 'divcode', 'divid=?', [$divid]);
+        $this->logger->sbcmasterlog($divid, $config, "Contract Saved. Divcode : " . $divcode);
         if ($updatediv == 0) {
             $msg = 'Failed to save.';
             return [
@@ -455,7 +481,6 @@ class detachmentcontract
         }
 
         $msg = 'Successfully saved.';
-        return ['status' => true,  'msg' => $msg, 'closecustomform' => true,  'reloadhead' => true ];
+        return ['status' => true,  'msg' => $msg, 'closecustomform' => true,  'reloadhead' => true];
     }
-
 }

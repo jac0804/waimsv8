@@ -37,9 +37,9 @@ class pc
     private $reporter;
     private $reportheader;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -67,7 +67,7 @@ class pc
           '' as prepared,
           '' as approved,
           '' as received";
-  
+
 
         return $this->coreFunctions->opentable($paramstr);
     }
@@ -75,7 +75,6 @@ class pc
     public function report_default_query($filters)
     {
         return $this->default_query($filters);
-        
     }
 
     public function default_query($filters)
@@ -111,9 +110,8 @@ class pc
 
     public function reportplotting($params, $data)
     {
-      
+
         return $this->default_PC_PDF($params, $data);
-         
     }
     public function default_PC_header_PDF($params, $data)
     {
@@ -332,5 +330,4 @@ class pc
 
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
-
 }

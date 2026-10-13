@@ -35,10 +35,10 @@ class entryservice
   private $enrollmentlookup;
   private $logger;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -160,7 +160,7 @@ class entryservice
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
 
         if (empty(trim($data2['code']))) {
@@ -190,7 +190,7 @@ class entryservice
     $row = $config['params']['row'];
     $data = [];
     foreach ($this->fields as $key2 => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     if (empty(trim($data['code']))) {
@@ -237,7 +237,7 @@ class entryservice
 
     $data = $this->loaddataperrecord($row['line']);
     $qry = "select serviceline as value from (select serviceline from currentservice where serviceline=? union all select serviceline from hcurrentservice where serviceline=?) as a limit 1";
-    $count = $this->coreFunctions->datareader($qry, [$row['line'],$row['line']],'',true);
+    $count = $this->coreFunctions->datareader($qry, [$row['line'], $row['line']], '', true);
 
     if ($count != 0) {
       return ['clientid' => $row['line'], 'status' => false, 'msg' => 'Already have transaction...'];

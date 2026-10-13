@@ -40,10 +40,10 @@ class en_schoolyear
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -108,9 +108,9 @@ class en_schoolyear
 
   public function checkSchoolyear($data, $type = 'update')
   {
-    $qry = "select line as value from en_schoolyear where sy='".$data['sy']."'";
+    $qry = "select line as value from en_schoolyear where sy='" . $data['sy'] . "'";
     if ($type == 'update') {
-      $qry = "select line as value from en_schoolyear where sy='".$data['sy']."' and line<>".$data['line'];
+      $qry = "select line as value from en_schoolyear where sy='" . $data['sy'] . "' and line<>" . $data['line'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check == '') return false;
@@ -146,7 +146,7 @@ class en_schoolyear
         if ($data[$key]['line'] == 0) {
           $check = $this->checkSchoolyear($data[$key], 'new');
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data[$key]['sy'];
+            $msg .= "\n Duplicate entry for " . $data[$key]['sy'];
           } else {
             $line = $this->coreFunctions->insertGetId($this->table, $data2);
             $this->logger->sbcmasterlog($data[$key]['line'], $config, ' CREATE - ' . $data[$key]['sy']);
@@ -154,7 +154,7 @@ class en_schoolyear
         } else {
           $check = $this->checkSchoolyear($data[$key]);
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data[$key]['sy'];
+            $msg .= "\n Duplicate entry for " . $data[$key]['sy'];
           } else {
             $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data2['editby'] = $config['params']['user'];
@@ -164,7 +164,7 @@ class en_schoolyear
       } // end if
     } // foreach
     $returndata = $this->loaddata($config);
-    return ['status' => true, 'msg' => 'All saved successfully. '.$msg, 'data' => $returndata];
+    return ['status' => true, 'msg' => 'All saved successfully. ' . $msg, 'data' => $returndata];
   } // end function 
 
   public function save($config)
@@ -179,10 +179,10 @@ class en_schoolyear
         return ['status' => false, 'msg' => 'Not allowed 2 active School Year', 'data' => $returndata];
       }
     }
-    
-     $companyid = $config['params']['companyid'];
-     $dateTables = ['en_schoolyear'];
-     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+
+    $companyid = $config['params']['companyid'];
+    $dateTables = ['en_schoolyear'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
@@ -190,7 +190,7 @@ class en_schoolyear
     if ($row['line'] == 0) {
       $check = $this->checkSchoolyear($row, 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$row['sy'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $row['sy'], 'row' => []];
       } else {
         $line = $this->coreFunctions->insertGetId($this->table, $data);
         if ($line != 0) {
@@ -204,7 +204,7 @@ class en_schoolyear
     } else {
       $check = $this->checkSchoolyear($row);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$row['sy'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $row['sy'], 'row' => []];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];

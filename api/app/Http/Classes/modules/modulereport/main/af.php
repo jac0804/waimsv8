@@ -45,9 +45,9 @@ class af
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -59,13 +59,13 @@ class af
   {
     $companyid = $config['params']['companyid'];
 
-    
+
     $fields = ['radioprint'];
     $col1 = $this->fieldClass->create($fields);
 
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
 
     $fields = ['print'];
@@ -225,7 +225,7 @@ class af
     $companyid = $params['params']['companyid'];
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -234,14 +234,14 @@ class af
     $font = "";
     $fontbold = "";
     $fontsize = 11;
-    
+
     if (Storage::disk('sbcpath')->exists('/fonts/calibri.ttf')) {
       $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/calibri.ttf');
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/calibriB.ttf');
     }
 
-    
-    
+
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -251,9 +251,9 @@ class af
     PDF::SetMargins(40, 40);
 
     //changeimage
-    
+
     PDF::Image($this->companysetup->getlogopath($params['params']) . 'elsi.png', '18', '12', 342, 78);
-  
+
     PDF::MultiCell(0, 20, "\n");
 
     $strdocno = $data[0]->bref . $data[0]->seq;
@@ -270,7 +270,7 @@ class af
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(108, 0, (isset($data[0]->plantype) ? $data[0]->plangrp . "-" . $data[0]->plantype : ''), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
 
 
     PDF::SetFont($fontbold, '', 12);
@@ -279,7 +279,7 @@ class af
 
     PDF::MultiCell(108, 20, (isset($data[0]->amount) ? number_format(floatval($data[0]->amount), 2) : '0.00'), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::SetFont($fontbold, '', 12);
     PDF::MultiCell(200, 0, "Plan Holder Information", '', 'L', false, 0, '20',  '105', true, 0, false, true, 0, 'B', true);
 
@@ -292,7 +292,7 @@ class af
     PDF::MultiCell(200, 0, "Gender", '', 'L', false, 0, '460',  '130', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(200, 0, "Civil Status ", '', 'L', false, 0, '460',  '148', true, 0, false, true, 0, 'B', true);
 
-    
+
 
     PDF::SetCellPadding(2);
     PDF::SetFillColor(232, 239, 217);
@@ -320,7 +320,7 @@ class af
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(135, 0, (isset($data[0]->fname2) ? $data[0]->fname2 : ''), 'TLRB', 'L', true, 0, '163',  '140', true, 0, false, true, 0, 'B', true);
     } else {
-      
+
       PDF::SetFont($font, '', 7.8);
       PDF::MultiCell(135, 0, (isset($data[0]->fname2) ? $data[0]->fname2 : ''), 'TLRB', 'L', true, 0, '163',  '140', true, 0, false, true, 0, 'B', true);
     }
@@ -336,7 +336,7 @@ class af
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(110, 0, (isset($data[0]->mname2) ? $data[0]->mname2 : ''), 'TLRB', 'L', true, 0, '305',  '140', true, 0, false, true, 0, 'B', true);
     } else {
-      
+
       PDF::SetFont($font, '', 7.8);
       PDF::MultiCell(110, 0, (isset($data[0]->mname2) ? $data[0]->mname2 : ''), 'TLRB', 'L', true, 0, '305',  '140', true, 0, false, true, 0, 'B', true);
     }
@@ -680,7 +680,7 @@ class af
     PDF::MultiCell(100, 25, $p5, '', 'L', false, 1, '273', '310', true, 0, true);
     PDF::SetFont($font, '', 8);
     PDF::MultiCell(100, 25, "Retired/Pensioner", '', 'L', false, 1, '283', '312', true, 0, true);
-    
+
 
     PDF::SetFont('dejavusans', '', 11);
     PDF::MultiCell(100, 25, $p6, '', 'L', false, 1, '360', '310', true, 0, true);
@@ -777,7 +777,7 @@ class af
 
     PDF::SetFont($fontbold, '', 12);
     PDF::MultiCell(380, 0, "Does Planholder Have Other Life Or Death Insurance? If Yes, please specify.", '', 'L', false, 0, '210',  '370', true, 0, false, true, 0, 'B', true);
-    
+
 
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(380, 20, (isset($data[0]->otherplan) ? $data[0]->otherplan : ''), 'TLRB', 'L', true, 0, '210',  '385', true, 0, false, true, 0, 'C', true);
@@ -798,7 +798,7 @@ class af
     PDF::MultiCell(200, 0, "Ext.", '', 'L', false, 0, '422',  '447', true, 0, false, true, 0, 'B', true);
 
     PDF::SetFont($font, '', 10);
-    
+
 
     $lname = strlen($data[0]->lname);
     if ($lname <= 24) {
@@ -815,7 +815,7 @@ class af
     PDF::SetCellPadding(2);
     PDF::SetFont($font, '', 10);
 
-    
+
 
     $fname = strlen($data[0]->fname);
     if ($fname <= 24) {
@@ -825,14 +825,14 @@ class af
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(135, 0, (isset($data[0]->fname) ? $data[0]->fname : ''), 'TLRB', 'L', true, 0, '163',  '462', true, 0, false, true, 0, 'B', true);
     } else {
-      
+
       PDF::SetFont($font, '', 7.8);
       PDF::MultiCell(135, 0, (isset($data[0]->fname) ? $data[0]->fname : ''), 'TLRB', 'L', true, 0, '163',  '462', true, 0, false, true, 0, 'B', true);
     }
     PDF::SetCellPadding(2);
     PDF::SetFont($font, '', 10);
 
-    
+
     $mname = strlen($data[0]->mname);
     if ($mname <= 15) {
       PDF::SetFont($font, '', 10);
@@ -841,7 +841,7 @@ class af
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(110, 0, (isset($data[0]->mname) ? $data[0]->mname : ''), 'TLRB', 'L', true, 0, '305',  '462', true, 0, false, true, 0, 'B', true);
     } else {
-      
+
       PDF::SetFont($font, '', 7.8);
       PDF::MultiCell(110, 0, (isset($data[0]->mname) ? $data[0]->mname : ''), 'TLRB', 'L', true, 0, '305',  '462', true, 0, false, true, 0, 'B', true);
     }
@@ -866,7 +866,7 @@ class af
 
     PDF::SetFont($font, '', 7);
     PDF::SetCellPadding(2);
-    
+
     $addressno = strlen($data[0]->addressno);
     if ($addressno <= 13) {
       PDF::SetFont($font, '', 7);
@@ -881,7 +881,7 @@ class af
 
 
 
-    
+
 
     $street = strlen($data[0]->street);
     if ($street <= 34) {
@@ -897,7 +897,7 @@ class af
 
 
 
-    
+
 
     $subdistown = strlen($data[0]->subdistown);
     if ($subdistown <= 34) {
@@ -912,7 +912,7 @@ class af
     }
 
 
-    
+
     $city = strlen($data[0]->city);
     if ($city <= 24) {
       PDF::SetFont($font, '', 8);
@@ -925,7 +925,7 @@ class af
       PDF::MultiCell(95, 0, (isset($data[0]->city) ? $data[0]->city : ''), 'TLRB', 'L', true, 0, '340',  '510', true, 0, false, true, 0, 'B', true);
     }
 
-    
+
 
     $country = strlen($data[0]->country);
     if ($country <= 24) {
@@ -1020,7 +1020,7 @@ class af
     PDF::SetFont($font, '', 8);
     PDF::MultiCell(100, 25, "Cheque", '', 'L', false, 1, '240', '557', true, 0, true);
 
-    
+
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(150, 0, 'Primary Contact Number:', '', 'R', false, 1, '330',  '542', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(105, 0, $data[0]->contactno, 'B', 'L', false, 1, '485',  '542', true, 0, false, true, 0, 'B', true);
@@ -1037,7 +1037,7 @@ class af
     PDF::MultiCell(150, 0, 'Specify Other Payment Terms:', '', 'L', false, 1, '20',  '580', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(200, 0, $data[0]->otherterms, 'B', 'L', false, 1, '150',  '580', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::SetLineStyle(array('width' => 2, 'cap' => 'square', 'join' => 'miter', 'dash' => 0, 'color' => array(0, 0, 0)));
     PDF::MultiCell(575, 20, '', 'T', 'L', false, 0, '20',  '610', true, 0, false, true, 0, 'C', true);
     PDF::SetLineStyle(array('width' => 0.5, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(0, 0, 0)));
@@ -1121,8 +1121,6 @@ class af
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(100,  $height, '', 'B', 'L', false, 1, '480',  '', true, 0, false, true, 0, 'B', true);
     }
-
-    
   } // end fn
 
   public function default_PO_PDF($params, $data)

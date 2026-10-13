@@ -35,12 +35,12 @@ class pag_ibig_calamity_loan_report
   // layoutsize: reportWidth
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '700'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -125,18 +125,20 @@ class pag_ibig_calamity_loan_report
     //   $filter .= " and emp.deptid = $deptid";
     // }
     if ($deptname != '') {
-        if ($deptid != 0) {
-            $filter .= " and emp.deptid = $deptid";
-    }}
-
-    if ($divname !="") {
-    if ($divid != 0) {
-      if ($config['params']['companyid'] == 58) { //cdo
-        $filter .= " and emp.contricompid = $divid";
-      } else {
-        $filter .= " and emp.divid = $divid";
+      if ($deptid != 0) {
+        $filter .= " and emp.deptid = $deptid";
       }
-    }}
+    }
+
+    if ($divname != "") {
+      if ($divid != 0) {
+        if ($config['params']['companyid'] == 58) { //cdo
+          $filter .= " and emp.contricompid = $divid";
+        } else {
+          $filter .= " and emp.divid = $divid";
+        }
+      }
+    }
 
 
     $emplvl = $this->othersClass->checksecuritylevel($config);
@@ -152,22 +154,22 @@ class pag_ibig_calamity_loan_report
     //       left join paccount as pa on pa.line=pt.acnoid
     //       where pa.code ='PT93' 
     //       and (year(pt.dateid) < '" . $year . "' OR (year(pt.dateid) = '" . $year . "' AND month(pt.dateid) <= '" . $month . "'))
-        
+
     //       union all
     //       select pt.empid,pt.acnoid,pt.cr as ee,0 as er,0 as ec,0 as cr
     //       from paytranhistory as pt 
     //       left join paccount as pa on pa.line=pt.acnoid
     //       where pa.code = 'PT93' 
     //       and (year(pt.dateid) < '" . $year . "' OR (year(pt.dateid) = '" . $year . "' AND month(pt.dateid) <= '" . $month . "'))
-        
-          
+
+
     //     ) as p
     //     left join client as e on e.clientid = p.empid
     //     left join employee as emp on emp.empid=p.empid
     //     where e.client <>'' and p.ee<>0 and emp.level in $emplvl $filter
     //     group by emp.empid,p.acnoid,e.clientname,e.client,emp.hdmf
     //   ) as g
-      
+
     //   left join standardsetup as ss on ss.empid=g.empid and ss.acnoid=g.acnoid
     //   left join standardtrans as st on st.trno=ss.trno
     //   where (year(st.dateid) < '" . $year . "' OR (year(st.dateid) = '" . $year . "' AND month(st.dateid) <= '" . $month . "'))

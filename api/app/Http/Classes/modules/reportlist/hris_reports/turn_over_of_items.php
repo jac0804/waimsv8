@@ -35,12 +35,12 @@ class turn_over_of_items
   // layoutsize: reportWidth
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -120,10 +120,11 @@ class turn_over_of_items
     //   $filter1 .= " and d.clientid = $deptid";
     // }
 
-    if ($deptname !=''){
-        if ($deptid != 0) {
-          $filter1 .= " and d.clientid = $deptid";
-    }}
+    if ($deptname != '') {
+      if ($deptid != 0) {
+        $filter1 .= " and d.clientid = $deptid";
+      }
+    }
 
     $query = "SELECT head.trno,'' as client,head.docno,head.empid,em.client as empcode,em.clientname as empname,
   head.deptid,d.client as dept,date(head.dateid) as dateid,head.jobtitle,head.rem,detail.itemname,

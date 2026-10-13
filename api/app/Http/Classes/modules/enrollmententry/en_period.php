@@ -41,10 +41,10 @@ class en_period
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -154,11 +154,11 @@ class en_period
     return $qry;
   }
 
-  public function checkPeriod ($data, $type = 'update')
+  public function checkPeriod($data, $type = 'update')
   {
-    $qry = "select line as value from en_period where code='".$data['code']."'";
+    $qry = "select line as value from en_period where code='" . $data['code'] . "'";
     if ($type == 'update') {
-      $qry = "select line as value from en_period where code='".$data['code']."' and line<>".$data['line'];
+      $qry = "select line as value from en_period where code='" . $data['code'] . "' and line<>" . $data['line'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check == '') return false;
@@ -204,7 +204,7 @@ class en_period
         if ($data[$key]['line'] == 0) {
           $check = $this->checkPeriod($data[$key], 'new');
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data[$key]['code'];
+            $msg .= "\n Duplicate entry for " . $data[$key]['code'];
           } else {
             $line = $this->coreFunctions->insertGetId($this->table, $data2);
             $this->logger->sbcmasterlog($data[$key]['line'], $config, ' CREATE - ' . $data[$key]['code']);
@@ -212,7 +212,7 @@ class en_period
         } else {
           $check = $this->checkPeriod($data[$key]);
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data[$key]['code'];
+            $msg .= "\n Duplicate entry for " . $data[$key]['code'];
           } else {
             $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data2['editby'] = $config['params']['user'];
@@ -222,7 +222,7 @@ class en_period
       } // end if
     } // foreach
     $returndata = $this->loaddata($config);
-    return ['status' => true, 'msg' => 'All saved successfully. '.$msg, 'data' => $returndata];
+    return ['status' => true, 'msg' => 'All saved successfully. ' . $msg, 'data' => $returndata];
   } // end function 
 
   public function save($config)
@@ -237,11 +237,11 @@ class en_period
         return ['status' => false, 'msg' => 'Not allowed 2 active Period', 'data' => $returndata];
       }
     }
-    
+
 
     $companyid = $config['params']['companyid'];
     $dateTables = ['en_period'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables); 
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
@@ -258,7 +258,7 @@ class en_period
     if ($row['line'] == 0) {
       $check = $this->checkPeriod($row, 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$row['code'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $row['code'], 'row' => []];
       } else {
         $line = $this->coreFunctions->insertGetId($this->table, $data);
         if ($line != 0) {
@@ -272,7 +272,7 @@ class en_period
     } else {
       $check = $this->checkPeriod($row);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$row['code'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $row['code'], 'row' => []];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];

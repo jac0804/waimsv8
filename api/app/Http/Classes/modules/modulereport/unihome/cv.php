@@ -34,9 +34,9 @@ class cv
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -87,7 +87,7 @@ class cv
           break;
       }
     } else if ($config['params']['dataparams']['print'] == "PDFM") {
-      
+
       switch ($config['params']['dataparams']['reporttype']) {
         case '0': // VOUCHER
 
@@ -249,7 +249,6 @@ class cv
             } //end if
             $finalarrs[$key]['month'] = $y['month'];
           }
-
         } //end for each
         if (empty($result1)) {
           $returnarr[0]['payee'] = '';
@@ -922,7 +921,7 @@ class cv
       PDF::MultiCell(80, $ewt_height, $key, 'LRB', '', false, 0);
 
       switch ($data['head'][0]['month']) {
-          // case '1': case '2': case '3':
+        // case '1': case '2': case '3':
         case '1':
         case '4':
         case '7':
@@ -932,7 +931,7 @@ class cv
           PDF::MultiCell(95, $ewt_height, '', 'LRB', '', false, 0);
           $totalwtx1 +=  $data['detail'][$key]['oamt'];
           break;
-          // case '4': case '5': case '6':
+        // case '4': case '5': case '6':
         case '2':
         case '5':
         case '8':
@@ -1190,7 +1189,7 @@ class cv
       PDF::MultiCell(720, 5, "\n", '', 'L', false);
 
       $dd = number_format((float)$cc, 2, '.', '');
-      PDF::MultiCell(720, 0, '***' . $this->ftNumberToWordsConverter($dd) . ' ONLY***', '', 'L', false);                   
+      PDF::MultiCell(720, 0, '***' . $this->ftNumberToWordsConverter($dd) . ' ONLY***', '', 'L', false);
     }
 
     return PDF::Output($this->modulename . '.pdf', 'S');

@@ -37,9 +37,9 @@ class gc
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -672,7 +672,7 @@ class gc
 
         PDF::MultiCell(0, 0, "\n\n");
         PDF::SetFont($font, '', 12);
-             PDF::SetCellPaddings(0, 0, 0, 0);
+        PDF::SetCellPaddings(0, 0, 0, 0);
         // PDF::MultiCell(30, 0, ' ', '', 'L', false, 0);
         PDF::MultiCell(200, 0, ' ', '', 'C', false, 0);
         PDF::MultiCell(60, 0, ' ', '', 'L', false, 0);

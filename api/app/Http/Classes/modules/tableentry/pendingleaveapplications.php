@@ -35,10 +35,10 @@ class pendingleaveapplications
     public $showclosebtn = true;
     public $leavefields = ['status', 'status2', 'date_approved_disapproved', 'date_approved_disapproved2', 'approvedby_disapprovedby', 'approvedby_disapprovedby2', 'disapproved_remarks', 'disapproved_remarks2', 'catid'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -114,7 +114,7 @@ class pendingleaveapplications
             // array_push($stockbuttons, 'process');
             array_push($stockbuttons, 'viewleaveattachment');
             // }
-            
+
         }
 
         if ($companyid == 58) { // cdo
@@ -478,7 +478,7 @@ class pendingleaveapplications
                 $tempdata = [];
                 foreach ($this->leavefields as $key2) {
                     if (isset($data[$key2])) {
-                        $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $data[$key2],$lookups);
+                        $tempdata[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $data[$key2], $lookups);
                     }
                 }
                 $tempdata['editdate'] = $this->othersClass->getCurrentTimeStamp();

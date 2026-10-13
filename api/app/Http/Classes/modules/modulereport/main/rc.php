@@ -34,10 +34,10 @@ class rc
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -45,45 +45,49 @@ class rc
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter($config){
-    $fields = ['radioprint','prepared','approved','received','print'];
+  public function createreportfilter($config)
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
       // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
     ]);
     if ($config['params']['companyid'] == 10 || $config['params']['companyid'] == 12) { // afti
-        data_set($col1, 'prepared.readonly',true);
-        data_set($col1, 'prepared.type','lookup');
-        data_set($col1, 'prepared.action','lookupclient');
-        data_set($col1, 'prepared.lookupclass','prepared');
+      data_set($col1, 'prepared.readonly', true);
+      data_set($col1, 'prepared.type', 'lookup');
+      data_set($col1, 'prepared.action', 'lookupclient');
+      data_set($col1, 'prepared.lookupclass', 'prepared');
 
-        data_set($col1, 'approved.readonly',true);
-        data_set($col1, 'approved.type','lookup');
-        data_set($col1, 'approved.action','lookupclient');
-        data_set($col1, 'approved.lookupclass','approved');
+      data_set($col1, 'approved.readonly', true);
+      data_set($col1, 'approved.type', 'lookup');
+      data_set($col1, 'approved.action', 'lookupclient');
+      data_set($col1, 'approved.lookupclass', 'approved');
 
-        data_set($col1, 'received.readonly',true);
-        data_set($col1, 'received.type','lookup');
-        data_set($col1, 'received.action','lookupclient');
-        data_set($col1, 'received.lookupclass','received');
-      }
-    return array('col1'=>$col1);
+      data_set($col1, 'received.readonly', true);
+      data_set($col1, 'received.type', 'lookup');
+      data_set($col1, 'received.action', 'lookupclient');
+      data_set($col1, 'received.lookupclass', 'received');
+    }
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable(
       "select 
       'PDFM' as print,
       '' as prepared,
       '' as approved,
       '' as received
-      ");
+      "
+    );
   }
 
-  public function report_default_query($filters){
+  public function report_default_query($filters)
+  {
     $trno = $filters['params']['dataid'];
-    $query="
+    $query = "
     select detail.line, head.trno, date(head.dateid) as dateid, head.docno, head.clientname, head.address, head.yourref, head.ourref,
     client.client, date(head.checkdate) as hcheckdate, date(detail.checkdate) as dcheckdate, head.checkno as hcheckno, head.rem,
      detail.amount, detail.checkno as dcheckno, concat(pm.code,'~',pm.name) as pmx, phase.code as phase, blklot.blk, blklot.lot, housemodel.model
@@ -107,12 +111,13 @@ class rc
     left join blklot on blklot.line = head.blklotid
     left join housemodel on housemodel.line = head.modelid
     where head.doc='rc' and head.trno='$trno' order by line";
-    
+
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   }
 
-  public function reportplotting($params, $data) {
+  public function reportplotting($params, $data)
+  {
     return $this->default_RC_PDF($params, $data);
   }
 
@@ -156,7 +161,7 @@ class rc
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -185,7 +190,7 @@ class rc
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 0, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), 'B', 'L', false, 1, '',  '');
 
-    if($this->companysetup->getsystemtype($params['params']) == 'REALSESTATE'){
+    if ($this->companysetup->getsystemtype($params['params']) == 'REALSESTATE') {
       PDF::SetFont($fontbold, '', $fontsize);
       PDF::MultiCell(80, 0, "Project: ", '', 'L', false, 0, '',  '');
       PDF::SetFont($font, '', $fontsize);
@@ -194,7 +199,7 @@ class rc
       PDF::MultiCell(100, 0, "House Model: ", '', 'R', false, 0, '',  '');
       PDF::SetFont($font, '', $fontsize);
       PDF::MultiCell(100, 0, (isset($data[0]['model']) ? $data[0]['model'] : ''), 'B', 'L', false, 1, '',  '');
-  
+
       PDF::SetFont($font, '', $fontsize);
       PDF::SetFont($fontbold, '', $fontsize);
       PDF::MultiCell(80, 0, "Block : ", '', 'L', false, 0, '',  '');
@@ -205,12 +210,12 @@ class rc
       PDF::SetFont($font, '', $fontsize);
       PDF::MultiCell(100, 0, (isset($data[0]['lot']) ? $data[0]['lot'] : ''), 'B', 'L', false, 1, '',  '');
     }
-   
+
 
     PDF::MultiCell(0, 0, "\n");
     PDF::SetFont($font, 'B', 12);
     PDF::MultiCell(235, 0, "CHECK NO.", 'TB', 'L', false, 0);
-    PDF::MultiCell(235, 0, "CHECK DATE", 'TB', 'C', false,0);
+    PDF::MultiCell(235, 0, "CHECK DATE", 'TB', 'C', false, 0);
     PDF::MultiCell(235, 0, "AMOUNT", 'TB', 'R', false);
     PDF::SetFont($font, '', 5);
   }
@@ -236,36 +241,36 @@ class rc
     $this->default_RC_header_PDF($params, $data);
 
     PDF::SetFont($font, '', 5);
-  
+
     $countarr = 0;
     $totaldb = 0;
     PDF::SetCellPaddings(1, 1, 1, 1);
     if (!empty($data)) {
-      
+
       for ($i = 0; $i < count($data); $i++) {
 
         $maxrow = 1;
         $dcheckno = $data[$i]['dcheckno'];
         $dcheckdate = $data[$i]['dcheckdate'];
-        $amount = number_format($data[$i]['amount'],$decimalcurr);
+        $amount = number_format($data[$i]['amount'], $decimalcurr);
 
-        $arrdcheckno = $this->reporter->fixcolumn([$dcheckno],'20',0);
-        $arrdcheckdate = $this->reporter->fixcolumn([$dcheckdate],'20',0);
-        $arramount = $this->reporter->fixcolumn([$amount],'20',0);
+        $arrdcheckno = $this->reporter->fixcolumn([$dcheckno], '20', 0);
+        $arrdcheckdate = $this->reporter->fixcolumn([$dcheckdate], '20', 0);
+        $arramount = $this->reporter->fixcolumn([$amount], '20', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arrdcheckno, $arrdcheckdate, $arramount]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(235, 0, (isset($arrdcheckno[$r]) ? $arrdcheckno[$r] : ''), '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(235, 0, (isset($arrdcheckdate[$r]) ? $arrdcheckdate[$r] : ''), '', 'C', false, 0, '', '', false, 1);
           PDF::MultiCell(235, 0, (isset($arramount[$r]) ? $arramount[$r] : ''), '', 'R', false, 1, '', '', false, 1);
         }
-    
+
         $totaldb += $data[$i]['amount'];
       }
     }
- 
+
     PDF::SetCellPaddings(4, 4, 4, 4);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(265, 0, '', 'T', 'R', false, 0);
@@ -293,5 +298,4 @@ class rc
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

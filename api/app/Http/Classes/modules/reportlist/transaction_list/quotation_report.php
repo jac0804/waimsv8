@@ -29,12 +29,12 @@ class quotation_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -205,7 +205,7 @@ class quotation_report
       if ($projectcode != "") {
         $filter1 .= " and stock.projectid = $projectid";
       }
-      if ($dept != "" && $deptname != '' ) {
+      if ($dept != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $deptid";
       }
 
@@ -345,7 +345,7 @@ class quotation_report
       if ($projectcode != "") {
         $filter1 .= " and stock.projectid = $projectid";
       }
-      if ($deptcode != ""  && $deptname != '' ) {
+      if ($deptcode != ""  && $deptname != '') {
         $filter1 .= " and head.deptid = $deptid";
       }
       $barcodeitemnamefield = ",item.partno as barcode, concat(model.model_name,' ',brand.brand_desc,' ',i.itemdescription) as itemname";

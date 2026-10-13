@@ -3101,6 +3101,10 @@ class hrislookup
       case 'W':
       case 'P':
       case 'L':
+        $w8 = '';
+        if ($config['params']['companyid'] == 66) { //metrodragon
+          $w8 = "  union all select 'W8' as paymodetype, '08' as val";
+        }
         $qry = "
           select '' as paymodetype, '' as val
           union all
@@ -3113,6 +3117,7 @@ class hrislookup
           select 'W4' as paymodetype, '04' as val
           union all
           select 'W5' as paymodetype, '05' as val
+          $w8
           union all
           select '13th' as paymodetype, '13' as val
         ";
@@ -3120,8 +3125,13 @@ class hrislookup
       case 'S':
       case 'M':
         $b3rd = '';
+        $b4th = '';
         if ($config['params']['companyid'] == 62) { // onesky
           $b3rd = "  union all select '3rd Half' as paymodetype, '06' as val";
+        }
+        if ($config['params']['companyid'] == 66) { //metrodragon
+          $b3rd = "  union all select '3rd Half' as paymodetype, '06' as val";
+          $b4th = "  union all select '4th Half' as paymodetype, '08' as val";
         }
         $qry = "
           select '' as paymodetype, '' as val
@@ -3130,6 +3140,7 @@ class hrislookup
           union all
           select '2nd Half' as paymodetype, '04' as val
           $b3rd
+          $b4th
           union all
           select '13th' as paymodetype, '13' as val
         ";
@@ -4155,8 +4166,7 @@ class hrislookup
 
     if ($companyid == 62) { // onesky
         $qry = "select 'CASH' as  bank, '1' as val union all
-              select 'ATM' as  bank, '2' as val union all
-              select 'ATM - no Bank Account' as  bank, '3' as val";
+              select 'ATM' as  bank, '2' as val";
     }else {
       $qry = "select 'CASH' as  bank union all
               select 'METROBANK' as  bank union all 

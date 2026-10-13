@@ -35,9 +35,9 @@ class hd
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -45,9 +45,10 @@ class hd
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter(){
-    $fields = ['radioprint','radioreporttype','prepared', 'approved', 'received', 'print'];
-    $col1 = $this->fieldClass->create($fields);  
+  public function createreportfilter()
+  {
+    $fields = ['radioprint', 'radioreporttype', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
     ]);
@@ -56,10 +57,11 @@ class hd
       ['label' => 'Notice of Resolution', 'value' => 'resolution', 'color' => 'orange']
     ]);
 
-    return array('col1'=>$col1);
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable("select 
       'PDFM' as print,
       '' as approved,
@@ -69,32 +71,32 @@ class hd
     ");
   }
 
-  public function reportplotting($config,$data)
-  { 
+  public function reportplotting($config, $data)
+  {
     $data = $this->report_default_query($config);
-    $reporttype = $config['params']['dataparams']['reporttype'];    
-      if($config['params']['dataparams']['print'] == "default"){
-        $str = $this->rpt_hd_layout($config, $data);
-      }else if($config['params']['dataparams']['print'] == "PDFM") {
-       
-        switch ($reporttype) {
-          case 'discipline':
-            $str = $this->rpt_hd_discipline_PDF($config, $data);
-  
-          break;
-          case 'resolution':
-            $str = $this->rpt_hd_resolution_PDF($config, $data);
+    $reporttype = $config['params']['dataparams']['reporttype'];
+    if ($config['params']['dataparams']['print'] == "default") {
+      $str = $this->rpt_hd_layout($config, $data);
+    } else if ($config['params']['dataparams']['print'] == "PDFM") {
+
+      switch ($reporttype) {
+        case 'discipline':
+          $str = $this->rpt_hd_discipline_PDF($config, $data);
 
           break;
-        }
+        case 'resolution':
+          $str = $this->rpt_hd_resolution_PDF($config, $data);
+
+          break;
       }
-      return $str;
+    }
+    return $str;
   }
 
   public function report_default_query($filters)
   {
     $trno = $filters['params']['dataid'];
-    $query="
+    $query = "
     select
       head.trno, head.docno, head.empid, date(head.dateid) as dateid,
       head.artid, head.sectionno, head.violationno,
@@ -153,18 +155,18 @@ class hd
     return $result;
   }
 
-  
+
   public function rpt_hd_resolution_PDF($params, $data)
   {
     $border = '1px solid';
     $fontsize = '11';
-    
+
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
     $font = "";
     $fontbold = "";
-    
+
     $count = 55;
     $page = 54;
 
@@ -195,7 +197,7 @@ class hd
     PDF::SetFont($fontbold, '', 12);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "", '', 'C');
 
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(720, 0, "MEMORANDUM", '', 'L');
@@ -203,32 +205,32 @@ class hd
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(120, 15, "DATE", '', 'L', false,0);
+    PDF::MultiCell(120, 15, "DATE", '', 'L', false, 0);
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(200, 15, ": ".(isset($data[0]['dateid']) ? date_format(date_create($data[0]['dateid']), 'F d, Y') : ''), '', 'L', false);
-    
-    PDF::MultiCell(0, 0, "\n");
-
-    PDF::SetFont($font, '', 12);
-    PDF::MultiCell(120, 15, "To", '', 'L', false,0);
-    PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(200, 15, ": ".(isset($data[0]['empname']) ? $data[0]['empname'] : ''), '', 'L', false);
-
-    PDF::MultiCell(0, 0, "\n");
-    
-    PDF::SetFont($font, '', 12);
-    PDF::MultiCell(120, 15, "Position", '', 'L', false,0);
-    PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(200, 15, ": ".(isset($data[0]['jobtitle']) ? $data[0]['jobtitle'] : ''), '', 'L', false);
+    PDF::MultiCell(200, 15, ": " . (isset($data[0]['dateid']) ? date_format(date_create($data[0]['dateid']), 'F d, Y') : ''), '', 'L', false);
 
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(120, 15, "Subject", '', 'L', false,0);
+    PDF::MultiCell(120, 15, "To", '', 'L', false, 0);
+    PDF::SetFont($fontbold, '', 12);
+    PDF::MultiCell(200, 15, ": " . (isset($data[0]['empname']) ? $data[0]['empname'] : ''), '', 'L', false);
+
+    PDF::MultiCell(0, 0, "\n");
+
+    PDF::SetFont($font, '', 12);
+    PDF::MultiCell(120, 15, "Position", '', 'L', false, 0);
+    PDF::SetFont($fontbold, '', 12);
+    PDF::MultiCell(200, 15, ": " . (isset($data[0]['jobtitle']) ? $data[0]['jobtitle'] : ''), '', 'L', false);
+
+    PDF::MultiCell(0, 0, "\n");
+
+    PDF::SetFont($font, '', 12);
+    PDF::MultiCell(120, 15, "Subject", '', 'L', false, 0);
     PDF::SetFont($fontbold, '', 12);
     PDF::MultiCell(200, 15, ": Notice of Resolution", '', 'L', false);
 
- 
+
     PDF::SetLineWidth(2);
 
     PDF::MultiCell(720, 15, "", 'T', 'L', false);
@@ -243,20 +245,20 @@ class hd
 
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(720, 15, "1. Indicate all-important details (act, date, place, etc.)", '', 'L', false);
-    
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(720, 15, "2. If appropriate, Attach employee's written explanation.", '', 'L', false);
 
-    
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(720, 15, "This action has been deemed necessary as we have determined that you have committed the following:", '', 'L', false);
 
-    PDF::MultiCell(220, 15, "3.3", '', 'L', false,0);
-    PDF::MultiCell(220, 15, "Tardiness", '', 'L', false,1);
+    PDF::MultiCell(220, 15, "3.3", '', 'L', false, 0);
+    PDF::MultiCell(220, 15, "Tardiness", '', 'L', false, 1);
 
     PDF::MultiCell(0, 0, "\n");
 
@@ -264,75 +266,75 @@ class hd
     PDF::MultiCell(720, 15, "DISCIPLINARY ACTION", '', 'L', false);
 
     PDF::MultiCell(0, 0, "\n");
-    
+
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(240, 15, "( ) Corrective Interview", '', 'L', false,0);
-    PDF::MultiCell(240, 15, "( ) Verbal Warning or Reprimand", '', 'L', false,0);
+    PDF::MultiCell(240, 15, "( ) Corrective Interview", '', 'L', false, 0);
+    PDF::MultiCell(240, 15, "( ) Verbal Warning or Reprimand", '', 'L', false, 0);
     PDF::MultiCell(240, 15, "( ) Last Written Warning or Reprimand", '', 'L', false);
 
-    
+
     PDF::MultiCell(0, 0, "\n");
-    
+
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(240, 15, "( ) Suspension Days:", '', 'L', false,0);
-    PDF::MultiCell(240, 15, "( ) Stop Of Service When", '', 'L', false,0);
+    PDF::MultiCell(240, 15, "( ) Suspension Days:", '', 'L', false, 0);
+    PDF::MultiCell(240, 15, "( ) Stop Of Service When", '', 'L', false, 0);
     PDF::MultiCell(240, 15, "( ) Penalty", '', 'L', false);
 
-    
+
     PDF::MultiCell(0, 0, "\n");
-    
+
     PDF::SetFont($fontbold, '', 12);
     PDF::MultiCell(720, 15, "Signed By:", '', 'C', false);
 
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(300, 15, '', '', 'L', false,0);
-    PDF::MultiCell(120, 15, $prepared, 'B', 'C', false,0);
+    PDF::MultiCell(300, 15, '', '', 'L', false, 0);
+    PDF::MultiCell(120, 15, $prepared, 'B', 'C', false, 0);
     PDF::MultiCell(300, 15, '', '', 'L', false);
 
-    
+
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(300, 15, '', '', 'L', false,0);
-    PDF::MultiCell(120, 15, 'HR Manager', '', 'C', false,0);
+    PDF::MultiCell(300, 15, '', '', 'L', false, 0);
+    PDF::MultiCell(120, 15, 'HR Manager', '', 'C', false, 0);
     PDF::MultiCell(300, 15, '', '', 'L', false);
-    
+
     PDF::MultiCell(0, 0, "\n\n");
-    
+
     PDF::SetFont($fontbold, '', 12);
     PDF::MultiCell(720, 15, "Approved By:", '', 'C', false);
 
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(300, 15, '', '', 'L', false,0);
-    PDF::MultiCell(120, 15, $approved, 'B', 'C', false,0);
+    PDF::MultiCell(300, 15, '', '', 'L', false, 0);
+    PDF::MultiCell(120, 15, $approved, 'B', 'C', false, 0);
     PDF::MultiCell(300, 15, '', '', 'L', false);
-    
+
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(300, 15, '', '', 'L', false,0);
-    PDF::MultiCell(120, 15, 'PRESIDENT', '', 'C', false,0);
+    PDF::MultiCell(300, 15, '', '', 'L', false, 0);
+    PDF::MultiCell(120, 15, 'PRESIDENT', '', 'C', false, 0);
     PDF::MultiCell(300, 15, '', '', 'L', false);
 
     PDF::MultiCell(0, 0, "\n\n");
-    
+
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(400, 15, "", '', 'R', false,0);
+    PDF::MultiCell(400, 15, "", '', 'R', false, 0);
     PDF::MultiCell(320, 15, "I fully understand and accept this disciplinary action", '', 'C', false);
 
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', 12);
-    
+
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(430, 15, "", '', 'R', false,0);
-    PDF::MultiCell(260, 15, "", 'B', 'C', false,0);
+    PDF::MultiCell(430, 15, "", '', 'R', false, 0);
+    PDF::MultiCell(260, 15, "", 'B', 'C', false, 0);
     PDF::MultiCell(30, 15, "", '', 'C', false);
-    
+
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(400, 15, "", '', 'R', false,0);
+    PDF::MultiCell(400, 15, "", '', 'R', false, 0);
     PDF::MultiCell(320, 15, "Employee's Signature over Printed Name / Date", '', 'C', false);
-    
+
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
@@ -347,7 +349,7 @@ class hd
 
     $font = "";
     $fontbold = "";
-    
+
     $count = 55;
     $page = 54;
 
@@ -378,7 +380,7 @@ class hd
     PDF::SetFont($fontbold, '', 12);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "", '', 'C');
 
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(720, 0, "NOTICE OF DISCIPLINARY ACTION", '', 'C');
@@ -386,116 +388,116 @@ class hd
     PDF::MultiCell(0, 0, "\n\n");
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(120, 15, "Doc No.", '', 'L', false,0);
+    PDF::MultiCell(120, 15, "Doc No.", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(300, 15, (isset($data[0]['empname']) ? $data[0]['empname'] : ''), '', 'L', false,0);
-    PDF::MultiCell(40, 15, "", '', 'L', false,0);
+    PDF::MultiCell(300, 15, (isset($data[0]['empname']) ? $data[0]['empname'] : ''), '', 'L', false, 0);
+    PDF::MultiCell(40, 15, "", '', 'L', false, 0);
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(50, 15, "DATE : ", '', 'L', false,0);
+    PDF::MultiCell(50, 15, "DATE : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(200, 15, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '', 'L', false);
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(120, 15, "Section/Dept", '', 'L', false,0);
+    PDF::MultiCell(120, 15, "Section/Dept", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(600, 15, (isset($data[0]['sectionname']) ? $data[0]['sectionname'] : ''), '', 'L', false,1);
+    PDF::MultiCell(600, 15, (isset($data[0]['sectionname']) ? $data[0]['sectionname'] : ''), '', 'L', false, 1);
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(120, 15, "Employee", '', 'L', false,0);
+    PDF::MultiCell(120, 15, "Employee", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(600, 15, (isset($data[0]['empname']) ? $data[0]['empname'] : ''), '', 'L', false,1);
+    PDF::MultiCell(600, 15, (isset($data[0]['empname']) ? $data[0]['empname'] : ''), '', 'L', false, 1);
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(120, 15, "Position", '', 'L', false,0);
+    PDF::MultiCell(120, 15, "Position", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(600, 15, (isset($data[0]['jobtitle']) ? $data[0]['jobtitle'] : ''), '', 'L', false,1);
+    PDF::MultiCell(600, 15, (isset($data[0]['jobtitle']) ? $data[0]['jobtitle'] : ''), '', 'L', false, 1);
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(120, 15, "IRF No.", '', 'L', false,0);
+    PDF::MultiCell(120, 15, "IRF No.", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(600, 15, (isset($data[0]['irno']) ? $data[0]['irno'] : ''), '', 'L', false,1);
+    PDF::MultiCell(600, 15, (isset($data[0]['irno']) ? $data[0]['irno'] : ''), '', 'L', false, 1);
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(120, 15, "Date of Incident", '', 'L', false,0);
+    PDF::MultiCell(120, 15, "Date of Incident", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(600, 15, (isset($data[0]['startdate']) ? $data[0]['startdate'] : ''), '', 'L', false,1);
+    PDF::MultiCell(600, 15, (isset($data[0]['startdate']) ? $data[0]['startdate'] : ''), '', 'L', false, 1);
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(120, 15, "Reports ", '', 'L', false,0);
+    PDF::MultiCell(120, 15, "Reports ", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(600, 15, (isset($data[0]['penalty']) ? $data[0]['penalty'] : ''), '', 'L', false,1);
+    PDF::MultiCell(600, 15, (isset($data[0]['penalty']) ? $data[0]['penalty'] : ''), '', 'L', false, 1);
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(120, 15, "Details ", '', 'L', false,0);
+    PDF::MultiCell(120, 15, "Details ", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(600, 15, (isset($data[0]['detail']) ? $data[0]['detail'] : ''), '', 'L', false,1);
+    PDF::MultiCell(600, 15, (isset($data[0]['detail']) ? $data[0]['detail'] : ''), '', 'L', false, 1);
 
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(120, 15, "Prepared by ", '', 'L', false,0);
+    PDF::MultiCell(120, 15, "Prepared by ", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(220, 15, (isset($params['params']['dataparams']['prepared']) ? $params['params']['dataparams']['prepared'] : ''), 'B', 'L', false,1);
-    
+    PDF::MultiCell(220, 15, (isset($params['params']['dataparams']['prepared']) ? $params['params']['dataparams']['prepared'] : ''), 'B', 'L', false, 1);
+
     PDF::MultiCell(0, 0, "\n");
     PDF::SetFont($fontbold, '', 12);
     PDF::MultiCell(300, 15, "Employee's Explanation", '', 'L');
 
-    PDF::MultiCell(700, 20, "",'B');
-    PDF::MultiCell(700, 20, "",'B');
-    PDF::MultiCell(700, 20, "",'B');
+    PDF::MultiCell(700, 20, "", 'B');
+    PDF::MultiCell(700, 20, "", 'B');
+    PDF::MultiCell(700, 20, "", 'B');
 
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(220, 15, "(HR to fill up) ", '', 'L', false,1);
-    PDF::MultiCell(220, 15, "Violation Committed:", '', 'L', false,1);
+    PDF::MultiCell(220, 15, "(HR to fill up) ", '', 'L', false, 1);
+    PDF::MultiCell(220, 15, "Violation Committed:", '', 'L', false, 1);
 
-    PDF::MultiCell(220, 15, "CC0000002", '', 'L', false,0);
-    PDF::MultiCell(220, 15, "3.3 TARDINESS", '', 'L', false,1);
+    PDF::MultiCell(220, 15, "CC0000002", '', 'L', false, 0);
+    PDF::MultiCell(220, 15, "3.3 TARDINESS", '', 'L', false, 1);
 
-    PDF::MultiCell(220, 15, "3.3", '', 'L', false,0);
-    PDF::MultiCell(220, 15, "Tardiness", '', 'L', false,1);
+    PDF::MultiCell(220, 15, "3.3", '', 'L', false, 0);
+    PDF::MultiCell(220, 15, "Tardiness", '', 'L', false, 1);
 
     PDF::MultiCell(0, 0, "\n");
 
-    PDF::MultiCell(420, 15, "Recommended Disciplinary Action to be Taken:", '', 'L', false,1);
+    PDF::MultiCell(420, 15, "Recommended Disciplinary Action to be Taken:", '', 'L', false, 1);
 
-    PDF::MultiCell(220, 15, "Nth Time Violated", '', 'L', false,0);
-    PDF::MultiCell(220, 15, ":".(isset($data[0]['violationno']) ? $data[0]['violationno'] : ''), '', 'L', false,1);
-    PDF::MultiCell(220, 15, "Penalty", '', 'L', false,0);
-    PDF::MultiCell(220, 15, ":".(isset($data[0]['penalty']) ? $data[0]['penalty'] : ''), '', 'L', false,1);
+    PDF::MultiCell(220, 15, "Nth Time Violated", '', 'L', false, 0);
+    PDF::MultiCell(220, 15, ":" . (isset($data[0]['violationno']) ? $data[0]['violationno'] : ''), '', 'L', false, 1);
+    PDF::MultiCell(220, 15, "Penalty", '', 'L', false, 0);
+    PDF::MultiCell(220, 15, ":" . (isset($data[0]['penalty']) ? $data[0]['penalty'] : ''), '', 'L', false, 1);
 
-    PDF::MultiCell(220, 15, "Effective Date", '', 'L', false,0);
-    PDF::MultiCell(220, 15, "", '', 'L', false,1);
+    PDF::MultiCell(220, 15, "Effective Date", '', 'L', false, 0);
+    PDF::MultiCell(220, 15, "", '', 'L', false, 1);
 
     PDF::MultiCell(0, 0, "\n\n");
 
-    PDF::MultiCell(220, 15, "Effective Date", '', 'L', false,0);
-    PDF::MultiCell(220, 15, "", '', 'L', false,1);
+    PDF::MultiCell(220, 15, "Effective Date", '', 'L', false, 0);
+    PDF::MultiCell(220, 15, "", '', 'L', false, 1);
 
 
     PDF::MultiCell(0, 0, "\n");
 
-    PDF::MultiCell(220, 15, "Conforme", '', 'L', false,0);
-    PDF::MultiCell(220, 15, "", 'B', 'L', false,1);
+    PDF::MultiCell(220, 15, "Conforme", '', 'L', false, 0);
+    PDF::MultiCell(220, 15, "", 'B', 'L', false, 1);
 
-    PDF::MultiCell(220, 15, "Noted by:", '', 'L', false,0);
-    PDF::MultiCell(220, 15, "", 'B', 'L', false,1);
+    PDF::MultiCell(220, 15, "Noted by:", '', 'L', false, 0);
+    PDF::MultiCell(220, 15, "", 'B', 'L', false, 1);
 
-    PDF::MultiCell(220, 15, "", '', 'L', false,0);
-    PDF::MultiCell(220, 15, (isset($data[0]['supervisor']) ? $data[0]['supervisor'] : ''), '', 'L', false,1);
+    PDF::MultiCell(220, 15, "", '', 'L', false, 0);
+    PDF::MultiCell(220, 15, (isset($data[0]['supervisor']) ? $data[0]['supervisor'] : ''), '', 'L', false, 1);
 
     PDF::MultiCell(0, 0, "\n\n");
 
 
-    PDF::MultiCell(220, 15, "Signed:", '', 'L', false,1);
-    
+    PDF::MultiCell(220, 15, "Signed:", '', 'L', false, 1);
+
     PDF::MultiCell(0, 0, "\n");
 
-    PDF::MultiCell(180, 15, "Date ______________________", '', 'L', false,0);
-    PDF::MultiCell(180, 15, "Date ______________________", '', 'L', false,0);
-    PDF::MultiCell(180, 15, "Date ______________________", '', 'L', false,0);
-    PDF::MultiCell(180, 15, "Date ______________________", '', 'L', false,1);
+    PDF::MultiCell(180, 15, "Date ______________________", '', 'L', false, 0);
+    PDF::MultiCell(180, 15, "Date ______________________", '', 'L', false, 0);
+    PDF::MultiCell(180, 15, "Date ______________________", '', 'L', false, 0);
+    PDF::MultiCell(180, 15, "Date ______________________", '', 'L', false, 1);
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
@@ -504,7 +506,7 @@ class hd
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
- 
+
     $str = '';
     $font = "Century Gothic ";
     $fontsize = "11";
@@ -518,26 +520,26 @@ class hd
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
     $str .= $this->reporter->begintable('800');
-      $str .= $this->reporter->startrow();
-        $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center .'&nbsp'  .'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
+    $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= '<br><br>';
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-  
+
     $str .= $this->reporter->col('NOTICE OF DISCIPLINARY ACTION', '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
     $str .= $this->reporter->col('DOCUMENT # :', '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '100', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '') . '<br />';
@@ -610,5 +612,4 @@ class hd
 
     return $str;
   }
-
 }

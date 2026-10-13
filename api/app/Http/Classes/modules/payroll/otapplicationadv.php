@@ -73,11 +73,11 @@ class otapplicationadv
     ];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -612,7 +612,7 @@ class otapplicationadv
     public function updatehead($config, $isupdate)
     {
         $head = $config['params']['head'];
-        $empid = $config['params']['adminid']; 
+        $empid = $config['params']['adminid'];
         $companyid = $config['params']['companyid'];
         $dateTables = [$this->head];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -658,7 +658,7 @@ class otapplicationadv
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if 
             }
         }

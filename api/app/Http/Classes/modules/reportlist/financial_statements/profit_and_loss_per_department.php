@@ -31,12 +31,12 @@ class profit_and_loss_per_department
   public $xdept = [];
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -379,11 +379,11 @@ class profit_and_loss_per_department
     $filter = "";
     if ($project != "") {
       $projectid = $config['params']['dataparams']['projectid'];
-      $filter .= " and detail.projectid=". $projectid;
+      $filter .= " and detail.projectid=" . $projectid;
     }
     if ($branch != "") {
       $branchid = $config['params']['dataparams']['clientid'];
-      $filter .= " and detail.branch=". $branchid;
+      $filter .= " and detail.branch=" . $branchid;
     }
 
     $str .= $this->plotting('R', $xdept, $start, $end, $filter, $counter, $wpercol);
@@ -454,8 +454,12 @@ class profit_and_loss_per_department
       for ($b = 0; $b < count($result2); $b++) { //loop per trans
         if ($oldacno == '' || $oldacno != $result2[$b]['acno']) {
           $a[] = array(
-            'acno' => $result2[$b]['acno'], 'acnoname' => $result2[$b]['acnoname'], 'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'],
-            'parent' => $result2[$b]['parent'], 'detail' => $result2[$b]['detail']
+            'acno' => $result2[$b]['acno'],
+            'acnoname' => $result2[$b]['acnoname'],
+            'levelid' => $result2[$b]['levelid'],
+            'cat' => $result2[$b]['cat'],
+            'parent' => $result2[$b]['parent'],
+            'detail' => $result2[$b]['detail']
           );
           $a[$dt[$key2]->clientid] = number_format((float)$result2[$b]['amt'], 2, '.', '');
           $oldacno = $result2[$b]['acno'];
@@ -470,8 +474,12 @@ class profit_and_loss_per_department
           if ($this->PLANTTREE($a, '\\' . $result2[$b]['acno'], $result2[$b]['cat'], $start, $end, $branch, $projectid, $deptval, $filter, $dt)) {
             if ($result2[$b]['levelid'] > 1) {
               $a[] = array(
-                'acno' => $result2[$b]['acno'], 'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'], 'levelid' => $result2[$b]['levelid'],
-                'cat' => $result2[$b]['cat'], 'parent' => $result2[$b]['parent'], 'detail' => 2
+                'acno' => $result2[$b]['acno'],
+                'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'],
+                'levelid' => $result2[$b]['levelid'],
+                'cat' => $result2[$b]['cat'],
+                'parent' => $result2[$b]['parent'],
+                'detail' => 2
               );
               $a[$dt[$key2]->clientid] = $deptval[$dt[$key2]->clientid];
               $deptval[$dt[$key2]->clientid] = 0;

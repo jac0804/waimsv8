@@ -93,11 +93,11 @@ class pu
     ['val' => 'all', 'label' => 'All', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -551,13 +551,13 @@ class pu
     // $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
     // $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
 
-     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
-      $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+    $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+    $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
 
     if (!$islocation) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-    } 
+    }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;

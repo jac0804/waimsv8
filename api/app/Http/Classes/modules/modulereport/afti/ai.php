@@ -40,9 +40,9 @@ class ai
 
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -1361,7 +1361,7 @@ class ai
                     $vatsales = $vatsales + $linetotal;
                     $totalext = $totalext + $linetotal;
                 } else {
-                    $vatsales =$totalext + $linetotal;
+                    $vatsales = $totalext + $linetotal;
                     $totalext = $totalext + $linetotal;
                 }
             }
@@ -1370,7 +1370,7 @@ class ai
         $ewt = 0;
         $tamtdue = $totalext;
 
-        if(!empty($datastock)){
+        if (!empty($datastock)) {
             if ($datastock[0]['ewtrate'] != 0) {
                 $ewt = $vatsales *  ($datastock[0]['ewtrate'] / 100);
             }
@@ -1380,7 +1380,7 @@ class ai
                 } else {
                     $vat = round($vatsales * .12, 2);
                 }
-    
+
                 $totalext = round(($vatsales + $vat), 2);
                 $tamtdue = round(($vatsales + $vat) - $ewt, 2);
             } else {
@@ -1394,15 +1394,15 @@ class ai
             if ($datastock[0]['vattype'] != 'VATABLE') {
                 $nonvat = number_format($totalext, 2);
             }
-    
-    
+
+
             if ($options == 'billingstatement') {
                 if ($forexparams != 1) {
                     $cur = $currencyparams;
                 }
             }
-        }else{
-            $ewt =0;
+        } else {
+            $ewt = 0;
             $vat = 0;
             $nonvat = '0.00';
             $cur = $data[0]['cur'];
@@ -1418,15 +1418,15 @@ class ai
             $this->addrowsj('LR');
         } while (PDF::getY() < 620);
 
-       
+
         //1
         PDF::MultiCell(150, 10, '', 'T', 'R', false, 0);
         PDF::MultiCell(90, 10, 'VATable Sales ', 'TBLR', 'R', false, 0);
         PDF::MultiCell(30, 10, " " . $cur, 'T', 'L', false, 0);
         if ($datastock[0]['vattype'] == 'VATABLE') {
             PDF::MultiCell(85, 10, number_format($vatsales, 2), 'TBR', 'R', false, 0);
-        }else{
-            PDF::MultiCell(85, 10,'0.00', 'TBR', 'R', false, 0);
+        } else {
+            PDF::MultiCell(85, 10, '0.00', 'TBR', 'R', false, 0);
         }
         PDF::MultiCell(10, 10, '', 'T', 'R', false, 0);
         PDF::MultiCell(110, 10, 'Total Sales(VAT Inclusive) ', 'TBLR', 'R', false, 0);

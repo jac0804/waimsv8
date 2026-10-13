@@ -33,9 +33,9 @@ class TD
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -372,7 +372,7 @@ class TD
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(390, 20, '', 'T', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
-       // vertically allign(reset it after)
+        // vertically allign(reset it after)
         PDF::SetCellPaddings(0, 3, 0, 0); // left, top, right, bottom
         PDF::SetXY(20, 640);
         PDF::SetFont($fontbold, '', $fontsize);
@@ -447,7 +447,7 @@ class TD
         PDF::SetFillColor(147, 197, 114); // pistachio background (RGB)
         PDF::MultiCell($col1, 20, 'TOTAL EXPENSES: ', 1, 'R', true, 0, '', '', true, 0, false, true, 0, 'M');
         PDF::MultiCell($col2, 20, number_format($totalexpenses, $decimalcurr), 1, 'R', true, 0, '', '', true, 0, false, true, 0, 'M');
-        PDF::MultiCell($col3, 20,'  ' . 'TOTAL REMITTED CASH:' . ' ' . number_format($pettycash - $totalexpenses, $decimalcurr), 1, 'L', true, 1, '', '', true, 0, false, true, 0, 'M');
+        PDF::MultiCell($col3, 20, '  ' . 'TOTAL REMITTED CASH:' . ' ' . number_format($pettycash - $totalexpenses, $decimalcurr), 1, 'L', true, 1, '', '', true, 0, false, true, 0, 'M');
         PDF::SetFillColor(255, 255, 255); // reset background (RGB)
 
         PDF::SetX(20);

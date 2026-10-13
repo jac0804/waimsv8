@@ -29,12 +29,12 @@ class monthly_balance_sheet
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -126,8 +126,12 @@ class monthly_balance_sheet
 
 
         $coa[] = array(
-            'acno' => '//4999', 'acnoname' => 'TOTAL LIABILITIES AND STOCKHOLDERS EQUITY',
-            'levelid' => 1, 'cat' => 'X', 'parent' => 'X', 'detail' => 2,
+            'acno' => '//4999',
+            'acnoname' => 'TOTAL LIABILITIES AND STOCKHOLDERS EQUITY',
+            'levelid' => 1,
+            'cat' => 'X',
+            'parent' => 'X',
+            'detail' => 2,
             'monjan' => $monthL2['mjan'] + $monthC2['mjan'],
             'monfeb' => $monthL2['mfeb'] + $monthC2['mfeb'],
             'monmar' => $monthL2['mmar'] + $monthC2['mmar'],
@@ -159,9 +163,12 @@ class monthly_balance_sheet
                 case 'MONTHLY':
                     if ($oldacno == '' || $oldacno != $result2[$b]['acno']) {
                         $a[] = array(
-                            'acno' => $result2[$b]['acno'], 'acnoname' => $result2[$b]['acnoname'],
-                            'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'],
-                            'parent' => $result2[$b]['parent'], 'detail' => $result2[$b]['detail'],
+                            'acno' => $result2[$b]['acno'],
+                            'acnoname' => $result2[$b]['acnoname'],
+                            'levelid' => $result2[$b]['levelid'],
+                            'cat' => $result2[$b]['cat'],
+                            'parent' => $result2[$b]['parent'],
+                            'detail' => $result2[$b]['detail'],
                             'monjan' => number_format((float)$result2[$b]['monjan'], 2, '.', ''),
                             'monfeb' => number_format((float)$result2[$b]['monfeb'], 2, '.', ''),
                             'monmar' => number_format((float)$result2[$b]['monmar'], 2, '.', ''),
@@ -246,13 +253,25 @@ class monthly_balance_sheet
                         switch ($view) {
                             case 'MONTHLY':
                                 $a[] = array(
-                                    'acno' => $result2[$b]['acno'], 'acnoname' =>
-                                    'TOTAL ' . $result2[$b]['acnoname'], 'levelid' => $result2[$b]['levelid'],
-                                    'cat' => $result2[$b]['cat'], 'parent' => $result2[$b]['parent'], 'detail' => 2,
-                                    'monjan' => $month['mjan'], 'monfeb' => $month['mfeb'], 'monmar' => $month['mmar'],
-                                    'monapr' => $month['mapr'], 'monmay' => $month['mmay'], 'monjun' => $month['mjun'],
-                                    'monjul' => $month['mjul'], 'monaug' => $month['maug'], 'monsep' => $month['msep'],
-                                    'monoct' => $month['moct'], 'monnov' => $month['mnov'], 'mondec' => $month['mdec'],
+                                    'acno' => $result2[$b]['acno'],
+                                    'acnoname' =>
+                                    'TOTAL ' . $result2[$b]['acnoname'],
+                                    'levelid' => $result2[$b]['levelid'],
+                                    'cat' => $result2[$b]['cat'],
+                                    'parent' => $result2[$b]['parent'],
+                                    'detail' => 2,
+                                    'monjan' => $month['mjan'],
+                                    'monfeb' => $month['mfeb'],
+                                    'monmar' => $month['mmar'],
+                                    'monapr' => $month['mapr'],
+                                    'monmay' => $month['mmay'],
+                                    'monjun' => $month['mjun'],
+                                    'monjul' => $month['mjul'],
+                                    'monaug' => $month['maug'],
+                                    'monsep' => $month['msep'],
+                                    'monoct' => $month['moct'],
+                                    'monnov' => $month['mnov'],
+                                    'mondec' => $month['mdec'],
                                     'yr' => $year1
                                 );
                                 $month['mjan'] = 0;
@@ -347,27 +366,49 @@ class monthly_balance_sheet
 
 
                             $a[] = array(
-                                'acno' => '\3999', 'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
-                                'levelid' => $result2[$b]['levelid'] + 1, 'cat' => $result2[$b]['cat'],
-                                'parent' => $result2[$b]['parent'], 'detail' => 1,
-                                'monjan' => $jan, 'monfeb' => $feb, 'monmar' => $mar, 'monapr' => $apr,
-                                'monmay' => $may, 'monjun' => $jun, 'monjul' => $jul, 'monaug' => $aug,
-                                'monsep' => $sep, 'monoct' => $oct, 'monnov' => $nov, 'mondec' => $dec, 'yr' => $year1
+                                'acno' => '\3999',
+                                'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
+                                'levelid' => $result2[$b]['levelid'] + 1,
+                                'cat' => $result2[$b]['cat'],
+                                'parent' => $result2[$b]['parent'],
+                                'detail' => 1,
+                                'monjan' => $jan,
+                                'monfeb' => $feb,
+                                'monmar' => $mar,
+                                'monapr' => $apr,
+                                'monmay' => $may,
+                                'monjun' => $jun,
+                                'monjul' => $jul,
+                                'monaug' => $aug,
+                                'monsep' => $sep,
+                                'monoct' => $oct,
+                                'monnov' => $nov,
+                                'mondec' => $dec,
+                                'yr' => $year1
                             );
                         }
 
                         switch ($view) {
                             case 'MONTHLY':
                                 $a[] = array(
-                                    'acno' => $result2[$b]['acno'], 'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'],
-                                    'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'],
-                                    'parent' => $result2[$b]['parent'], 'detail' => 2,
-                                    'monjan' => $month2['mjan'], 'monfeb' => $month2['mfeb'],
-                                    'monmar' => $month2['mmar'], 'monapr' => $month2['mapr'],
-                                    'monmay' => $month2['mmay'], 'monjun' => $month2['mjun'],
-                                    'monjul' => $month2['mjul'], 'monaug' => $month2['maug'],
-                                    'monsep' => $month2['msep'], 'monoct' => $month2['moct'],
-                                    'monnov' => $month2['mnov'], 'mondec' => $month2['mdec']
+                                    'acno' => $result2[$b]['acno'],
+                                    'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'],
+                                    'levelid' => $result2[$b]['levelid'],
+                                    'cat' => $result2[$b]['cat'],
+                                    'parent' => $result2[$b]['parent'],
+                                    'detail' => 2,
+                                    'monjan' => $month2['mjan'],
+                                    'monfeb' => $month2['mfeb'],
+                                    'monmar' => $month2['mmar'],
+                                    'monapr' => $month2['mapr'],
+                                    'monmay' => $month2['mmay'],
+                                    'monjun' => $month2['mjun'],
+                                    'monjul' => $month2['mjul'],
+                                    'monaug' => $month2['maug'],
+                                    'monsep' => $month2['msep'],
+                                    'monoct' => $month2['moct'],
+                                    'monnov' => $month2['mnov'],
+                                    'mondec' => $month2['mdec']
                                 );
                                 break;
 

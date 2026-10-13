@@ -35,10 +35,10 @@ class warehouse
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -178,12 +178,11 @@ class warehouse
     if ($companyid != 8) {
       $reporttimestamp = $this->reporter->setreporttimestamp($config, $username, $headerdata);
       PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
-      
     }
 
     // if ($companyid == 8) {
-      $this->reportheader->getheader($config);
-      PDF::MultiCell(0, 0, "\n");
+    $this->reportheader->getheader($config);
+    PDF::MultiCell(0, 0, "\n");
     // } else {
     //   PDF::SetFont($fontbold, '', 12);
     //   PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');

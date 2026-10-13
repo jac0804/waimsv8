@@ -77,11 +77,11 @@ class ch
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -1136,7 +1136,7 @@ class ch
     $qty = round($qty, $this->companysetup->getdecimal('qty', $config['params']));
     $computedata = $this->othersClass->computestock($amt, '', $qty, $factor);
 
-    $this->coreFunctions->sbclogger($ext.'-ext after sanitize');
+    $this->coreFunctions->sbclogger($ext . '-ext after sanitize');
     //compute reverse
     if ($qty <> 0) {
       $amt = $ext / $qty;

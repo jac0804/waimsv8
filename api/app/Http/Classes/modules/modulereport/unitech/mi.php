@@ -35,9 +35,9 @@ class mi
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -117,7 +117,7 @@ class mi
     left join item as i on i.itemid = pe.itemid
     where head.doc='MI' and head.trno='$trno' order by line";
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
-    
+
     return $result;
   } //end fn
 
@@ -172,7 +172,7 @@ class mi
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
-    PDF::MultiCell(490, 0, 'Raw '.$this->modulename, '', 'L', false, 0, '',  '100');
+    PDF::MultiCell(490, 0, 'Raw ' . $this->modulename, '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(20, 0, "", '', 'L', false, 0, '',  '');
     PDF::MultiCell(110, 0, "Docno #: ", '', 'R', false, 0, '',  '');

@@ -38,9 +38,9 @@ class sj
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -257,7 +257,7 @@ class sj
                     PDF::MultiCell(20, 25, '', '', 'L', false, 0, '10', '', true, 1);
                     PDF::MultiCell(100, 25, (isset($arr_iss[$r]) ? $arr_iss[$r] : ''), '', 'R', false, 0, '-9', '', false, 1);
                     PDF::MultiCell(100, 25, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'L', false, 0, '105', '', false, 1);
-                   // PDF::SetFont($font, '', 11);
+                    // PDF::SetFont($font, '', 11);
                     PDF::MultiCell(270, 25, (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '165', '', false, 1);
                     PDF::SetFont($font, '', $fontsize);
                     PDF::MultiCell(80, 25, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '405', '', false, 1);
@@ -278,7 +278,7 @@ class sj
                         PDF::MultiCell(20, 25, '', '', 'L', false, 0, '10', '', true, 1);
                         PDF::MultiCell(100, 25, '', '', 'R', false, 0, '-9', '', false, 1);
                         PDF::MultiCell(100, 25, '', '', 'L', false, 0, '105', '', false, 1);
-                       // PDF::SetFont($font, '', 11);
+                        // PDF::SetFont($font, '', 11);
                         PDF::MultiCell(270, 25, '', '', 'L', false, 0, '165', '', false, 1);
                         PDF::SetFont($fontbold, '', 14);
                         PDF::MultiCell(80, 25, '', '', 'R', false, 0, '385', '', false, 1);
@@ -374,7 +374,7 @@ class sj
                 $arr_uom = $this->reporter->fixcolumn([$uom], '8', 0);
                 $arr_itemname = $this->reporter->fixcolumn([$itemname], '50', 0);
 
-                $maxrow = $this->othersClass->getmaxcolumn([$arr_qty,$arr_uom, $arr_itemname, $arr_iss]);
+                $maxrow = $this->othersClass->getmaxcolumn([$arr_qty, $arr_uom, $arr_itemname, $arr_iss]);
 
                 for ($r = 0; $r < $maxrow; $r++) {
                     $j++;

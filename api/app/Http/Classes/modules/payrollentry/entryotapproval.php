@@ -33,16 +33,18 @@ class entryotapproval
   public $issearchshow = true;
   public $showclosebtn = false;
   public $reporter;
+  private $logger;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
     $this->reporter = new SBCPDF;
+    $this->logger = new Logger;
   }
 
   public function getAttrib()
@@ -288,7 +290,7 @@ class entryotapproval
 
 
   private function save($config)
-  {    
+  {
     $companyid = $config['params']['companyid'];
     $ottype  = $config['params']['dataparams']['ottype'];
     $rows = $config['params']['rows'];
@@ -297,7 +299,7 @@ class entryotapproval
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $maxOTHrs = isset($config['params']['dataparams']['apothrs']) ? $config['params']['dataparams']['apothrs'] : 0;
-    $maxOTHrs = $this->othersClass->sanitizekeyfieldFast("qty", $maxOTHrs,$lookups);
+    $maxOTHrs = $this->othersClass->sanitizekeyfieldFast("qty", $maxOTHrs, $lookups);
 
     switch ($ottype) {
       case 'EARLY OT':
@@ -376,6 +378,7 @@ class entryotapproval
         }
       }
       $data[$fieldOT] = $val['othrs'];
+      $this->logger->sbcmasterlog2($val["line"], $config, ($val["otapproved"] != "false" ? 'Approve ' : 'Update ') . $ottype . ' (' . $val["othrs"] . ' hrs) for ' . $val["empname"] . ' on ' . $val["dateid"], 'payroll_log');
       $this->coreFunctions->sbcupdate("timecard", $data, ['line' => $val["line"]]);
     }
   }

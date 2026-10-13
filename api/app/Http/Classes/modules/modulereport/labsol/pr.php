@@ -34,9 +34,9 @@ class pr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -44,7 +44,8 @@ class pr
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter(){
+  public function createreportfilter()
+  {
     $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
@@ -66,7 +67,8 @@ class pr
     );
   }
 
-  public function report_default_query($trno){
+  public function report_default_query($trno)
+  {
     $query = "select date(head.dateid) as dateid, head.docno, client.client, client.clientname, head.address, 
         head.terms,head.rem, item.barcode,
         item.itemname, stock.rrqty as qty, stock.uom, stock.rrcost as netamt, stock.disc, stock.ext,m.model_name as model,item.sizeid
@@ -89,12 +91,14 @@ class pr
     return $result;
   } //end fn
 
-  public function reportplotting($params, $data) {
-    
-     return $this->vitaline_PR_PDF($params, $data);
+  public function reportplotting($params, $data)
+  {
+
+    return $this->vitaline_PR_PDF($params, $data);
   }
-  
-  private function reportheader($params, $data){
+
+  private function reportheader($params, $data)
+  {
     $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
     $center = $params['params']['center'];
@@ -154,7 +158,7 @@ class pr
     $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('', '75', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('TOTAL', '100', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
-    
+
     return $str;
   }
 
@@ -195,7 +199,7 @@ class pr
       if ($this->reporter->linecounter == $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
-            $str .= $this->reportheader($params, $data);
+        $str .= $this->reportheader($params, $data);
         $str .= $this->reporter->endrow();
         $page = $page + $count;
       }
@@ -278,11 +282,11 @@ class pr
     // write2DBarcode(code, type, x, y, width, height, style, align)
 
     PDF::SetFont($font, '', 9);
-    PDF::MultiCell(0, 0, $username.' - '.date_format(date_create($current_timestamp),'m/d/Y H:i:s').'  '.strtoupper($headerdata[0]->name), '', 'L');
+    PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . strtoupper($headerdata[0]->name), '', 'L');
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -314,7 +318,7 @@ class pr
     PDF::MultiCell(50, 0, "Terms: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 0, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), 'B', 'L', false, 0, '',  '');
- 
+
     PDF::MultiCell(0, 0, "\n\n\n");
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', 'T');
@@ -359,20 +363,20 @@ class pr
         $maxrow = 1;
 
         $barcode = $data[$i]['barcode'];
-        $qty = number_format($data[$i]['qty'],$decimalqty);
+        $qty = number_format($data[$i]['qty'], $decimalqty);
         $uom = $data[$i]['uom'];
-        $ext = number_format($data[$i]['ext'],$decimalcurr);
+        $ext = number_format($data[$i]['ext'], $decimalcurr);
         $itemname = $data[$i]['itemname'];
 
-        $arr_barcode = $this->reporter->fixcolumn([$barcode],'16',0);
-        $arr_qty = $this->reporter->fixcolumn([$qty],'13',0);
-        $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-        $arr_ext = $this->reporter->fixcolumn([$ext],'13',0);
-        $arr_itemname = $this->reporter->fixcolumn([$itemname],'100',0);
+        $arr_barcode = $this->reporter->fixcolumn([$barcode], '16', 0);
+        $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+        $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+        $arr_ext = $this->reporter->fixcolumn([$ext], '13', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '100', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_qty, $arr_uom, $arr_ext, $arr_itemname]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(100, 0, (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '', '', true, 1);
           PDF::MultiCell(50, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '', '', false, 1);
@@ -389,7 +393,7 @@ class pr
         }
       }
     }
-    
+
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', 'T');
 
@@ -413,5 +417,4 @@ class pr
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

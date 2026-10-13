@@ -34,9 +34,9 @@ class cm
   private $reporter;
   private $logger;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -228,10 +228,10 @@ class cm
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      $str .= $this->reporter->col(number_format($data[$i]['qty'], $this->companysetup->getdecimal('qty', $params['params'] )), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
+      $str .= $this->reporter->col(number_format($data[$i]['qty'], $this->companysetup->getdecimal('qty', $params['params'])), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
       $str .= $this->reporter->col($data[$i]['uom'], '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
       $str .= $this->reporter->col($data[$i]['itemname'], '500', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
-      $str .= $this->reporter->col(number_format($data[$i]['amt'], $this->companysetup->getdecimal('price', $params['params'] )), '125', null, false, $border, '', 'R', $font, $fontsize, '', '', '2px');
+      $str .= $this->reporter->col(number_format($data[$i]['amt'], $this->companysetup->getdecimal('price', $params['params'])), '125', null, false, $border, '', 'R', $font, $fontsize, '', '', '2px');
       $str .= $this->reporter->col($data[$i]['disc'], '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($ext, '125', null, false, $border, '', 'R', $font, $fontsize, '', '', '2px');
       $totalext = $totalext + $data[$i]['ext'];

@@ -63,11 +63,11 @@ class tk
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -489,11 +489,11 @@ class tk
     foreach ($data as &$row) {
       if ($row->status == 3) {
         $key = $row->trno . '-' . $row->line;
-        
-        if ((isset($checkerMap[$key]) && $checkerMap[$key] == 1) || (isset($pendingMap[$key]) && $pendingMap[$key] == 1) ) {  
-            $row->statname = 'For Checking (Checker)';
+
+        if ((isset($checkerMap[$key]) && $checkerMap[$key] == 1) || (isset($pendingMap[$key]) && $pendingMap[$key] == 1)) {
+          $row->statname = 'For Checking (Checker)';
         } else {
-            $row->statname = 'On-going';
+          $row->statname = 'On-going';
         }
       }
     }

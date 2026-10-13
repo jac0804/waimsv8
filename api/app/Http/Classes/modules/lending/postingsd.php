@@ -33,7 +33,7 @@ class postingsd
   public $style = 'width:100%;max-width:100%;';
   public $issearchshow = true;
   public $showclosebtn = false;
-  public $fields = ['siref','prref', 'dateid', 'docno','sbu','clientname', 'amount'];
+  public $fields = ['siref', 'prref', 'dateid', 'docno', 'sbu', 'clientname', 'amount'];
   public $loadtable = true;
   public $tablenum = 'cntnum';
   public $head = 'lahead';
@@ -44,11 +44,11 @@ class postingsd
   public $htablelogs = 'htable_log';
   public $tablelogs_del = 'del_table_log';
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -58,7 +58,8 @@ class postingsd
   public function getAttrib()
   {
     $attrib = array(
-      'view' => 224, 'save' => 224,
+      'view' => 224,
+      'save' => 224,
       'edititem' => 224
     );
     return $attrib;
@@ -72,15 +73,15 @@ class postingsd
 
   public function createTab($config)
   {
-    $gridcolumns = ['action','siref','prref', 'dateid', 'docno','sbu','clientname', 'amount'];
+    $gridcolumns = ['action', 'siref', 'prref', 'dateid', 'docno', 'sbu', 'clientname', 'amount'];
     foreach ($gridcolumns as $key => $value) {
-        $$value = $key;
-      }
+      $$value = $key;
+    }
 
     $stockbuttons = ['save'];
     $tab = [$this->gridname => ['gridcolumns' => $gridcolumns]];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
-    $obj[0][$this->gridname]['label'] ='LIST';
+    $obj[0][$this->gridname]['label'] = 'LIST';
     $obj[0][$this->gridname]['descriptionrow'] = [];
     $obj[0][$this->gridname]['columns'][$action]['style'] = "width:20px;whiteSpace: normal;min-width:20px;";
     $obj[0][$this->gridname]['columns'][$action]['btns']['save']['action'] = 'saveload';
@@ -98,13 +99,12 @@ class postingsd
     $obj[0][$this->gridname]['columns'][$docno]['type'] = 'label';
     $obj[0][$this->gridname]['columns'][$sbu]['type'] = 'label';
     $obj[0][$this->gridname]['columns'][$clientname]['type'] = 'label';
-    $obj[0][$this->gridname]['columns'][$amount]['type'] = 'label';    
+    $obj[0][$this->gridname]['columns'][$amount]['type'] = 'label';
 
     $obj[0][$this->gridname]['columns'][$prref]['label'] = "AR#";
     $obj[0][$this->gridname]['columns'][$clientname]['label'] = 'Borrower';
-    
-    return $obj;
 
+    return $obj;
   }
 
   public function createtabbutton($config)
@@ -116,7 +116,7 @@ class postingsd
 
   public function createHeadField($config)
   {
-    $fields = ['checkno', 'checkdate','dacnoname'];
+    $fields = ['checkno', 'checkdate', 'dacnoname'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'checkno.readonly', false);
     data_set($col1, 'checkdate.readonly', false);
@@ -124,7 +124,6 @@ class postingsd
     //data_set($col1, 'refresh.action', 'load');
     data_set($col1, 'dacnoname.lookupclass', 'lookupdepositto');
     return array('col1' => $col1);
-
   }
 
   public function paramsdata($config)
@@ -135,9 +134,8 @@ class postingsd
     if (!empty($data)) {
       return $data[0];
     } else {
-        return [];
+      return [];
     }
-
   }
 
   public function data($config)
@@ -195,14 +193,13 @@ class postingsd
       left join heainfo as info on info.trno = app.trno
       left join client as c on c.clientid=head.clientid
       left join reqcategory as r on r.line = info.sbuid
-      where  num.dptrno<> 0 and head.dateid <=now() and head.bal <>0 and num.center='".$center."' and info.isselfemployed =1
+      where  num.dptrno<> 0 and head.dateid <=now() and head.bal <>0 and num.center='" . $center . "' and info.isselfemployed =1
       group by head.dateid,head.docno,head.trno,c.clientname,r.category,c.client,app.trno
       order by head.dateid ";
 
     $data = $this->coreFunctions->opentable($qry);
     $this->coreFunctions->logconsole($qry);
     return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data]];
-    
   }
 
   public function loaddata($config)
@@ -220,50 +217,48 @@ class postingsd
       left join heainfo as info on info.trno = app.trno
       left join client as c on c.clientid=head.clientid
       left join reqcategory as r on r.line = info.sbuid
-      where  num.dptrno<> 0 and head.dateid <=now() and head.bal <>0 and num.center='".$center."' and info.isselfemployed =1
+      where  num.dptrno<> 0 and head.dateid <=now() and head.bal <>0 and num.center='" . $center . "' and info.isselfemployed =1
       group by head.dateid,head.docno,head.trno,c.clientname,r.category,c.client,app.trno
       order by head.dateid ";
 
     $data = $this->coreFunctions->opentable($qry);
-   return $data;
-    
+    return $data;
   }
 
 
   private function save($config)
   {
-    $row =$config['params']['row'];
+    $row = $config['params']['row'];
     $siref = $row['siref'];
     $prref = $row['prref'];
-    
 
-    if($siref =='' || $prref == ''){
-        return ['status' => false, 'msg'=> 'Please enter SI and AR number.'];
+
+    if ($siref == '' || $prref == '') {
+      return ['status' => false, 'msg' => 'Please enter SI and AR number.'];
     }
 
-    try{
-      $sicreate = $this->createSIAR($config,$row['trno'],$siref,$prref);
-        if($sicreate['status'] == true){
-          $d = $this->loaddata($config);
-          return ['status' => true, 'msg'=> 'Successfully apply to SD.', 'action' => 'load', 'griddata' => ['entrygrid' => $d], 'reloadgriddata'=>true];
-          // $arcreate = $this->createSIAR($config,$row['trno'],"",$prref);
-          // if($arcreate['status'] == true){
-          //   $d = $this->loaddata($config);
-          //   return ['status' => true, 'msg'=> 'Successfully apply to SD.', 'action' => 'load', 'griddata' => ['entrygrid' => $d], 'reloadgriddata'=>true];
-          // }else{
-          //   return $arcreate;
-          // }
-        }else{
-          return $sicreate;
-        }
-
-    }catch (Exception $e) {
-        return ['status' => false, 'msg' => $e->getMessage()];
+    try {
+      $sicreate = $this->createSIAR($config, $row['trno'], $siref, $prref);
+      if ($sicreate['status'] == true) {
+        $d = $this->loaddata($config);
+        return ['status' => true, 'msg' => 'Successfully apply to SD.', 'action' => 'load', 'griddata' => ['entrygrid' => $d], 'reloadgriddata' => true];
+        // $arcreate = $this->createSIAR($config,$row['trno'],"",$prref);
+        // if($arcreate['status'] == true){
+        //   $d = $this->loaddata($config);
+        //   return ['status' => true, 'msg'=> 'Successfully apply to SD.', 'action' => 'load', 'griddata' => ['entrygrid' => $d], 'reloadgriddata'=>true];
+        // }else{
+        //   return $arcreate;
+        // }
+      } else {
+        return $sicreate;
+      }
+    } catch (Exception $e) {
+      return ['status' => false, 'msg' => $e->getMessage()];
     }
-
   }
 
-  private function createSIAR($config,$refx,$siref = "",$prref= ""){
+  private function createSIAR($config, $refx, $siref = "", $prref = "")
+  {
     $companyid = $config['params']['companyid'];
     $row = $config['params']['row'];
     $user = $config['params']['user'];
@@ -284,49 +279,45 @@ class postingsd
     //    // $amount = $row['principal'];
     // }
 
-    try{
-      $trno = $this->othersClass->generatecntnum($config, "cntnum", 'CR',$pref, 0, $seq, 'CR');
+    try {
+      $trno = $this->othersClass->generatecntnum($config, "cntnum", 'CR', $pref, 0, $seq, 'CR');
       if ($trno != -1) {
-          $docno =  $this->coreFunctions->getfieldvalue("cntnum", 'docno', "trno=?", [$trno]);
-  
-          $head = ['trno' => $trno, 
-                   'doc' => 'CR',
-                   'docno' => $docno, 
-                   'aftrno' => $refx,
-                   'client' => $row['client'], 
-                   'clientname' => $row['clientname'], 
-                   'dateid' => date('Y-m-d'), 
-                   'yourref' => $prref,
-                   'ourref' => 'Salary Deduction',
-                   'amount' => $amount,
-                   'contra' => $acno,
-                   'checkno' => $checkno,
-                   'checkdate' => $checkdate,
-                   'createby' => $user,
-                   'createdate'=> $this->othersClass->getCurrentTimeStamp()
-                  ];
+        $docno =  $this->coreFunctions->getfieldvalue("cntnum", 'docno', "trno=?", [$trno]);
 
-          foreach($head as $k => $value){
+        $head = [
+          'trno' => $trno,
+          'doc' => 'CR',
+          'docno' => $docno,
+          'aftrno' => $refx,
+          'client' => $row['client'],
+          'clientname' => $row['clientname'],
+          'dateid' => date('Y-m-d'),
+          'yourref' => $prref,
+          'ourref' => 'Salary Deduction',
+          'amount' => $amount,
+          'contra' => $acno,
+          'checkno' => $checkno,
+          'checkdate' => $checkdate,
+          'createby' => $user,
+          'createdate' => $this->othersClass->getCurrentTimeStamp()
+        ];
+
+        foreach ($head as $k => $value) {
           $data[$k] = $this->othersClass->sanitizekeyfieldFast($k, $head[$k], $lookups);
-          }
+        }
 
-          $inserthead = $this->coreFunctions->sbcinsert($this->head, $data);
-          $config['params']['trno']=$trno;
-          if($inserthead){
-            $this->logger->sbcwritelog($trno, $config, 'CREATE', $docno . ' - ' . $row['client'] . ' - ' . $row['clientname']);
-            return app($path)->applytoar($config);
-            
-          }
-  
-                   
-      }else{
+        $inserthead = $this->coreFunctions->sbcinsert($this->head, $data);
+        $config['params']['trno'] = $trno;
+        if ($inserthead) {
+          $this->logger->sbcwritelog($trno, $config, 'CREATE', $docno . ' - ' . $row['client'] . ' - ' . $row['clientname']);
+          return app($path)->applytoar($config);
+        }
+      } else {
         return $trno;
       }
-    }catch (Exception $e) {
+    } catch (Exception $e) {
       return ['status' => false, 'msg' => $e->getMessage()];
     }
-
-    
   }
 
   public function griddata($config)
@@ -334,5 +325,4 @@ class postingsd
     $griddata = $this->loadgrid($config);
     return $griddata['griddata'];
   }
-
 } //end class

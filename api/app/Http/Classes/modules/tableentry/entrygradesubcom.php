@@ -31,10 +31,10 @@ class entrygradesubcom
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -169,7 +169,7 @@ class entrygradesubcom
   {
     $row = $config['params']['row'];
     $schedtrno = $this->coreFunctions->getfieldvalue("en_gshead", "schedtrno", "trno=?", [$row['trno']]);
-    $qry = "select gr.gccode as value from en_gegrades as gr left join en_gehead as h on h.trno=gr.trno where h.schedtrno=".$schedtrno." and gr.gccode='".$row['gcsubcode']."'";
+    $qry = "select gr.gccode as value from en_gegrades as gr left join en_gehead as h on h.trno=gr.trno where h.schedtrno=" . $schedtrno . " and gr.gccode='" . $row['gcsubcode'] . "'";
     $check = $this->coreFunctions->opentable($qry);
     if (!empty($check)) return ['status' => false, 'msg' => 'Unable to delete, already has reference...'];
     $qry = "delete from en_gssubcomponent where trno=? and line=? and compid=?";

@@ -46,10 +46,10 @@ class changeshiftapplication
         'disapproveddate2'
     ];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -84,7 +84,7 @@ class changeshiftapplication
         data_set($col1, 'lblmessage.label', 'Employee Remarks: ');
         data_set($col1, 'lblmessage.style', 'font-size:11px;font-weight:bold;');
 
-        if($companyid == 53){ // camera
+        if ($companyid == 53) { // camera
             data_set($col1, 'rem.label', 'Reason');
             data_set($col1, 'lblmessage.label', 'Employee Reason:');
         }

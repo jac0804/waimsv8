@@ -16,6 +16,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use App\Http\Classes\SBCPDF;
+use App\Http\Classes\sbcscript\sbcscript;
 use DateTime;
 
 class trial_balance
@@ -26,17 +27,19 @@ class trial_balance
   private $fieldClass;
   private $othersClass;
   private $reporter;
+  private $sbcscript;
   public $style = 'width:1200px;max-width:1200px;';
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1015'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
+    $this->sbcscript = new sbcscript;
   }
 
   public function createHeadField($config)
@@ -53,6 +56,11 @@ class trial_balance
         $col2 = $this->fieldClass->create($fields);
         data_set($col2, 'ddeptname.label', 'Department');
         data_set($col2, 'costcenter.label', 'Item Group');
+        break;
+      case 65: //metro dragon
+        array_push($fields, 'dcentername', 'costcenter', 'dacnoname', 'ddeptname');
+        $col2 = $this->fieldClass->create($fields);
+        data_set($col2, 'ddeptname.label', 'Department');
         break;
       default:
         array_push($fields, 'dcentername', 'costcenter');
@@ -74,6 +82,9 @@ class trial_balance
       data_set($col3, 'forex.required', true);
     } else {
       $fields = ['radioposttype'];
+      if ($companyid == 65) {
+        array_push($fields, 'radioreporttype');
+      }
       $col3 = $this->fieldClass->create($fields);
       data_set(
         $col3,
@@ -84,6 +95,18 @@ class trial_balance
           ['label' => 'All Transactions', 'value' => '2', 'color' => 'teal']
         ]
       );
+
+      if ($companyid == 65) {
+        data_set(
+          $col3,
+          'radioreporttype.options',
+          [
+            ['label' => 'Default', 'value' => 'default', 'color' => 'teal'],
+            ['label' => 'Detailed', 'value' => 'detailed', 'color' => 'teal'],
+            ['label' => 'Group', 'value' => 'group', 'color' => 'teal']
+          ]
+        );
+      }
     }
 
     $fields = ['print'];
@@ -124,6 +147,26 @@ class trial_balance
         '' as costcenter,
         '' as ddeptname, '' as dept, '' as deptname";
         break;
+      case 65: // metro dragon -AIMS
+        $paramstr = "select 'default' as print, 
+        adddate(left(now(),10),-360) as dateid,
+        left(now(),10) as due,
+        '0' as posttype,'' as center,
+        '' as code,'' as name,
+        '' as centername,
+        '' as dcentername,
+        '' as costcenter,
+        '0' as costcenterid,
+        '' as contra,
+        '' as acnoname,
+        '' as dacnoname,
+        '' as ddeptname,
+        '' as dept,
+        '' as deptname,
+        0 as deptid,
+        'default' as reporttype
+        ";
+        break;
       default:
         $paramstr = "select 'default' as print, adddate(left(now(),10),-360) as dateid,left(now(),10) as due,'0' as posttype,'' as center,'' as code,'' as name,'' as centername,'' as dcentername,'' as costcenter,'0' as costcenterid 
         ";
@@ -137,6 +180,8 @@ class trial_balance
   {
     return [];
   }
+
+
 
   public function reportdata($config)
   {
@@ -424,6 +469,140 @@ class trial_balance
     return $array;
   }
 
+  public function metro_detailed_query($filters)
+  {
+    $isposted = $filters['params']['dataparams']['posttype'];
+    $start = date("Y-m-d", strtotime($filters['params']['dataparams']['dateid']));
+    $end = date("Y-m-d", strtotime($filters['params']['dataparams']['due']));
+
+    $filter = "";
+    $center = $filters['params']['dataparams']['center'];
+    $costcenter = $filters['params']['dataparams']['costcenter'];
+
+    if ($center != '') {
+      $filter .= " and cntnum.center='" . $center . "' ";
+    }
+    if ($costcenter != "") {
+      $costcenterid = $filters['params']['dataparams']['costcenterid'];
+      $filter .= " and head.projectid=" . $costcenterid;
+    }
+
+    // posted
+    $gl = "select coa.acno,
+                  ifnull(sum(case when date(head.dateid) < '" . $start . "' then round(detail.db,2) - round(detail.cr,2) else 0 end),0) as begbal,
+                  ifnull(sum(case when date(head.dateid) between '" . $start . "' and '" . $end . "' then round(detail.db,2) - round(detail.cr,2) else 0 end),0) as amt
+           from glhead as head
+           left join gldetail as detail on detail.trno=head.trno
+           left join coa on coa.acnoid=detail.acnoid
+           left join cntnum on cntnum.trno=head.trno
+           where detail.void = 0 and date(head.dateid) <= '" . $end . "' " . $filter . "
+           group by coa.acno";
+
+    // unposted
+    $la = "select coa.acno,
+                  ifnull(sum(case when date(head.dateid) < '" . $start . "' then round(detail.db,2) - round(detail.cr,2) else 0 end),0) as begbal,
+                  ifnull(sum(case when date(head.dateid) between '" . $start . "' and '" . $end . "' then round(detail.db,2) - round(detail.cr,2) else 0 end),0) as amt
+           from lahead as head
+           left join ladetail as detail on detail.trno=head.trno
+           left join coa on coa.acnoid=detail.acnoid
+           left join cntnum on cntnum.trno=head.trno
+           where detail.void = 0 and date(head.dateid) <= '" . $end . "' " . $filter . "
+           group by coa.acno";
+
+    switch ($isposted) {
+      case 1: //unposted
+        $source = $la;
+        break;
+      case 2: //all
+        $source = $gl . " union all " . $la;
+        break;
+      default: //posted
+        $source = $gl;
+        break;
+    }
+
+    $query = "select coa.acno, coa.acnoname, coa.levelid, coa.detail, coa.cat,
+                     sum(ifnull(tb.begbal,0)) as begbal,
+                     sum(ifnull(tb.amt,0)) as amt
+              from coa
+              left join (" . $source . ") as tb on tb.acno=coa.acno
+              group by coa.acno, coa.acnoname, coa.levelid, coa.detail, coa.cat
+              order by coa.acno, coa.acnoname, coa.detail";
+
+    $result = $this->coreFunctions->opentable($query);
+    $array = json_decode(json_encode($result), true);
+    return $array;
+  }
+
+  public function metro_group_query($filters)
+  {
+    $isposted = $filters['params']['dataparams']['posttype'];
+    $start = date("Y-m-d", strtotime($filters['params']['dataparams']['dateid']));
+    $end = date("Y-m-d", strtotime($filters['params']['dataparams']['due']));
+
+    $filter = "";
+    $center = $filters['params']['dataparams']['center'];
+    $costcenter = $filters['params']['dataparams']['costcenter'];
+    $deptid = isset($filters['params']['dataparams']['deptid']) ? $filters['params']['dataparams']['deptid'] : 0;
+    $contra = isset($filters['params']['dataparams']['contra']) ? $filters['params']['dataparams']['contra'] : '';
+
+    if ($center != '') {
+      $filter .= " and cntnum.center='" . $center . "' ";
+    }
+    if ($costcenter != "") {
+      $costcenterid = $filters['params']['dataparams']['costcenterid'];
+      $filter .= " and head.projectid=" . $costcenterid;
+    }
+
+    if ($deptid != 0) {
+      $filter .= " and detail.deptid=" . $deptid;
+    }
+
+    $outerfilter = "";
+    if ($contra != '') {
+      $outerfilter = " where coa.acno='" . addslashes($contra) . "' ";
+    }
+
+    $gl = "select coa.acno, ifnull(sum(round(detail.db,2)),0) as db, ifnull(sum(round(detail.cr,2)),0) as cr
+           from glhead as head
+           left join gldetail as detail on detail.trno=head.trno
+           left join coa on coa.acnoid=detail.acnoid
+           left join cntnum on cntnum.trno=head.trno
+           where detail.void = 0 and date(head.dateid) between '" . $start . "' and '" . $end . "' " . $filter . "
+           group by coa.acno";
+
+    $la = "select coa.acno, ifnull(sum(round(detail.db,2)),0) as db, ifnull(sum(round(detail.cr,2)),0) as cr
+           from lahead as head
+           left join ladetail as detail on detail.trno=head.trno
+           left join coa on coa.acnoid=detail.acnoid
+           left join cntnum on cntnum.trno=head.trno
+           where detail.void = 0 and date(head.dateid) between '" . $start . "' and '" . $end . "' " . $filter . "
+           group by coa.acno";
+
+    switch ($isposted) {
+      case 1: //unposted
+        $source = $la;
+        break;
+      case 2: //all
+        $source = $gl . " union all " . $la;
+        break;
+      default: //posted
+        $source = $gl;
+        break;
+    }
+
+    $query = "select coa.acno, coa.acnoname, coa.levelid, coa.detail,
+                     sum(ifnull(tb.db,0)-ifnull(tb.cr,0)) as amt
+              from coa
+              left join (" . $source . ") as tb on tb.acno=coa.acno
+              " . $outerfilter . "
+              group by coa.acno, coa.acnoname, coa.levelid, coa.detail
+              order by coa.acno, coa.acnoname, coa.detail";
+
+    $result = $this->coreFunctions->opentable($query);
+    return json_decode(json_encode($result), true);
+  } //end fn
+
   public function reportplotting($config)
   {
     $company = $config['params']['companyid'];
@@ -444,8 +623,24 @@ class trial_balance
         $reportdata =  $this->MMM_TRIAL_BALANCE_LAYOUT($config, $result);
         break;
       case 59: //roosevelt
-        // $result = $this->roosevelt_query($config);
         $reportdata =  $this->roosevelt_trial_balance_layout($config);
+        break;
+      case 65: //metro dragon
+        $reporttype = isset($config['params']['dataparams']['reporttype']) ? $config['params']['dataparams']['reporttype'] : 'default';
+        switch ($reporttype) {
+          case 'detailed':
+            $result = $this->metro_detailed_query($config);
+            $reportdata = $this->METRO_DETAILED_TRIAL_BALANCE_LAYOUT($config, $result);
+            break;
+          case 'group':
+            $result = $this->metro_group_query($config);
+            $reportdata = $this->METRO_GROUP_TRIAL_BALANCE_LAYOUT($config, $result);
+            break;
+          default:
+            $result = $this->default_query($config);
+            $reportdata =  $this->DEFAULT_TRIAL_BALANCE_LAYOUT($config, $result);
+            break;
+        }
         break;
       case 68: //jda
         $result = $this->default_query($config);
@@ -1925,4 +2120,272 @@ class trial_balance
     return $str;
   } //end fn
 
+
+  private function METRO_table_cols($layoutsize, $border, $font, $fontsize10, $config)
+  {
+    $str = '';
+    $fontsize10 = '10';
+    $str .= $this->reporter->begintable('1015');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', null, null, false, '1px solid #DCDCDC', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable('1015');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('ACCOUNT #', 90, null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('ACCOUNT TITLE', 285, null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('BEG. BALANCE', 130, null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('DEBIT', 130, null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('CREDIT', 130, null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('BALANCE', 130, null, false, '1px solid ', 'B', 'C', $font, $fontsize10, 'B', '', '');
+    return $str;
+  }
+
+  private function METRO_DETAILED_TRIAL_BALANCE_LAYOUT($params, $data)
+  {
+    $border = '1px solid';
+    $font = $this->companysetup->getrptfont($params['params']);
+    $fontsize10 = '10';
+    $fontsize11 = 11;
+
+    $str = "";
+    $count = 47;
+    $page = 47;
+    $this->reporter->linecounter = 0;
+
+    // credit-normal account types:
+    // L = Liability, C = Stockholders equity, R = Sales, O = Others (interest/other income)
+    // everything else (A, E, G) is treated as debit-normal
+    $creditcats = ['L', 'C', 'R', 'O'];
+
+    if (empty($data)) {
+      return $this->othersClass->emptydata($params);
+    }
+
+    $str .= $this->reporter->beginreport();
+    $str .= $this->DEFAULT_HEADER_LAYOUT($params);
+    $str .= $this->METRO_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $params);
+
+    $totalbeg = 0;
+    $totaldb = 0;
+    $totalcr = 0;
+    $totalbal = 0;
+
+    for ($i = 0; $i < count($data); $i++) {
+
+      $cat = isset($data[$i]['cat']) ? strtoupper(trim($data[$i]['cat'])) : '';
+      $iscreditnormal = in_array($cat, $creditcats);
+
+
+      $begnet = $data[$i]['begbal'];
+      $endnet = $begnet + $data[$i]['amt'];
+
+      $cr = $data[$i]['amt'] < 0 ? $data[$i]['amt'] * -1 : 0;
+      $db = $data[$i]['amt'] > 0 ? $data[$i]['amt'] : 0;
+
+      if ($iscreditnormal) {
+        // liabilities, capital, sales, others: beg bal + credit - debit
+        $begbal = round($begnet * -1, 2);
+        $balance = round($endnet * -1, 2);
+      } else {
+        // assets, expenses, cost of sales: beg bal + debit - credit
+        $begbal = round($begnet, 2);
+        $balance = round($endnet, 2);
+      }
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->col($data[$i]['acno'], 90, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col('' . $data[$i]['acnoname'], 285, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+
+      if ($begbal == 0) {
+        $str .= $this->reporter->col('-', 130, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      } else {
+        $str .= $this->reporter->col(number_format($begbal, 2), 130, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      }
+
+      $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+
+      if ($db == 0) {
+        $str .= $this->reporter->col('-', 130, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      } else {
+        $str .= $this->reporter->col(number_format($db, 2), 130, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      }
+
+      $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+
+      if ($cr == 0) {
+        $str .= $this->reporter->col('-', 130, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      } else {
+        $str .= $this->reporter->col(number_format($cr, 2), 130, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      }
+
+      $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+
+      if ($balance == 0) {
+        $str .= $this->reporter->col('-', 130, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      } else {
+        $str .= $this->reporter->col(number_format($balance, 2), 130, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      }
+
+      $str .= $this->reporter->endrow();
+
+      // totals use the net (debit - credit) values so they reconcile
+      $totalbeg = $totalbeg + $begnet;
+      $totaldb = $totaldb + $db;
+      $totalcr = $totalcr + $cr;
+      $totalbal = $totalbal + $endnet;
+
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
+
+        $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
+        if (!$allowfirstpage) {
+          $str .= $this->DEFAULT_HEADER_LAYOUT($params);
+        }
+        $str .= $this->METRO_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $params);
+        $str .= $this->reporter->endrow();
+        $page = $page + $count;
+      }
+    } //END FOR
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', 90, null, false, '1px solid ', 'TB', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('GRAND TOTAL :', 285, null, false, '1px solid ', 'TB', 'R', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalbeg, 2), 130, null, false, '1px solid ', 'TB', 'R', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totaldb, 2), 130, null, false, '1px solid ', 'TB', 'R', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalcr, 2), 130, null, false, '1px solid ', 'TB', 'R', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalbal, 2), 130, null, false, '1px solid ', 'TB', 'R', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endreport();
+    return $str;
+  } //end fn
+
+  private function METRO_GROUP_HEADER_LAYOUT($params)
+  {
+    $font = $this->companysetup->getrptfont($params['params']);
+    $deptname = isset($params['params']['dataparams']['deptname']) ? $params['params']['dataparams']['deptname'] : '';
+    $acnoname = isset($params['params']['dataparams']['acnoname']) ? $params['params']['dataparams']['acnoname'] : '';
+    if ($acnoname == '') {
+      $acnoname = 'ALL';
+    }
+
+    $str = $this->DEFAULT_HEADER_LAYOUT($params);
+    $str .= $this->reporter->begintable('1015');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Department : ' . $deptname, null, null, false, '1px solid ', '', 'L', $font, '10', 'B', '', '');
+    $str .= $this->reporter->col('Account : ' . $acnoname, null, null, false, '1px solid ', '', 'L', $font, '10', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    return $str;
+  }
+
+  private function METRO_GROUP_TRIAL_BALANCE_LAYOUT($params, $data)
+  {
+    $border = '1px solid';
+    $font = $this->companysetup->getrptfont($params['params']);
+    $fontsize10 = '10';
+    $fontsize11 = 11;
+
+    $str = "";
+    $count = 47;
+    $page = 47;
+    $this->reporter->linecounter = 0;
+
+    if (empty($data)) {
+      return $this->othersClass->emptydata($params);
+    }
+
+    $str .= $this->reporter->beginreport();
+    $str .= $this->METRO_GROUP_HEADER_LAYOUT($params);
+    $str .= $this->default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $params);
+
+    $totaldb = 0;
+    $totalcr = 0;
+
+    for ($i = 0; $i < count($data); $i++) {
+
+      $cr = $data[$i]['amt'] < 0 ? $data[$i]['amt'] * -1 : 0;
+      $db = $data[$i]['amt'] > 0 ? $data[$i]['amt'] : 0;
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->col($data[$i]['acno'], 120, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col('' . $data[$i]['acnoname'], 535, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+      $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+
+      if ($db == 0) {
+        $str .= $this->reporter->col('-', 150, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      } else {
+        $str .= $this->reporter->col(number_format($db, 2), 150, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      }
+
+      $str .= $this->reporter->col('', 20, null, false, '1px solid ', '', 'LT', $font, $fontsize10, '', '', '');
+
+      if ($cr == 0) {
+        $str .= $this->reporter->col('-', 150, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      } else {
+        $str .= $this->reporter->col(number_format($cr, 2), 150, null, false, '1px solid ', '', 'RT', $font, $fontsize10, '', '', '');
+      }
+
+      $str .= $this->reporter->endrow();
+
+      $totaldb = $totaldb + $db;
+      $totalcr = $totalcr + $cr;
+
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
+
+        $allowfirstpage = $this->companysetup->getisfirstpageheader($params['params']);
+        if (!$allowfirstpage) {
+          $str .= $this->METRO_GROUP_HEADER_LAYOUT($params);
+        }
+        $str .= $this->default_table_cols($this->reportParams['layoutSize'], $border, $font, $fontsize11, $params);
+        $str .= $this->reporter->endrow();
+        $page = $page + $count;
+      }
+    } //END FOR
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', 120, null, false, '1px solid ', 'TB', 'C', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('GRAND TOTAL :', 535, null, false, '1px solid ', 'TB', 'R', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totaldb, 2), 150, null, false, '1px solid ', 'TB', 'R', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col('', 20, null, false, '1px solid ', 'TB', 'L', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalcr, 2), 150, null, false, '1px solid ', 'TB', 'R', $font, $fontsize10, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->endtable();
+    $str .= $this->reporter->endreport();
+    return $str;
+  } //end fn
+
+  public function sbcscript($config)
+  {
+    if ($config['params']['companyid'] != 65) {
+      return [];
+    }
+    return $this->sbcscript->trialbalance_report($config);
+  }
 }//end class

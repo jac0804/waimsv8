@@ -29,12 +29,12 @@ class material_issuance_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -166,6 +166,17 @@ class material_issuance_report
         }
         break;
 
+      case 65: // metro dragon
+        switch ($reporttype) {
+          case 0:
+            $result = $this->reportDefaultLayout_SUMMARIZED($config);
+            break;
+
+          case 1:
+            $result = $this->report_md_detailed($config);
+            break;
+        }
+        break;
       default:
         switch ($reporttype) {
           case 0:
@@ -1678,6 +1689,215 @@ class material_issuance_report
       }
     }
     $str .= $this->reporter->endreport();
+
+    return $str;
+  }
+
+
+  public function report_md_detailed($config)
+  {
+    $result = $this->reportDefault($config);
+
+    $count = 38;
+    $page = 40;
+
+    $str = '';
+    $layoutsize = '1000';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+
+    if (empty($result)) {
+      return $this->othersClass->emptydata($config);
+    }
+
+    $str .= $this->reporter->beginreport($layoutsize);
+    $str .= $this->md_detailed_header($layoutsize, $config);
+    $str .= $this->reporter->endtable();
+    $str .= $this->md_detailed_tableheader($layoutsize, $config);
+
+    $totalext = 0;
+
+    foreach ($result as $key => $data) {
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->begintable($layoutsize);
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col(date('m/d/Y', strtotime($data->dateid)), '75', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col('', '10', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col($data->docno, '125', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col('', '10', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col($data->clientname, '130', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col('', '10', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col($data->wh, '170', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col('', '10', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col($data->itemname, '170', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col('', '10', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col(number_format($data->iss, 2), '70', null, false, $border, '', 'RT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col('', '10', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col($data->uom, '40', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col('', '10', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col(number_format($data->isamt, 2), '70', null, false, $border, '', 'RT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col('', '10', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->col(number_format($data->ext, 2), '70', null, false, $border, '', 'RT', $font, $fontsize, '', '', '', '');
+      $str .= $this->reporter->endrow();
+      $str .= $this->reporter->endtable();
+
+      $totalext += $data->ext;
+
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->page_break();
+        $str .= $this->md_detailed_header($layoutsize, $config);
+        $str .= $this->reporter->endtable();
+        $str .= $this->md_detailed_tableheader($layoutsize, $config);
+        $page = $page + $count;
+      }
+    }
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '40', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '125', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '130', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '170', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '170', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '70', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '40', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('TOTAL :', '70', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col(number_format($totalext, 2), '105', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->endreport();
+
+    return $str;
+  }
+
+  public function md_detailed_header($layoutsize, $config)
+  {
+    $center   = $config['params']['center'];
+    $start    = $config['params']['dataparams']['start'];
+    $end      = $config['params']['dataparams']['end'];
+    $filterusername = $config['params']['dataparams']['username'];
+    $prefix   = $config['params']['dataparams']['approved'];
+    $posttype = $config['params']['dataparams']['posttype'];
+    $sorting  = $config['params']['dataparams']['sorting'];
+
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+
+    $user = ($filterusername != "") ? $filterusername : "ALL USERS";
+
+    switch ($posttype) {
+      case 0:
+        $posttypelabel = 'Posted';
+        break;
+      case 1:
+        $posttypelabel = 'Unposted';
+        break;
+      default:
+        $posttypelabel = 'All';
+        break;
+    }
+
+    $sortinglabel = ($sorting == 'ASC') ? 'Ascending' : 'Descending';
+
+    $qry = "select name,address,tel from center where code = '" . $center . "'";
+    $headerdata = $this->coreFunctions->opentable($qry);
+
+    $ts1 = strtotime($start);
+    $ts2 = strtotime($end);
+    if (date('Y-m', $ts1) == date('Y-m', $ts2)) {
+      $daterange = date('F j', $ts1) . ' to ' . date('j, Y', $ts2);
+    } else {
+      $daterange = date('F j, Y', $ts1) . ' to ' . date('F j, Y', $ts2);
+    }
+
+    $rundate = date_format(date_create($this->othersClass->getCurrentTimeStamp()), 'm/d/Y h:i:sA');
+
+    $str = '';
+    $str .= $this->reporter->begintable($layoutsize);
+
+    if (!empty($headerdata)) {
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, $border, '', 'C', $font, '14', 'B', '', '');
+      $str .= $this->reporter->endrow();
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col($headerdata[0]->address, null, null, false, $border, '', 'C', $font, '12', '', '', '');
+      $str .= $this->reporter->endrow();
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('Telephone No(s): ' . $headerdata[0]->tel, null, null, false, $border, '', 'C', $font, '12', '', '', '');
+      $str .= $this->reporter->endrow();
+    }
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('&nbsp;', null, null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('TRANSACTION LIST- MATERIAL ISSUANCE REPORT(DETAILED)', null, null, false, $border, '', 'C', $font, '14', 'B', '', '');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col($daterange, null, null, false, $border, '', 'C', $font, '12', '', '', '');
+    $str .= $this->reporter->endrow();
+
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('&nbsp;', null, null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Run Date: ' . $rundate, '230', null, false, $border, '', 'LT', $font, '9', '', '', '');
+    $str .= $this->reporter->col('User: ' . $user, '160', null, false, $border, '', 'LT', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('Prefix: ' . $prefix, '130', null, false, $border, '', 'LT', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('Transaction Type: ' . $posttypelabel, '250', null, false, $border, '', 'LT', $font, '9', 'B', '', '');
+    $str .= $this->reporter->col('Sorting By: ' . $sortinglabel, '230', null, false, $border, '', 'LT', $font, '9', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
+    return $str;
+  }
+
+  public function md_detailed_tableheader($layoutsize, $config)
+  {
+    $str = '';
+    $font = $this->companysetup->getrptfont($config['params']);
+    $fontsize = "10";
+    $border = "1px solid ";
+
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Date', '75', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'CT', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Document #', '125', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'CT', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Customer Name', '130', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'CT', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Warehouse', '170', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'CT', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Description', '170', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'CT', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Qty', '70', null, false, $border, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'CT', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Unit', '40', null, false, $border, 'BT', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'CT', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Unit Cost', '70', null, false, $border, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, false, $border, 'T', 'CT', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Amount', '70', null, false, $border, 'BT', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
 
     return $str;
   }

@@ -33,10 +33,10 @@ class assigntempbarcode
   public $rowperpage = 0;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -845,8 +845,21 @@ class assigntempbarcode
           }
 
           $item = [
-            'trno' => $row['trno'], 'line' => $row['line'], 'doc' => $row['doc'], 'itemid' => $row['itemid'], 'itemname' => $row['itemdesc'], 'specs' => $row['specs'], 'uom' => $uom,
-            'category' => $category, 'subcat' => $subcat, 'createby' => $config['params']['user'], 'createdate' => $this->othersClass->getCurrentTimeStamp(), 'bgcolor' => $bgcolor, 'othcode' => $row['othcode'], 'reqtrno' => $row['reqtrno'], 'reqline' => $row['reqline']
+            'trno' => $row['trno'],
+            'line' => $row['line'],
+            'doc' => $row['doc'],
+            'itemid' => $row['itemid'],
+            'itemname' => $row['itemdesc'],
+            'specs' => $row['specs'],
+            'uom' => $uom,
+            'category' => $category,
+            'subcat' => $subcat,
+            'createby' => $config['params']['user'],
+            'createdate' => $this->othersClass->getCurrentTimeStamp(),
+            'bgcolor' => $bgcolor,
+            'othcode' => $row['othcode'],
+            'reqtrno' => $row['reqtrno'],
+            'reqline' => $row['reqline']
           ];
           $existtempitem = $this->coreFunctions->opentable("select trno from tempitem where reqtrno=" . $row['reqtrno'] . " and reqline=" . $row['reqline']);
           if (empty($existtempitem)) {

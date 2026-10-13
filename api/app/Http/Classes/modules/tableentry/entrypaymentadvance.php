@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Classes\modules\tableentry;
 
 use Illuminate\Http\Request;
@@ -16,7 +17,8 @@ use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 use App\Http\Classes\SBCPDF;
 
-class entrypaymentadvance {
+class entrypaymentadvance
+{
   private $fieldClass;
   private $tabClass;
   public $modulename = 'View Payments';
@@ -29,58 +31,63 @@ class entrypaymentadvance {
   private $fields = [];
   public $showclosebtn = false;
   private $reporter;
- 
 
-  public function __construct() {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+
+  public function __construct($params = null)
+  {
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->reporter = new SBCPDF;  
+    $this->reporter = new SBCPDF;
   }
 
-  public function getAttrib(){
-    $attrib = array('load'=>0
-                    );
+  public function getAttrib()
+  {
+    $attrib = array(
+      'load' => 0
+    );
     return $attrib;
-}
+  }
 
-  public function createTab($config){
-    $paymentdate=0;
+  public function createTab($config)
+  {
+    $paymentdate = 0;
     $cr = 1;
-   
-    $tab = [$this->gridname=>['gridcolumns'=>['paymentdate','cr']]];
-    
+
+    $tab = [$this->gridname => ['gridcolumns' => ['paymentdate', 'cr']]];
+
     $stockbuttons = [];
 
-    $obj = $this->tabClass->createtab($tab,$stockbuttons);    
+    $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
     $obj[0][$this->gridname]['columns'][$paymentdate]['type'] = "label";
-    $obj[0][$this->gridname]['columns'][$cr]['type'] = "label";    
-    $obj[0][$this->gridname]['columns'][$cr]['label'] = "Payment";  
+    $obj[0][$this->gridname]['columns'][$cr]['type'] = "label";
+    $obj[0][$this->gridname]['columns'][$cr]['label'] = "Payment";
 
     $obj[0][$this->gridname]['columns'][$cr]['style'] = "'whiteSpace: normal;'";
     $obj[0][$this->gridname]['columns'][$cr]['align'] = "text-left";
     return $obj;
   }
 
-  public function createtabbutton($config){
+  public function createtabbutton($config)
+  {
     return [];
   }
- 
-  public function loaddata($config){
+
+  public function loaddata($config)
+  {
     $empid = $config['params']['row']['empid'];
     $trno = $config['params']['row']['trno'];
     $qry = "select ss.empid,date(strans.dateid) as paymentdate,strans.cr
-            from ".$this->table." as ss
+            from " . $this->table . " as ss
             left join standardtransadv as strans on strans.trno = ss.trno
             left join paccount as p on p.line=ss.acnoid
             where ss.empid=? and ss.trno=? and strans.cr > 0
             order by strans.dateid";
-            
-    $data = $this->coreFunctions->opentable($qry,[$empid,$trno]);
+
+    $data = $this->coreFunctions->opentable($qry, [$empid, $trno]);
     return $data;
   }
-
 } //end class

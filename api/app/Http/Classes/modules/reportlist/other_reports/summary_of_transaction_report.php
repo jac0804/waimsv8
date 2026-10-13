@@ -39,12 +39,12 @@ class summary_of_transaction_report
     public $colsize = 0;
     public $reportParams = ['orientation' => 'l', 'format' => 'letter', 'layoutSize' => '360'];
     public $displaylayoutsize = 0;
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
         $this->reportheader = new reportheader;
     }
@@ -98,31 +98,31 @@ class summary_of_transaction_report
     private function get_module_values($doc, $num, $start, $end, $head, $hhead, $table, $htable, $amount_origin_field, $branch_code)
     {
         switch ($doc) {
-                // case 'MC':
-                //     $qry = "select ifnull(count(num.docno),0) as value
-                //             from $num as num 
-                //             left join (
-                //             select h.trno,h.dateid,h.crtrno from $head as h
-                //             union all
-                //             select h.trno,h.dateid,h.crtrno from $hhead as h
-                //             ) as head on head.trno=num.trno
-                //             where num.doc = '$doc' and num.center = '$branch_code'
-                //             #and head.dateid between '$start' and '$end'
-                //             ";
+            // case 'MC':
+            //     $qry = "select ifnull(count(num.docno),0) as value
+            //             from $num as num 
+            //             left join (
+            //             select h.trno,h.dateid,h.crtrno from $head as h
+            //             union all
+            //             select h.trno,h.dateid,h.crtrno from $hhead as h
+            //             ) as head on head.trno=num.trno
+            //             where num.doc = '$doc' and num.center = '$branch_code'
+            //             #and head.dateid between '$start' and '$end'
+            //             ";
 
-                //     $count = $this->coreFunctions->datareader($qry);
-                //     $posted = $this->coreFunctions->datareader($qry . " and head.crtrno <> 0");
-                //     $unposted = $this->coreFunctions->datareader($qry . " and head.crtrno = 0");
-                //     $trno_list_for_total_amount = $this->coreFunctions->datareader(
-                //         str_replace("ifnull(count(num.docno),0)", "group_concat(num.trno)", $qry)
-                //     );
-                //     $totalamount = $this->coreFunctions->datareader("select ifnull(sum($amount_origin_field),0) as value from(
-                //                 select trno,$amount_origin_field from $table
-                //                 union all
-                //                 select trno,$amount_origin_field from $htable
-                //                 ) as s
-                //                 where trno in ($trno_list_for_total_amount)");
-                //     break;
+            //     $count = $this->coreFunctions->datareader($qry);
+            //     $posted = $this->coreFunctions->datareader($qry . " and head.crtrno <> 0");
+            //     $unposted = $this->coreFunctions->datareader($qry . " and head.crtrno = 0");
+            //     $trno_list_for_total_amount = $this->coreFunctions->datareader(
+            //         str_replace("ifnull(count(num.docno),0)", "group_concat(num.trno)", $qry)
+            //     );
+            //     $totalamount = $this->coreFunctions->datareader("select ifnull(sum($amount_origin_field),0) as value from(
+            //                 select trno,$amount_origin_field from $table
+            //                 union all
+            //                 select trno,$amount_origin_field from $htable
+            //                 ) as s
+            //                 where trno in ($trno_list_for_total_amount)");
+            //     break;
 
 
             default:
@@ -146,9 +146,9 @@ class summary_of_transaction_report
                     str_replace("ifnull(count(num.docno),0)", "group_concat(num.trno)", $qry)
                 );
 
-                if($trno_list_for_total_amount ==""){
-                    $totalamount =0;
-                }else{
+                if ($trno_list_for_total_amount == "") {
+                    $totalamount = 0;
+                } else {
                     $totalamount = $this->coreFunctions->datareader("select ifnull(sum($amount_origin_field),0) as value from(
                         select trno,$amount_origin_field from $table
                         union all
@@ -157,7 +157,7 @@ class summary_of_transaction_report
                         where trno in ($trno_list_for_total_amount)");
                 }
 
-                
+
 
                 break;
         }

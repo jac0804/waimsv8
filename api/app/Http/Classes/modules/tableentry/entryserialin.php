@@ -33,10 +33,10 @@ class entryserialin
   private $fields = ['serial', 'chassis', 'color', 'pnp', 'csr', 'remarks'];
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -141,9 +141,9 @@ class entryserialin
     $line = $config['params']['data']['line'];
     $doc = $config['params']['doc'];
     $serial = $config['params']['loc'];
-    $trno = $this->othersClass->sanitizekeyfieldFast('trno', $trno,$lookups);
-    $line = $this->othersClass->sanitizekeyfieldFast('line', $line,$lookups);
-    $serial = $this->othersClass->sanitizekeyfieldFast('serial', $serial,$lookups);
+    $trno = $this->othersClass->sanitizekeyfieldFast('trno', $trno, $lookups);
+    $line = $this->othersClass->sanitizekeyfieldFast('line', $line, $lookups);
+    $serial = $this->othersClass->sanitizekeyfieldFast('serial', $serial, $lookups);
     $dinsert['trno'] = $trno;
     $dinsert['line'] = $line;
     $dinsert['serial'] = $serial;

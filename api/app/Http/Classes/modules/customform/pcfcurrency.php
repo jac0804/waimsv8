@@ -32,10 +32,10 @@ class pcfcurrency
   public $issearchshow = false;
   public $showclosebtn = false;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -52,14 +52,14 @@ class pcfcurrency
 
   public function createTab($config)
   {
-    $columns = ['oandaphpusd', 'oandausdphp','osphpusd','dateid', 'createby', 'createdate'];
+    $columns = ['oandaphpusd', 'oandausdphp', 'osphpusd', 'dateid', 'createby', 'createdate'];
 
     $tab = [
       $this->gridname => ['gridcolumns' => $columns]
     ];
 
     foreach ($columns as $key => $value) {
-        $$value = $key;
+      $$value = $key;
     }
 
 
@@ -98,10 +98,10 @@ class pcfcurrency
   public function createHeadField($config)
   {
 
-    $fields =['oandaphpusd','oandausdphp','osphpusd'];
+    $fields = ['oandaphpusd', 'oandausdphp', 'osphpusd'];
     $col1 = $this->fieldClass->create($fields);
 
-    $fields = ['refresh','reload'];
+    $fields = ['refresh', 'reload'];
     $col2 = $this->fieldClass->create($fields);
 
     data_set($col2, 'refresh.action', 'load');
@@ -109,7 +109,7 @@ class pcfcurrency
     data_set($col2, 'reload.action', 'refresh');
 
 
-    return array('col1' => $col1,'col2'=>$col2);
+    return array('col1' => $col1, 'col2' => $col2);
   }
 
 
@@ -154,7 +154,7 @@ class pcfcurrency
 
     $data = $this->coreFunctions->opentable($qry);
 
-    return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data],'reloadgriddata' =>true];
+    return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data], 'reloadgriddata' => true];
   }
 
   public function headtablestatus($config)
@@ -179,17 +179,16 @@ class pcfcurrency
         $data['dateid'] = $this->othersClass->getCurrentTimeStamp();
         $data['createby'] = $config['params']['user'];
         $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
-        if($data['oandaphpusd'] !=0){
-            $this->coreFunctions->sbcinsert($this->head, $data);    
+        if ($data['oandaphpusd'] != 0) {
+          $this->coreFunctions->sbcinsert($this->head, $data);
         }
-        
+
         return $this->loaddata($config);
         break;
-      
     }
   }
 
-  
+
 
   public function stockstatus($config)
   {

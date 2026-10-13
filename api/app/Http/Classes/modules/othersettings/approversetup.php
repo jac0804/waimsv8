@@ -40,10 +40,10 @@ class approversetup
     private $logger;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -167,9 +167,7 @@ class approversetup
         }
     } //end function
 
-    public function delete($config)
-    {
-    }
+    public function delete($config) {}
 
 
     private function loaddataperrecord($line)

@@ -37,9 +37,9 @@ class pc
   private $reporter;
   private $reportheader;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -72,7 +72,7 @@ class pc
 
     $paramstr = "select
           'PDFM' as print,
-          '".$username."' as prepared,
+          '" . $username . "' as prepared,
           '' as approved,
           '' as received";
 
@@ -488,7 +488,7 @@ class pc
       $disc = $data[$i]['disc'];
       $ext = number_format($data[$i]['ext'], 2);
       $bal = number_format($data[$i]['bal'], 2);
-      $var = number_format($data[$i]['qty']-$data[$i]['bal'],2);
+      $var = number_format($data[$i]['qty'] - $data[$i]['bal'], 2);
 
       $itemlen = '';
       $itemname = '';

@@ -34,10 +34,10 @@ class lost
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -137,7 +137,7 @@ class lost
         foreach ($this->fields as $key) {
             if (isset($data[$key])) {
                 $data[$key] = $data[$key];
-                $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+                $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
         }
 

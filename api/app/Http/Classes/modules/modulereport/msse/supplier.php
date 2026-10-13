@@ -36,9 +36,9 @@ class supplier
     private $reporter;
     private $reportheader;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -569,7 +569,7 @@ class supplier
         $str .= $this->reporter->letterhead($center, $username);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-        
+
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
@@ -727,13 +727,13 @@ class supplier
 
         $str .= $this->reporter->beginreport();
 
-        
+
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->letterhead($center, $username);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-        
+
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
@@ -890,13 +890,13 @@ class supplier
         $str .= $this->reporter->beginreport();
 
 
-        
+
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->letterhead($center, $username);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-        
+
 
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
@@ -1201,7 +1201,7 @@ class supplier
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize);
-        
+
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(140, 15, 'Grand Total : ', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1397,7 +1397,7 @@ class supplier
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize);
-        
+
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(140, 15, 'Grand Total : ', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1592,7 +1592,7 @@ class supplier
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize);
-        
+
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(140, 15, 'Grand Total : ', '', 'L', 0, 0, '', '', true, 0, true, false);

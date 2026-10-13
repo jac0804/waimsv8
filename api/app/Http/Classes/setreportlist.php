@@ -1239,12 +1239,20 @@ class setreportlist
     $rep_physicalcountreport = "";
     $rep_transferslipreport = "";
     $rep_inventoryadjustmentreport = "";
+    $rep_dailypieceratereport = "";
+    $rep_daily_production_summary = "";
+    $rep_daily_payroll_rate_by_category = "";
+    $rep_daily_pyrate_bycat_semimonthly = "";
 
     $subparent_payables = "";
     $rep_apsetupreport = "";
     $rep_apvoucherreport = "";
     $rep_cashcheckvoucherreport = "";
     $rep_payable_summary = "";
+    $rep_dailypieceratereport=""; 
+    $rep_dailypayrollratebyempsemi="";
+    $rep_dpayable_emp_weekly_report = "";
+
 
 
     $subparent_receivables = "";
@@ -1454,8 +1462,14 @@ class setreportlist
             $rep_onlineencashmentreport = "('','\\90904','','\\\\909','',0,1,0,'Online Encashment Report','\\9090408',3582,'0'," . $params['levelid'] . ")";
           }
 
-          if($params['companyid']  == 72) { //hahsy
+          if ($params['companyid']  == 72) { //hahsy
             $rep_payable_summary = "('','\\90904','','\\\\909','',0,1,0,'Payable Summary Report','\\9090409',3582,'0'," . $params['levelid'] . ")";
+            $rep_dailypieceratereport = "('','\\90903','','\\\\909','',0,1,0,'Daily Piece Rate Report','\\9090305',6058,'0'," . $params['levelid'] . ")";
+            $rep_dailypayrollratebyempsemi = "('','\\90903','','\\\\909','',0,1,0,'Daily Payroll Rate by Employee Semi Monthly Report','\\9090308',6061,'0'," . $params['levelid'] . ")";
+            $rep_dpayable_emp_weekly_report = "('','\\90903','','\\\\909','',0,1,0,'Daily Payroll Rate by Employee Weekly Report','\\9090307',6060,'0'," . $params['levelid'] . ")";
+            $rep_daily_production_summary = "('','\\90903','','\\\\909','',0,1,0,'Daily Production Summary Report','\\9090306',6059,'0'," . $params['levelid'] . ")";
+            $rep_daily_payroll_rate_by_category = "('','\\90903','','\\\\909','',0,1,0,'Daily Payroll Rate By Category Report','\\9090309',6062,'0'," . $params['levelid'] . ")";
+            $rep_daily_pyrate_bycat_semimonthly = "('','\\90903','','\\\\909','',0,1,0,'Daily Payroll Rate by Category Semi Monthly Report','\\9090310',6063,'0'," . $params['levelid'] . ")";
           }
 
           $subparent_receivables = "('','\\909','','','',0,0,0,'Receivables','\\90905',3075,'0'," . $params['levelid'] . ")";
@@ -1699,11 +1713,13 @@ class setreportlist
           case 28: //xcomp
           case 39: //CBBSI
           case 49: //hotmix
-            // SALES
+          case 65: //metro dragon
+            // SALES parent
             $rep_material_issuance_report = "('','\\90902','','\\\\909','',0,1,0,'Material Issuance Report','\\9090218',3450,'0'," . $params['levelid'] . ")";
             $rep_material_request_report = "('','\\90902','','\\\\909','',0,1,0,'Material Request Report','\\9090219',3528,'0'," . $params['levelid'] . ")";
             break;
           case 19: //housegem
+            // INVENTORY parent
             $rep_material_issuance_report = "('','\\90903','','','',0,1,0,'Material Issuance Report','\\9090218',3450,'0'," . $params['levelid'] . ")";
             break;
         }
@@ -2133,10 +2149,6 @@ class setreportlist
 
         $rep_earning_deduction_list_report = "('','\\B01','','','',0,1,0,'Earning and Deduction List Report','\\B0112',4035,'0'," . $params['levelid'] . ")";
         $rep_employee_balances_report = "('','\\B01','','','',0,1,0,'Employee Balances Report','\\B0113',4036,'0'," . $params['levelid'] . ")";
-
-        if ($params['companyid'] != 62) { // onesky
-          $rep_signature_sheet = "('','\\B01','','','',0,1,0,'Signature Sheet','\\B0110',4006,'0'," . $params['levelid'] . ")";
-        }
         $rep_earning_and_deduction_transaction_history = "('','\\B01','','','',0,1,0,'Earning and Deduction Transaction History','\\B0111',4007,'0'," . $params['levelid'] . ")";
 
         $subparent_bir_tax_report = "('','\\9','','','',0,0,0,'Bir Tax Reports','\\B02',3418,'0'," . $params['levelid'] . ")";
@@ -2171,9 +2183,7 @@ class setreportlist
         $rep_remittance_report = "('','\\B06','','','',0,1,0,'SSS PHIP HDMF Remittance Report','\\B06013',5595,'0'," . $params['levelid'] . ")";
         $rep_loan_reports = "('','\\B06','','','',0,1,0,'Loan Reports','\\B06014',5596,'0'," . $params['levelid'] . ")";
         $rep_loan_summary_report = "('','\\B06','','','',0,1,0,'Loan Summary Report','\\B06015',5598,'0'," . $params['levelid'] . ")";
-        if ($params['companyid'] == 62){ // onesky
-          $rep_signature_sheet = "('','\\B06','','','',0,1,0,'Signature Sheet','\\B06016',4006,'0'," . $params['levelid'] . ")";
-        }
+        $rep_signature_sheet = "('','\\B06','','','',0,1,0,'Signature Sheet','\\B06016',4006,'0'," . $params['levelid'] . ")";
 
         // TIME AND ATTENDANCE REPORT
         $subparent_time_attendance_report = "('','\\9','','','',0,0,0,'Time and Attendance Report','\\B07',3431,'0'," . $params['levelid'] . ")";
@@ -2740,6 +2750,15 @@ class setreportlist
             $rep_stockissuancereport = "";
             break;
         }
+
+        if (!$this->hasdoc($allowmenus, 'MI')) {
+          $rep_material_issuance_report = '';
+        }
+
+        if (!$this->hasdoc($allowmenus, 'MR')) {
+          $rep_material_request_report = '';
+        }
+
         $report_sysmenu = [
           $masterfile,
           $rep_chartofaccounts,
@@ -3000,6 +3019,10 @@ class setreportlist
           $rep_physicalcountreport,
           $rep_transferslipreport,
           $rep_inventoryadjustmentreport,
+          $rep_dailypieceratereport,
+          $rep_daily_production_summary,
+          $rep_daily_payroll_rate_by_category,
+          $rep_daily_pyrate_bycat_semimonthly,
 
           $subparent_production,
           $rep_prod_joborderreport,
@@ -3019,6 +3042,10 @@ class setreportlist
           $rep_encashmentreport,
           $rep_onlineencashmentreport,
           $rep_payable_summary,
+          $rep_dailypieceratereport,
+          $rep_dailypayrollratebyempsemi,
+          $rep_dpayable_emp_weekly_report,
+
 
           $subparent_receivables,
           $rep_arsetupreport,
@@ -4134,7 +4161,7 @@ class setreportlist
 
       case 'AIMSHRISPAYROLL':
 
-        if (!in_array('TR', array_column($allowmenus, 'doc'), true)) {
+        if (!$this->hasdoc($allowmenus, 'TR')) {
           $rep_stockrequestreport = '';
         }
 
@@ -5043,6 +5070,26 @@ class setreportlist
     return $report_sysmenu;
   } //end function
 
+  // PHP 5.6 / 7 / 8 compatible: true if any row has the given 'doc' value
+  private function hasdoc($rows, $doc)
+  {
+    if (empty($rows)) {
+      return false;
+    }
 
+    foreach ($rows as $row) {
+      if (is_object($row)) {
+        $value = isset($row->doc) ? $row->doc : null;
+      } else {
+        $value = isset($row['doc']) ? $row['doc'] : null;
+      }
+
+      if ($value === $doc) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
 }//end class

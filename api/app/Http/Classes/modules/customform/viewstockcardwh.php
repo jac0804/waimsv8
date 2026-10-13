@@ -30,10 +30,10 @@ class viewstockcardwh
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -183,8 +183,10 @@ class viewstockcardwh
       $group = ",factor";
     }
 
-    switch ($companyid){
-      case 23: case 41: case 52: //labsol cebu, labsol manila & technolab
+    switch ($companyid) {
+      case 23:
+      case 41:
+      case 52: //labsol cebu, labsol manila & technolab
         $qry = "select client.clientname as clientname,rrstatus.whid,rrstatus.itemid,rrstatus.itemid as trno,'BALANCEWH' as tabtype" . $expiryfield . ", 
            item.itemname, item.barcode ,round(sum(rrstatus.bal/uom.factor),2) as bal
             from rrstatus
@@ -196,7 +198,7 @@ class viewstockcardwh
               where rrstatus.itemid ='" . $itemid . "' " . $filtercenter . "
               group by client.clientname,rrstatus.whid,rrstatus.itemid,item.itemname, item.barcode $group" . $expiryfield . " having sum(rrstatus.bal)<>0";
         break;
-      case 60://transpower
+      case 60: //transpower
         $year = date('Y');
         $qry = "select rrstatus.clientname ,rrstatus.whid,rrstatus.itemid,rrstatus.itemid as trno,'BALANCEWH' as tabtype,
            rrstatus.itemname, rrstatus.barcode ,round((sum(rrstatus.qty-rrstatus.iss)/rrstatus.factor),2) as bal
@@ -220,7 +222,7 @@ class viewstockcardwh
               group by rrstatus.clientname ,rrstatus.whid,rrstatus.itemid,rrstatus.itemid,
            rrstatus.itemname, rrstatus.barcode,rrstatus.factor having sum(rrstatus.qty-rrstatus.iss)<>0";
         break;
-      
+
       default:
         $qry = "select client.clientname as clientname,rrstatus.whid,rrstatus.itemid,rrstatus.itemid as trno,'BALANCEWH' as tabtype" . $expiryfield . ", 
         item.itemname, item.barcode $bal
@@ -231,20 +233,19 @@ class viewstockcardwh
           $join
           where rrstatus.itemid ='" . $itemid . "' " . $filtercenter . "
           group by client.clientname,rrstatus.whid,rrstatus.itemid,item.itemname, item.barcode $group" . $expiryfield . " having sum(rrstatus.bal)<>0";
-      break;
-
+        break;
     }
 
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data];
   } //end function
 
-  public function sbcscript($config){
+  public function sbcscript($config)
+  {
     if ($config['params']['companyid'] == 60) { //transpower
       return $this->sbcscript->skcustomform($config);
     } else {
       return true;
-    }   
+    }
   }
-
 } //end class

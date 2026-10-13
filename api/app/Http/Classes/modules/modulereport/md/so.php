@@ -35,9 +35,9 @@ class so
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -279,7 +279,7 @@ class so
             PDF::MultiCell(70, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(440, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
           }
-          
+
 
           if (PDF::getY() > 900) {
             $this->default_so_header_PDF($params, $data);
@@ -324,5 +324,4 @@ class so
       return PDF::Output($this->modulename . '.pdf', 'S');
     }
   }
-
 }

@@ -33,9 +33,9 @@ class trapproval
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -97,10 +97,11 @@ class trapproval
     return $result;
   } //end fn
 
-  public function reportplotting($params, $data) {
-    if($params['params']['dataparams']['print'] == "default") {
+  public function reportplotting($params, $data)
+  {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_trapproval_layout($params, $data);
-    } else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_TRAPPROVAL_PDF($params, $data);
     }
   }
@@ -118,7 +119,7 @@ class trapproval
     $str .= $this->reporter->beginreport();
 
     $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->letterhead($center, $username,$params);
+    $str .= $this->reporter->letterhead($center, $username, $params);
     $str .= $this->reporter->endtable();
     $str .= '<br><br>';
 
@@ -312,7 +313,7 @@ class trapproval
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -383,20 +384,20 @@ class trapproval
       $barcode = $data[$i]['barcode'];
       $itemname = $data[$i]['itemname'];
       $uom = $data[$i]['uom'];
-      $reqqty = number_format($data[$i]['reqqty'],$decimalprice);
-      $rrqty = number_format($data[$i]['rrqty'],$decimalprice);
+      $reqqty = number_format($data[$i]['reqqty'], $decimalprice);
+      $rrqty = number_format($data[$i]['rrqty'], $decimalprice);
       $stockwh = $data[$i]['stockwh'];
 
-      $arr_barcode = $this->reporter->fixcolumn([$barcode],'16',0);
-      $arr_itemname = $this->reporter->fixcolumn([$itemname],'40',0);
-      $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-      $arr_reqqty = $this->reporter->fixcolumn([$reqqty],'13',0);
-      $arr_rrqty = $this->reporter->fixcolumn([$rrqty],'13',0);
-      $arr_stockwh = $this->reporter->fixcolumn([$stockwh],'16',0);
+      $arr_barcode = $this->reporter->fixcolumn([$barcode], '16', 0);
+      $arr_itemname = $this->reporter->fixcolumn([$itemname], '40', 0);
+      $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+      $arr_reqqty = $this->reporter->fixcolumn([$reqqty], '13', 0);
+      $arr_rrqty = $this->reporter->fixcolumn([$rrqty], '13', 0);
+      $arr_stockwh = $this->reporter->fixcolumn([$stockwh], '16', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_itemname, $arr_uom, $arr_reqqty, $arr_rrqty, $arr_stockwh]);
 
-      for($r = 0; $r < $maxrow; $r++) {
+      for ($r = 0; $r < $maxrow; $r++) {
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(100, 0, (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(200, 0, (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -434,5 +435,4 @@ class trapproval
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

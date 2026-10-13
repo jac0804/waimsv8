@@ -38,13 +38,77 @@ class financingpartner
   public $tagging = "iscustomer";
 
   private $fields = [
-    'client', 'clientname', 'addr', 'ship', 'start', 'status', 'tin',
-    'terms', 'agent', 'groupid', 'rev', 'crlimit', 'class', 'bstyle',
-    'category', 'area', 'province', 'region', 'grpcode', 'zipcode', 'forexid',
-    'contact', 'attention', 'acct', 'mobile', 'owner', 'prefix', 'tel', 'fax', 'tel2', 'email', 'iscustomer', 'issupplier', 'isagent', 'iswarehouse', 'isemployee', 'isinactive', 'isdepartment',
-    'picture', 'isnocrlimit', 'truckid', 'disc', 'quota', 'comm', 'territory', 'type', 'crtype',
-    'rem', 'crdays', 'tax', 'vattype', 'activity', 'industry', 'purchaser',
-    'registername', 'issynced', 'isvatzerorated', 'isnotarizedcert', 'alias', 'officialemail', 'officialwebsite', 'rem2', 'position', 'brgy', 'ass', 'issenior', 'industryid', 'bday', 'accountid', 'sex', 'isfp'
+    'client',
+    'clientname',
+    'addr',
+    'ship',
+    'start',
+    'status',
+    'tin',
+    'terms',
+    'agent',
+    'groupid',
+    'rev',
+    'crlimit',
+    'class',
+    'bstyle',
+    'category',
+    'area',
+    'province',
+    'region',
+    'grpcode',
+    'zipcode',
+    'forexid',
+    'contact',
+    'attention',
+    'acct',
+    'mobile',
+    'owner',
+    'prefix',
+    'tel',
+    'fax',
+    'tel2',
+    'email',
+    'iscustomer',
+    'issupplier',
+    'isagent',
+    'iswarehouse',
+    'isemployee',
+    'isinactive',
+    'isdepartment',
+    'picture',
+    'isnocrlimit',
+    'truckid',
+    'disc',
+    'quota',
+    'comm',
+    'territory',
+    'type',
+    'crtype',
+    'rem',
+    'crdays',
+    'tax',
+    'vattype',
+    'activity',
+    'industry',
+    'purchaser',
+    'registername',
+    'issynced',
+    'isvatzerorated',
+    'isnotarizedcert',
+    'alias',
+    'officialemail',
+    'officialwebsite',
+    'rem2',
+    'position',
+    'brgy',
+    'ass',
+    'issenior',
+    'industryid',
+    'bday',
+    'accountid',
+    'sex',
+    'isfp'
   ];
   private $except = ['clientid'];
   private $blnfields = ['iscustomer', 'issupplier', 'isagent', 'iswarehouse', 'isemployee', 'isinactive', 'isdepartment', 'isnocrlimit', 'issynced', 'isvatzerorated', 'isnotarizedcert', 'issenior', 'isfp'];
@@ -57,11 +121,11 @@ class financingpartner
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;

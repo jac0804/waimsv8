@@ -57,11 +57,11 @@ class ao
     private $reporter;
     private $helpClass;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -371,7 +371,8 @@ class ao
         $tab = [
             $this->gridname => [
                 'gridcolumns' => $gridcolumn,
-                'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'], 'headgridbtns' => $headgridbtns
+                'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
+                'headgridbtns' => $headgridbtns
             ],
         ];
 
@@ -683,7 +684,7 @@ class ao
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if    
             }
         }
@@ -706,7 +707,7 @@ class ao
 
                 //updating to attendee
                 $qtrno = $this->coreFunctions->getfieldvalue("hsrhead", "qtrno", "sotrno=?", [$head['trno']]);
-                if($qtrno !=0){
+                if ($qtrno != 0) {
                     $exist = $this->coreFunctions->getfieldvalue("attendee", "line", "optrno=?", [$qtrno]);
                     if (floatval($exist) != 0) {
                         $this->coreFunctions->execqry("update attendee set optrno = ? where optrno =?", 'update', [$head['trno'], $qtrno]);
@@ -715,9 +716,9 @@ class ao
                         if (floatval($sotrno) != 0) {
                             $this->coreFunctions->execqry("update attendee set optrno = ? where optrno =?", 'update', [$head['trno'], $sotrno]);
                         }
-                    }  
+                    }
                 }
-                
+
 
                 $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
             }
@@ -742,7 +743,7 @@ class ao
         $this->coreFunctions->execqry('delete from ' . $this->tablenum . " where trno=?", 'delete', [$trno]);
 
         if (floatval($exist) != 0) {
-            if($qtrno !=0){
+            if ($qtrno != 0) {
                 $sotrno = $this->coreFunctions->getfieldvalue("hqshead", "sotrno", "trno=?", [$qtrno]);
                 if (floatval($sotrno) != 0) {
                     $this->coreFunctions->execqry("update attendee set optrno = ? where optrno =?", 'update', [$sotrno, $trno]);
@@ -750,7 +751,6 @@ class ao
                     $this->coreFunctions->execqry("update attendee set optrno = ? where optrno =?", 'update', [$qtrno, $trno]);
                 }
             }
-            
         }
 
         $this->othersClass->deleteattachments($config);
@@ -1222,7 +1222,7 @@ class ao
             'expiry' => $expiry
         ];
         foreach ($data as $key => $value) {
-             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;
@@ -1255,7 +1255,7 @@ class ao
         $this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED SR REFERENCE');
 
         if (floatval($exist) != 0) {
-            if($qtrno !=0){
+            if ($qtrno != 0) {
                 $sotrno = $this->coreFunctions->getfieldvalue("hqshead", "sotrno", "trno=?", [$qtrno]);
                 if (floatval($sotrno) != 0) {
                     $this->coreFunctions->execqry("update attendee set optrno = ? where optrno =?", 'update', [$sotrno, $trno]);
@@ -1263,7 +1263,6 @@ class ao
                     $this->coreFunctions->execqry("update attendee set optrno = ? where optrno =?", 'update', [$qtrno, $trno]);
                 }
             }
-            
         }
 
         $this->loadheaddata($config);

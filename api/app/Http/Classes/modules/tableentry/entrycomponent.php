@@ -34,10 +34,10 @@ class entrycomponent
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -111,7 +111,7 @@ class entrycomponent
       $obj[0][$this->gridname]['columns'][$isloc]['type'] = "coldel";
     }
 
-    if($companyid == 63){//ericco
+    if ($companyid == 63) { //ericco
       $obj[0][$this->gridname]['columns'][$cost]['type'] = "coldel";
       $obj[0][$this->gridname]['columns'][$ext]['type'] = "coldel";
       $obj[0][$this->gridname]['columns'][$isloc]['type'] = "coldel";

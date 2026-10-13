@@ -31,10 +31,10 @@ class viewothercharges
 
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -117,10 +117,10 @@ class viewothercharges
             $extraFields = ', charges, overdue, forex, brokerage';
         }
 
-        return $this->coreFunctions->opentable("select trno, format(ied, 2) as ied, format(bankcharges, 2) as bankcharges, format(interest, 2) as interest, format(brokerfee, 2) as brokerfee, format(arrastre, 2) as arrastre".$qryselect." from (
-        select trno, ied, bankcharges, interest, brokerfee, arrastre".$extraFields." from ".$this->head." where trno=".$trno."
+        return $this->coreFunctions->opentable("select trno, format(ied, 2) as ied, format(bankcharges, 2) as bankcharges, format(interest, 2) as interest, format(brokerfee, 2) as brokerfee, format(arrastre, 2) as arrastre" . $qryselect . " from (
+        select trno, ied, bankcharges, interest, brokerfee, arrastre" . $extraFields . " from " . $this->head . " where trno=" . $trno . "
         union all
-        select trno, ied, bankcharges, interest, brokerfee, arrastre".$extraFields." from ".$this->hhead." where trno=".$trno."
+        select trno, ied, bankcharges, interest, brokerfee, arrastre" . $extraFields . " from " . $this->hhead . " where trno=" . $trno . "
         ) as t limit 1");
     }
 
@@ -174,11 +174,11 @@ class viewothercharges
         $brokerage = $this->othersClass->sanitizekeyfieldFast('brokerage', $dataparams['brokerage'], $lookups);
         $overdue = $this->othersClass->sanitizekeyfieldFast('overdue', $dataparams['totalcharges'], $lookups);
 
-        $qry = "update ".$this->head." set ied='".$ied."', bankcharges='".$bankcharges."', interest='".$interest."', brokerfee='".$brokerfee."', 
-        arrastre='".$arrastre."', brokerage='".$brokerage."', overdue='".$overdue."'";
-        
+        $qry = "update " . $this->head . " set ied='" . $ied . "', bankcharges='" . $bankcharges . "', interest='" . $interest . "', brokerfee='" . $brokerfee . "', 
+        arrastre='" . $arrastre . "', brokerage='" . $brokerage . "', overdue='" . $overdue . "'";
+
         if ($companyid == 71) {
-            $forexRow = $this->coreFunctions->opentable("select forex from ".$this->head." where trno=".$dataparams['trno']." limit 1");
+            $forexRow = $this->coreFunctions->opentable("select forex from " . $this->head . " where trno=" . $dataparams['trno'] . " limit 1");
             $forex = isset($forexRow[0]->forex) ? floatval($forexRow[0]->forex) : 0;
 
             $boc = floatval($ied);
@@ -191,21 +191,21 @@ class viewothercharges
             $denominator = $arrastreVal * $forex;
             $percentsales = $denominator != 0 ? ((($boc + $bankchargesVal + $brokerfeeVal) - $vat) / $denominator) : 0;
             $charges = $this->othersClass->sanitizekeyfieldFast('charges', $percentsales, $lookups);
-            $qry .= ", charges='".$charges."'";
+            $qry .= ", charges='" . $charges . "'";
         }
 
-        $qry .= " where trno=".$dataparams['trno'];
+        $qry .= " where trno=" . $dataparams['trno'];
 
         if ($this->coreFunctions->execqry($qry, 'update')) {
-            if($companyid == 71){//buena
+            if ($companyid == 71) { //buena
                 $config['params']['trno'] = $dataparams['trno'];
                 $path = 'App\Http\Classes\modules\b937d22d7044b3dea38a2a3628b7d6d37\rr';
                 $head = app($path)->headqry($config);
-                app($path)->recomputecost($head,$config);
+                app($path)->recomputecost($head, $config);
             }
 
             $txtdata = $this->paramsdata($config);
-            return ['status' => true, 'msg' => 'Record updated','reloadhead'=> true,'txtdata' => $txtdata];
+            return ['status' => true, 'msg' => 'Record updated', 'reloadhead' => true, 'txtdata' => $txtdata];
         }
         return ['status' => false, 'msg' => 'Error updating record'];
     }

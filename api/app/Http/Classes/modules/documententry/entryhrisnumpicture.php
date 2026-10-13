@@ -36,10 +36,10 @@ class entryhrisnumpicture
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -141,13 +141,9 @@ class entryhrisnumpicture
     return $qry;
   }
 
-  public function saveallentry($config)
-  {
-  } // end function  
+  public function saveallentry($config) {} // end function  
 
-  public function save($config)
-  {
-  } //end function
+  public function save($config) {} //end function
 
   public function delete($config)
   {
@@ -216,13 +212,9 @@ class entryhrisnumpicture
     return $data;
   }
 
-  public function lookupsetup($config)
-  {
-  }
+  public function lookupsetup($config) {}
 
-  public function lookupcallback($config)
-  {
-  } // end function
+  public function lookupcallback($config) {} // end function
 
 
 

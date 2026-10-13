@@ -43,9 +43,9 @@ class statement_of_account_water_bill
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -748,7 +748,7 @@ class statement_of_account_water_bill
     $str .= $this->reporter->col('', '60', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B');
     $str .= $this->reporter->col('', '60', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B');
     $str .= $this->reporter->col('', '75', null, false, '1px dotted ', 'T', 'C', $font, $fontsize, 'B');
-    $str .= $this->reporter->col('TOTAL DUE', '75', null, false, '1px dotted ', 'T', 'C', $font, $fontsize , 'B');
+    $str .= $this->reporter->col('TOTAL DUE', '75', null, false, '1px dotted ', 'T', 'C', $font, $fontsize, 'B');
     $str .= $this->reporter->col(number_format($balance, 2), '75', null, false, '1px dotted ', 'T', 'R', $font, $fontsize, 'B');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();

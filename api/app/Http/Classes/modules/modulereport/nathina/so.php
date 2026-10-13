@@ -34,10 +34,10 @@ class so
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -51,12 +51,12 @@ class so
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
     data_set($col1, 'radioreporttype.options', [
       ['label' => 'Default', 'value' => 'default', 'color' => 'red'],
       ['label' => 'Quotation', 'value' => 'SO', 'color' => 'red'],
-      
+
     ]);
     data_set($col1, 'radioreporttype.name', 'format');
     return array('col1' => $col1);
@@ -143,7 +143,7 @@ class so
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('SALES ORDER', '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
     $str .= $this->reporter->col('DOCUMENT # :', '100', null, false, $border, '', 'L', $font, '13', 'B', '', '');
     $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '100', null, false, $border, 'B', 'L', $font, '13', '', '', '') . '<br />';
@@ -172,10 +172,10 @@ class so
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('QTY', '50px', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
     $str .= $this->reporter->col('UNIT', '50px', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
     $str .= $this->reporter->col('D E S C R I P T I O N', '500px', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
@@ -275,7 +275,7 @@ class so
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -289,7 +289,7 @@ class so
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -303,17 +303,17 @@ class so
     PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
 
 
-    
+
     PDF::Image("public/images/nathina/natlogo.png", '180', '20', 120, 85);
 
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
-    
+
     PDF::Image('public/images/nathina/skinfluence.png', '495', '20', 75, 75);
 
-    
+
     PDF::SetFont($fontbold, '', 22);
     PDF::MultiCell(520, 0, 'Quotation', '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);
@@ -411,7 +411,7 @@ class so
 
         if ($data[$i]['itemname'] == '') {
           PDF::SetFont($font, '', $fontsize);
-          
+
           PDF::MultiCell(100, 0, number_format($data[$i]['qty'], $decimalqty), '', 'C', 0, 0, '', '', true, 0, true, false);
           PDF::MultiCell(50, 0, $data[$i]['uom'], '', 'C', 0, 0, '', '', true, 0, true, false);
           PDF::MultiCell(330, 0, $data[$i]['itemname'], '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -450,7 +450,6 @@ class so
         if (intVal($i) + 1 == $page) {
           $this->default_so_header_PDF($params, $data);
           $page += $count;
-
         }
       }
     }
@@ -478,7 +477,7 @@ class so
       PDF::MultiCell(400, 0, '', '', 'L', false);
     }
 
-    
+
     PDF::MultiCell(700, 0, '', 'B');
 
     $gtotal = $totalext + $data[0]['othercharge'];
@@ -512,7 +511,7 @@ class so
 
     PDF::MultiCell(0, 0, "\n");
 
-    
+
     PDF::MultiCell(253, 0, $params['params']['dataparams']['prepared'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
     PDF::MultiCell(20, 0,  'By: ', '', 'L', false, 0);
@@ -527,7 +526,7 @@ class so
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -541,7 +540,7 @@ class so
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -558,7 +557,7 @@ class so
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);
@@ -646,7 +645,7 @@ class so
 
         if ($data[$i]['itemname'] == '') {
           PDF::SetFont($font, '', $fontsize);
-          
+
           PDF::MultiCell(100, 0, number_format($data[$i]['qty'], $decimalqty), '', 'C', 0, 0, '', '', true, 0, true, false);
           PDF::MultiCell(50, 0, $data[$i]['uom'], '', 'C', 0, 0, '', '', true, 0, true, false);
           PDF::MultiCell(250, 0, $data[$i]['itemname'], '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -687,7 +686,6 @@ class so
         if (intVal($i) + 1 == $page) {
           $this->default_so_header_PDF($params, $data);
           $page += $count;
-
         }
       }
     }

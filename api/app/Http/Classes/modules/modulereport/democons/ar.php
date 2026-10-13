@@ -34,10 +34,10 @@ class ar
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -45,16 +45,18 @@ class ar
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter($config){
-    $fields = ['radioprint','prepared','approved','received','print'];
+  public function createreportfilter($config)
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
     ]);
-    return array('col1'=>$col1);
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     $user = $config['params']['user'];
     $username = $this->coreFunctions->datareader("select name as value from useraccess where username =?", [$config['params']['user']]);
     return $this->coreFunctions->opentable(
@@ -63,18 +65,21 @@ class ar
       '$username' as prepared,
       '' as approved,
       '' as received
-    ");
+    "
+    );
   }
 
-  public function reportplotting($params, $data) {
-    if($params['params']['dataparams']['print'] == "default") {
+  public function reportplotting($params, $data)
+  {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_ar_layout($params, $data);
-    } else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_AR_PDF($params, $data);
     }
   }
 
-  public function report_default_query($config){
+  public function report_default_query($config)
+  {
     $trno = $config['params']['dataid'];
     $query = "
       select head.rem, detail.rem as remarks, 
@@ -106,7 +111,7 @@ class ar
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
-  }//end fn
+  } //end fn
 
 
   public function default_AR_header_PDF($params, $data)
@@ -135,15 +140,15 @@ class ar
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
-  
+
     PDF::MultiCell(0, 0, "\n");
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(0, 0, $headerdata[0]->address."\n".$headerdata[0]->tel."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n\n\n", '', 'C');
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '40', '20', 120, 65);
-    
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '40', '20', 120, 65);
+
 
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(520, 0, strtoupper($this->modulename), '', 'L', false, 0, '',  '100');
@@ -222,30 +227,30 @@ class ar
       $totaldb = 0;
       $totalcr = 0;
       for ($i = 0; $i < count($data); $i++) {
-      
+
         $maxrow = 1;
-      
+
         $acno = $data[$i]['acno'];
         $acnoname = $data[$i]['acnoname'];
         $ref = $data[$i]['ref'];
         $postdate = $data[$i]['postdate'];
-        $debit = number_format($data[$i]['db'],$decimalcurr);
-        $credit = number_format($data[$i]['cr'],$decimalcurr);
+        $debit = number_format($data[$i]['db'], $decimalcurr);
+        $credit = number_format($data[$i]['cr'], $decimalcurr);
         $client = $data[$i]['client'];
         $debit = $debit < 0 ? '-' : $debit;
         $credit = $credit < 0 ? '-' : $credit;
 
-        $arr_acno = $this->reporter->fixcolumn([$acno],'16',0);
-        $arr_acnoname = $this->reporter->fixcolumn([$acnoname],'40',0);
-        $arr_ref = $this->reporter->fixcolumn([$ref],'16',0);
-        $arr_postdate = $this->reporter->fixcolumn([$postdate],'16',0);
-        $arr_debit = $this->reporter->fixcolumn([$debit],'13',0);
-        $arr_credit = $this->reporter->fixcolumn([$credit],'13',0);
-        $arr_client = $this->reporter->fixcolumn([$client],'16',0);
+        $arr_acno = $this->reporter->fixcolumn([$acno], '16', 0);
+        $arr_acnoname = $this->reporter->fixcolumn([$acnoname], '40', 0);
+        $arr_ref = $this->reporter->fixcolumn([$ref], '16', 0);
+        $arr_postdate = $this->reporter->fixcolumn([$postdate], '16', 0);
+        $arr_debit = $this->reporter->fixcolumn([$debit], '13', 0);
+        $arr_credit = $this->reporter->fixcolumn([$credit], '13', 0);
+        $arr_client = $this->reporter->fixcolumn([$client], '16', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_client]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(80, 0, (isset($arr_acno[$r]) ? $arr_acno[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false, 'M');
           PDF::MultiCell(220, 0, (isset($arr_acnoname[$r]) ? $arr_acnoname[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false, 'M');
@@ -255,11 +260,11 @@ class ar
           PDF::MultiCell(75, 0, (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false, 'M');
           PDF::MultiCell(100, 0, (isset($arr_client[$r]) ? $arr_client[$r] : ''), '', 'C', 0, 1, '', '', true, 0, false, false, 'M');
         }
-    
-       
+
+
         $totaldb += $data[$i]['db'];
         $totalcr += $data[$i]['cr'];
-    
+
         if (intVal($i) + 1 == $page) {
           $this->default_AR_header_PDF($params, $data);
           $page += $count;
@@ -295,5 +300,4 @@ class ar
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

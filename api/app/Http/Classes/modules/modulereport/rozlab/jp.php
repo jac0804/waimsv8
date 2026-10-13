@@ -33,9 +33,9 @@ class jp
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -402,7 +402,7 @@ class jp
     PDF::MultiCell(100, 0, "Document # : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', 10);
     PDF::MultiCell(100, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
- 
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(70, 20, "Customer : ", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
@@ -445,7 +445,7 @@ class jp
     PDF::MultiCell(100, 0, "QTY", '', 'C', false, 0);
     PDF::MultiCell(100, 0, "UNIT", '', 'C', false, 0);
     PDF::MultiCell(400, 0, "DESCRIPTION", '', 'L', false, 1);
-  
+
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', 'B');
@@ -488,7 +488,7 @@ class jp
       $itemname = $data[$i]['itemname'];
       $qty = number_format($data[$i]['qty'], $decimalqty);
       $uom = $data[$i]['uom'];
-   
+
 
       $arr_barcode = $this->reporter->fixcolumn([$barcode], '15', 0);
       $arr_itemname = $this->reporter->fixcolumn([$itemname], '35', 0);

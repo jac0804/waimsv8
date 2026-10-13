@@ -30,12 +30,12 @@ class employee_listing
 
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1100'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -131,17 +131,20 @@ class employee_listing
       $filters .= " and client.client = '$client'";
     }
     if ($divname != '') {
-        if ($divid != 0) {
-            $filters .= " and e.divid = $divid";
-    }}
+      if ($divid != 0) {
+        $filters .= " and e.divid = $divid";
+      }
+    }
     if ($deptname != '') {
-        if ($deptid != 0) {
-            $filters .= " and e.deptid = $deptid";
-    }}
+      if ($deptid != 0) {
+        $filters .= " and e.deptid = $deptid";
+      }
+    }
     if ($sectname != '') {
-        if ($sectid != 0) {
-            $filters .= " and e.sectid = $sectid";
-    }}
+      if ($sectid != 0) {
+        $filters .= " and e.sectid = $sectid";
+      }
+    }
     if ($branchname != "") {
       if ($branch != 0) $filters .= " and e.branchid = '$branch'";
     }
@@ -176,7 +179,7 @@ class employee_listing
     $border_line = '';
     $alignment = '';
     $font = 'Arial';
-    $font_size = '9';
+    $font_size = '8';
     $padding = '';
     $margin = '';
 
@@ -266,16 +269,16 @@ class employee_listing
     $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('CODE', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('EMPLOYEE NAME', '150', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('POSITION', '80', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('EMPLOYEE NAME', '180', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('POSITION', '100', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('DATE HIRED', '70', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('BIRTH DATE', '70', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('ADDRESS', '150', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('ADDRESS', '140', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('MOBILE #', '80', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('TIN #', '60', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('SSS #', '60', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('PHIC #', '60', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('HDMF #', '60', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('TIN #', '90', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('SSS #', '90', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('PHIC #', '90', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
+    $str .= $this->reporter->col('HDMF #', '90', null, false, $border, 'TB', 'C', $font, $font_size, 'B', '', '');
 
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -290,13 +293,13 @@ class employee_listing
     $border_line = '';
     $alignment = '';
     $font = 'Arial';
-    $font_size = '9';
+    $font_size = '8';
     $padding = '';
     $margin = '';
     $total = 0;
     $count = 55;
     $page = 55;
-    $layoutsize = '1000';
+    $layoutsize = '1100';
 
     if (empty($result)) {
       return $this->othersClass->emptydata($config);
@@ -311,27 +314,30 @@ class employee_listing
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
 
-      $str .= $this->reporter->col($data->client, '100', null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->clientname, '150', null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->jobtitle, '80', null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->hired, '70', null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->bday, '70', null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->address, '150', null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->telno, '80', null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->tin, '60', null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->sss, '60', null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->phic, '60', null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col($data->hdmf, '60', null, false, $border, '', '', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->client, '100', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->clientname, '180', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->jobtitle, '100', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->hired, '70', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->bday, '70', null, false, $border, '', 'CT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->address, '140', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->telno, '80', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->tin, '90', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->sss, '90', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->phic, '90', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->hdmf, '90', null, false, $border, '', 'LT', $font, $font_size, '', '', '');
       $total = $total + 1;
       $str .= $this->reporter->endrow();
 
-      if ($this->reporter->linecounter == $page) {
-        $str .= $this->reporter->endtable();
-        $str .= $this->reporter->page_break();
-        $str .= $this->displayHeader($config);
-        $str .= $this->reporter->endtable();
-        $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
-        $page = $page + $count;
+      if ($config['params']['companyid'] == 62) { //onesky
+      } else {
+        if ($this->reporter->linecounter == $page) {
+          $str .= $this->reporter->endtable();
+          $str .= $this->reporter->page_break();
+          $str .= $this->displayHeader($config);
+          $str .= $this->reporter->endtable();
+          $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
+          $page = $page + $count;
+        }
       }
     }
 

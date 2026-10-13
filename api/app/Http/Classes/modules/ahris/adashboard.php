@@ -42,7 +42,7 @@ class adashboard
 
     private $totalEmployees = 0;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->othersClass = new othersClass;
         $this->coreFunctions = new coreFunctions;
@@ -51,8 +51,8 @@ class adashboard
         $this->lookupClass = new lookupClass;
         $this->companysetup = new companysetup;
         $this->sqlquery = new sqlquery;
-        $this->tabClass = new tabClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->tabClass = new tabClass($params);;
+        $this->fieldClass = new txtfieldClass($params);
     }
 
     public function getAttrib()

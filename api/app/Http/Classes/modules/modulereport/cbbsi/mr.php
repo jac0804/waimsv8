@@ -34,10 +34,10 @@ class mr
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -76,9 +76,9 @@ class mr
     }
     return $this->coreFunctions->opentable("select 
       'PDFM' as print,
-      '". $prepared."' as approved,
-      '". $approved."' as received,
-      '". $received."' as prepared
+      '" . $prepared . "' as approved,
+      '" . $approved . "' as received,
+      '" . $received . "' as prepared
     ");
   }
 

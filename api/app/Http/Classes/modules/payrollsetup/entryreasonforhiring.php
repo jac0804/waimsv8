@@ -37,10 +37,10 @@ class entryreasonforhiring
     private $reporter;
     private $logger;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -96,7 +96,7 @@ class entryreasonforhiring
         return $obj;
     }
 
-        public function loaddata($config)
+    public function loaddata($config)
     {
         $filtersearch = "";
         $searchfield  = $this->fields;
@@ -123,14 +123,14 @@ class entryreasonforhiring
         return $data;
     }
 
-  private function selectqry()
-  {
-    $qry = "line";
-    foreach ($this->fields as $key => $value) {
-      $qry = $qry . ',' . $value;
+    private function selectqry()
+    {
+        $qry = "line";
+        foreach ($this->fields as $key => $value) {
+            $qry = $qry . ',' . $value;
+        }
+        return $qry;
     }
-    return $qry;
-  }
 
     public function add($config)
     {
@@ -143,77 +143,77 @@ class entryreasonforhiring
     }
 
     public function saveallentry($config)
-{
-    $data = $config['params']['data'];
-    $companyid = $config['params']['companyid'];
-    $dateTables = ['reqcategory'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-    foreach ($data as $key => $value) {
-        $data2 = [];
-        if ($data[$key]['bgcolor'] != '') {
-            foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
-            }
+    {
+        $data = $config['params']['data'];
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['reqcategory'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        foreach ($data as $key => $value) {
+            $data2 = [];
+            if ($data[$key]['bgcolor'] != '') {
+                foreach ($this->fields as $key2 => $value2) {
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
+                }
 
-            if (empty(trim($data2['category']))) {
-                return ['status' => false, 'msg' => 'Saving failed. Please input category.'];
-            }
+                if (empty(trim($data2['category']))) {
+                    return ['status' => false, 'msg' => 'Saving failed. Please input category.'];
+                }
 
-            if ($data[$key]['line'] == 0) {
-                $line = $this->coreFunctions->insertGetId($this->table, $data2);
-                $this->logger->sbcmasterlog($line, $config, ' CREATE - ' . $data[$key]['category']);
+                if ($data[$key]['line'] == 0) {
+                    $line = $this->coreFunctions->insertGetId($this->table, $data2);
+                    $this->logger->sbcmasterlog($line, $config, ' CREATE - ' . $data[$key]['category']);
+                } else {
+                    $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
+                    $data2['editby'] = $config['params']['user'];
+                    $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
+                    $this->logger->sbcmasterlog($data[$key]['line'], $config, ' UPDATE - ' . $data[$key]['category']);
+                }
+            }
+        }
+        $returndata = $this->loaddata($config);
+        return ['status' => true, 'msg' => 'All saved successfully.', 'data' => $returndata];
+    }
+
+    public function save($config)
+    {
+        $row = $config['params']['row'];
+        $companyid = $config['params']['companyid'];
+        $dateTables = ['reqcategory'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        $data = [];
+        foreach ($this->fields as $key2 => $value) {
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
+        }
+
+        if (empty(trim($data['category']))) {
+            return ['status' => false, 'msg' => 'Saving failed. Please input category.'];
+        }
+
+        if ($row['line'] == 0) { // insert
+            $line = $this->coreFunctions->insertGetId($this->table, $data);
+
+            if ($line != 0) {
+                $this->logger->sbcmasterlog($line, $config, ' CREATE - ' . $data['category']);
+                $returnrow = $this->loaddataperrecord($line);
+                return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
             } else {
-                $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
-                $data2['editby'] = $config['params']['user'];
-                $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
-                $this->logger->sbcmasterlog($data[$key]['line'], $config, ' UPDATE - ' . $data[$key]['category']);
+                return ['status' => false, 'msg' => 'Saving failed.'];
+            }
+        } else { // update
+            $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+            $data['editby'] = $config['params']['user'];
+            $update = $this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]);
+            if ($update) {
+                $returnrow = $this->loaddataperrecord($row['line']);
+                $this->logger->sbcmasterlog($row['line'], $config, ' UPDATE - ' . $data['category']);
+                return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+            } else {
+                return ['status' => false, 'msg' => 'Update failed.'];
             }
         }
-    }
-    $returndata = $this->loaddata($config);
-    return ['status' => true, 'msg' => 'All saved successfully.', 'data' => $returndata];
-}
+    } // end function
 
-public function save($config)
-{
-    $row = $config['params']['row'];
-    $companyid = $config['params']['companyid'];
-    $dateTables = ['reqcategory'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-    $data = [];
-    foreach ($this->fields as $key2 => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
-    }
-
-    if (empty(trim($data['category']))) {
-        return ['status' => false, 'msg' => 'Saving failed. Please input category.'];
-    }
-
-    if ($row['line'] == 0) { // insert
-        $line = $this->coreFunctions->insertGetId($this->table, $data);
-
-        if ($line != 0) {
-            $this->logger->sbcmasterlog($line, $config, ' CREATE - ' . $data['category']);
-            $returnrow = $this->loaddataperrecord($line);
-            return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
-        } else {
-            return ['status' => false, 'msg' => 'Saving failed.'];
-        }
-    } else { // update
-        $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-        $data['editby'] = $config['params']['user'];
-        $update = $this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]);
-        if ($update) {
-            $returnrow = $this->loaddataperrecord($row['line']);
-            $this->logger->sbcmasterlog($row['line'], $config, ' UPDATE - ' . $data['category']);
-            return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
-        } else {
-            return ['status' => false, 'msg' => 'Update failed.'];
-        }
-    }
-} // end function
-
-       private function loaddataperrecord($line)
+    private function loaddataperrecord($line)
     {
         $select = $this->selectqry();
         $select = $select . ",'' as bgcolor ";
@@ -223,7 +223,7 @@ public function save($config)
         return $data;
     }
 
-     public function delete($config)
+    public function delete($config)
     {
         $row = $config['params']['row'];
 
@@ -240,7 +240,7 @@ public function save($config)
         return ['status' => true, 'msg' => 'Successfully deleted.'];
     }
 
-     public function lookupsetup($config)
+    public function lookupsetup($config)
     {
         $lookupclass2 = $config['params']['lookupclass2'];
         switch ($lookupclass2) {

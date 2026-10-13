@@ -36,9 +36,9 @@ class po
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -393,7 +393,6 @@ class po
           PDF::MultiCell(50, 0, "Terms: ", '', 'L', false, 0, '',  '');
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(100, 0, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), 'B', 'L', false, 1, '',  '');
-          
         } else {
           PDF::SetFont($fontbold, '', $fontsize);
           PDF::MultiCell(80, 0, '', '', 'L', false, 0, '',  '');
@@ -405,7 +404,7 @@ class po
           PDF::MultiCell(100, 0, '', '', 'L', false, 1, '',  '');
         }
       }
-    
+
 
       PDF::SetFont($fontbold, '', $fontsize);
       PDF::MultiCell(80, 0, "Tin #: ", '', 'L', false, 0, '',  '');

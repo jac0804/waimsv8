@@ -53,7 +53,7 @@ class locationinventory
 
     private $totalEmployees = 0;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->othersClass = new othersClass;
         $this->coreFunctions = new coreFunctions;
@@ -62,8 +62,8 @@ class locationinventory
         $this->lookupClass = new lookupClass;
         $this->companysetup = new companysetup;
         $this->sqlquery = new sqlquery;
-        $this->tabClass = new tabClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->tabClass = new tabClass($params);;
+        $this->fieldClass = new txtfieldClass($params);
         $this->sbcscript = new sbcscript;
     }
 

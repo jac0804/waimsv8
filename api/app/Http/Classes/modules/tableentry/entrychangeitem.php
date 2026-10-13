@@ -29,17 +29,29 @@ class entrychangeitem
   private $othersClass;
   public $style = 'width:100%;';
   private $fields = [
-    'itemid', 'barcode', 'itemname',
-    'groupid', 'part', 'model',
-    'brand', 'class', 'sizeid', 'uom',
-    'amt', 'cost', 'amt2', 'amt4', 'famt', 'partno'
+    'itemid',
+    'barcode',
+    'itemname',
+    'groupid',
+    'part',
+    'model',
+    'brand',
+    'class',
+    'sizeid',
+    'uom',
+    'amt',
+    'cost',
+    'amt2',
+    'amt4',
+    'famt',
+    'partno'
   ];
   public $showclosebtn = false;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -76,10 +88,27 @@ class entrychangeitem
     $tab = [
       $this->gridname => [
         'gridcolumns' => [
-          'action', 'barcode', 'partno', 'itemname', 'uom', 'amt', 'amt2', 'famt', 'amt4', 'stock_projectname',
-          'brandname', 'classname', 'stock_groupname',
-          'partname', 'modelname', 'sizeid',
-          'classid', 'brandid', 'stock_groupid', 'partid', 'modelid'
+          'action',
+          'barcode',
+          'partno',
+          'itemname',
+          'uom',
+          'amt',
+          'amt2',
+          'famt',
+          'amt4',
+          'stock_projectname',
+          'brandname',
+          'classname',
+          'stock_groupname',
+          'partname',
+          'modelname',
+          'sizeid',
+          'classid',
+          'brandid',
+          'stock_groupid',
+          'partid',
+          'modelid'
         ]
       ]
     ];

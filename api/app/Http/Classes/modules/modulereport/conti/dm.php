@@ -34,9 +34,9 @@ class dm
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -285,7 +285,7 @@ class dm
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -347,7 +347,7 @@ class dm
 
   public function default_DM_PDF($params, $data)
   {
- 
+
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
     $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
@@ -382,7 +382,7 @@ class dm
         $disc = $data[$i]['disc'];
         $ext = number_format($data[$i]['ext'], $decimalcurr);
 
-       
+
         $arr_itemname = $this->reporter->fixcolumn([$itemname], '35', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
         $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
@@ -394,7 +394,7 @@ class dm
         for ($r = 0; $r < $maxrow; $r++) {
 
           PDF::SetFont($font, '', $fontsize);
-         
+
           PDF::MultiCell(75, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(75, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(250, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);

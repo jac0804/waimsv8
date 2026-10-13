@@ -29,12 +29,12 @@ class item_sales_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -91,9 +91,9 @@ class item_sales_report
     {
         $companyid = $config['params']['companyid'];
 
-        if ($companyid == 71){
+        if ($companyid == 71) {
             return $this->buenatech_DefaultLayout($config);
-        }else {
+        } else {
             return $this->reportDefaultLayout($config);
         }
     }
@@ -125,7 +125,7 @@ class item_sales_report
         $addfield2 = "";
         $grp = "";
 
-        if ($companyid == 71){
+        if ($companyid == 71) {
             $addfield .= ", stock.loc, stock.expiry";
             $addfield2 .= ", ip.loc, ip.expiry";
             $grp .= ", loc, expiry";

@@ -34,10 +34,10 @@ class entrycarmodel
     private $enrollmentlookup;
     private $logger;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -87,6 +87,12 @@ class entrycarmodel
         $obj = $this->tabClass->createtabbutton($tbuttons);
         $obj[2]['label'] = 'Delete all';
         $obj[2]['lookupclass'] = 'loaddata';
+
+        if ($config['params']['tableid'] == 0) {
+            foreach ($obj as $key => $value) {
+                $obj[$key]['visible'] = false;
+            }
+        }
         return $obj;
     }
 

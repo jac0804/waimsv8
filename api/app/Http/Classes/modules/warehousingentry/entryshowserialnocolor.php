@@ -30,9 +30,9 @@ class entryshowserialnocolor
     public $style = 'width:1100px;min-width:1100px;max-width:1100px;';
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->tabClass = new tabClass;
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -49,7 +49,7 @@ class entryshowserialnocolor
     public function createTab($config)
     {
 
-        $column = ['serial', 'chassis','pnp','csr'];
+        $column = ['serial', 'chassis', 'pnp', 'csr'];
 
         foreach ($column as $key => $value) {
             $$value = $key;
@@ -59,14 +59,14 @@ class entryshowserialnocolor
         $stockbuttons = [];
 
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
-        
+
         $obj[0][$this->gridname]['columns'][$serial]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$serial]['label'] = 'Engine No.';
         $obj[0][$this->gridname]['columns'][$chassis]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$chassis]['label'] = 'Chassis No.';
         $obj[0][$this->gridname]['columns'][$pnp]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$csr]['type'] = 'label';
-        $this->modulename = 'ENGINE#/CHASSIS# - '. $config['params']['row']['barcode'];
+        $this->modulename = 'ENGINE#/CHASSIS# - ' . $config['params']['row']['barcode'];
         return $obj;
     }
 
@@ -80,21 +80,21 @@ class entryshowserialnocolor
 
     public function loaddata($config)
     {
-        
+
         $item = $config['params']['row']['barcode'];
         $color = $config['params']['row']['color'];
         $wh = $config['params']['row']['whid'];
-        
+
         $company = $config['params']['companyid'];
         $doc = $config['params']['doc'];
         $filter = '';
-        
+
         $qry = "select sin.serial,sin.chassis,sin.pnp,sin.csr
         from rrstatus
         left join serialin as sin on sin.trno = rrstatus.trno and sin.line=rrstatus.line
         left join item on item.itemid=rrstatus.itemid
 
-        where item.barcode = '" . $item . "' and sin.color='".$color."'  and rrstatus.whid = ".$wh."
+        where item.barcode = '" . $item . "' and sin.color='" . $color . "'  and rrstatus.whid = " . $wh . "
         and sin.outline =0 $filter
         group by sin.serial,sin.chassis,sin.pnp,sin.csr
         order by serial";

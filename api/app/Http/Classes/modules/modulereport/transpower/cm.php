@@ -36,9 +36,9 @@ class cm
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -52,7 +52,7 @@ class cm
     $companyid = $config['params']['companyid'];
     $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
     $col1 = $this->fieldClass->create($fields);
-   data_set($col1, 'prepared.label', 'Released By');
+    data_set($col1, 'prepared.label', 'Released By');
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
       // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
@@ -62,8 +62,8 @@ class cm
 
   public function reportparamsdata($config)
   {
-    
-        $paramstr = "select
+
+    $paramstr = "select
           'PDFM' as print,
           '' as prepared,
           '' as approved,
@@ -438,9 +438,9 @@ class cm
     PDF::SetFont($font, '', 3);
     PDF::MultiCell(700, 0, '', '');
 
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(600, 15, 'GRAND TOTAL: ', 'B', 'R', false, 0);
-        PDF::MultiCell(100, 15, number_format($totalext, $decimalcurr), 'B', 'R');
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(600, 15, 'GRAND TOTAL: ', 'B', 'R', false, 0);
+    PDF::MultiCell(100, 15, number_format($totalext, $decimalcurr), 'B', 'R');
 
     PDF::MultiCell(0, 0, "\n");
 
@@ -506,13 +506,13 @@ class cm
 
     PDF::SetFont($font, '', 9);
 
-    
-      $this->reportheader->getheader($params);
-        //  PDF::MultiCell(0, 0, '', '', 'L');
-        //  PDF::SetFont($fontbold, '', 14);
-        //  PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-  
-   
+
+    $this->reportheader->getheader($params);
+    //  PDF::MultiCell(0, 0, '', '', 'L');
+    //  PDF::SetFont($fontbold, '', 14);
+    //  PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+
+
     // PDF::MultiCell(0, 0, '', '', 'L');
     // PDF::SetFont($fontbold, '', 14);
     // PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
@@ -573,7 +573,7 @@ class cm
     PDF::MultiCell(70, 20, "", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(10, 20, "", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(450, 20,'', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(450, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(70, 20, "Reference : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($fontbold, '', $fontsize);
@@ -632,13 +632,13 @@ class cm
     PDF::SetFont($font, '', 1);
     PDF::MultiCell(700, 0, '', 'T');
 
-              PDF::SetFont($font, 'B', 13);
-              PDF::MultiCell(80, 0, "QTY", '', 'C', false, 0);
-              PDF::MultiCell(50, 0, "UNIT", '', 'C', false, 0);
-              PDF::MultiCell(290, 0, "DESCRIPTION", '', 'L', false, 0);
-              PDF::MultiCell(85, 0, "UNIT PRICE", '', 'R', false, 0);
-              PDF::MultiCell(100, 0, "(+/-) %", '', 'C', false, 0);
-              PDF::MultiCell(90, 0, "TOTAL", '', 'R', false);
+    PDF::SetFont($font, 'B', 13);
+    PDF::MultiCell(80, 0, "QTY", '', 'C', false, 0);
+    PDF::MultiCell(50, 0, "UNIT", '', 'C', false, 0);
+    PDF::MultiCell(290, 0, "DESCRIPTION", '', 'L', false, 0);
+    PDF::MultiCell(85, 0, "UNIT PRICE", '', 'R', false, 0);
+    PDF::MultiCell(100, 0, "(+/-) %", '', 'C', false, 0);
+    PDF::MultiCell(90, 0, "TOTAL", '', 'R', false);
 
     $dotted_style = array(
       'width' => 0.3,

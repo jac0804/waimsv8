@@ -31,12 +31,12 @@ class sales_vs_collection
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -806,11 +806,11 @@ class sales_vs_collection
       $totalcoll = $totalcoll + $tcollection;
 
       $linecounter++;
-    //   if ($this->reporter->linecounter == $page) {
-    //     $str .= $this->reporter->page_break();
-    //     $str .= $this->displayHeader($config);
-    //     $page = $page + $count;
-    //   }
+      //   if ($this->reporter->linecounter == $page) {
+      //     $str .= $this->reporter->page_break();
+      //     $str .= $this->displayHeader($config);
+      //     $page = $page + $count;
+      //   }
     }
 
 

@@ -40,11 +40,11 @@ class cutoffacctgbal
     public $reporter;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -73,7 +73,7 @@ class cutoffacctgbal
         $fields = ['end', ['refresh', 'reset']];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'end.label', 'Cut off day');
-        
+
         data_set($col1, 'refresh.label', 'Save');
         data_set($col1, 'refresh.action', 'save');
         data_set($col1, 'refresh.style', 'width:100px;whiteSpace: normal;min-width:100px;');

@@ -21,34 +21,34 @@ use Illuminate\Support\Facades\URL;
 
 class employee_birthday_list
 {
-  public $modulename = 'Employee Birthday List';
-  private $companysetup;
-  private $coreFunctions;
-  private $fieldClass;
-  private $othersClass;
-  private $reporter;
-  public $batch;
-  public $style = 'width:1200px;max-width:1200px;';
-  public $directprint = false;
+    public $modulename = 'Employee Birthday List';
+    private $companysetup;
+    private $coreFunctions;
+    private $fieldClass;
+    private $othersClass;
+    private $reporter;
+    public $batch;
+    public $style = 'width:1200px;max-width:1200px;';
+    public $directprint = false;
 
-  // orientations: portrait=p, landscape=l
-  // formats: letter, a4, legal
-  // layoutsize: reportWidth
-  public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
+    // orientations: portrait=p, landscape=l
+    // formats: letter, a4, legal
+    // layoutsize: reportWidth
+    public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
     public function createHeadField($config)
     {
         $companyid = $config['params']['companyid'];
-        $fields = ['radioprint', 'divrep', 'deptrep', 'sectrep', 'atype','month', 'month2', 'prepared', 'checked', 'approved'];
+        $fields = ['radioprint', 'divrep', 'deptrep', 'sectrep', 'atype', 'month', 'month2', 'prepared', 'checked', 'approved'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
         data_set($col1, 'divrep.label', 'Company');
@@ -112,7 +112,7 @@ class employee_birthday_list
     {
         return [];
     }
-    
+
     public function reportplotting($config)
     {
         $data = $this->data_query($config);
@@ -136,19 +136,22 @@ class employee_birthday_list
         $query = '';
 
         if ($deptname != '') {
-        if ($deptid != 0) {
-            $filter .= " and e.deptid = $deptid";
-        }}
+            if ($deptid != 0) {
+                $filter .= " and e.deptid = $deptid";
+            }
+        }
 
         if ($divname != '') {
             if ($divid != 0) {
                 $filter .= " and e.divid = $divid";
-        }}
+            }
+        }
 
         if ($sectname != '') {
-        if ($sectid != 0) {
-            $filter .= " and e.sectid = $sectid";
-        }}
+            if ($sectid != 0) {
+                $filter .= " and e.sectid = $sectid";
+            }
+        }
 
         if ($emptype != '') {
             $filter .= " and e.emptype  = '$emptype'";
@@ -178,11 +181,11 @@ class employee_birthday_list
         $divname = $config['params']['dataparams']['divname'];
         $sectname = $config['params']['dataparams']['sectname'];
         $emptype = $config['params']['dataparams']['type'];
-        $printDate = date("l, F j, Y");  
+        $printDate = date("l, F j, Y");
         $printTime = date("g:i:s A");
-        $startFormatted = date("F", mktime(0,0,0,$month1,1));
-        $endFormatted = date("F", mktime(0,0,0,$month2,1));
-      
+        $startFormatted = date("F", mktime(0, 0, 0, $month1, 1));
+        $endFormatted = date("F", mktime(0, 0, 0, $month2, 1));
+
         $str = '';
         $layoutsize = '800';
         $font = 'Tahoma';
@@ -197,7 +200,7 @@ class employee_birthday_list
 
         $str .= '<br/><br/>';
 
-      
+
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         // $str .= $this->reporter->col('Sub total per Sales', null, null, false, '10px solid ', '', '', $font, '18', 'B', '', '');
@@ -207,10 +210,10 @@ class employee_birthday_list
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Date Printed :', '120', null, false, '', '', 'L', $font, $fontsize,'B');
+        $str .= $this->reporter->col('Date Printed :', '120', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col($printDate . '  ' . $printTime, '270', null, false, '', '', 'L', $font, $fontsize);
         $str .= $this->reporter->col('', '40');
-        $str .= $this->reporter->col('Covered Month :', '130', null, false, '', '', 'L', $font, $fontsize,'B');
+        $str .= $this->reporter->col('Covered Month :', '130', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col($startFormatted . ' to ' . $endFormatted, '170', null, false, '', '', 'L', $font, $fontsize);
         $str .= $this->reporter->col('', '80');
         $str .= $this->reporter->endrow();
@@ -218,22 +221,22 @@ class employee_birthday_list
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Company :', '120', null, false, '', '', 'L', $font, $fontsize,'B');
+        $str .= $this->reporter->col('Company :', '120', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col($divname == '' ? 'ALL COMPANY' : strtoupper($divname), '270', null, false, '', '', 'L', $font, $fontsize);
         $str .= $this->reporter->col('', '40');
-        $str .= $this->reporter->col('Emp. Type :', '130', null, false, '', '', 'L', $font, $fontsize,'B');
+        $str .= $this->reporter->col('Emp. Type :', '130', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col($emptype == '' ? 'ALL TYPE' : strtoupper($emptype), '170', null, false, '', '', 'L', $font, $fontsize);
         $str .= $this->reporter->col('', '80');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
-       
+
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Department :', '120', null, false, '', '', 'L', $font, $fontsize,'B');
+        $str .= $this->reporter->col('Department :', '120', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col($department == '' ? 'ALL DEPARTMENT' : strtoupper($department), '270', null, false, '', '', 'L', $font, $fontsize);
         $str .= $this->reporter->col('', '40');
-        $str .= $this->reporter->col('Section :', '130', null, false, '', '', 'L', $font, $fontsize,'B');
+        $str .= $this->reporter->col('Section :', '130', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col($sectname == '' ? 'ALL SECTION' : strtoupper($sectname), '170', null, false, '', '', 'L', $font, $fontsize);
         $str .= $this->reporter->col('', '80');
         $str .= $this->reporter->endrow();
@@ -256,7 +259,6 @@ class employee_birthday_list
         $str .= $this->reporter->endtable();
 
         return $str;
-
     }
 
     public function reportDefaultLayout($config, $result)
@@ -295,7 +297,7 @@ class employee_birthday_list
             $str .= $this->reporter->col($data->bday, '140', null, false, $border, '', 'L', $font, '10', '', '', '');
             $str .= $this->reporter->col($data->age, '50', null, false, $border, '', 'R', $font, '10', '', '', '');
             $str .= $this->reporter->col('', '10', null, false, $border, '', 'R', $font, '10', '', '', '');
-            
+
             $dept = trim($data->dept);
             $section = trim($data->section);
             if ($dept != '' && $section != '') {
@@ -354,6 +356,4 @@ class employee_birthday_list
         $str .= $this->reporter->endreport();
         return $str;
     }
-
-
 }//end class

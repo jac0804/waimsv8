@@ -60,11 +60,11 @@ class px
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -106,7 +106,7 @@ class px
 
   public function createdoclisting($config)
   {
-    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname','qtref', 'rem'];
+    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'qtref', 'rem'];
 
     foreach ($getcols as $key => $value) {
       $$value = $key;
@@ -163,13 +163,12 @@ class px
     $isadmin = $this->othersClass->checkAccess($config['params']['user'], 5389);
     $isphead = 0;
     $saleshead =  $this->othersClass->checkAccess($config['params']['user'], 5554);
-    $salesgid = $this->coreFunctions->datareader('select salesgroupid as value from client where clientid=?', [$user]); 
+    $salesgid = $this->coreFunctions->datareader('select salesgroupid as value from client where clientid=?', [$user]);
     switch ($companyid) {
       case 10:
       case 12: //afti
         if ($isadmin == 0) {
           $isphead = $this->coreFunctions->getfieldvalue("projectmasterfile", "agentid", "agentid = ?", [$user], '', true);
-          
         }
         break;
     }
@@ -236,7 +235,7 @@ class px
 
     $filtersearch = "";
     if (isset($config['params']['search'])) {
-      $searchfield = ['head.docno', 'head.dtcno','cl.clientname', 'head.pcfno', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby'];
+      $searchfield = ['head.docno', 'head.dtcno', 'cl.clientname', 'head.pcfno', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby'];
       $search = $config['params']['search'];
       if ($search != "") {
         $filtersearch = $this->othersClass->multisearch($searchfield, $search);
@@ -247,20 +246,20 @@ class px
     // $this->coreFunctions->LogConsole($isphead. "-phead");
 
     if ($companyid == 10 || $companyid == 12) { //afti
-      if ($isadmin == 0 && $isphead == 0) {        
-        if($saleshead!=0){
-          $addparams .= " and (head.createby='" . $username . "' or ag.salesgroupid=" . $salesgid .")" ;
-        }else{
+      if ($isadmin == 0 && $isphead == 0) {
+        if ($saleshead != 0) {
+          $addparams .= " and (head.createby='" . $username . "' or ag.salesgroupid=" . $salesgid . ")";
+        } else {
           $addparams .= " and head.createby='" . $username . "'";
         }
       } else {
-        if ($isphead != 0) {          
-          if($saleshead!=0){
-            $addparams .= " and (pm.agentid = " . $user . " or head.createby='" . $username . "' or ag.salesgroupid=" . $salesgid.")" ;
-          }else{
+        if ($isphead != 0) {
+          if ($saleshead != 0) {
+            $addparams .= " and (pm.agentid = " . $user . " or head.createby='" . $username . "' or ag.salesgroupid=" . $salesgid . ")";
+          } else {
             $addparams .= " and (pm.agentid = " . $user . " or head.createby='" . $username . "')";
           }
-        }       
+        }
       }
     }
 
@@ -705,21 +704,19 @@ class px
     $addparams = "";
     if ($companyid == 10 || $companyid == 12) { //afti
       if ($isadmin == 0 && $isphead == 0) {
-        if($saleshead!=0){
-          $addparams .= " and (head.createby='" . $username . "' or agent.salesgroupid=" . $salesgid ." )";
-        }else{
+        if ($saleshead != 0) {
+          $addparams .= " and (head.createby='" . $username . "' or agent.salesgroupid=" . $salesgid . " )";
+        } else {
           $addparams .= " and head.createby='" . $username . "'";
         }
       } else {
-        if ($isphead == 1) {         
-          if($saleshead!=0){
-            $addparams .= " and (head.createby='" . $username . "'  or p.agentid = " . $user." or agent.salesgroupid=" . $salesgid .")";
-          }else{
-            $addparams .= " and (head.createby='" . $username . "'  or p.agentid = " . $user.") ";
+        if ($isphead == 1) {
+          if ($saleshead != 0) {
+            $addparams .= " and (head.createby='" . $username . "'  or p.agentid = " . $user . " or agent.salesgroupid=" . $salesgid . ")";
+          } else {
+            $addparams .= " and (head.createby='" . $username . "'  or p.agentid = " . $user . ") ";
           }
         }
-
-        
       }
     }
 
@@ -825,7 +822,7 @@ class px
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -910,7 +907,7 @@ class px
     $dateTables = ['pxstock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $data = $this->openstock($trno, $config);
-    
+
     $data2 = json_decode(json_encode($data), true);
     if ($osphpusd == 0) {
       $osphpusd = $this->coreFunctions->getfieldvalue($this->head, "osphpusd", "trno=?", [$trno]);
@@ -919,8 +916,8 @@ class px
     $exec = true;
     foreach ($data2 as $key => $value) {
 
-      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt],$lookups);
-      $dqty = round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty],$lookups), $this->companysetup->getdecimal('qty', $config['params']));
+      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
+      $dqty = round($this->othersClass->sanitizekeyfieldFast('qty', $data2[$key][$this->dqty], $lookups), $this->companysetup->getdecimal('qty', $config['params']));
 
       if ($data2[$key]['itemgrp'] == 'HIOKI') {
         $tp = ($damt * $osphpusd) * 0.83;
@@ -955,7 +952,7 @@ class px
     }
 
     $this->coreFunctions->execqry("update " . $qstbl . " set dtctrno = 0 where trno=?", 'update', [$poref]);
-    
+
     $this->logger->sbcwritelog($poref, $config, 'QTNREF', 'REMOVE LINK TO QTN-delete transaction');
     $this->othersClass->deleteattachments($config);
     $this->logger->sbcdel_log($trno, $config, $docno);
@@ -1000,14 +997,14 @@ class px
     if ($this->checkRequiredFields($config, $fieldsToCheck, $trno)) {
       return ['status' => false, 'msg' => 'Posting failed. All Fields required before Posting.'];
     }
-    
+
     $termsdet = $this->coreFunctions->datareader('select termsdetails as value from ' . $this->head . ' where trno=?', [$trno]);
-    if($termsdet == 'On going'){
+    if ($termsdet == 'On going') {
       return ['status' => false, 'msg' => 'Posting failed. Terms Details not yet approve.'];
     }
 
     $poref = $this->coreFunctions->datareader('select poref as value from ' . $this->head . ' where trno=?', [$trno]);
-    if($poref == 'NO PO YET'){
+    if ($poref == 'NO PO YET') {
       return ['status' => false, 'msg' => 'Posting failed. No PO yet.'];
     }
     // $fullcomm = $this->coreFunctions->datareader('select fullcomm as value from ' . $this->head . ' where trno=?', [$trno]);
@@ -1121,7 +1118,7 @@ class px
             $cols = ["dtctrno" => $trno];
 
             if ($ins != '') {
-              $cols = ["rem2" => $ins, "dtctrno" => $trno];           
+              $cols = ["rem2" => $ins, "dtctrno" => $trno];
             }
 
             $tbl = 'headinfotrans';
@@ -1129,15 +1126,14 @@ class px
             if ($isposted) {
               $tbl = 'hheadinfotrans';
             }
-            
-            $exist = $this->coreFunctions->getfieldvalue($tbl, "trno", "trno=?", [$poref],'',true);
-            if($exist !=0){              
-              $this->coreFunctions->sbcupdate($tbl,$cols, ["trno" => $poref]);
-            }else{
+
+            $exist = $this->coreFunctions->getfieldvalue($tbl, "trno", "trno=?", [$poref], '', true);
+            if ($exist != 0) {
+              $this->coreFunctions->sbcupdate($tbl, $cols, ["trno" => $poref]);
+            } else {
               $cols["trno"] = $poref;
               $this->coreFunctions->sbcinsert($tbl, $cols);
             }
-            
           }
 
           $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
@@ -1455,11 +1451,11 @@ class px
             $tbl = 'hheadinfotrans';
           }
 
-          $exist = $this->coreFunctions->getfieldvalue($tbl, "trno", "trno=?", [$data[$key2]->trno],'',true);
-          if($exist !=0){
+          $exist = $this->coreFunctions->getfieldvalue($tbl, "trno", "trno=?", [$data[$key2]->trno], '', true);
+          if ($exist != 0) {
             $this->coreFunctions->sbcupdate($tbl, ["dtctrno" => $trno], ["trno" =>  $data[$key2]->trno]);
-          }else{
-            $this->coreFunctions->sbcinsert($tbl, ["trno"=>$data[$key2]->trno,"dtctrno" => $trno]);
+          } else {
+            $this->coreFunctions->sbcinsert($tbl, ["trno" => $data[$key2]->trno, "dtctrno" => $trno]);
           }
 
           //$this->coreFunctions->sbcupdate($tbl, ['dtctrno' => $trno], ['trno' => $data[$key2]->trno]);
@@ -1475,18 +1471,18 @@ class px
   {
     $config['params']['data'] = $config['params']['row'];
     $isupdate = $this->additem('update', $config);
-    if($this->blnrecompute){
+    if ($this->blnrecompute) {
       $this->recomputehiokitp($config);
       $this->blnrecompute = false;
     }
-    $data = $this->openstockline($config);   
+    $data = $this->openstockline($config);
     $data2 = json_decode(json_encode($data), true);
-    
+
 
     $msg1 = '';
     $msg2 = '';
 
-    $msg = '';    
+    $msg = '';
     if (isset($isupdate['msg'])) {
       if ($isupdate['msg'] != '') {
         $msg = $isupdate['msg'];
@@ -1522,8 +1518,8 @@ class px
         }
       }
     }
-    if($this->blnrecompute){
-      $this->recomputehiokitp($config);     
+    if ($this->blnrecompute) {
+      $this->recomputehiokitp($config);
       $this->blnrecompute = false;
     }
 
@@ -1663,14 +1659,14 @@ class px
     }
 
 
-    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt,$lookups);
-    $rrqty = $this->othersClass->sanitizekeyfieldFast('qty', $rrqty,$lookups);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $rrqty = $this->othersClass->sanitizekeyfieldFast('qty', $rrqty, $lookups);
 
     $rrqty = round($rrqty, $this->companysetup->getdecimal('qty', $config['params']));
     $computedata = $this->othersClass->computestock($amt, '', $rrqty, 1);
 
-    $srp = $this->othersClass->sanitizekeyfieldFast('amt', $srp,$lookups);
-    $tp = $this->othersClass->sanitizekeyfieldFast('amt', $tp,$lookups);
+    $srp = $this->othersClass->sanitizekeyfieldFast('amt', $srp, $lookups);
+    $tp = $this->othersClass->sanitizekeyfieldFast('amt', $tp, $lookups);
 
     $computedata2 = $this->othersClass->computestock($srp, '', $rrqty, 1);
     $computedata3 = $this->othersClass->computestock($tp, '', $rrqty, 1);
@@ -1691,7 +1687,7 @@ class px
     // $totaltp = $computedata3['ext'];
 
     foreach ($data as $key => $value) {
-      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -1714,8 +1710,8 @@ class px
       }
     } elseif ($action == 'update') {
       $return = true;
-      $tpold = $this->coreFunctions->getfieldvalue($this->stock,"tp","trno=? and line=?",[$trno,$line]);
-      if($tpold != $tp){
+      $tpold = $this->coreFunctions->getfieldvalue($this->stock, "tp", "trno=? and line=?", [$trno, $line]);
+      if ($tpold != $tp) {
         $this->blnrecompute  = false;
       }
       $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);

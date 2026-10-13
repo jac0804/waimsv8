@@ -40,10 +40,10 @@ class entryreasoncodesetup
     public $tablelogs_del = 'del_masterfile_log';
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -73,8 +73,8 @@ class entryreasoncodesetup
         $obj[0][$this->gridname]['columns'][$action]['style'] = "width:10%;whiteSpace: normal;min-width:100%;";
         $obj[0][$this->gridname]['columns'][$code]['style'] = "width:20%;whiteSpace: normal;min-width:100%;";
         $obj[0][$this->gridname]['columns'][$description]['style'] = "width:70%;whiteSpace: normal;min-width:100%;";
-        
-        if ($config['params']['companyid']==10){
+
+        if ($config['params']['companyid'] == 10) {
             $obj[0][$this->gridname]['columns'][$code]['type'] = "coldel";
             $this->modulename = "Reason Setup";
         }
@@ -118,9 +118,9 @@ class entryreasoncodesetup
 
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
-                $data2['isreasoncode'] = $this->othersClass->sanitizekeyfieldFast('isreasoncode', $data[$key]['isreasoncode'],$lookups);
+                $data2['isreasoncode'] = $this->othersClass->sanitizekeyfieldFast('isreasoncode', $data[$key]['isreasoncode'], $lookups);
                 $data2['isloantype'] = 0;
                 if ($data[$key]['line'] == 0 && $data[$key]['description'] != '') {
                     $qry = "select description from reqcategory where description = '" . $data[$key]['description'] . "' limit 1";
@@ -133,7 +133,7 @@ class entryreasoncodesetup
                     }
                 }
 
-                if($companyid !=10){
+                if ($companyid != 10) {
                     if (trim($data[$key]['code']) == '' && trim($data[$key]['description']) == '') {
                         return ['status' => false, 'msg' => 'Code & Description are empty'];
                     }
@@ -141,7 +141,7 @@ class entryreasoncodesetup
                         return ['status' => false, 'msg' => 'Code is empty'];
                     }
                 }
-                
+
                 if (trim($data[$key]['description']) == '') {
                     return ['status' => false, 'msg' => 'Description is empty'];
                 }
@@ -186,7 +186,7 @@ class entryreasoncodesetup
         $dateTables = [$this->table];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
         $data['isreasoncode'] = 1;
@@ -201,7 +201,7 @@ class entryreasoncodesetup
             }
         }
 
-        if($companyid !=10){
+        if ($companyid != 10) {
             if (trim($data['code']) == '' && trim($data['description']) == '') {
                 return ['status' => false, 'msg' => 'Code & Description are empty'];
             }
@@ -209,7 +209,7 @@ class entryreasoncodesetup
                 return ['status' => false, 'msg' => 'Code is empty'];
             }
         }
-        
+
         if (trim($data['description']) == '') {
             return ['status' => false, 'msg' => 'Description is empty'];
         }

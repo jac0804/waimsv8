@@ -526,10 +526,12 @@ class sbcscript
               case "LATE TIME IN":
                   state.headercols.col1.itime1.type = "input";
                   state.headercols.col1.itime1.readonly = true;
+                  state.headercols.col1.itime1.required = false;
                   state.headercols.col1.itime1.style = "display:none";
 
-                  state.headercols.col1.itime.type = "time";
+                  state.headercols.col1.itime.type = "qselect";
                   state.headercols.col1.itime.readonly = false;
+                  state.headercols.col1.itime.required = true;
                   state.headercols.col1.itime.style = "display:block";
                   state.headercols.col1.itime.label = "Time In";
                   break;
@@ -537,10 +539,12 @@ class sbcscript
               case "EARLY TIME OUT":
                   state.headercols.col1.itime.type = "input";
                   state.headercols.col1.itime.readonly = true;
+                  state.headercols.col1.itime.required = false;
                   state.headercols.col1.itime.style = "display:none";
                
-                  state.headercols.col1.itime1.type = "time";
+                  state.headercols.col1.itime1.type = "qselect";
                   state.headercols.col1.itime1.readonly = false;
+                  state.headercols.col1.itime1.required = true;
                   state.headercols.col1.itime1.style = "display:block";
                   state.headercols.col1.itime1.label = "Time Out";
                   break;
@@ -550,23 +554,27 @@ class sbcscript
               case "DAMAGE BIOMETRIC":
               case "PRORATE":
               case "NEW EMPLOYEE":
-                  state.headercols.col1.itime.type = "time";
+                  state.headercols.col1.itime.type = "qselect";
                   state.headercols.col1.itime.readonly = false;
+                  state.headercols.col1.itime.required = true;
                   state.headercols.col1.itime.style = "display:block";
                   state.headercols.col1.itime.label = "Time In";
 
-                  state.headercols.col1.itime1.type = "time";
+                  state.headercols.col1.itime1.type = "qselect";
                   state.headercols.col1.itime1.readonly = false;
+                  state.headercols.col1.itime1.required = true;
                   state.headercols.col1.itime1.style = "display:block";
                   state.headercols.col1.itime1.label = "Time Out";
                   break;
               default:
                   state.headercols.col1.itime1.type = "input";
                   state.headercols.col1.itime1.readonly = true;
+                  state.headercols.col1.itime1.required = false;
                   state.headercols.col1.itime1.style = "display:none";
 
-                  state.headercols.col1.itime.type = "time";
+                  state.headercols.col1.itime.type = "qselect";
                   state.headercols.col1.itime.readonly = false;
+                  state.headercols.col1.itime.required = true;
                   state.headercols.col1.itime.style = "display:block";
                   state.headercols.col1.itime.label = "Time In";
                    
@@ -582,10 +590,12 @@ class sbcscript
               case "LATE TIME IN":
                   state.headercols.col1.itime1.type = "input";
                   state.headercols.col1.itime1.readonly = true;
+                  state.headercols.col1.itime1.required = false;
                   state.headercols.col1.itime1.style = "display:none";
 
-                  state.headercols.col1.itime.type = "time";
+                  state.headercols.col1.itime.type = "qselect";
                   state.headercols.col1.itime.readonly = false;
+                  state.headercols.col1.itime.required = true;
                   state.headercols.col1.itime.style = "display:block";
                   state.headercols.col1.itime.label = "Time In";
                   break;
@@ -593,10 +603,12 @@ class sbcscript
               case "EARLY TIME OUT":
                   state.headercols.col1.itime.type = "input";
                   state.headercols.col1.itime.readonly = true;
+                  state.headercols.col1.itime.required = false;
                   state.headercols.col1.itime.style = "display:none";
                
-                  state.headercols.col1.itime1.type = "time";
+                  state.headercols.col1.itime1.type = "qselect";
                   state.headercols.col1.itime1.readonly = false;
+                  state.headercols.col1.itime1.required = true;
                   state.headercols.col1.itime1.style = "display:block";
                   state.headercols.col1.itime1.label = "Time Out";
                   break;
@@ -607,23 +619,27 @@ class sbcscript
               case "PRORATE":
               case "NEW EMPLOYEE":
 
-                  state.headercols.col1.itime.type = "time";
+                  state.headercols.col1.itime.type = "qselect";
                   state.headercols.col1.itime.readonly = false;
+                  state.headercols.col1.itime.required = true;
                   state.headercols.col1.itime.style = "display:block";
                   state.headercols.col1.itime.label = "Time In";
 
-                  state.headercols.col1.itime1.type = "time";
+                  state.headercols.col1.itime1.type = "qselect";
                   state.headercols.col1.itime1.readonly = false;
+                  state.headercols.col1.itime1.required = true;
                   state.headercols.col1.itime1.style = "display:block";
                   state.headercols.col1.itime1.label = "Time Out";
                   break;
               default:
                   state.headercols.col1.itime1.type = "input";
                   state.headercols.col1.itime1.readonly = true;
+                  state.headercols.col1.itime1.required = false;
                   state.headercols.col1.itime1.style = "display:none";
 
-                  state.headercols.col1.itime.type = "time";
+                  state.headercols.col1.itime.type = "qselect";
                   state.headercols.col1.itime.readonly = false;
+                  state.headercols.col1.itime.required = true;
                   state.headercols.col1.itime.style = "display:block";
                   state.headercols.col1.itime.label = "Time In";
                    
@@ -894,6 +910,97 @@ class sbcscript
         }
        }
         '
+    ];
+  }
+
+  public function trialbalance_report($config)
+  {
+    return [
+      'report' => '
+        const transition = "transition: max-height 0.8s ease, opacity 0.6s ease;";
+        const hiddenStyle = "max-height:0;opacity:0;overflow:hidden;margin:0;padding:0;pointer-events:none;" + transition;
+        const shownStyle = "max-height:100px;opacity:1;overflow:visible;pointer-events:auto;" + transition;
+
+        if (payload.field === undefined) {
+          state.reportobject.txtfield.col2.dacnoname.style = hiddenStyle;
+          state.reportobject.txtfield.col2.ddeptname.style = hiddenStyle;
+          state.reportobject.txtfield.col2.ddeptname.required = false;
+        } else if (payload.field === "reporttype" || payload.field === "radioreporttype") {
+          if (payload.value === "group") {
+            state.reportobject.txtfield.col2.dacnoname.style = shownStyle;
+            state.reportobject.txtfield.col2.ddeptname.style = shownStyle;
+            state.reportobject.txtfield.col2.ddeptname.required = true;
+          } else {
+            state.reportobject.txtfield.col2.dacnoname.style = hiddenStyle;
+            state.reportobject.txtfield.col2.ddeptname.style = hiddenStyle;
+            state.reportobject.txtfield.col2.ddeptname.required = false;
+            state.reportdata.params.ddeptname = "";
+            state.reportdata.params.dept = "";
+            state.reportdata.params.deptname = "";
+            state.reportdata.params.deptid = 0;
+            state.reportdata.params.dacnoname = "";
+            state.reportdata.params.contra = "";
+            state.reportdata.params.acnoname = "";
+          }
+        }
+      '
+    ];
+  }
+
+  public function department($config)
+  {
+    return [
+      'headbtnclick' => ' 
+          if (payload.payload.name === "new") {
+            if (state.tableentryobject.tabbuttons !== undefined) {
+                for (var x in state.tableentryobject.tabbuttons) {
+                    state.tableentryobject.tabbuttons[x].visible = false;
+                }
+            }
+        }
+
+        if(payload.payload.name === "save" || payload.payload.name === "cancel") {
+            if (state.tableentryobject.tabbuttons !== undefined) {
+                for (var x in state.tableentryobject.tabbuttons) {
+                    state.tableentryobject.tabbuttons[x].visible = true;
+                }
+            }
+        }
+
+      '
+    ];
+  }
+
+  public function pr($config)
+  {
+    return [
+      'head' => '
+            if (payload.field !== undefined) {
+                if (payload.field === "client") {
+                    state.headerdata.sectioncode = "";
+                    state.headerdata.sectionname = "";
+                    state.headerdata.sectid = 0;
+                }
+            }
+        '
+    ];
+  }
+
+
+  public function dprbycat_semimonthly_report($config)
+  {
+    return [
+      'report' => '
+          if(payload.field !== undefined){
+          if(payload.field ==="start" && payload.value){
+            let start = payload.value;
+            console.log(payload.value);
+              let [y, m, d] = start.split("/").join("-").split("-").map(Number);
+              state.reportdata.params.end = new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10); // last day ng month ng start
+               console.log(state.reportdata.params.end);
+          }
+        }
+      '
     ];
   }
 } // end class

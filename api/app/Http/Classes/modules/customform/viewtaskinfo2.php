@@ -33,10 +33,10 @@ class viewtaskinfo2
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -44,13 +44,13 @@ class viewtaskinfo2
   }
 
   public function createHeadField($config)
-  { 
-    $this->modulename ='TASK DETAILS';
+  {
+    $this->modulename = 'TASK DETAILS';
     $fields = ['lblrem', 'task'];
-    
+
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'lblrem.label', 'TASK DETAILS');
-   
+
     data_set($col1, 'task.readonly', true);
 
     return array('col1' => $col1);
@@ -58,12 +58,12 @@ class viewtaskinfo2
 
   public function paramsdata($config)
   {
-   
+
     if (isset($config['params']['row'])) {
       $trno = $config['params']['row']['tasktrno'];
       $line = $config['params']['row']['taskline'];
-    } 
-  
+    }
+
     return $this->getheaddata($trno, $line, $config['params']['doc'], $config);
   }
 
@@ -120,39 +120,39 @@ class viewtaskinfo2
     $dateTables = ['tmdetail'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-  
+
     $task = $this->othersClass->sanitizekeyfieldFast('task', $config['params']['dataparams']['task'], $lookups);
 
-      $data = [
-        'trno' => $trno,
-        'line' => $line,
-        'task' => $task
-      ];
+    $data = [
+      'trno' => $trno,
+      'line' => $line,
+      'task' => $task
+    ];
 
-      $tablename = 'tmdetail';
-      $label='Successfully loaded.';
+    $tablename = 'tmdetail';
+    $label = 'Successfully loaded.';
 
-      if ($isnew) {
+    if ($isnew) {
 
-        if (!$this->checkdata($trno, $line, $tablename)) {
-          $this->coreFunctions->sbcinsert($tablename, $data);
-          $this->logger->sbcwritelog(
-            $trno,
-            $config,
-            'TASKINFO',
-            'ADD - Line:' . $line
-              . ' Task:' . $task
-          );
-        } else {
-          $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-          $data['editby'] = $config['params']['user'];
-          $this->coreFunctions->sbcupdate($tablename, $data, ['trno' => $trno, 'line' => $line]);
-        }
+      if (!$this->checkdata($trno, $line, $tablename)) {
+        $this->coreFunctions->sbcinsert($tablename, $data);
+        $this->logger->sbcwritelog(
+          $trno,
+          $config,
+          'TASKINFO',
+          'ADD - Line:' . $line
+            . ' Task:' . $task
+        );
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
         $this->coreFunctions->sbcupdate($tablename, $data, ['trno' => $trno, 'line' => $line]);
       }
+    } else {
+      $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+      $data['editby'] = $config['params']['user'];
+      $this->coreFunctions->sbcupdate($tablename, $data, ['trno' => $trno, 'line' => $line]);
+    }
 
     $txtdata = $this->paramsdata($config);
     // /$doc = $config['params']['doc'];
@@ -160,7 +160,7 @@ class viewtaskinfo2
     // $path = 'App\Http\Classes\modules\\' . strtolower($modtype) . '\\' . strtolower($doc);
     // $config['params']['trno'] = $trno;
     // $stock = app($path)->openstock($trno, $config);
-    return ['status' => true, 'msg' => $label, 'data' => []];// 'reloadgriddata' => ['inventory' => $stock]
+    return ['status' => true, 'msg' => $label, 'data' => []]; // 'reloadgriddata' => ['inventory' => $stock]
   }
 
   private function checkdata($trno, $line, $tblname)

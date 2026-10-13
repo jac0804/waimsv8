@@ -64,11 +64,11 @@ class pn
         ['val' => 'all', 'label' => 'All', 'color' => 'primary']
     ];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -268,17 +268,42 @@ class pn
         $wh = 12;
 
         $column = [
-            'action',  'rrqty', 'uom', 'rrcost', 'cost', 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname', 'subamenityname', 'wh'
+            'action',
+            'rrqty',
+            'uom',
+            'rrcost',
+            'cost',
+            'project',
+            'phasename',
+            'housemodel',
+            'blk',
+            'lot',
+            'amenityname',
+            'subamenityname',
+            'wh'
         ];
 
         $sortcolumn = [
-            'action', 'rrqty', 'uom', 'rrcost',  'cost', 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname', 'subamenityname', 'wh'
+            'action',
+            'rrqty',
+            'uom',
+            'rrcost',
+            'cost',
+            'project',
+            'phasename',
+            'housemodel',
+            'blk',
+            'lot',
+            'amenityname',
+            'subamenityname',
+            'wh'
         ];
 
         $headgridbtns = ['viewdistribution'];
         $tab = [
             $this->gridname => [
-                'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
+                'gridcolumns' => $column,
+                'sortcolumns' => $sortcolumn,
                 'headgridbtns' => $headgridbtns
             ]
         ];
@@ -464,8 +489,16 @@ class pn
                 $hideobj = ['donetodo' => !$btndonetodo];
             }
             return  [
-                'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked, 'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg,
-                'clickobj' => $clickobj, 'hidetabbtn' => $hidetabbtn, 'hideobj' => $hideobj
+                'head' => $head,
+                'griddata' => ['inventory' => $stock],
+                'islocked' => $islocked,
+                'isposted' => $isposted,
+                'isnew' => false,
+                'status' => true,
+                'msg' => $msg,
+                'clickobj' => $clickobj,
+                'hidetabbtn' => $hidetabbtn,
+                'hideobj' => $hideobj
             ];
         } else {
             $head[0]['trno'] = 0;
@@ -486,7 +519,7 @@ class pn
 
         $dateTables = ['lahead'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-        
+
         foreach ($this->fields as $key) {
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
@@ -494,7 +527,6 @@ class pn
                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
-
         }
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
@@ -1237,7 +1269,7 @@ class pn
         $factor = 1;
         if (!empty($item)) {
             $item[0]->factor = $this->othersClass->val($item[0]->factor);
-            if ($item[0]->factor !== 0 ) $factor = $item[0]->factor;
+            if ($item[0]->factor !== 0) $factor = $item[0]->factor;
         }
 
         $computedata = $this->othersClass->computestock($rrcost, '', $qty, $factor);
@@ -1359,7 +1391,9 @@ class pn
         }
 
         return [
-            'row' => $rows, 'status' => true, 'msg' => 'Item was successfully added' . $msg
+            'row' => $rows,
+            'status' => true,
+            'msg' => 'Item was successfully added' . $msg
         ];
     }
 

@@ -31,10 +31,10 @@ class event
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -80,12 +80,11 @@ class event
         $sql = 'select title,rem from waims_holiday where md5(line)=?';
         break;
       case 'hl':
-       $sql = "select `description` as title,'' as rem from holiday where md5(line)=?";
+        $sql = "select `description` as title,'' as rem from holiday where md5(line)=?";
         break;
       case 'hll':
         $sql = "select `description` as title,'' as rem from holidayloc where md5(line)=?";
-        break;
-      ;
+        break;;
     }
     return $this->coreFunctions->opentable($sql, [$config['params']['dataid']]);
   }

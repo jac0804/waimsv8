@@ -36,9 +36,9 @@ class financingpartner
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -1430,9 +1430,9 @@ class financingpartner
                 break;
         }
         switch ($companyid) {
-                // case 8:
-                //     $this->reportheader->getheader($config);
-                //     break;
+            // case 8:
+            //     $this->reportheader->getheader($config);
+            //     break;
             case 34:
                 PDF::MultiCell(0, 0, "\n\n\n");
                 PDF::SetFont($fontbold, '', 12);
@@ -1711,9 +1711,9 @@ class financingpartner
         }
 
         switch ($companyid) {
-                // case 8:
-                //     $this->reportheader->getheader($config);
-                //     break;
+            // case 8:
+            //     $this->reportheader->getheader($config);
+            //     break;
             case 34:
                 PDF::MultiCell(0, 0, "\n\n\n");
                 PDF::SetFont($fontbold, '', 12);
@@ -1948,9 +1948,9 @@ class financingpartner
         }
 
         switch ($companyid) {
-                // case 8:
-                //     $this->reportheader->getheader($config);
-                //     break;
+            // case 8:
+            //     $this->reportheader->getheader($config);
+            //     break;
             case 34:
                 PDF::MultiCell(0, 0, "\n\n\n");
                 PDF::SetFont($fontbold, '', 12);

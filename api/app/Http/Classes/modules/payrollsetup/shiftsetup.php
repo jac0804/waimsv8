@@ -60,11 +60,11 @@ class shiftsetup
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -214,7 +214,7 @@ class shiftsetup
     if ($companyid == 58 || $companyid == 62) { // cdo / onesky
       array_push($fields, 'isonelog');
     }
-    if ($companyid == 68){ // JDA
+    if ($companyid == 68) { // JDA
       array_push($fields, 'istimein');
     }
     array_push($fields, 'isdefault');
@@ -224,7 +224,7 @@ class shiftsetup
       unset($col3['isdefault']);
       unset($col3['flexit']);
     }
-    if ($companyid == 66){
+    if ($companyid == 66) {
       unset($col3['isdefault']);
     }
 
@@ -343,7 +343,7 @@ class shiftsetup
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if 
       }
     }

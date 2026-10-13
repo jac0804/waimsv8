@@ -34,9 +34,9 @@ class pv
     private $othersClass;
     private $logger;
     private $reporter;
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -85,12 +85,12 @@ class pv
     public function reportplotting($config, $data)
     {
         if ($config['params']['dataparams']['print'] == "PDFM") {
-            
+
             switch ($config['params']['dataparams']['reporttype']) {
                 case 0: // VOUCHER
                     $str = $this->PDF_DEFAULT_CCVOUCHER_LAYOUT1($data, $config);
                     break;
-                    
+
 
                 case 3:
                     $str = $this->PDF_CV_WTAXREPORT_NEW($data, $config);
@@ -138,7 +138,7 @@ class pv
         where head.doc='PV' and head.trno ='$trno' and (detail.isewt = 1 or detail.isvewt=1))
         as tbl order by tbl.ewtdesc";
                 $this->coreFunctions->LogConsole($query);
-                
+
                 $result1 = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
 
                 $arrs = [];
@@ -207,7 +207,6 @@ class pv
                         } //end if
                         $finalarrs[$key]['month'] = $y['month'];
                     }
-                    
                 } //end for each
                 if (empty($result1)) {
                     $returnarr[0]['payee'] = '';
@@ -250,7 +249,7 @@ class pv
           left join client on client.clientid=head.clientid
           left join coa on coa.acnoid=detail.acnoid left join client as dclient on dclient.clientid=detail.clientid
           where head.doc='pv' and md5(head.trno)='" . md5($trno) . "'";
-                
+
                 $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
                 break;
         } // end switch
@@ -284,9 +283,9 @@ class pv
         PDF::SetMargins(40, 40);
 
         PDF::SetFont($font, '', 9);
-        
+
         PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . strtoupper($headerdata[0]->name), '', 'L');
-        
+
         PDF::SetFont($fontbold, '', 14);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
         PDF::SetFont($fontbold, '', 13);
@@ -419,7 +418,7 @@ class pv
     } //end fn
     public function PDF_CV_WTAXREPORT_NEW($data, $params)
     {
-        
+
         $center = $params['params']['center'];
         $username = $params['params']['user'];
 
@@ -726,7 +725,7 @@ class pv
             PDF::MultiCell(80, $max_height, $key, 'LRB', '', false, 0);
 
             switch ($data['head'][0]['month']) {
-                    // case '1': case '2': case '3':
+                // case '1': case '2': case '3':
                 case '1':
                 case '4':
                 case '7':
@@ -736,7 +735,7 @@ class pv
                     PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
                     $totalwtx1 +=  $data['detail'][$key]['oamt'];
                     break;
-                    // case '4': case '5': case '6':
+                // case '4': case '5': case '6':
                 case '2':
                 case '5':
                 case '8':

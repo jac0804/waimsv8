@@ -47,11 +47,11 @@ class comm
   public $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -92,7 +92,22 @@ class comm
     $tab = [
       $this->gridname => [
         'gridcolumns' => [
-          'isselected', 'isreleased', 'siref', 'sidate', 'docno', 'dateid', 'clientname', 'podate', 'poref', 'amt', 'stock_itemgroup', 'agentname', 'markup', 'agentcomamt', 'overrideagent', 'agent2comamt'
+          'isselected',
+          'isreleased',
+          'siref',
+          'sidate',
+          'docno',
+          'dateid',
+          'clientname',
+          'podate',
+          'poref',
+          'amt',
+          'stock_itemgroup',
+          'agentname',
+          'markup',
+          'agentcomamt',
+          'overrideagent',
+          'agent2comamt'
         ]
       ]
     ];
@@ -146,7 +161,7 @@ class comm
 
   public function createHeadField($config)
   {
-    $fields = ['start', 'end', 'agentname', 'agentid', 'salesgroup','sgid'];
+    $fields = ['start', 'end', 'agentname', 'agentid', 'salesgroup', 'sgid'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'agentname.label', 'Sales Person');
     data_set($col1, 'agentname.readonly', false);
@@ -171,7 +186,7 @@ class comm
     $agentname = '';
     $salesgroup = '';
     $salesgroupid = 0;
-    $sgid =0;
+    $sgid = 0;
 
     if (isset($config['params']['dataparams'])) {
       if ($config['params']['dataparams']['start'] == null) {
@@ -194,7 +209,7 @@ class comm
       $sgid =  $config['params']['dataparams']['salesgroupid'];
     }
 
-    $qry = "select " . $start . " as `start`, " . $end . " as `end`, '" . $agent . "' as agent, " . $agentid . " as agentid, '" . $agentname . "' as agentname, '" . $salesgroup . "' as salesgroup, " . $salesgroupid . " as salesgroupid,".$sgid." as sgid";
+    $qry = "select " . $start . " as `start`, " . $end . " as `end`, '" . $agent . "' as agent, " . $agentid . " as agentid, '" . $agentname . "' as agentname, '" . $salesgroup . "' as salesgroup, " . $salesgroupid . " as salesgroupid," . $sgid . " as sgid";
     $data = $this->coreFunctions->opentable($qry);
     return $data[0];
   }
@@ -310,7 +325,7 @@ class comm
     }
 
     if ($salesgroup != '') {
-      $filter = " and (ag.salesgroupid = " . $salesgroupid. " or ph.clientid = ".$sgid.")";
+      $filter = " and (ag.salesgroupid = " . $salesgroupid . " or ph.clientid = " . $sgid . ")";
     }
 
     //and cd.line = i.line
@@ -377,7 +392,7 @@ class comm
         where isusd =0 and date(depodate) between '" . $start . "' and '" . $end . "' and agrelease is null " . $filter1;
 
     $forcomm = $this->coreFunctions->opentable($qry);
-    
+
     //local
     foreach ($forcomm as $k => $val) {
       $comm = 0;
@@ -457,7 +472,7 @@ class comm
         $gross = 0;
         $override = 0;
         $comma = 0;
-        $pxdel =0;
+        $pxdel = 0;
 
         foreach ($data as $key => $value) {
           //$ardate = date_create($data[$key]->dateid); change to due date 8.11.2026
@@ -472,14 +487,14 @@ class comm
               $profit = 0;
             } else {
               $p = $tamt / $data[$key]->ext;
-              if($data[$key]->delcharge == 0){//double check on pcf
-                $qstrno = $this->coreFunctions->getfieldvalue("glhead","sotrno","trno=?",[$data[$key]->trno],'',true);
-                $pxtrno = $this->coreFunctions->getfieldvalue("hheadinfotrans","dtctrno","trno=?",[$qstrno],'',true);
-                $pxdel = $this->coreFunctions->datareader("select sum(actual) as value from hpxchecking as px left join reqcategory as r on r.line = px.expenseid and r.ispexp = 1 where  px.trno = ".$pxtrno." and r.iscomm =1 ");
-                if($pxdel !=0){
+              if ($data[$key]->delcharge == 0) { //double check on pcf
+                $qstrno = $this->coreFunctions->getfieldvalue("glhead", "sotrno", "trno=?", [$data[$key]->trno], '', true);
+                $pxtrno = $this->coreFunctions->getfieldvalue("hheadinfotrans", "dtctrno", "trno=?", [$qstrno], '', true);
+                $pxdel = $this->coreFunctions->datareader("select sum(actual) as value from hpxchecking as px left join reqcategory as r on r.line = px.expenseid and r.ispexp = 1 where  px.trno = " . $pxtrno . " and r.iscomm =1 ");
+                if ($pxdel != 0) {
                   $del = $pxdel / $p;
                 }
-              }else{
+              } else {
                 $del = $data[$key]->delcharge / $p;
               }
 
@@ -489,55 +504,55 @@ class comm
             }
 
             //if (floatval($profit) >= 10) {
-              if (floatval($profit) >= 10 && floatval($profit) < 15) {
-                $comrate = $data[$key]->comrate / 2;
-              } elseif (floatval($profit) >= 15) {
-                $comrate = $data[$key]->comrate;
-              }else{
-                $comrate =0;
-              }
+            if (floatval($profit) >= 10 && floatval($profit) < 15) {
+              $comrate = $data[$key]->comrate / 2;
+            } elseif (floatval($profit) >= 15) {
+              $comrate = $data[$key]->comrate;
+            } else {
+              $comrate = 0;
+            }
 
-              if($comrate != 0){
-                $comm = $comm + ($invamt * ($comrate / 100));
-                $tdel = $tdel + $del;
-                $tins = $tins + $insurance;
-                $netamt = $netamt + $invamt;
-                $comma = ($invamt * ($comrate / 100));
-              }else{
-                $comma =0;                
-              }
-              
+            if ($comrate != 0) {
+              $comm = $comm + ($invamt * ($comrate / 100));
+              $tdel = $tdel + $del;
+              $tins = $tins + $insurance;
+              $netamt = $netamt + $invamt;
+              $comma = ($invamt * ($comrate / 100));
+            } else {
+              $comma = 0;
+            }
 
-              if ($forcomm[$k]->agentid2 != 0 && $forcomm[$k]->agentid2 != $forcomm[$k]->agentid) {
-                $commoverride = $commoverride + ($comma / 2); //$invamt*(0.5/100);
-                $override = ($comma / 2); //$invamt*(0.5/100);
-              }
 
-              $commdet["ptrno"] = $forcomm[$k]->ptrno;
-              $commdet["trno"] = $forcomm[$k]->trno;
-              $commdet["line"] = $data[$key]->line;
-              $commdet["projectid"] = $data[$key]->projectid;
-              $commdet["agentid"] = $forcomm[$k]->agentid;
-              $commdet["overrideid"] = $forcomm[$k]->agentid2;
-              $commdet["pheadid"] = $data[$key]->agentid;
-              $commdet["gp"] = $profit;
-              $commdet["comrate"] = $comrate;
-              $commdet["comamt"] = number_format($comma, 2, '.', '');
-              $commdet["delcharge"] = number_format($del, 2, '.', '');
-              $commdet["insurance"] = number_format($insurance, 2, '.', '');
-              $commdet["overridecomm"] = number_format($override, 2, '.', '');
-              $commdet["usdline"] = 0;
-              if ($data[$key]->agentid != 0) {
-                if ($forcomm[$k]->agentid2 != $data[$key]->agentid) {
-                  $commdet["pheadcomm"] = number_format($comma / 2, 2, '.', '');
-                } else {
-                  $commdet["pheadcomm"] = 0;
-                }
+            if ($forcomm[$k]->agentid2 != 0 && $forcomm[$k]->agentid2 != $forcomm[$k]->agentid) {
+              $commoverride = $commoverride + ($comma / 2); //$invamt*(0.5/100);
+              $override = ($comma / 2); //$invamt*(0.5/100);
+            }
+
+            $commdet["ptrno"] = $forcomm[$k]->ptrno;
+            $commdet["trno"] = $forcomm[$k]->trno;
+            $commdet["line"] = $data[$key]->line;
+            $commdet["projectid"] = $data[$key]->projectid;
+            $commdet["agentid"] = $forcomm[$k]->agentid;
+            $commdet["overrideid"] = $forcomm[$k]->agentid2;
+            $commdet["pheadid"] = $data[$key]->agentid;
+            $commdet["gp"] = $profit;
+            $commdet["comrate"] = $comrate;
+            $commdet["comamt"] = number_format($comma, 2, '.', '');
+            $commdet["delcharge"] = number_format($del, 2, '.', '');
+            $commdet["insurance"] = number_format($insurance, 2, '.', '');
+            $commdet["overridecomm"] = number_format($override, 2, '.', '');
+            $commdet["usdline"] = 0;
+            if ($data[$key]->agentid != 0) {
+              if ($forcomm[$k]->agentid2 != $data[$key]->agentid) {
+                $commdet["pheadcomm"] = number_format($comma / 2, 2, '.', '');
               } else {
                 $commdet["pheadcomm"] = 0;
               }
+            } else {
+              $commdet["pheadcomm"] = 0;
+            }
 
-              array_push($this->commission, $commdet);
+            array_push($this->commission, $commdet);
             //}
           }
           $gross = $gross + $data[$key]->ext;
@@ -580,57 +595,57 @@ class comm
       $netamt = 0;
       $gross = 0;
       $override = 0;
-      $comma =0;
+      $comma = 0;
 
 
       //if (floatval($forcomm[$k]->gp) >= 10) {
-        if (floatval($forcomm[$k]->gp) >= 10) {
-          if(floatval($forcomm[$k]->gp) < 15){
-            if ($comrate != 0) {
-              $comrate = $comrate / 2;
-            }
-          }   
-        }else{
-          $comrate =0;
-        }
-
-        if($comrate !=0){
-          $comma = ($forcomm[$k]->amt * ($comrate / 100));
-        }        
-
-        if ($forcomm[$k]->agentid2 != 0 && $comma !=0) {
-          if ($forcomm[$k]->agentid2 != $forcomm[$k]->agentid) {
-            $override = $comma / 2;
+      if (floatval($forcomm[$k]->gp) >= 10) {
+        if (floatval($forcomm[$k]->gp) < 15) {
+          if ($comrate != 0) {
+            $comrate = $comrate / 2;
           }
         }
+      } else {
+        $comrate = 0;
+      }
 
-        $commdet["ptrno"] = 0;
-        $commdet["trno"] = 0;
-        $commdet["line"] = 0;
-        $commdet["usdline"] = $forcomm[$k]->usdline;
-        $commdet["projectid"] = $forcomm[$k]->projectid;
-        $commdet["agentid"] = $forcomm[$k]->agentid;
-        $commdet["overrideid"] = $forcomm[$k]->agentid2;
-        $commdet["pheadid"] = $pheadid;
-        $commdet["gp"] = $forcomm[$k]->gp;
-        $commdet["comrate"] = $comrate;
-        $commdet["comamt"] = number_format($comma, 2, '.', '');
-        $commdet["delcharge"] = 0;
-        $commdet["insurance"] = 0;
-        $commdet["overridecomm"] = number_format($override, 2, '.', '');
-        if ($pheadid != 0 && $comma !=0) {
-          if ($forcomm[$k]->agentid2 != $pheadid) {
-            $commdet["pheadcomm"] = number_format($comma / 2, 2, '.', '');
-          } else {
-            $commdet["pheadcomm"] = 0;
-          }
+      if ($comrate != 0) {
+        $comma = ($forcomm[$k]->amt * ($comrate / 100));
+      }
+
+      if ($forcomm[$k]->agentid2 != 0 && $comma != 0) {
+        if ($forcomm[$k]->agentid2 != $forcomm[$k]->agentid) {
+          $override = $comma / 2;
+        }
+      }
+
+      $commdet["ptrno"] = 0;
+      $commdet["trno"] = 0;
+      $commdet["line"] = 0;
+      $commdet["usdline"] = $forcomm[$k]->usdline;
+      $commdet["projectid"] = $forcomm[$k]->projectid;
+      $commdet["agentid"] = $forcomm[$k]->agentid;
+      $commdet["overrideid"] = $forcomm[$k]->agentid2;
+      $commdet["pheadid"] = $pheadid;
+      $commdet["gp"] = $forcomm[$k]->gp;
+      $commdet["comrate"] = $comrate;
+      $commdet["comamt"] = number_format($comma, 2, '.', '');
+      $commdet["delcharge"] = 0;
+      $commdet["insurance"] = 0;
+      $commdet["overridecomm"] = number_format($override, 2, '.', '');
+      if ($pheadid != 0 && $comma != 0) {
+        if ($forcomm[$k]->agentid2 != $pheadid) {
+          $commdet["pheadcomm"] = number_format($comma / 2, 2, '.', '');
         } else {
           $commdet["pheadcomm"] = 0;
         }
-        array_push($this->commission, $commdet);
-        $this->coreFunctions->execqry("update incentives set agentcomamt = " . round($comma, 2) . ",agent2comamt =" . round($override, 2) . " where usdline = " . $forcomm[$k]->usdline);
+      } else {
+        $commdet["pheadcomm"] = 0;
+      }
+      array_push($this->commission, $commdet);
+      $this->coreFunctions->execqry("update incentives set agentcomamt = " . round($comma, 2) . ",agent2comamt =" . round($override, 2) . " where usdline = " . $forcomm[$k]->usdline);
       //}
-    }//end usd
+    } //end usd
 
     $dateTables = ['commdetails'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -802,7 +817,7 @@ class comm
     try {
       foreach ($commdet as $key => $value) {
         foreach ($value as $key2 => $value2) {
-           $commdet[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
+          $commdet[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
 
         $qry = "select usdline as value from incentives where usdline <>0 order by usdline desc limit 1";
@@ -901,7 +916,7 @@ class comm
     }
 
     if ($salesgroup != '') {
-      $filter = " and (ag.salesgroupid = " . $salesgroupid. " or ph.clientid = ".$sgid.")";
+      $filter = " and (ag.salesgroupid = " . $salesgroupid . " or ph.clientid = " . $sgid . ")";
     }
 
     //and cd.line = i.line
@@ -969,7 +984,7 @@ class comm
     }
 
     if ($salesgroup != '') {
-      $filter = " and (ag.salesgroupid = " . $salesgroupid. " or ph.clientid = ".$sgid.")";
+      $filter = " and (ag.salesgroupid = " . $salesgroupid . " or ph.clientid = " . $sgid . ")";
     }
     // and cd.line = i.line
     $qry = "select overrideagent, agentname, sum(amt) as amt, SUM(agent2comamt) as agent2comamt from (select 'false' as isselected,head.doc,cd.ptrno,cd.line,case ifnull(cd.releaseddate,'') when '' then '' else 'RELEASED' end as isreleased, cd.trno,head.docno,ar.dateid as sidate,cl.client,cl.clientname,ag.client as agentcode,ag.clientname as agentname,
@@ -1038,7 +1053,7 @@ class comm
     }
 
     if ($salesgroup != '') {
-      $filter = " and (ag.salesgroupid = " . $salesgroupid. " or ph.clientid = ".$sgid.")";
+      $filter = " and (ag.salesgroupid = " . $salesgroupid . " or ph.clientid = " . $sgid . ")";
     }
     //and cd.line = i.line
     $qry = "select groupname, sum(agentcomamt + agent2comamt + pheadcomm) as agentcomamt from 
@@ -1222,9 +1237,9 @@ class comm
       $vattype = '';
       $gp = '';
 
-      $dateTables = ['incentives','glstock'];
+      $dateTables = ['incentives', 'glstock'];
       $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-       $val->amt = $this->othersClass->sanitizekeyfieldFast('amt', $val->amt, $lookups);
+      $val->amt = $this->othersClass->sanitizekeyfieldFast('amt', $val->amt, $lookups);
       if ($val->ardoc == 'AR') {
         $comrate = number_format($val->comrate, 2);
         $vattype = $this->coreFunctions->getfieldvalue("client", "vattype", "client=?", [$val->client]);
@@ -1734,7 +1749,7 @@ class comm
       $companyid = $config['params']['companyid'];
       $dateTables = ['incentives', 'glstock'];
       $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-        $val->amt = $this->othersClass->sanitizekeyfieldFast('amt', $val->amt, $lookups);
+      $val->amt = $this->othersClass->sanitizekeyfieldFast('amt', $val->amt, $lookups);
       if ($val->ardoc == 'AR') {
         $comrate = number_format($val->comrate, 2);
         $vattype = $this->coreFunctions->getfieldvalue("client", "vattype", "client=?", [$val->client]);

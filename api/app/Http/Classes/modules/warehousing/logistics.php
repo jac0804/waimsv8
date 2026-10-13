@@ -53,11 +53,11 @@ class logistics
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -113,8 +113,22 @@ class logistics
     $waybill = 14;
 
     $getcols = [
-      'action', 'lblstatus', 'listdocument', 'clientname', 'listdate', 'ref', 'scheddate', 'truck',
-      'plateno', 'courier', 'receivedate', 'receiveby', 'transtype', 'deliverytypename', 'boxcount', 'waybill'
+      'action',
+      'lblstatus',
+      'listdocument',
+      'clientname',
+      'listdate',
+      'ref',
+      'scheddate',
+      'truck',
+      'plateno',
+      'courier',
+      'receivedate',
+      'receiveby',
+      'transtype',
+      'deliverytypename',
+      'boxcount',
+      'waybill'
     ];
 
     $stockbuttons = ['view', 'showboxdetails', 'showstockitems'];
@@ -389,8 +403,15 @@ class logistics
       }
 
       return  [
-        'head' => $head, 'griddata' => ['inventory' => $stock], 'isnew' => false, 'status' => true, 'msg' => $msg, 'islocked' => false,
-        'isposted' => $posted, 'qq' => $config['params']['clientid'], 'hideobj' => $hideobj
+        'head' => $head,
+        'griddata' => ['inventory' => $stock],
+        'isnew' => false,
+        'status' => true,
+        'msg' => $msg,
+        'islocked' => false,
+        'isposted' => $posted,
+        'qq' => $config['params']['clientid'],
+        'hideobj' => $hideobj
       ];
     } else {
       $head = $this->resetdata();
@@ -432,16 +453,16 @@ class logistics
     $data = [];
     $msg = '';
 
-    $dateTables = ['lahead','cntnuminfo'];
+    $dateTables = ['lahead', 'cntnuminfo'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
-        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $head[$key],$lookups);
+        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $head[$key], $lookups);
       }
     }
 
-    $head['shipto']  = $this->othersClass->sanitizekeyfieldFast('shipto', $head['shipto'],$lookups);
-    $head['waybill']  = $this->othersClass->sanitizekeyfieldFast('shipto', $head['waybill'],$lookups);
+    $head['shipto']  = $this->othersClass->sanitizekeyfieldFast('shipto', $head['shipto'], $lookups);
+    $head['waybill']  = $this->othersClass->sanitizekeyfieldFast('shipto', $head['waybill'], $lookups);
 
     $this->coreFunctions->sbcupdate('cntnuminfo', $data, ['trno' => $trno]);
     $this->coreFunctions->sbcupdate('lahead', ['shipto' => $head['shipto'], 'waybill' => $head['waybill']], ['trno' => $trno]);
@@ -630,7 +651,7 @@ class logistics
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];

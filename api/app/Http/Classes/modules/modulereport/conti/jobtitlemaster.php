@@ -35,9 +35,9 @@ class jobtitlemaster
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -45,16 +45,18 @@ class jobtitlemaster
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter(){
-    $fields = ['radioprint', 'prepared','approved', 'received','print'];
-    $col1 = $this->fieldClass->create($fields);        
+  public function createreportfilter()
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
     ]);
-    return array('col1'=>$col1);
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable("select 
       'PDFM' as print,
       '' as approved,
@@ -63,9 +65,10 @@ class jobtitlemaster
     ");
   }
 
-  public function report_default_query($filters){
+  public function report_default_query($filters)
+  {
     $trno = $filters['params']['dataid'];
-    $query="
+    $query = "
     select line as trno, docno, jobtitle 
     from jobthead
     where line = '$trno'";
@@ -74,15 +77,17 @@ class jobtitlemaster
     return $result;
   }
 
-  public function reportplotting($params, $data) {
-    if($params['params']['dataparams']['print'] == "default"){
+  public function reportplotting($params, $data)
+  {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_jobtitlemaster_layout($params, $data);
-    }else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_jobtitlemaster_PDF($params, $data);
     }
   }
 
-  public function default_header($params, $data) {
+  public function default_header($params, $data)
+  {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
@@ -96,20 +101,20 @@ class jobtitlemaster
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
     $str .= $this->reporter->begintable('800');
-      $str .= $this->reporter->startrow();
-        $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center .'&nbsp'  .'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
+    $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= '<br><br>';
 
@@ -140,7 +145,8 @@ class jobtitlemaster
     return $str;
   }
 
-  public function default_jobtitlemaster_layout($params, $data){
+  public function default_jobtitlemaster_layout($params, $data)
+  {
 
     $str = '';
     $font = "Century Gothic ";
@@ -259,7 +265,7 @@ class jobtitlemaster
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -271,7 +277,7 @@ class jobtitlemaster
     PDF::MultiCell(80, 0, "Job Title: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(420, 0, (isset($data[0]['jobtitle']) ? $data[0]['jobtitle'] : ''), 'B', 'L', false, 0, '',  '');
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 0, "Document #: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
@@ -289,7 +295,7 @@ class jobtitlemaster
 
   public function default_jobtitlemaster_PDF($params, $data)
   {
- 
+
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
     $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
@@ -325,14 +331,14 @@ class jobtitlemaster
       $jdesc = "";
       $jskillreq = "";
       foreach ($getjobdesc as $key => $jobdesc) {
-        $jdesc .= $jobdesc->description."\n";
+        $jdesc .= $jobdesc->description . "\n";
       }
 
       foreach ($getskillreq as $key => $skillreq) {
         $jskillreq .= $skillreq->description . "\n";
       }
 
-   
+
       PDF::MultiCell(350, 0, $jdesc, '', 'L', 0, 0, '', '');
       PDF::MultiCell(350, 0, $jskillreq, '', 'L', 0, 0, '', '');
       PDF::MultiCell(100, 0, '', '', 'L', 0, 1, '', '');
@@ -365,5 +371,4 @@ class jobtitlemaster
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

@@ -39,9 +39,9 @@ class cv
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -570,15 +570,15 @@ class cv
 
         PDF::MultiCell(0, 0, "\n");
         PDF::MultiCell(50, 0, 'Paid To: ', '', 'L', false, 0);
-        
-        $clname =$data[0]['clientname'];
-        $acctname =$data[0]['acctname'];
 
-        if($acctname !=""){
+        $clname = $data[0]['clientname'];
+        $acctname = $data[0]['acctname'];
+
+        if ($acctname != "") {
             $clname = $acctname;
-        }else{
-            if( $data[0]['fname'].$data[0]['mname'].$data[0]['lname'] != ''){
-                $clname = $data[0]['fname'].' '.$data[0]['lname'];
+        } else {
+            if ($data[0]['fname'] . $data[0]['mname'] . $data[0]['lname'] != '') {
+                $clname = $data[0]['fname'] . ' ' . $data[0]['lname'];
                 // if ($data[0]['mname'] != ''){
                 //     $clname = $data[0]['fname'].' '.$data[0]['mname'].'. '.$data[0]['lname'];
                 // }else{
@@ -586,7 +586,7 @@ class cv
                 // }
             }
         }
-        
+
 
 
         PDF::MultiCell(310, 0, $clname, '', 'L', false, 0);
@@ -619,14 +619,14 @@ class cv
         if (strpos($cbdata[0]['amount'], '.') !== false) {
             $fractionvalues = explode('.', $cbdata[0]['amount']);
             if ($fractionvalues[1] != '00' || $fractionvalues[1] != '0') {
-                PDF::MultiCell(615, 0, $this->ftNumberToWordsConverter($cbdata[0]['amount'],false,'',true) .' ' . '( ₱ ' . number_format($amounts, 2) . ' )', '', 'L', false, 1); 
-            }else{
-                PDF::MultiCell(615, 0, $this->ftNumberToWordsConverter($cbdata[0]['amount'],false,'',true) . ' ' . 'ONLY' . ' ' . '( ₱ ' . number_format($amounts, 2) . ' )', '', 'L', false, 1);  
+                PDF::MultiCell(615, 0, $this->ftNumberToWordsConverter($cbdata[0]['amount'], false, '', true) . ' ' . '( ₱ ' . number_format($amounts, 2) . ' )', '', 'L', false, 1);
+            } else {
+                PDF::MultiCell(615, 0, $this->ftNumberToWordsConverter($cbdata[0]['amount'], false, '', true) . ' ' . 'ONLY' . ' ' . '( ₱ ' . number_format($amounts, 2) . ' )', '', 'L', false, 1);
             } //end if
-        }else{
-            PDF::MultiCell(615, 0, $this->ftNumberToWordsConverter($cbdata[0]['amount'],false,'',true) . ' ' . 'ONLY' . ' ' . '( ₱ ' . number_format($amounts, 2) . ' )', '', 'L', false, 1);
-        }//end if
-        
+        } else {
+            PDF::MultiCell(615, 0, $this->ftNumberToWordsConverter($cbdata[0]['amount'], false, '', true) . ' ' . 'ONLY' . ' ' . '( ₱ ' . number_format($amounts, 2) . ' )', '', 'L', false, 1);
+        } //end if
+
         //PDF::MultiCell(615, 0, $this->reporter->ftNumberToWordsConverter($amounts,false,'',false). ' ' . 'ONLY' . ' ' . '( ₱ ' . number_format($amounts, 2) . ' )', '', 'L', false, 1);
 
 
@@ -1591,8 +1591,8 @@ class cv
             PDF::MultiCell(720, 5, "\n", '', 'L', false);
 
             $clname = $data[0]['clientname'];
-            if($data[0]['fname'].$data[0]['mname'].$data[0]['lname'] != ''){
-                $clname = $data[0]['fname'].' '.$data[0]['lname'];
+            if ($data[0]['fname'] . $data[0]['mname'] . $data[0]['lname'] != '') {
+                $clname = $data[0]['fname'] . ' ' . $data[0]['lname'];
                 // if ($data[0]['mname'] != ''){
                 //     $clname = $data[0]['fname'].' '.$data[0]['mname'].'. '.$data[0]['lname'];
                 // }else{
@@ -1601,7 +1601,7 @@ class cv
             }
 
             PDF::MultiCell(50, 0, '', '', 'C', false, 0);
-            PDF::MultiCell(471, 0,  '  '.strtoupper($clname) , '', 'L', false, 0);
+            PDF::MultiCell(471, 0,  '  ' . strtoupper($clname), '', 'L', false, 0);
             //PDF::MultiCell(170, 0, '', '', 'L', false, 0);
             PDF::MultiCell(200, 0, (isset($cc) ?  number_format($cc, $decimal)  : ''), '', 'L', false);
 
@@ -1611,15 +1611,15 @@ class cv
             if (strpos($data2[$i]['cr'], '.') !== false) {
                 $fractionvalues = explode('.', $data2[$i]['cr']);
                 if ($fractionvalues[1] != '00' || $fractionvalues[1] != '0') {
-                    PDF::MultiCell(690, 0, $this->ftNumberToWordsConverter($data2[$i]['cr'],false,'',true), '', 'L', false, 1); 
-                }else{
-                    PDF::MultiCell(690, 0, $this->ftNumberToWordsConverter($data2[$i]['cr'],false,'',true) . ' ' . 'ONLY', '', 'L', false, 1);  
+                    PDF::MultiCell(690, 0, $this->ftNumberToWordsConverter($data2[$i]['cr'], false, '', true), '', 'L', false, 1);
+                } else {
+                    PDF::MultiCell(690, 0, $this->ftNumberToWordsConverter($data2[$i]['cr'], false, '', true) . ' ' . 'ONLY', '', 'L', false, 1);
                 } //end if
-            }else{
-                PDF::MultiCell(690, 0, $this->ftNumberToWordsConverter($data2[$i]['cr'],false,'',true) . ' ' . 'ONLY', '', 'L', false, 1);
-            }//end if
-        
-            
+            } else {
+                PDF::MultiCell(690, 0, $this->ftNumberToWordsConverter($data2[$i]['cr'], false, '', true) . ' ' . 'ONLY', '', 'L', false, 1);
+            } //end if
+
+
             //PDF::MultiCell(690, 0,  $this->reporter->ftNumberToWordsConverter($dd) . ' ONLY', '', 'L', false);
 
             PDF::MultiCell(720, 5, "\n", '', 'L', false);
@@ -1630,9 +1630,9 @@ class cv
             PDF::MultiCell(720, 5, "\n", '', 'L', false);
             PDF::MultiCell(720, 5, "\n", '', 'L', false);
             PDF::MultiCell(720, 5, "\n", '', 'L', false);
-            PDF::MultiCell(720, 0, $data[0]['cvno'].' #'.$data2[$i]['checkno'], '', 'L', false, 0);
+            PDF::MultiCell(720, 0, $data[0]['cvno'] . ' #' . $data2[$i]['checkno'], '', 'L', false, 0);
         }
-        $this->coreFunctions->execqry("update cntnum set printcheck = now() where trno = " .$trno,"update");
+        $this->coreFunctions->execqry("update cntnum set printcheck = now() where trno = " . $trno, "update");
         return PDF::Output($this->modulename . '.pdf', 'S');
     } //end fn
 
@@ -2681,7 +2681,7 @@ class cv
             $dd = number_format((float)$cc, 2, '.', '');
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('', '100', null, false, '1px solid ', '', 'C', 'Verdana', '13', 'B', '30px', '4px');
-            
+
             $str .= $this->reporter->col('***' . $this->reporter->ftNumberToWordsConverter($dd) . ' ONLY***', '900', null, false, '1px solid ', '', 'L', 'Verdana', '13', '', '30px', '4px');
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
@@ -2865,13 +2865,13 @@ class cv
         $this->addrowspace();
 
         $clname = $data[0]['clientname'];
-        $acctname =$data[0]['acctname'];
+        $acctname = $data[0]['acctname'];
 
-        if($acctname !=""){
+        if ($acctname != "") {
             $clname = $acctname;
-        }else{
-            if( $data[0]['fname'].$data[0]['mname'].$data[0]['lname'] != ''){
-                $clname = $data[0]['fname'].' '.$data[0]['lname'];
+        } else {
+            if ($data[0]['fname'] . $data[0]['mname'] . $data[0]['lname'] != '') {
+                $clname = $data[0]['fname'] . ' ' . $data[0]['lname'];
                 // if ($data[0]['mname'] != ''){
                 //     $clname = $data[0]['fname'].' '.$data[0]['mname'].'. '.$data[0]['lname'];
                 // }else{
@@ -2916,15 +2916,15 @@ class cv
         if (strpos($cbdata[0]['amount'], '.') !== false) {
             $fractionvalues = explode('.', $cbdata[0]['amount']);
             if ($fractionvalues[1] != '00' || $fractionvalues[1] != '0') {
-                PDF::MultiCell(600, 0, $this->ftNumberToWordsConverter($cbdata[0]['amount'], false, '',true) . ' ( ₱ ' . number_format($amounts, 2) . ' )', 'R', 'L', false, 1);
-            }else{
-                PDF::MultiCell(600, 0, $this->ftNumberToWordsConverter($cbdata[0]['amount'], false, '',true) . ' ' . 'ONLY' . ' ' . '( ₱ ' . number_format($amounts, 2) . ' )', 'R', 'L', false, 1);
+                PDF::MultiCell(600, 0, $this->ftNumberToWordsConverter($cbdata[0]['amount'], false, '', true) . ' ( ₱ ' . number_format($amounts, 2) . ' )', 'R', 'L', false, 1);
+            } else {
+                PDF::MultiCell(600, 0, $this->ftNumberToWordsConverter($cbdata[0]['amount'], false, '', true) . ' ' . 'ONLY' . ' ' . '( ₱ ' . number_format($amounts, 2) . ' )', 'R', 'L', false, 1);
             } //end if
-        }else{
-            PDF::MultiCell(600, 0, $this->ftNumberToWordsConverter($cbdata[0]['amount'], false, '',true) . ' ' . 'ONLY' . ' ' . '( ₱ ' . number_format($amounts, 2) . ' )', 'R', 'L', false, 1);
-        }//end if
+        } else {
+            PDF::MultiCell(600, 0, $this->ftNumberToWordsConverter($cbdata[0]['amount'], false, '', true) . ' ' . 'ONLY' . ' ' . '( ₱ ' . number_format($amounts, 2) . ' )', 'R', 'L', false, 1);
+        } //end if
 
-        
+
 
 
         if (count($cbdata) == 0) {
@@ -3041,11 +3041,11 @@ class cv
         PDF::MultiCell(30, 0, '', 'R', 'L', false, 1);
 
 
-         ///new add
+        ///new add
         PDF::SetFont($fontbold, '', $fontsize12);
         PDF::MultiCell(140, 0, ' CHECK NO.: ', 'L', 'L', false, 0);
         PDF::SetFont($font, '', $fontsize13);
-        PDF::MultiCell(110, 0,'' . (isset($cbdata[0]['checkno']) ? $cbdata[0]['checkno'] : ""), 'B', 'C', false, 0);
+        PDF::MultiCell(110, 0, '' . (isset($cbdata[0]['checkno']) ? $cbdata[0]['checkno'] : ""), 'B', 'C', false, 0);
         PDF::SetFont($fontbold, '', $fontsize12);
         PDF::MultiCell(150, 0, 'CHECK DATE: ', '', 'R', false, 0);
         PDF::SetFont($font, '', $fontsize12);
@@ -3127,11 +3127,11 @@ class cv
         PDF::MultiCell(90, 0, number_format($amounts, 2), 'B', 'R', false, 0);
         PDF::MultiCell(30, 0, '', 'R', 'L', false, 1);
 
-          ///new add
+        ///new add
         PDF::SetFont($fontbold, '', $fontsize12);
         PDF::MultiCell(140, 0, ' CHECK NO.: ', 'L', 'L', false, 0);
         PDF::SetFont($font, '', $fontsize13);
-        PDF::MultiCell(110, 0,'' . (isset($cbdata[0]['checkno']) ? $cbdata[0]['checkno'] : ""), 'B', 'C', false, 0);
+        PDF::MultiCell(110, 0, '' . (isset($cbdata[0]['checkno']) ? $cbdata[0]['checkno'] : ""), 'B', 'C', false, 0);
         PDF::SetFont($fontbold, '', $fontsize12);
         PDF::MultiCell(150, 0, 'CHECK DATE: ', '', 'R', false, 0);
         PDF::SetFont($font, '', $fontsize12);

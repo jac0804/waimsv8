@@ -45,7 +45,7 @@ class ue
   public $damt = 'rrcost';
   public $hamt = 'cost';
   public $defaultContra = 'IS1';
-  private $fields = ['trno', 'docno', 'dateid', 'yourref', 'ourref', 'rem', 'contra', 'projectid', 'client', 'clientname', 'pdtrno']; //'wh'
+  private $fields = ['trno', 'docno', 'dateid', 'yourref', 'ourref', 'rem', 'contra', 'projectid', 'client', 'clientname', 'pdtrno','qty','lot','expiry']; //'wh'
   private $except = ['trno', 'dateid'];
   private $acctg = [];
   public $showfilteroption = true;
@@ -54,11 +54,11 @@ class ue
   private $reporter;
   private $helpClass;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -426,14 +426,16 @@ class ue
     data_set($col2, 'sodocno.class', 'cssodocno sbccsreadonly');
     data_set($col2, 'sodocno.action', 'pendingjodetail');
     data_set($col2, 'sodocno.lookupclass', 'pendingjoheaddetail');
-    data_set($col2, 'sodocno.readonly', true); 
+    data_set($col2, 'sodocno.readonly', true);
     data_set($col2, 'sodocno.addedparams', ['pdtrno']);
     data_set($col2, 'barcode.class', 'sbccsreadonly');
     data_set($col2, 'barcode.type', 'input');
-    $fields = [['qty', 'uom'], ['yourref', 'ourref'], 'dprojectname'];
+    $fields = [['qty', 'uom'], ['yourref', 'ourref'], 'dprojectname',['lot', 'expiryday']];
     $col3 = $this->fieldClass->create($fields);
     data_set($col3, 'uom.class', 'sbccsreadonly');
-    data_set($col3, 'qty.class', 'sbccsreadonly');
+    // data_set($col3, 'qty.class', 'sbccsreadonly');
+    data_set($col3, 'expiryday.name', 'expiry');
+    data_set($col3, 'expiryday.label', 'Expiry');
     $fields = ['rem'];
     $col4 = $this->fieldClass->create($fields);
 
@@ -468,6 +470,10 @@ class ue
 
     // $data[0]['sodocno'] = '';
     $data[0]['pdtrno'] = 0;
+    $data[0]['qty'] = 0;
+    $data[0]['expiry'] = '';
+    $data[0]['lot'] = '';
+
 
     return $data;
   }
@@ -530,7 +536,8 @@ class ue
          ifnull(project.name,'') as projectname,ifnull(project.code,'') as projectcode,
          '' as dprojectname,
          left(head.due,10) as due,
-         client.groupid, jo.docno as sodocno, jo.qty,jo.uom, it.itemname,it.barcode, head.pdtrno";
+         client.groupid, jo.docno as sodocno, if(head.qty !=0,head.qty,jo.qty) as qty,jo.uom, it.itemname,it.barcode, 
+         head.pdtrno, ifnull(head.lot,'') as lot, ifnull(head.expiry,'') as expiry";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -586,65 +593,77 @@ class ue
   }
 
   public function updatehead($config, $isupdate)
-  {
-    $head = $config['params']['head'];
-    $companyid = $config['params']['companyid'];
-    $data = [];
-    if ($isupdate) {
-      unset($this->fields[1]);
-      unset($head['docno']);
-    }
+{
+  $head = $config['params']['head'];
+  $companyid = $config['params']['companyid'];
+  $data = [];
+  if ($isupdate) {
+    unset($this->fields[1]);
+    unset($head['docno']);
+  }
 
-    if (isset($head['whid2'])) {
-      $head['client'] = $head['whid2'];
-    }
+  if (isset($head['whid2'])) {
+    $head['client'] = $head['whid2'];
+  }
 
-    if (isset($head['wh2name'])) {
-      $head['clientname'] = $head['wh2name'];
-    }
+  if (isset($head['wh2name'])) {
+    $head['clientname'] = $head['wh2name'];
+  }
 
-    $dateTables = ['lahead'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+  $dateTables = ['lahead'];
+  $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    foreach ($this->fields as $key) {
-      if (array_key_exists($key, $head)) {
-        $data[$key] = $head[$key];
-        if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
-        } //end if
+  foreach ($this->fields as $key) {
+    if (array_key_exists($key, $head)) {
+      $data[$key] = $head[$key];
+      if (!in_array($key, $this->except)) {
+        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
       }
     }
-    $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-    $data['editby'] = $config['params']['user'];
+  }
+  $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+  $data['editby'] = $config['params']['user'];
 
-    if ($isupdate) {
-
-      $stock = $this->coreFunctions->opentable("select trno from " . $this->stock . " where trno=?", [$head['trno']]);
-      if (!empty($stock)) {
-        unset($data['pdtrno']); //di na maeedit o mababago yung JO sa head pag may laman yung stock
-        // return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Can\'t proceed. This transaction already has items.'];
-      } else {
-        $prevjotrno = $this->coreFunctions->getfieldvalue("lahead", 'pdtrno', 'trno=?', [$head['trno']]);
-        $newjotrno = $head['pdtrno'];
-        if ($newjotrno != $prevjotrno) {
-          $updatejohead = $this->coreFunctions->sbcupdate('hpdhead', ['isproduce' => 0], ['trno' => $prevjotrno]);
-          if ($updatejohead == 0) {
-            return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Saving failed. Problems in updating previous Job Order head.'];
-          }
-          $newupdate = $this->coreFunctions->sbcupdate('hpdhead', ['isproduce' => 1], ['trno' => $newjotrno]); //17258
-        }
-      }
-      $headUpdate = $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
-      $this->recomputecost($head, $config);
+  if ($isupdate) {
+    $stock = $this->coreFunctions->opentable("select trno from " . $this->stock . " where trno=?", [$head['trno']]);
+    if (!empty($stock)) {
+      unset($data['pdtrno']); // di na maeedit o mababago yung JO sa head pag may laman yung stock
     } else {
-      $data['doc'] = $config['params']['doc'];
-      $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
-      $data['createby'] = $config['params']['user'];
-      $this->coreFunctions->sbcinsert($this->head, $data);
-      $this->coreFunctions->sbcupdate('hpdhead', ['isproduce' => 1], ['trno' => $head['pdtrno']]);
-      $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' :  Destination WH - ' . $head['wh2name']);
+      $prevjotrno = $this->coreFunctions->getfieldvalue("lahead", 'pdtrno', 'trno=?', [$head['trno']]);
+      $newjotrno = $head['pdtrno'];
+
+      // qty ng BAGONG piniling JO ang basehan
+      $joheadqty = $this->coreFunctions->getfieldvalue("hpdhead", 'qty', 'trno=?', [$newjotrno]);
+
+      if (floatval($head['qty']) > floatval($joheadqty)) {
+        return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Saving failed. The qty inputed is greater than the JO qty.'];
+      }
+
+      if ($newjotrno != $prevjotrno) {
+        if (!empty($prevjotrno)) {
+          $this->coreFunctions->sbcupdate('hpdhead', ['isproduce' => 0], ['trno' => $prevjotrno]);
+        }
+        $this->coreFunctions->sbcupdate('hpdhead', ['isproduce' => 1], ['trno' => $newjotrno]);
+      }
     }
-  } // end function
+    $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
+    $this->recomputecost($head, $config);
+  }  else {
+    // sa new transaction, bawal mag-return dito (di binabasa ng framework, masisira ang trno)
+    // kaya kung sobra ang qty, gawin na lang itong qty ng JO
+    $joheadqty = floatval($this->coreFunctions->getfieldvalue("hpdhead", 'qty', 'trno=?', [$head['pdtrno']]));
+    if (floatval($head['qty']) > $joheadqty) {
+      $data['qty'] = $joheadqty;
+    }
+
+    $data['doc'] = $config['params']['doc'];
+    $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
+    $data['createby'] = $config['params']['user'];
+    $this->coreFunctions->sbcinsert($this->head, $data);
+    $this->coreFunctions->sbcupdate('hpdhead', ['isproduce' => 1], ['trno' => $head['pdtrno']]);
+    $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' :  Destination WH - ' . $head['wh2name']);
+  }
+} // end function
 
 
   public function deletetrans($config)
@@ -681,6 +700,13 @@ class ue
       return ['status' => false, 'msg' => 'Posting failed. There is no stock.'];
     }
 
+    // Kunin ang JO at qty habang nasa lahead pa (pagka-post, lilipat na sa glhead)
+    $jotrno  = $this->coreFunctions->getfieldvalue($this->head, 'pdtrno', 'trno=?', [$trno]);
+    $headqty = floatval($this->coreFunctions->getfieldvalue($this->head, 'qty', 'trno=?', [$trno]));
+    if ($headqty == 0) {
+      $headqty = floatval($this->coreFunctions->getfieldvalue('hpdhead', 'qty', 'trno=?', [$jotrno]));
+    }
+
     $result = $this->insertitemfromhead($config);
     if ($result['status'] == false) {
       return $result;
@@ -695,6 +721,8 @@ class ue
       $posttranstockresult = $this->othersClass->posttranstock($config);
       if ($posttranstockresult['status'] == false) {
         $this->rollbackautoinsert($trno, $newline, $itemid, $whid);
+      } else {
+        $this->coreFunctions->sbcupdate('hpdhead', ['prodqa' => $headqty], ['trno' => $jotrno]);
       }
       return $posttranstockresult;
     }
@@ -703,6 +731,8 @@ class ue
       $posttranstockresult = $this->othersClass->posttranstock($config);
       if ($posttranstockresult['status'] == false) {
         $this->rollbackautoinsert($trno, $newline, $itemid, $whid);
+      } else {
+        $this->coreFunctions->sbcupdate('hpdhead', ['prodqa' => $headqty], ['trno' => $jotrno]);
       }
       return $posttranstockresult;
     } else {
@@ -727,6 +757,8 @@ class ue
         $posttranstockresult = $this->othersClass->posttranstock($config);
         if ($posttranstockresult['status'] == false) {
           $this->rollbackautoinsert($trno, $newline, $itemid, $whid);
+        } else {
+          $this->coreFunctions->sbcupdate('hpdhead', ['prodqa' => $headqty], ['trno' => $jotrno]);
         }
         return $posttranstockresult;
       }
@@ -848,6 +880,11 @@ class ue
     }
 
     $result = $this->othersClass->unposttranstock($config);
+
+    // successful ang unpost → ibalik sa 0 ang prodqa ng JO
+    if ($result['status'] == true) {
+      $this->coreFunctions->sbcupdate('hpdhead', ['prodqa' => 0], ['trno' => $pdtrno]);
+    }
 
     return $result;
   } //end function
@@ -1208,7 +1245,7 @@ class ue
 
     if (isset($config['params']['data']['expiry'])) {
       $expiry = $config['params']['data']['expiry'];
-    }    
+    }
 
     $line = 0;
 
@@ -1324,7 +1361,7 @@ class ue
         $data['sortline'] =  $data['line'];
       }
 
-     $trno = $this->othersClass->val($trno);
+      $trno = $this->othersClass->val($trno);
       if ($trno == 0) {
         $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ZERO TRNO (UE)');
         return ['status' => false, 'msg' => 'Add item Failed. Zero trno generated'];
@@ -1334,7 +1371,7 @@ class ue
         $havestock = true;
         $msg = 'Item was successfully added.';
         $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' Uom:' . $uom . ' ext:' . $computedata['ext'], $setlog ? $this->tablelogs : '');
-        if($outqty!=0){
+        if ($outqty != 0) {
           if ($isnoninv == 0) {
             if ($ispallet) {
               $cost = $this->othersClass->computecostingpallet($data['itemid'], $data['whid'], $data['locid'], $data['palletid'], $trno, $line, $data['iss'], $config['params']['doc'], $config['params']);
@@ -1366,7 +1403,7 @@ class ue
             }
           }
         }
-        
+
 
         if ($this->setserveditems($refx, $linex, $companyid) == 0) {
           $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];
@@ -1391,17 +1428,17 @@ class ue
       $return = true;
       $msg = '';
       $this->coreFunctions->sbcupdate($this->stock, $data, ['trno' => $trno, 'line' => $line]);
-      if($outqty <> 0){
+      if ($outqty <> 0) {
         if ($isnoninv == 0) {
           $cost = $this->othersClass->computecosting($data['itemid'], $data['whid'], $data['loc'], $data['expiry'], $trno, $line, $data['iss'], $config['params']['doc'], $config['params']['companyid']);
-       
+
           if ($cost != -1) {
             $cost2 = $cost / $factor;
             $computedata = $this->othersClass->computestock($cost2, $disc, $rrqty, $factor, $vat);
-            $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost, 'rrcost' => $cost2,'ext' => $computedata['ext']], ['trno' => $trno, 'line' => $line]);
+            $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost, 'rrcost' => $cost2, 'ext' => $computedata['ext']], ['trno' => $trno, 'line' => $line]);
             //$this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost], ['trno' => $trno, 'line' => $line]);
-  
-  
+
+
             //CHECK BELOW COST
             if ($this->companysetup->checkbelowcost($config['params'])) {
               $belowcost = $this->othersClass->checkbelowcost($trno, $line, $config);
@@ -1425,7 +1462,7 @@ class ue
           }
         }
       }
-      
+
 
       if ($this->setserveditems($refx, $linex, $companyid) == 0) {
         $data2 = [$this->dqty => 0, $this->hqty => 0, 'ext' => 0];

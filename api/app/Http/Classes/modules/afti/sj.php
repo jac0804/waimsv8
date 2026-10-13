@@ -115,11 +115,11 @@ class sj
     ['val' => 'all', 'label' => 'All', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -2048,7 +2048,7 @@ class sj
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
-          } //end if
+        } //end if
       }
     }
 
@@ -3503,7 +3503,7 @@ class sj
         $line = 0;
       }
       $line = $line + 1;
-      
+
       $config['params']['line'] = $line;
       $amt = $config['params']['data']['amt'];
       $qty = $config['params']['data']['qty'];
@@ -3519,9 +3519,8 @@ class sj
       $amt = $config['params']['data'][$this->damt];
       $qty = $config['params']['data'][$this->dqty];
       $config['params']['line'] = $line;
-     
     }
-     
+
     $dateTables = ['lastock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
@@ -3745,7 +3744,7 @@ class sj
           $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
           if ($companyid == 10) { //afti
             $this->setservedsqitems($refx, $linex);
-          } 
+          }
           $this->logger->sbcwritelog($trno, $config, 'STOCK', 'OUT OF STOCK - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:0.0');
           $return = false;
           $msg = "(" . $item[0]->barcode . ") Out of Stock.";
@@ -5073,8 +5072,8 @@ class sj
       $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
     }
 
-     $dateTables = ['ladetail'];
-     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
+    $dateTables = ['ladetail'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], 0, [], false, $dateTables);
 
     if (!empty($this->acctg)) {
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();

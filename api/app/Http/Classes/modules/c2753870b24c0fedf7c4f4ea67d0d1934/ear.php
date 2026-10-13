@@ -45,11 +45,11 @@ class ear
     private $reporter;
     public $showfilterlabel = [];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -191,7 +191,7 @@ class ear
         ifnull(allapp.approvedate2,allapp.disapprovedate2) as date_approved_disapproved,'false' as isapp
         from obapplication as allapp
         join client as cl on cl.clientid = allapp.empid $joins
-        where (date(allapp.dateid) between '$date1' and '$date2' or date(allapp.dateid2) between '$date1' and '$date2' and batchob <> 0) $addsvfliter $tracking 
+        where (date(allapp.dateid) between '$date1' and '$date2' or date(allapp.dateid2) between '$date1' and '$date2') and batchob = 0 $addsvfliter $tracking 
 
         union all 
         select allapp.line,date(allapp.createdate) as dateid,date(allapp.dateid) as scheddate,'' as ref,if(allapp.apothrs <> 0,allapp.apothrs,allapp.othrs) as tothrs,allapp.dateid as sortdate,

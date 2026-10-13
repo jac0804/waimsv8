@@ -60,11 +60,11 @@ class pv
     ['val' => 'all', 'label' => 'All', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -684,9 +684,9 @@ class pv
       data_set($col3, 'ref.label', 'RR No.');
       data_set($col3, 'ref.readonly', true);
     }
-    if($companyid == 65){// metro dragon -AIMS
-    data_set($col3, 'orderno.label', 'LC No.');
-    data_set($col3, 'orderno.class', 'csorderno');
+    if ($companyid == 65) { // metro dragon -AIMS
+      data_set($col3, 'orderno.label', 'LC No.');
+      data_set($col3, 'orderno.class', 'csorderno');
     }
 
 
@@ -1037,7 +1037,7 @@ class pv
   {
     $trno = $config['params']['trno'];
 
-    if($config['params']['companyid'] == 68){ //JDA
+    if ($config['params']['companyid'] == 68) { //JDA
       $budgetaccess = $this->othersClass->checkAccess($config['params']['user'], 5826);
       if (!$budgetaccess) {
         $qry = "select head.dateid,c.acnoid,head.projectid,detail.db from lahead as head
@@ -1050,29 +1050,38 @@ class pv
           $projectid = isset($row->projectid) ? $row->projectid : 0;
           $acnoid = isset($row->acnoid) ? $row->acnoid : 0;
           $db = isset($row->db) ? $row->db : 0;
-  
+
           $month = (int) date('m', strtotime($dateid));
           $year  = date('Y', strtotime($dateid));
-  
-          $qry = "select amt" . $month . " as  budget, $acnoid as acnoid, $projectid as projectid,$db as db  from budget as b
-                  where b.year = $year and b.acnoid=$acnoid and b.projectid=$projectid";
-  
+
+          $qry = "select ifnull(sum(amount),0) as value from (
+                select sum(detail.db) as amount
+                from lahead as head left join ladetail as detail on detail.trno=head.trno 
+                where  head.doc='PV' and head.trno <=$trno and detail.acnoid=$acnoid and detail.projectid=$projectid and year(head.dateid)=$year and month(head.dateid)=$month            
+                union all 
+                select sum(detail.db) as amount from glhead as head left join gldetail as detail on detail.trno=head.trno
+                where  head.doc='PV' and head.trno <=$trno and detail.acnoid=$acnoid and detail.projectid=$projectid and year(head.dateid)=$year and month(head.dateid)=$month) as t";
+          $dcAllAcct = $this->coreFunctions->datareader($qry, [], '', true);
+
+          $fieldamt = "amt" . $month;
+          $qry = "select " . $fieldamt . " as  budget from budget as b where b.year = $year and b.acnoid=$acnoid and b.projectid=$projectid";
+
           $data = $this->coreFunctions->opentable($qry);
           $budget = isset($data[0]->budget) ? (float)$data[0]->budget : 0;
-  
-          if ($db > $budget) {
+
+          if ($dcAllAcct > $budget) {
             return [
               'trno' => $trno,
               'status' => false,
-              'msg' => "Posting failed. Month total of " . number_format($db, 2) .
+              'msg' => "Posting failed. Month total of " . number_format($dcAllAcct, 2) .
                 " exceeds month budget of  " . number_format($budget, 2)
             ];
           }
         }
       }
     }
-   
-    
+
+
     return $this->othersClass->posttransacctg($config);
   } //end function
 
@@ -2150,7 +2159,7 @@ class pv
         $value['db'] = $this->othersClass->sanitizekeyfieldFast('db', $value['db'], $lookups);
         $value['cr'] = $this->othersClass->sanitizekeyfieldFast('cr', $value['cr'], $lookups);
         $value['damt'] = $this->othersClass->sanitizekeyfieldFast('damt', $value['damt'], $lookups);
-        
+
 
 
         if ($value['isvat'] == 'true' or $value['isewt'] == 'true' or $value['isvewt'] == 'true') {
@@ -2698,7 +2707,7 @@ class pv
     $companyid = $config['params']['companyid'];
     $dataparams = $config['params']['dataparams'];
 
-    if ($companyid == 36 || $companyid == 3 || $companyid == 39 || $companyid == 40) { //rozlab, conti, cbssi, cdo
+    if ($companyid == 36 || $companyid == 3 || $companyid == 39 || $companyid == 40  || $companyid == 68) { //rozlab, conti, cbssi, cdo, jda
       if (isset($dataparams['approved'])) $this->othersClass->writeSignatories($config, 'approved', $dataparams['approved']);
       if (isset($dataparams['received'])) $this->othersClass->writeSignatories($config, 'received', $dataparams['received']);
       if (isset($dataparams['checked'])) $this->othersClass->writeSignatories($config, 'checked', $dataparams['checked']);
@@ -2714,6 +2723,7 @@ class pv
       case 3: //conti
       case 39: //cbbsi
       case 40: //cdo
+      case 68: //jda
         if (isset($dataparams['prepared'])) $this->othersClass->writeSignatories($config, 'prepared', $dataparams['prepared']);
         break;
       case 8: //maxipro

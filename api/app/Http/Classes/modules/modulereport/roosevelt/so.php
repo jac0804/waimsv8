@@ -37,9 +37,9 @@ class so
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -656,18 +656,16 @@ class so
         PDF::MultiCell(565, 0, (isset($data[0]['agentname']) ? $data[0]['agentname'] : ''), '', 'L', false);
       }
     }
-     PDF::MultiCell(0, 0, "\n");
+    PDF::MultiCell(0, 0, "\n");
 
-      if($next != 2) {
-        PDF::SetFont($font, 'B', 11);
-        PDF::SetCellPaddings(4, 4, 4, 4);
-        PDF::MultiCell(80, 0, 'QTY', 'TLB', 'C', false, 0);
-        PDF::MultiCell(80, 0, 'UNIT', 'TLB', 'C', false, 0);
-        PDF::MultiCell(360, 0, 'DESCRIPTION', 'TLB', 'C', false, 0);
-        PDF::MultiCell(200, 0, 'REMARKS', 'TLRB', 'C', false);
-
-      }
-    
+    if ($next != 2) {
+      PDF::SetFont($font, 'B', 11);
+      PDF::SetCellPaddings(4, 4, 4, 4);
+      PDF::MultiCell(80, 0, 'QTY', 'TLB', 'C', false, 0);
+      PDF::MultiCell(80, 0, 'UNIT', 'TLB', 'C', false, 0);
+      PDF::MultiCell(360, 0, 'DESCRIPTION', 'TLB', 'C', false, 0);
+      PDF::MultiCell(200, 0, 'REMARKS', 'TLRB', 'C', false);
+    }
   }
 
   public function default_orderform_PDF($params, $data)
@@ -1015,7 +1013,7 @@ class so
     }
     PDF::MultiCell(0, 0, "\n");
 
-    if($next != 2){
+    if ($next != 2) {
       PDF::SetFont($font, 'B', 11);
       PDF::SetCellPaddings(4, 4, 4, 4);
       PDF::MultiCell(80, 0, 'QTY', 'TLB', 'C', false, 0);
@@ -1023,7 +1021,6 @@ class so
       PDF::MultiCell(480, 0, 'DESCRIPTION', 'TLB', 'C', false, 0); //520
       PDF::MultiCell(80, 0, 'REMARKS', 'TLRB', 'C', false);
     }
-    
   }
 
   public function default_footer($params, $data, $showLine = true)
@@ -1032,7 +1029,7 @@ class so
     $font = "Courier";
     $fontbold = "CourierB";
 
-  
+
     if ($showLine) {
       PDF::SetFont($font, '', 5);
       PDF::MultiCell(720, 0, '', 'T');
@@ -1055,47 +1052,46 @@ class so
   }
 
 
-        private function printRemarks($params, $data)
-    {
-      $remarks = strtoupper(trim($data[0]['rem']));
-      $labelWidth = 80;
-      $textWidth = 645;
-      $lineHeight = 5;
-      $pageLimit = 900;
+  private function printRemarks($params, $data)
+  {
+    $remarks = strtoupper(trim($data[0]['rem']));
+    $labelWidth = 80;
+    $textWidth = 645;
+    $lineHeight = 5;
+    $pageLimit = 900;
 
-      // Space needed for Prepared By and Checked By
-      $signatureSpace = 100;
+    // Space needed for Prepared By and Checked By
+    $signatureSpace = 100;
 
-      $remarksHeight = PDF::getStringHeight($textWidth, $remarks, false, true, '', 1, $lineHeight);
+    $remarksHeight = PDF::getStringHeight($textWidth, $remarks, false, true, '', 1, $lineHeight);
 
-      // Check if Remarks and signatures will fit on the current page
-      $currentY = PDF::getY();
+    // Check if Remarks and signatures will fit on the current page
+    $currentY = PDF::getY();
 
-      if ($currentY + $remarksHeight + $signatureSpace <= $pageLimit) {
-
-        PDF::MultiCell($labelWidth, $remarksHeight, 'REMARKS:', 'TLB', 'L', false, 0);
-        PDF::MultiCell($textWidth, $remarksHeight, $remarks, 'TRB', 'L', false, 1);
-
-        return;
-      }
-
-      // Remarks and signatures do not fit, move them to the next page
-      $this->default_footer($params, $data, false);
-
-      // 2 means Remarks continuation page
-      $next = 2;
-
-      PDF::SetCellPaddings(0, 0, 0, 0);
-      $this->default_orderform_header_PDF($params, $data, $next);
-      PDF::SetCellPaddings(5, 5, 5, 5);
-
-      PDF::SetFont('Courier', '', 14);
-
-      // Calculate Remarks height again on the new page
-      $remarksHeight = PDF::getStringHeight($textWidth, $remarks, false, true, '', 1, $lineHeight);
+    if ($currentY + $remarksHeight + $signatureSpace <= $pageLimit) {
 
       PDF::MultiCell($labelWidth, $remarksHeight, 'REMARKS:', 'TLB', 'L', false, 0);
       PDF::MultiCell($textWidth, $remarksHeight, $remarks, 'TRB', 'L', false, 1);
+
+      return;
     }
-  
+
+    // Remarks and signatures do not fit, move them to the next page
+    $this->default_footer($params, $data, false);
+
+    // 2 means Remarks continuation page
+    $next = 2;
+
+    PDF::SetCellPaddings(0, 0, 0, 0);
+    $this->default_orderform_header_PDF($params, $data, $next);
+    PDF::SetCellPaddings(5, 5, 5, 5);
+
+    PDF::SetFont('Courier', '', 14);
+
+    // Calculate Remarks height again on the new page
+    $remarksHeight = PDF::getStringHeight($textWidth, $remarks, false, true, '', 1, $lineHeight);
+
+    PDF::MultiCell($labelWidth, $remarksHeight, 'REMARKS:', 'TLB', 'L', false, 0);
+    PDF::MultiCell($textWidth, $remarksHeight, $remarks, 'TRB', 'L', false, 1);
+  }
 }

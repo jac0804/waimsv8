@@ -33,9 +33,9 @@ class customer
     private $othersClass;
     private $logger;
     private $reporter;
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -51,7 +51,7 @@ class customer
             ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
             ['label' => 'Excel', 'value' => 'excel', 'color' => 'red']
         ]);
-        
+
         return array('col1' => $col1);
     }
 
@@ -100,7 +100,6 @@ class customer
         }
 
         return $this->coreFunctions->opentable($query);
-        
     }
 
     public function reportplotting($config, $data)
@@ -159,7 +158,7 @@ class customer
         $approved   = $config['params']['dataparams']['approved'];
         $received   = $config['params']['dataparams']['received'];
         $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-        
+
         $end      = date("Y-m-d", strtotime($config['params']['dataparams']['enddate']));
 
         $query = "select t.trno, t.line, t.doc, t.docno, date_format(t.dateid,'%m/%d/%y') as dateid, t.db, t.cr, t.bal,
@@ -383,7 +382,7 @@ class customer
     //DEFAULT LAYOUT
     public function reportdefaultAR($config, $data)
     {
-        
+
 
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -407,13 +406,13 @@ class customer
 
         $str .= $this->reporter->beginreport();
 
-        
+
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->letterhead($center, $username);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-    
+
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
@@ -562,7 +561,7 @@ class customer
 
     public function reportdefaultAP($config, $data)
     {
-        
+
 
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -584,13 +583,13 @@ class customer
 
         $str .= $this->reporter->beginreport();
 
-        
+
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->letterhead($center, $username);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-    
+
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
@@ -733,7 +732,7 @@ class customer
 
     public function reportdefaultPDC($config, $data)
     {
-        
+
 
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -757,13 +756,13 @@ class customer
         $str .= $this->reporter->beginreport();
 
 
-        
+
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->letterhead($center, $username);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-        
+
 
 
         $str .= $this->reporter->begintable($layoutsize);
@@ -904,7 +903,7 @@ class customer
 
     public function reportdefaultRC($config, $data)
     {
-        
+
 
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -928,13 +927,13 @@ class customer
         $str .= $this->reporter->beginreport();
 
 
-        
+
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->letterhead($center, $username);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-    
+
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
@@ -1076,7 +1075,7 @@ class customer
 
     public function reportdefaultSTOCK($config, $data)
     {
-        
+
 
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -1099,13 +1098,13 @@ class customer
 
         $str .= $this->reporter->beginreport();
 
-        
+
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->letterhead($center, $username);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-    
+
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
@@ -1283,10 +1282,10 @@ class customer
         PDF::SetFont($fontbold, '', 12);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
 
-        
+
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
-    
+
 
 
         PDF::SetFont($fontbold, '', 15);
@@ -1429,7 +1428,7 @@ class customer
         PDF::MultiCell(250, 20, number_format($creditlimit, 2), '', 'L', false);
 
 
-        
+
 
         PDF::SetFont($font, '', 5);
         PDF::MultiCell(700, 0, "", 'T', 'L', false, 0);
@@ -1460,7 +1459,7 @@ class customer
 
         if (empty($bdata)) {
             PDF::SetFont($font, '', $fontsize);
-            
+
             PDF::MultiCell(110, 15, 'Beginning Balance', '', 'L', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1472,7 +1471,7 @@ class customer
             PDF::MultiCell(95, 15, '', '', 'L', 0, 1, '', '', true, 0, false, false);
         } else {
             PDF::SetFont($font, '', $fontsize);
-            
+
             PDF::MultiCell(110, 15, 'Beginning Balance', '', 'L', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1568,7 +1567,7 @@ class customer
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize);
-        
+
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1636,10 +1635,10 @@ class customer
         PDF::SetFont($fontbold, '', 12);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
 
-        
+
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
-    
+
 
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "CUSTOMER LEDGER - ACCOUNTS PAYABLE", '', 'L', false);
@@ -1723,7 +1722,7 @@ class customer
         $totalcr = 0;
         $totalbal = 0;
 
-            foreach ($data as $key => $row) {
+        foreach ($data as $key => $row) {
             $credit  = number_format($row->cr, 2);
             $credit  = $credit < 0 ? '-' : $credit;
             $debit   = number_format($row->db, 2);
@@ -1741,8 +1740,14 @@ class customer
             $arr_ref     = $this->reporter->fixcolumn([$row->ref],     '20', 0);
 
             $maxrow = $this->othersClass->getmaxcolumn([
-                $arr_docno, $arr_dateid, $arr_agent, $arr_rem,
-                $arr_debit, $arr_credit, $arr_balance, $arr_ref
+                $arr_docno,
+                $arr_dateid,
+                $arr_agent,
+                $arr_rem,
+                $arr_debit,
+                $arr_credit,
+                $arr_balance,
+                $arr_ref
             ]);
 
             for ($i = 0; $i < $maxrow; $i++) {
@@ -1769,7 +1774,7 @@ class customer
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize);
-        
+
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1838,10 +1843,10 @@ class customer
         PDF::SetFont($fontbold, '', 12);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
 
-        
+
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
-    
+
 
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "CUSTOMER LEDGER - POSTDATED CHECKS", '', 'L', false);
@@ -1924,14 +1929,14 @@ class customer
         $totaldb = 0;
         $totalcr = 0;
         $totalbal = 0;
-        
+
         foreach ($data as $key => $row) {
             $credit    = number_format($row->cr, 2);
             $credit    = $credit < 0 ? '-' : $credit;
             $debit     = number_format($row->db, 2);
             $debit     = $debit < 0 ? '-' : $debit;
             $checkdate = date('Y-m-d', strtotime($row->checkdate));
-                        
+
             $arr_docno     = $this->reporter->fixcolumn([$row->docno],     '25', 0);
             $arr_checkdate = $this->reporter->fixcolumn([$checkdate],      '15', 0);
             $arr_agentname = $this->reporter->fixcolumn([$row->agentname], '25', 0);
@@ -1939,12 +1944,17 @@ class customer
             $arr_debit     = $this->reporter->fixcolumn([$debit],          '20', 0);
             $arr_credit    = $this->reporter->fixcolumn([$credit],         '20', 0);
             $arr_ref       = $this->reporter->fixcolumn([$row->ref],       '20', 0);
-                        
+
             $maxrow = $this->othersClass->getmaxcolumn([
-                $arr_docno, $arr_checkdate, $arr_agentname, $arr_rem,
-                $arr_debit, $arr_credit, $arr_ref
+                $arr_docno,
+                $arr_checkdate,
+                $arr_agentname,
+                $arr_rem,
+                $arr_debit,
+                $arr_credit,
+                $arr_ref
             ]);
-                        
+
             for ($i = 0; $i < $maxrow; $i++) {
                 PDF::SetFont($font, '', $fontsize);
                 PDF::MultiCell(110, 15, isset($arr_docno[$i])     ? $arr_docno[$i]     : '', '', 'L', 0, 0, '', '', true, 0, true,  false);
@@ -1956,7 +1966,7 @@ class customer
                 PDF::MultiCell(5,   15, '',                                                  '', 'R', 0, 0, '', '', true, 0, true,  false);
                 PDF::MultiCell(185, 15, isset($arr_ref[$i])       ? $arr_ref[$i]       : '', '', 'L', 0, 1, '', '', true, 0, false, false);
             }
-                        
+
             $totaldb  += $row->db;
             $totalcr  += $row->cr;
             $totalbal += $totaldb - $totalcr;
@@ -1968,7 +1978,7 @@ class customer
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize);
-        
+
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -2036,10 +2046,10 @@ class customer
         PDF::SetFont($fontbold, '', 12);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
 
-        
+
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
-    
+
 
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "CUSTOMER LEDGER - RETURN CHECKS", '', 'L', false);
@@ -2140,8 +2150,14 @@ class customer
             $arr_ref     = $this->reporter->fixcolumn([$row->ref],    '20', 0);
 
             $maxrow = $this->othersClass->getmaxcolumn([
-                $arr_docno, $arr_dateid, $arr_agent, $arr_rem,
-                $arr_debit, $arr_credit, $arr_balance, $arr_ref
+                $arr_docno,
+                $arr_dateid,
+                $arr_agent,
+                $arr_rem,
+                $arr_debit,
+                $arr_credit,
+                $arr_balance,
+                $arr_ref
             ]);
 
             for ($i = 0; $i < $maxrow; $i++) {
@@ -2169,7 +2185,7 @@ class customer
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize);
-        
+
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -2238,10 +2254,10 @@ class customer
         PDF::SetFont($fontbold, '', 12);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
 
-        
+
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
-    
+
 
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "CUSTOMER LEDGER - INVENTORY", '', 'L', false);

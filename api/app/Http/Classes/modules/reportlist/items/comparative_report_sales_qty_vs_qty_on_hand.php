@@ -29,12 +29,12 @@ class comparative_report_sales_qty_vs_qty_on_hand
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -94,7 +94,8 @@ class comparative_report_sales_qty_vs_qty_on_hand
       '' as divsion,
       '0' as typeofdrsi,
       '0' as reporttype,
-      '0' as posttype");
+      '0' as posttype"
+    );
   }
 
   // put here the plotting string if direct printing
@@ -181,7 +182,7 @@ class comparative_report_sales_qty_vs_qty_on_hand
   private function default_layout($config, $result)
   {
     $font_size = '10';
-    
+
     switch ($config['params']['companyid']) {
       case 14: //majesty
         $font = 'Helvetica';

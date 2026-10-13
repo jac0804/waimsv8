@@ -21,7 +21,7 @@ class qs {
 
 	public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-	public function __construct() {
+	public function __construct($params = null) {
 		$this->fieldClass    = new txtfieldClass;
 		$this->companysetup  = new companysetup;
 		$this->coreFunctions = new coreFunctions;

@@ -37,9 +37,9 @@ class cr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -386,9 +386,9 @@ class cr
 
     PDF::SetFont($font, 'B', 12);
     if ($companyid == 50) { //unitech
-    PDF::MultiCell(90, 0, "CHECK NO.", '', 'L', false, 0);
-    }else{
-    PDF::MultiCell(90, 0, "ACCOUNT NO.", '', 'L', false, 0);
+      PDF::MultiCell(90, 0, "CHECK NO.", '', 'L', false, 0);
+    } else {
+      PDF::MultiCell(90, 0, "ACCOUNT NO.", '', 'L', false, 0);
     }
     PDF::MultiCell(160, 0, "ACCOUNT NAME", '', 'C', false, 0);
     PDF::MultiCell(115, 0, "REFERENCE #", '', 'L', false, 0);
@@ -396,10 +396,10 @@ class cr
     PDF::MultiCell(85, 0, "DEBIT", '', 'R', false, 0);
     PDF::MultiCell(85, 0, "CREDIT", '', 'R', false, 0);
     PDF::MultiCell(10, 0, "", '', 'R', false, 0);
-     if ($companyid == 50) { //unitech
-    PDF::MultiCell(100, 0, "NOTES", '', 'C', false);
-    }else{
-    PDF::MultiCell(100, 0, "CLIENT", '', 'C', false);
+    if ($companyid == 50) { //unitech
+      PDF::MultiCell(100, 0, "NOTES", '', 'C', false);
+    } else {
+      PDF::MultiCell(100, 0, "CLIENT", '', 'C', false);
     }
 
     PDF::SetFont($font, '', 5);
@@ -499,15 +499,15 @@ class cr
         $arr_rem = $this->reporter->fixcolumn([$rem], '16', 0);
 
         if ($companyid == 50) { //unitech
-            $maxrow = $this->othersClass->getmaxcolumn([$arr_checkno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_rem]);
-        }else{
-           $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_client]);
+          $maxrow = $this->othersClass->getmaxcolumn([$arr_checkno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_rem]);
+        } else {
+          $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_client]);
         }
         for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
-          if ($companyid == 50) {//unitech
+          if ($companyid == 50) { //unitech
             PDF::MultiCell(90, 0, (isset($arr_checkno[$r]) ? $arr_checkno[$r] : ''), '', 'L', false, 0, '', '', true, 1);
-          }else{
+          } else {
             PDF::MultiCell(90, 0, (isset($arr_acno[$r]) ? $arr_acno[$r] : ''), '', 'L', false, 0, '', '', true, 1);
           }
           PDF::MultiCell(160, 0, (isset($arr_acnoname[$r]) ? $arr_acnoname[$r] : ''), '', 'L', false, 0, '', '', false, 1);
@@ -516,9 +516,9 @@ class cr
           PDF::MultiCell(85, 0, (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), '', 'R', false, 0, '', '', false, 1);
           PDF::MultiCell(85, 0, (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', false, 0, '', '', false, 1);
           PDF::MultiCell(10, 0, '', '', 'R', false, 0, '', '', false, 1);
-          if ($companyid == 50) {//unitech
+          if ($companyid == 50) { //unitech
             PDF::MultiCell(100, 0, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'L', false, 1, '', '', false, 1);
-          }else{
+          } else {
             PDF::MultiCell(100, 0, (isset($arr_client[$r]) ? $arr_client[$r] : ''), '', 'L', false, 1, '', '', false, 1);
           }
         }

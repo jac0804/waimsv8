@@ -32,12 +32,12 @@ class application_form
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -267,12 +267,12 @@ class application_form
 
     $filter = "";
 
-    // client filter (replaces the hardcoded gldetail.clientid = 44)
+    // client filter
     if ($client != "") {
       $filter .= " and gldetail.clientid = " . intval($clientid) . " ";
     }
 
-    // center filter (replaces the hardcoded t.center = '001')
+    // center filter
     if ($fcenter != "") {
       $filter .= " and t.center = '" . addslashes($fcenter) . "' ";
     }
@@ -281,8 +281,7 @@ class application_form
     select head.trno, 'APPROVED' as `status`, head.docno as lenumber, sched.principal,
       head.clientname as borrower, head.contactno as phone, r.reqtype as category,
       head.terms as lcycle, info.clientname as coborrower, head.contactno2 as phone2,
-      ifnull(date(info.bday), '') as bday, head.email,
-      ifnull(info.pf + info.nf, 0) as processfee,
+      head.email, ifnull(info.pf + info.nf, 0) as processfee,
       ifnull(info.annotationfee + info.docstamp1 + info.articles + info.annotationexp
         + info.otransfer + info.rpt + info.handling + info.appraisal + info.filing
         + info.referral + info.cancellation4 + info.cancellation7
@@ -290,12 +289,13 @@ class application_form
       ifnull(info.mri, 0) as mri, ifnull(info.docstamp, 0) as dst,
       date(head.releasedate) as rdate, month(head.releasedate) as rmonth, year(head.releasedate) as ryear,
       ifnull(info.entryfee + info.lrf + info.itfee + info.regfee + info.docstamp
-        + info.nf2 + info.nf3 + info.ofee, 0) as takeout,
+        + info.nf2 + info.nf3 + info.ofee, 0) as takeout, date(head.dateid) as sdate,
       date(sched.startdate) as startdate, date(sched.enddate) as duedate,
       info.amortization, info.country as pheld,
       sum(case when coa.alias = 'AR2' then gldetail.db else 0 end) as interest,
       sum(case when coa.alias = 'AR3' then gldetail.db else 0 end) as pfnf,
-      ifnull(sum(ar.bal), 0) as receivable, terms.days as tinmonths
+      ifnull(sum(ar.bal), 0) as arbalance,
+      terms.days as tinmonths, head.street
     from glhead
     left join gldetail on gldetail.trno = glhead.trno
     left join coa on coa.acnoid = gldetail.acnoid
@@ -304,23 +304,21 @@ class application_form
     left join heahead as head on head.trno = t.trno
     left join heainfo as info on info.trno = head.trno
     left join (
-    select trno,
-        min(dateid) as startdate,
-        max(dateid) as enddate,
-        sum(principal) as principal,
-        sum(bal) as bal
-      from htempdetailinfo
-      group by trno
+      select h.trno,
+        min(h.dateid) as startdate,
+        max(h.dateid) as enddate,
+        sum(h.principal) as principal
+      from htempdetailinfo as h
+      group by h.trno
     ) as sched on sched.trno = info.trno
     left join reqcategory as r on r.line = head.planid
-    left join terms on terms.terms=head.terms
+    left join terms on terms.terms = head.terms
     where glhead.doc = 'CV' and head.doc = 'LE'
-    and coa.alias in ('AR1','AR2','AR3')
     and date(head.dateid) between '" . $start . "' and '" . $end . "' " . $filter . "
     group by head.trno, head.docno, head.clientname, head.contactno, head.contactno2,
-    head.email, head.terms, head.releasedate,
-    r.reqtype, sched.principal, sched.startdate, sched.enddate, sched.bal,
-    info.clientname, info.bday, info.pf, info.nf, info.mri, info.docstamp,
+    head.email, head.terms, head.releasedate, head.street,
+    r.reqtype, sched.principal, head.dateid, sched.startdate, sched.enddate,
+    info.clientname, info.pf, info.nf, info.mri, info.docstamp,
     info.entryfee, info.lrf, info.itfee, info.regfee, info.nf2, info.nf3, info.ofee,
     info.annotationfee, info.docstamp1, info.articles, info.annotationexp,
     info.otransfer, info.rpt, info.handling, info.appraisal, info.filing,
@@ -359,7 +357,7 @@ class application_form
     $str = '';
 
 
-    $layoutsize = '2000';
+    $layoutsize = '2200';
     $font = $this->companysetup->getrptfont($config['params']);
     $fontsize = "7";
     $border = "1px solid ";
@@ -412,15 +410,15 @@ class application_form
     $str .= $this->reporter->col('LOAN CYCLE', '80', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('LE #', '80', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('DATE RECEIVED', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('YEAR', '40', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('MONTH', '50', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('CATEGORY', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('BORROWER`S NAME', '170', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('PHONE NUMBER', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('POSITION HELD', '70', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('BIRTHDATE', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('EMAIL', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('CO-BORROWER', '170', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('YEAR', '35', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('MONTH', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('CATEGORY', '90', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('BORROWER`S NAME', '200', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('PHONE NUMBER', '70', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('POSITION HELD', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('BIRTHDATE', '70', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('EMAIL', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('CO-BORROWER', '200', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('PHONE NUMBER', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('PRINCIPAL', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('INTEREST', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
@@ -450,7 +448,7 @@ class application_form
     $this->reporter->linecounter = 0;
 
     $str = '';
-    $layoutsize = '2000';
+    $layoutsize = '2200';
     $font = $this->companysetup->getrptfont($config['params']);
     $fontsize = "7";
     $border = "1px solid ";
@@ -468,43 +466,54 @@ class application_form
 
     if (!empty($result)) {
       foreach ($result as $key => $data) {
+        $bday = '';
+        if (!empty($data->street) && strpos($data->street, '|') !== false) {
+          $parts = explode('|', $data->street);
+          $bday = trim($parts[0]);
+        }
+        if (!empty($bday)) {
+          $ts = strtotime($bday);
+          if ($ts !== false) {
+            $bday = date('Y-m-d', $ts);   // or 'F j, Y' for a different format
+          }
+        }
         $year = date('Y', strtotime($data->rdate));
         $month = date('F', strtotime($data->rdate));
+
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col($data->status, '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->lcycle, '80', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->lenumber, '80', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->rdate, '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($year, '40', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($month, '50', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->category, '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->borrower, '170', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->phone, '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->pheld, '70', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->bday, '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->email, '100', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->coborrower, '170', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($year, '35', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($month, '65', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->category, '90', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->borrower, '200', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->phone, '70', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->pheld, '100', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($bday, '70', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->email, '150', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->coborrower, '200', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->phone2, '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->principal == 0 ? '-' : number_format($data->principal, 2), '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->interest == 0 ? '-' : number_format($data->interest, 2), '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->pfnf == 0 ? '-' : number_format($data->pfnf, 2), '70', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->otherfees == 0 ? '-' : number_format($data->otherfees, 2), '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->mri == 0 ? '-' : number_format($data->mri, 2), '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->dst == 0 ? '-' : number_format($data->dst, 2), '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->principal == 0 ? '-' : number_format($data->principal, 2), '60', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->interest == 0 ? '-' : number_format($data->interest, 2), '60', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->pfnf == 0 ? '-' : number_format($data->pfnf, 2), '70', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->otherfees == 0 ? '-' : number_format($data->otherfees, 2), '60', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->mri == 0 ? '-' : number_format($data->mri, 2), '60', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->dst == 0 ? '-' : number_format($data->dst, 2), '60', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->takeout == 0 ? '-' : number_format($data->takeout, 2), '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->takeout == 0 ? '-' : number_format($data->takeout, 2), '60', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->receivable == 0 ? '-' : number_format($data->receivable, 2), '70', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->arbalance == 0 ? '-' : number_format($data->arbalance, 2), '70', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->tinmonths, '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->startdate, '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->sdate, '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->duedate, '60', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->amortization == 0 ? '-' : number_format($data->amortization, 2), '80', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col($data->amortization == 0 ? '-' : number_format($data->amortization, 2), '80', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
-        $totalreceivable += $data->receivable;
-
+        $totalreceivable += $data->arbalance;
       }
     }
 
@@ -514,26 +523,26 @@ class application_form
     $str .= $this->reporter->col('', '80', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '80', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '40', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '50', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '35', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '90', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '200', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '70', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '70', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '200', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '170', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '70', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '180', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('TOTAL: ', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col($totalreceivable, '70', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalreceivable, 2), '70', null, false, $border, 'B', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '60', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');

@@ -813,8 +813,8 @@ class othersClass
     array_push($number, 'rrrefx', 'rrlinex', 'apamt', 'apamortization', 'salary', 'tbasicrate', 'mealdeduc', 'original_qty', 'counterline', 'serviceline', 'istaskcat', 'maxsjamt');
     array_push($number, 'brandid', 'monthsno', 'lastpr', 'defcost', 'commrate', 'year', 'carid', 'id' . 'labor1', 'labor2', 'labor3', 'labor4', 'labor5', 'startamt', 'endamt');
     array_push($number, 'amtrno', 'jobline', 'packagetrno', 'taskline', 'phperc', 'impperc', 'devperc', 'consignpr', 'carton');
-    array_push($number, 'interest', 'factor',  'miscfee', 'rebate', 'cbm');
-    array_push($number, 'sssdef', 'philhdef', 'pibigdef');
+    array_push($number, 'interest', 'factor',  'miscfee', 'rebate', 'cbm', 'wt');
+    array_push($number, 'sssdef', 'philhdef', 'pibigdef', 'sectid');
     return $number;
   }
 
@@ -848,7 +848,7 @@ class othersClass
     array_push($boolean, 'ispassenger', 'isshow', 'iscompute', 'isparenttotal', 'isgeneric', 'isexisted', 'isnsi', 'ists', 'iscldetails');
     array_push($boolean, 'waivedqty', 'isstudent', 'isold', 'isnew', 'isforeign', 'isadddrop', 'iscrossenrollee', 'istransferee');
     array_push($boolean, 'islateenrollee', 'issubmitted', 'isapprove', 'isofficesupplies', 'ispaid', 'isreturn', 'ispartial', 'ispa');
-    array_push($boolean, 'ispa2', 'isreturned', 'isrefunded', 'inactive', 'issmoking', 'isdefault', 'isdefault2', 'w1', 'w2', 'w3', 'w4', 'w5');
+    array_push($boolean, 'ispa2', 'isreturned', 'isrefunded', 'inactive', 'issmoking', 'isdefault', 'isdefault2', 'w1', 'w2', 'w3', 'w4', 'w5', 'w8');
     array_push($boolean, 'halt', 'w13', 'earnded', 'isadmin', 'isimport', 'fg_isfinishedgood', 'isexpedite', 'isprefer', 'subinv', 'ispermanent');
     array_push($boolean, 'isloc', 'istrip', 'fg_isequipmenttool', 'ishired', 'issy', 'isgradeschool', 'ishighschool', 'isho', 'isoracle');
     array_push($boolean, 'forreturn', 'isapprover', 'islabor', 'isserial', 'isbilling', 'isshipping', 'isbranch', 'isfa', 'isassetwh');
@@ -861,7 +861,7 @@ class othersClass
     array_push($boolean, 'isplanholder', 'isnotallow', 'ispartialpaid', 'isactivity', 'issp', 'ismc', 'isinvoice', 'atm', 'isss', 'isprojexp');
     array_push($boolean, 'isorder', 'ischannel', 'default_in', 'default_out', 'uom_inactive', 'isreasoncode', 'ishelper', 'isreassigned', 'ispexp');
     array_push($boolean, 'isonelog', 'isbank', 'isnonserial', 'isbrgyoff', 'isbusiness', 'isallowliquor', 'issupervisor', 'isapprover', 'isdiminishing');
-    array_push($boolean, 'isnoentry', 'isliquidation', 'iswithhearing', 'isevaluator', 'iscomm', 'isportalloan', 'isdeductible', 'istaskcat', 'isnocheck');
+    array_push($boolean, 'isnoentry', 'isliquidation', 'iswithhearing', 'isevaluator', 'iscomm', 'isportalloan', 'isdeductible', 'istaskcat', 'isnocheck', 'iscatchwt', 'isparentname');
 
     // $date = $this->othersClass->getDateFields(); // fetched ONCE here
 
@@ -1610,10 +1610,13 @@ class othersClass
         break;
       case 71: //buenatech
         switch ($config['params']['doc']) {
-          case 'UE':
           case 'ST':
             $addedfield = ",pdtrno";
             $selectaddedfield = ",head.pdtrno";
+            break;
+          case 'UE':
+            $addedfield = ",pdtrno, qty,lot,expiry";
+            $selectaddedfield = ",head.pdtrno, head.qty, head.lot,head.expiry";
             break;
         }
         break;
@@ -2519,10 +2522,13 @@ class othersClass
         break;
       case 71: //buenatech
         switch ($config['params']['doc']) {
-          case 'UE':
           case 'ST': //transfer material
             $addedfield = ",pdtrno";
             $selectaddedfield = ",head.pdtrno";
+            break;
+          case 'UE':
+            $addedfield = ",pdtrno, qty,lot,expiry";
+            $selectaddedfield = ",head.pdtrno, head.qty, head.lot,head.expiry";
             break;
         }
         break;
@@ -10864,6 +10870,11 @@ class othersClass
     return $this->coreFunctions->opentable('select distinct doc from left_menu');
   }
 
+  public function getCustomLabels($params)
+  {
+    return $this->companysetup->getCustomLabels($params);
+  }
+
 
   // 09-24-2026
   public function copypreviousstock($config)
@@ -10873,6 +10884,8 @@ class othersClass
     $doc = $config['params']['doc'];
     $center = $config['params']['center'];
     $companyid = $config['params']['companyid'];
+
+    $sourcedocno = isset($config['params']['sourcedocno']) ? trim($config['params']['sourcedocno']) : '';
 
     switch ($doc) {
       case 'SO':
@@ -10892,32 +10905,50 @@ class othersClass
     $dateTables = array($module->stock);
     $lookups    = $this->buildSanitizeLookups($doc, $companyid, array(), false, $dateTables);
 
+    if ($sourcedocno !== '') {
 
-    $docno = $this->coreFunctions->datareader(
-      "select docno as value from " . $module->tablenum . " where trno=?",
-      array($trno)
-    );
+      $prevtrno = $this->coreFunctions->datareader(
+        "select trno as value from " . $module->tablenum . "
+           where doc=? and docno=? and center=? order by trno desc limit 1",
+        array($doc, $sourcedocno, $center),
+        '',
+        true
+      );
+      if (!$prevtrno) {
+        return ['status' => false, 'msg' => $label . ' ' . $sourcedocno . ' not found.'];
+      }
+      if ($prevtrno == $trno) {
+        return ['status' => false, 'msg' => 'Cannot copy from the same document.'];
+      }
+      $prevdocno = $sourcedocno;
+    } else {
 
-    $prevtrno = $this->coreFunctions->datareader(
-      "select trno as value from " . $module->tablenum . "
-         where doc=? and center=? and docno<? order by docno desc limit 1",
-      array($doc, $center, $docno),
-      '',
-      true
-    );
-    if ($prevtrno == 0) {
-      return ['status' => false, 'msg' => 'No previous ' . $label . ' found.'];
+      $docno = $this->coreFunctions->datareader(
+        "select docno as value from " . $module->tablenum . " where trno=?",
+        array($trno)
+      );
+
+      $prevtrno = $this->coreFunctions->datareader(
+        "select trno as value from " . $module->tablenum . "
+           where doc=? and center=? and docno<? order by docno desc limit 1",
+        array($doc, $center, $docno),
+        '',
+        true
+      );
+      if ($prevtrno == 0) {
+        return ['status' => false, 'msg' => 'No previous ' . $label . ' found.'];
+      }
+
+      $prevdocno = $this->coreFunctions->datareader(
+        "select docno as value from " . $module->tablenum . " where trno=?",
+        array($prevtrno)
+      );
     }
-
-    $prevdocno = $this->coreFunctions->datareader(
-      "select docno as value from " . $module->tablenum . " where trno=?",
-      array($prevtrno)
-    );
 
     $config['params']['prevtrno'] = $prevtrno;
     $datadetail = $module->openstock($config['params']['prevtrno'], $config);
     if (empty($datadetail)) {
-      return ['status' => false, 'msg' => 'Previous ' . $label . ' ' . $prevdocno . ' has no items to copy.'];
+      return ['status' => false, 'msg' => $label . ' ' . $prevdocno . ' has no items to copy.'];
     }
 
     $existing = array();
@@ -10932,6 +10963,19 @@ class othersClass
       $existing[$cur->itemid] = true;
     }
 
+    $pending = 0;
+    foreach ($datadetail as $row) {
+      if (isset($row->void) && ($row->void === 'true' || $row->void === true || $row->void == 1)) {
+        continue;
+      }
+      if (!isset($existing[$row->itemid])) {
+        $pending++;
+      }
+    }
+    if ($pending == 0) {
+      return ['status' => false, 'msg' => 'Items from ' . $prevdocno . ' were already copied to this document.'];
+    }
+
     $copied  = 0;
     $skipped = 0;
     $failed  = array();
@@ -10944,13 +10988,13 @@ class othersClass
         continue;
       }
 
-      // skip items already in the current document
+
       if (isset($existing[$row->itemid])) {
         $skipped++;
         continue;
       }
 
-      // resolve wh code (openstock() usually returns it, but be defensive)
+
       $wh = isset($row->wh) ? $row->wh : '';
       if ($wh === '' && isset($row->whid) && $row->whid) {
         $wh = $this->coreFunctions->getfieldvalue(
@@ -11013,16 +11057,12 @@ class othersClass
         . ' Failed:'  . count($failed)
     );
 
-    if ($copied === 0 && $skipped > 0 && empty($failed)) {
-      $msg = 'All ' . $skipped . ' item(s) from ' . $prevdocno . ' are already in this document.';
-    } else {
-      $msg = 'Copied ' . $copied . ' item(s) from ' . $prevdocno . '.';
-      if ($skipped > 0) {
-        $msg .= ' ' . $skipped . ' skipped (already present).';
-      }
-      if (!empty($failed)) {
-        $msg .= ' ' . count($failed) . ' failed: ' . implode(' | ', $failed);
-      }
+    $msg = 'Copied ' . $copied . ' item(s) from ' . $prevdocno . '.';
+    if ($skipped > 0) {
+      $msg .= ' ' . $skipped . ' skipped (already present).';
+    }
+    if (!empty($failed)) {
+      $msg .= ' ' . count($failed) . ' failed: ' . implode(' | ', $failed);
     }
 
     return array(

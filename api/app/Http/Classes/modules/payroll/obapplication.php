@@ -73,11 +73,11 @@ class obapplication
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -627,6 +627,10 @@ class obapplication
     if ($companyid == 58) { //cdo
       data_set($col1, 'status.label', 'Status (HR)');
       data_set($col1, 'trackingtype.required', true);
+      data_set($col1, 'itime.type', 'qselect');
+      data_set($col1, 'itime1.type', 'qselect');
+      data_set($col1, 'itime.options', array(['value' => '08:00:00', 'label' => '08:00 AM'], ['value' => '09:00:00', 'label' => '09:00 AM'], ['value' => '17:00:00', 'label' => '05:00 PM'], ['value' => '18:00:00', 'label' => '06:00 PM']));
+      data_set($col1, 'itime1.options', array(['value' => '08:00:00', 'label' => '08:00 AM'], ['value' => '09:00:00', 'label' => '09:00 AM'], ['value' => '17:00:00', 'label' => '05:00 PM'], ['value' => '18:00:00', 'label' => '06:00 PM']));
     } else {
       data_set($col1, 'type.action', 'lookupobtype');
       data_set($col1, 'type.lookupclass', 'lookupobtype');
@@ -752,6 +756,8 @@ class obapplication
     }
     if ($config['companyid'] == 58) { //cdo
       $data[0]['status2'] = 'ENTRY';
+      $data[0]['itime'] = '';
+      $data[0]['itime1'] = '';
     }
     $data[0]['end'] = '';
     $data[0]['trackingtype'] = '';
@@ -890,6 +896,36 @@ class obapplication
               } else
                 $head[0]->$value = "0";
             }
+
+            switch ($head[0]->itime1) {
+              case "18:00:00":
+                $head[0]->itime1 = "06:00 PM";
+                break;
+              case "09:00:00":
+                $head[0]->itime1 = "09:00 AM";
+                break;
+              case "08:00:00":
+                $head[0]->itime1 = "08:00 AM";
+                break;
+              case "17:00:00":
+                $head[0]->itime1 = "05:00 PM";
+                break;
+            }
+
+            switch ($head[0]->itime) {
+              case "18:00:00":
+                $head[0]->itime = "06:00 PM";
+                break;
+              case "09:00:00":
+                $head[0]->itime = "09:00 AM";
+                break;
+              case "08:00:00":
+                $head[0]->itime = "08:00 AM";
+                break;
+              case "17:00:00":
+                $head[0]->itime = "05:00 PM";
+                break;
+            }
           }
 
 
@@ -988,7 +1024,7 @@ class obapplication
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if 
       }
     }
@@ -1025,14 +1061,14 @@ class obapplication
           case "DIRECT FIELD IN ONLY":
           case "KEY CUSTODIANS LATE":
           case "LATE TIME IN":
-            $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'],$lookups);
+            $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime']['value'], $lookups);
             $data['dateid2'] = null;
             $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
           case "DIRECT FIELD OUT ONLY":
           case "EARLY TIME OUT":
             $data['dateid'] = null;
-            $data['dateid2'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime1'],$lookups);
+            $data['dateid2'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime1']['value'], $lookups);
             $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
           // case "BLACK OUT (1 ATTLOG)":
@@ -1041,48 +1077,48 @@ class obapplication
           // case "DAMAGE BIOMETRIC":
           // case "PRORATE":
           default:
-            $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'],$lookups);
-            $data['dateid2'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime1'],$lookups);
+            $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime']['value'], $lookups);
+            $data['dateid2'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime1']['value'], $lookups);
             $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
         }
         break;
       case 51:
-        $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'],$lookups);
-        $data['dateid2'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime1'],$lookups);
+        $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'], $lookups);
+        $data['dateid2'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime1'], $lookups);
         $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
         break;
       case 53:
         switch ($head['type']) {
           case "Off-setting":
-            $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'],$lookups);
-            $data['dateid2'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime1'],$lookups);
+            $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'], $lookups);
+            $data['dateid2'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime1'], $lookups);
             $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
           case "Time-In":
           case "Time-In at the Place Visited":
-            $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'],$lookups);
+            $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'], $lookups);
             $data['dateid2'] = null;
             $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
           case "Time-Out":
           case "Time-Out at the Place Visited":
             $data['dateid'] = null;
-            $data['dateid2'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime1'],$lookups);
+            $data['dateid2'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime1'], $lookups);
             $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
           default:
-            $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'],$lookups);
+            $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'], $lookups);
             $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
             break;
         }
         break;
       case 29: //sbc - no sched text
-        $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'],$lookups);
+        $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'], $lookups);
         $data['scheddate'] =  date('Y-m-d', strtotime($data['dateid']));
         break;
       default:
-        $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'],$lookups);
+        $data['dateid'] = $this->othersClass->sanitizekeyfieldFast('dateid', $head['dateid'] . " " . $head['itime'], $lookups);
         $data['scheddate'] =  date('Y-m-d', strtotime($data['scheddate']));
         break;
     }
@@ -1581,7 +1617,7 @@ class obapplication
     $interval = new DateInterval('P1D');
     $period = new DatePeriod($start, $interval, $end->modify('+1 day'));
 
-    
+
     $companyid = $config['params']['companyid'];
     $dateTables = [$this->head];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);

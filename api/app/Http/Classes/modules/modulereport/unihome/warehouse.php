@@ -33,9 +33,9 @@ class warehouse
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -92,90 +92,90 @@ class warehouse
   public function reportplotting($config)
   {
     $data = $this->generateResult($config);
-        if($config['params']['dataparams']['print'] == "default"){
-        $str = $this->rpt_warehouse_layout($config, $data);
-        }
-        else{
-        $str = $this->rpt_warehouse_PDF($config, $data);
-        }
-        return $str;
-    
+    if ($config['params']['dataparams']['print'] == "default") {
+      $str = $this->rpt_warehouse_layout($config, $data);
+    } else {
+      $str = $this->rpt_warehouse_PDF($config, $data);
+    }
+    return $str;
   }
 
-  
 
-  public function rpt_warehouse_PDF($config,$data){
-      $center   = $config['params']['center'];
-      $username = $config['params']['user'];
-  
-      $prepared   = $config['params']['dataparams']['prepared'];
-      $approved   = $config['params']['dataparams']['approved'];
-      $received   = $config['params']['dataparams']['received'];
-  
-      $count=55;
-      $page=54;
-      $fontsize = "11";
-      $font = "";
-      $fontbold = "";
 
-      if (Storage::disk('sbcpath')->exists('/fonts/verdana.ttf')) {
-          $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
-          $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
-      }
+  public function rpt_warehouse_PDF($config, $data)
+  {
+    $center   = $config['params']['center'];
+    $username = $config['params']['user'];
 
-      $qry = "select code,name,address,tel from center where code = '" . $center . "'";
-      $headerdata = $this->coreFunctions->opentable($qry);
-      $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+    $prepared   = $config['params']['dataparams']['prepared'];
+    $approved   = $config['params']['dataparams']['approved'];
+    $received   = $config['params']['dataparams']['received'];
 
-      PDF::SetTitle($this->modulename);
-      PDF::SetAuthor('Solutionbase Corp.');
-      PDF::SetCreator('Solutionbase Corp.');
-      PDF::SetSubject($this->modulename . ' Module Report');
-      PDF::setPageUnit('px');
-      PDF::AddPage('p', [800, 1000]);
-      PDF::SetMargins(20, 20);
+    $count = 55;
+    $page = 54;
+    $fontsize = "11";
+    $font = "";
+    $fontbold = "";
 
-      $reporttimestamp = $this->reporter->setreporttimestamp($config, $username, $headerdata);
-      PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
-  
-        PDF::SetFont($fontbold, '', 12);
-        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-        PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
-        
-      PDF::SetFont($fontbold, '', 15);
-      PDF::MultiCell(760, 30, $this->modulename, '', 'L', false);
+    if (Storage::disk('sbcpath')->exists('/fonts/verdana.ttf')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
+    }
 
-      PDF::SetFont($font, '', 11);
-      PDF::MultiCell(760, 20, "Run Date : ". date('M-d-Y h:i:s a', time()), '', 'L', false);
+    $qry = "select code,name,address,tel from center where code = '" . $center . "'";
+    $headerdata = $this->coreFunctions->opentable($qry);
+    $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
-      PDF::SetFont($font, '', 11);
-      PDF::MultiCell(80, 20, "Warehouse : ", '', 'L', false,0);
-      PDF::SetFont($fontbold, '', 11);
-      PDF::MultiCell(680, 20, '(' . (isset($data[0]->client) ? $data[0]->client : '') . ')' . '   ' . (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false);
-  
-      PDF::SetFont($font, '', 11);
-      PDF::MultiCell(80, 20, "Address : ", '', 'L', false,0);
-      PDF::SetFont($fontbold, '', 11);
-      PDF::MultiCell(680, 20, (isset($data[0]->addr) ? $data[0]->addr : ''), '', 'L', false);
+    PDF::SetTitle($this->modulename);
+    PDF::SetAuthor('Solutionbase Corp.');
+    PDF::SetCreator('Solutionbase Corp.');
+    PDF::SetSubject($this->modulename . ' Module Report');
+    PDF::setPageUnit('px');
+    PDF::AddPage('p', [800, 1000]);
+    PDF::SetMargins(20, 20);
 
-      PDF::MultiCell(0, 0, "\n\n\n\n");
-      PDF::SetFont($font, '', $fontsize);
-      PDF::MultiCell(253, 0, 'Prepared By : ', '', 'L', false, 0);
-      PDF::MultiCell(253, 0, 'Received By : ', '', 'L', false, 0);
-      PDF::MultiCell(254, 0, 'Approved By : ', '', 'L');
-  
-      PDF::MultiCell(0, 0, "\n\n");
-      PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(253, 0, $prepared, '', 'L', false, 0);
-      PDF::MultiCell(253, 0, $received, '', 'L', false, 0);
-      PDF::MultiCell(254, 0, $approved, '', 'L');
-      
-      return PDF::Output($this->modulename . '.pdf', 'S');
+    $reporttimestamp = $this->reporter->setreporttimestamp($config, $username, $headerdata);
+    PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
+
+    PDF::SetFont($fontbold, '', 12);
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+    PDF::SetFont($fontbold, '', 11);
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
+
+    PDF::SetFont($fontbold, '', 15);
+    PDF::MultiCell(760, 30, $this->modulename, '', 'L', false);
+
+    PDF::SetFont($font, '', 11);
+    PDF::MultiCell(760, 20, "Run Date : " . date('M-d-Y h:i:s a', time()), '', 'L', false);
+
+    PDF::SetFont($font, '', 11);
+    PDF::MultiCell(80, 20, "Warehouse : ", '', 'L', false, 0);
+    PDF::SetFont($fontbold, '', 11);
+    PDF::MultiCell(680, 20, '(' . (isset($data[0]->client) ? $data[0]->client : '') . ')' . '   ' . (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false);
+
+    PDF::SetFont($font, '', 11);
+    PDF::MultiCell(80, 20, "Address : ", '', 'L', false, 0);
+    PDF::SetFont($fontbold, '', 11);
+    PDF::MultiCell(680, 20, (isset($data[0]->addr) ? $data[0]->addr : ''), '', 'L', false);
+
+    PDF::MultiCell(0, 0, "\n\n\n\n");
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(253, 0, 'Prepared By : ', '', 'L', false, 0);
+    PDF::MultiCell(253, 0, 'Received By : ', '', 'L', false, 0);
+    PDF::MultiCell(254, 0, 'Approved By : ', '', 'L');
+
+    PDF::MultiCell(0, 0, "\n\n");
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(253, 0, $prepared, '', 'L', false, 0);
+    PDF::MultiCell(253, 0, $received, '', 'L', false, 0);
+    PDF::MultiCell(254, 0, $approved, '', 'L');
+
+    return PDF::Output($this->modulename . '.pdf', 'S');
   }
 
-  public function rpt_warehouse_layout($config,$data){
-        
+  public function rpt_warehouse_layout($config, $data)
+  {
+
     $data     = $this->generateResult($config);
     $center   = $config['params']['center'];
     $username = $config['params']['user'];
@@ -243,5 +243,4 @@ class warehouse
 
     return $str;
   }
-  
 }

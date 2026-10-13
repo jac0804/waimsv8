@@ -34,10 +34,10 @@ class mi
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -52,7 +52,7 @@ class mi
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
     data_set($col1, 'refresh.label', 'PRINT');
     return array('col1' => $col1);
@@ -105,7 +105,6 @@ class mi
   public function reportplotting($params, $data)
   {
     return $this->default_MI_PDF($params, $data);
-    
   }
 
   public function default_MI_layout($params, $data)
@@ -207,11 +206,11 @@ class mi
     $fontsize = "11";
     $border = "1px solid ";
 
-    
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->letterhead($center, $username);
     $str .= $this->reporter->endtable();
-  
+
     $str .= '<br/><br/>';
 
     $str .= $this->reporter->begintable('800');
@@ -263,7 +262,7 @@ class mi
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -277,7 +276,7 @@ class mi
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -286,10 +285,10 @@ class mi
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
-    
+
 
     PDF::SetFont($font, '', 9);
-    
+
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
     PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
     PDF::SetFont($fontbold, '', 14);
@@ -297,7 +296,7 @@ class mi
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);
@@ -440,7 +439,7 @@ class mi
     PDF::MultiCell(600, 0, 'GRAND TOTAL: ', '', 'R', false, 0);
     PDF::MultiCell(100, 0, number_format($totalext, $decimalprice), '', 'R');
 
-    
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($font, '', $fontsize);
@@ -460,7 +459,7 @@ class mi
     PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['received'], '', 'L');
 
-    
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 }

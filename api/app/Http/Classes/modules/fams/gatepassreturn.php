@@ -52,11 +52,11 @@ class gatepassreturn
     ['val' => 'returned', 'label' => 'RETURNED', 'color' => 'primary'],
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -87,7 +87,14 @@ class gatepassreturn
     $serialno = 7;
 
     $getcols = [
-      'action', 'lblstatus', 'barcode', 'returndate', 'docno', 'empname', 'itemname', 'serialno'
+      'action',
+      'lblstatus',
+      'barcode',
+      'returndate',
+      'docno',
+      'empname',
+      'itemname',
+      'serialno'
     ];
     $stockbuttons = ['pickerdrop'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
@@ -187,9 +194,16 @@ class gatepassreturn
     $filtersearch = "";
     if (isset($config['params']['search'])) {
       $searchfield = [
-        'head.trno', 'stock.line', 'head.docno',
-        'stock.itemid', 'item.barcode', 'item.itemname', 'stock.isqty', 'stock.serialno',
-        'emp.client', 'emp.clientname'
+        'head.trno',
+        'stock.line',
+        'head.docno',
+        'stock.itemid',
+        'item.barcode',
+        'item.itemname',
+        'stock.isqty',
+        'stock.serialno',
+        'emp.client',
+        'emp.clientname'
       ];
       $search = $config['params']['search'];
       if ($search != "") {

@@ -34,9 +34,9 @@ class po
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -402,9 +402,9 @@ class po
         }
 
         $totalext += $data[$i]['ext'];
-        
-         if (PDF::getY() > 900) {
-        $this->vitaline_PO_header_PDF($params, $data);
+
+        if (PDF::getY() > 900) {
+          $this->vitaline_PO_header_PDF($params, $data);
         }
       }
     }

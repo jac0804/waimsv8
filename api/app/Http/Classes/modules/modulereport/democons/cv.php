@@ -35,10 +35,10 @@ class cv
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -86,7 +86,7 @@ class cv
           break;
       }
     } else if ($config['params']['dataparams']['print'] == "PDFM") {
-     
+
       switch ($config['params']['dataparams']['reporttype']) {
         case '0': // VOUCHER
 
@@ -152,7 +152,6 @@ class cv
       '0' as reporttype
       "
     );
-   
   }
 
   public function report_default_query($filters)
@@ -301,7 +300,6 @@ class cv
             } //end if
             $finalarrs[$key]['month'] = $y['month'];
           }
-          
         } //end for each
         if (empty($result1)) {
           $returnarr[0]['payee'] = '';
@@ -393,13 +391,13 @@ class cv
 
     PDF::SetFont($font, '');
     PDF::MultiCell(0, 0, "\n");
-  
+
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n\n\n", '', 'C');
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '40', '20', 120, 65);
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '40', '20', 120, 65);
 
 
     PDF::SetFont($fontbold, '', 13);
@@ -511,7 +509,7 @@ class cv
     PDF::MultiCell(80, 20, 'PROJECT', '', 'L', false, 0);
     PDF::SetFont($fontbold, '', 11);
     PDF::MultiCell(620, 20, ':  ' . (isset($data[0]['headprojcode']) ? $data[0]['headprojcode'] . ' - ' . $data[0]['headprojname'] : ''), 'B', 'L', false);
-   
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($font, '', 9);
@@ -720,14 +718,14 @@ class cv
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
-   
+
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n\n\n", '', 'C');
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '45', '35', 100, 40);
-  
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '45', '35', 100, 40);
+
 
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(300, 5, $this->modulename, '', 'L', false, 0);
@@ -885,7 +883,7 @@ class cv
         $totalcr += $data[$i]['cr'];
       }
     }
- 
+
 
     PDF::MultiCell(0, 0, "\n");
     PDF::SetFont($fontbold, '', 12);
@@ -1001,7 +999,7 @@ class cv
       $dd = number_format((float)$cc, 2, '.', '');
       PDF::SetFont($font, '', 12);
       PDF::MultiCell(45, 5, '', '', 'C', false, 0);
-   
+
       PDF::MultiCell(730, 5, '***' . $this->ftNumberToWordsConverter($dd) . ' Only' . '***', '', 'L', false, 1, 90, 102);
 
       $this->reporter->linecounter = 30;
@@ -1317,7 +1315,7 @@ class cv
       PDF::MultiCell(80, $ewt_height, $key, 'LRB', '', false, 0);
 
       switch ($data['head'][0]['month']) {
-        
+
         case '1':
         case '4':
         case '7':
@@ -1327,7 +1325,7 @@ class cv
           PDF::MultiCell(95, $ewt_height, '', 'LRB', '', false, 0);
           $totalwtx1 +=  $data['detail'][$key]['oamt'];
           break;
-        
+
         case '2':
         case '5':
         case '8':
@@ -1443,7 +1441,7 @@ class cv
     PDF::MultiCell(780, 20, 'We declare, under the penalties of perjury, that this certificate has been made in good faith, verified by us, and to the best of our knowledge and belief, is true and correct, pursuant to the provisions of the National Internal Revenue Code, as amended, and the regulations issued under authority thereof. Further, we give our consent to the processing of our information as contemplated under the *Data Privacy Act of 2012 (R.A. No. 10173) for legitimate and lawful purposes.', 'TLR', 'C', false);
 
     //Row 27
- 
+
     PDF::MultiCell(10, 30, '', 'LT', '', false, 0);
     PDF::MultiCell(395, 30, '', 'T', '', false, 0);
     PDF::MultiCell(10, 30, '', 'T', '', false, 0);
@@ -1490,7 +1488,6 @@ class cv
     PDF::MultiCell(20, 25, '', 'LTRB', '', false, 0, 700);
     PDF::MultiCell(40, 25, '', 'LTRB', '', false, 1, 720);
     return PDF::Output($this->modulename . '.pdf', 'S');
-    
   }
 
   public function PDF_METROBANK_CHECK_LAYOUT($data, $filters)
@@ -1549,13 +1546,13 @@ class cv
     $data2 = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
 
     for ($i = 0; $i < count($data2); $i++) {
-   
+
       $cc = $data2[$i]['cr'];
-    
+
       $month = "<span style='letter-spacing:10px; margin-right: 15px;'>" . date('m', strtotime($data2[$i]['postdate'])) . "</span>";
       $day = "<span style='letter-spacing:10px; margin-right: 10px;'>" . date('d', strtotime($data2[$i]['postdate'])) . "</span>";
       $year = "<span style='letter-spacing:10px; margin-right:-7px'>" . date('Y', strtotime($data2[$i]['postdate'])) . "</span>";
-    
+
       PDF::setFontSpacing(5);
       PDF::SetFont($font, '', 11);
       PDF::MultiCell(600, 0, date('m', strtotime($data2[$i]['postdate'])), '', 'R', false, 0);
@@ -1572,7 +1569,7 @@ class cv
       PDF::MultiCell(720, 5, "\n", '', 'L', false);
 
       $dd = number_format((float)$cc, 2, '.', '');
-      PDF::MultiCell(720, 0, '***' . $this->ftNumberToWordsConverter($dd) . ' ONLY***', '', 'L', false);                  
+      PDF::MultiCell(720, 0, '***' . $this->ftNumberToWordsConverter($dd) . ' ONLY***', '', 'L', false);
     }
     return PDF::Output($this->modulename . '.pdf', 'S');
   } //end fn
@@ -1942,7 +1939,7 @@ class cv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Part I-Payee Information', '800', null, false, '2px solid ', 'TLBR', 'C', 'Century Gothic', '10', 'B', '', '');
- 
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -1962,7 +1959,7 @@ class cv
     $str .= $this->reporter->col('2', '20', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
 
     $str .= $this->reporter->col('Tax Payer Identification Number (TIN)', '150', null, false, '2px solid ', '', 'L', 'Century Gothic', '10', '', '', '3px');
- 
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['tin']) ? $data['head'][0]['tin'] : ''), '400', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 
@@ -2104,7 +2101,7 @@ class cv
     $str .= $this->reporter->col('6', '20', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
 
     $str .= $this->reporter->col('Tax Payer Identification Number (TIN)', '150', null, false, '2px solid ', '', 'L', 'Century Gothic', '10', '', '', '3px');
-   
+
 
     $str .= $this->reporter->col((isset($data['head'][0]['payortin']) ? $data['head'][0]['payortin'] : ''), '400', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
 
@@ -2130,7 +2127,7 @@ class cv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
-  
+
 
     $company_name = (isset($data['head'][0]['payorcompname']) ? $data['head'][0]['payorcompname'] : '');
 
@@ -2158,7 +2155,7 @@ class cv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '30', null, false, '2px solid ', 'L', 'C', 'Century Gothic', '10', 'B', '', '');
-   
+
     $str .= $this->reporter->col((isset($data['head'][0]['payoraddress']) ? $data['head'][0]['payoraddress'] : ''), '620', null, false, '2px solid', 'LRTB', 'L', 'Century Gothic', '10', 'B', '', '3px');
     $str .= $this->reporter->col('', '10', null, false, '2px solid ', 'R', 'C', 'Century Gothic', '10', '', '', '');
     $str .= $this->reporter->col((isset($data['head'][0]['payorzipcode']) ? $data['head'][0]['payorzipcode'] : ''), '50', null, false, '2px solid ', 'LRTB', 'C', 'Century Gothic', '10', 'B', '', '3px');
@@ -2181,7 +2178,7 @@ class cv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Part III-Details of Monthly Income Payments and Taxes Withheld', '800', null, false, '2px solid ', 'TLBR', 'C', 'Century Gothic', '10', 'B', '', '');
-  
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -2443,7 +2440,7 @@ class cv
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Signature over Printed Name of Payor/Payor`s Authorized Representative/Tax Agent
       <br/>(Indicate Title/Designation and TIN)', '800', null, false, '2px solid ', 'LRB', 'C', 'Century Gothic', '10', '', '', '');
- 
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -2501,7 +2498,7 @@ class cv
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('CONFORME:', '800', null, false, '2px solid ', 'TLBR', 'C', 'Century Gothic', '10', 'B', '', '');
-   
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -2550,7 +2547,7 @@ class cv
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Signature over Printed Name of Payee/Payee`s Authorized Representative/Tax Agent
       <br/>(Indicate Title/Designation and TIN)', '800', null, false, '2px solid ', 'LRB', 'C', 'Century Gothic', '10', '', '', '');
-  
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -2665,7 +2662,7 @@ class cv
         <div style='margin-right: 50px;'>
         " . ('' . isset($cdate) ? $month . ' ' . $day . ' ' . $year : '') . "
         </div>", '300', null, false, '1px solid ', '', 'R', 'Verdana', '13', '', '30px', '4px');
-     
+
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
 
@@ -2840,7 +2837,7 @@ class cv
         $string .= implode(' ', $words);
       } //end if
 
-   
+
       return $string;
     } //end
   } //end fn

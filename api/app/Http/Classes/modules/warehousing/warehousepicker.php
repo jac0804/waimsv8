@@ -56,11 +56,11 @@ class warehousepicker
         ['val' => 'complete', 'label' => 'Completed', 'color' => 'primary']
     ];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -105,8 +105,27 @@ class warehousepicker
 
 
         $getcols = [
-            'action', 'lblstatus', 'statname', 'added', 'isqty', 'barcode', 'itemdesc', 'model_name', 'brand_desc', 'partno',
-            'subcode', 'clientname', 'listdocument', 'ref', 'location', 'transtype', 'lockdate', 'pickerstart', 'checkerloc', 'agentname', 'rem'
+            'action',
+            'lblstatus',
+            'statname',
+            'added',
+            'isqty',
+            'barcode',
+            'itemdesc',
+            'model_name',
+            'brand_desc',
+            'partno',
+            'subcode',
+            'clientname',
+            'listdocument',
+            'ref',
+            'location',
+            'transtype',
+            'lockdate',
+            'pickerstart',
+            'checkerloc',
+            'agentname',
+            'rem'
         ];
         $stockbuttons = ['view', 'pickerdrop', 'pickerdropall', 'voiditems'];
         $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);

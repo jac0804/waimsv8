@@ -34,9 +34,9 @@ class ht
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -66,12 +66,12 @@ class ht
     );
   }
 
-  public function reportplotting($config,$data)
-  { 
+  public function reportplotting($config, $data)
+  {
     $data = $this->report_default_query($config);
-    if($config['params']['dataparams']['print'] == "default"){
+    if ($config['params']['dataparams']['print'] == "default") {
       $str = $this->rpt_ht_layout($config, $data);
-    }else if($config['params']['dataparams']['print'] == "PDFM") {
+    } else if ($config['params']['dataparams']['print'] == "PDFM") {
       $str = $this->rpt_ht_PDF($config, $data);
     }
     return $str;
@@ -125,7 +125,7 @@ class ht
     return $result;
   } //end fn
 
-  public function pdf_header($params, $data) 
+  public function pdf_header($params, $data)
   {
     $border = '1px solid';
     $font_size = '11';
@@ -134,7 +134,7 @@ class ht
 
     $font = "";
     $fontbold = "";
-    
+
     $count = 55;
     $page = 54;
 
@@ -165,51 +165,51 @@ class ht
     PDF::SetFont($fontbold, '', 12);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
 
 
     PDF::SetFont($fontbold, '', 14);
-    PDF::MultiCell(200, 15, "TRAINING ENTRY ", '', 'L', false,0);
-    PDF::MultiCell(320, 15, "", '', 'L', false,0);
+    PDF::MultiCell(200, 15, "TRAINING ENTRY ", '', 'L', false, 0);
+    PDF::MultiCell(320, 15, "", '', 'L', false, 0);
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(100, 15, "Document # : ", '', 'L', false,0);
+    PDF::MultiCell(100, 15, "Document # : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(140, 15, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '', 'L', false);
 
-    PDF::MultiCell(100, 0, "", '', 'L', false,0);
-    PDF::MultiCell(420, 0, '', '', 'L', false,0);
-    PDF::MultiCell(100, 0, "", '', 'L', false,0);
+    PDF::MultiCell(100, 0, "", '', 'L', false, 0);
+    PDF::MultiCell(420, 0, '', '', 'L', false, 0);
+    PDF::MultiCell(100, 0, "", '', 'L', false, 0);
     PDF::MultiCell(140, 0, '', 'T', 'L', false);
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(100, 15, "Training Type : ", '', 'L', false,0);
+    PDF::MultiCell(100, 15, "Training Type : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
-    PDF::MultiCell(420, 15, (isset($data[0]['ttype']) ? $data[0]['ttype'] : ''), '', 'L', false,0);
+    PDF::MultiCell(420, 15, (isset($data[0]['ttype']) ? $data[0]['ttype'] : ''), '', 'L', false, 0);
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(100, 15, "DATE : ", '', 'R', false,0);
+    PDF::MultiCell(100, 15, "DATE : ", '', 'R', false, 0);
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(140, 15, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '', 'L', false);
 
-    PDF::MultiCell(100, 0, "", '', 'L', false,0);
-    PDF::MultiCell(420, 0, '', 'T', 'L', false,0);
-    PDF::MultiCell(100, 0, "", '', 'L', false,0);
+    PDF::MultiCell(100, 0, "", '', 'L', false, 0);
+    PDF::MultiCell(420, 0, '', 'T', 'L', false, 0);
+    PDF::MultiCell(100, 0, "", '', 'L', false, 0);
     PDF::MultiCell(140, 0, '', 'T', 'L', false);
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(100, 15, "Title : ", '', 'L', false,0);
+    PDF::MultiCell(100, 15, "Title : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(420, 15, (isset($data[0]['title']) ? $data[0]['title'] : ''), '', 'L', false);
 
-    PDF::MultiCell(100, 0, "", '', 'L', false,0);
+    PDF::MultiCell(100, 0, "", '', 'L', false, 0);
     PDF::MultiCell(420, 0, '', 'T', 'L', false);
 
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(100, 15, "Venue : ", '', 'L', false,0);
+    PDF::MultiCell(100, 15, "Venue : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(420, 15, (isset($data[0]['venue']) ? $data[0]['venue'] : ''), '', 'L', false);
 
-    PDF::MultiCell(100, 0, "", '', 'L', false,0);
+    PDF::MultiCell(100, 0, "", '', 'L', false, 0);
     PDF::MultiCell(420, 0, '', 'T', 'L', false);
 
     PDF::MultiCell(0, 0, "\n");
@@ -218,18 +218,14 @@ class ht
 
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(270, 5, "EMPLOYEE CODE", '', 'L', false,0);
-    PDF::MultiCell(200, 5, "EMPLOYEE NAME", '', 'L', false,0);
+    PDF::MultiCell(270, 5, "EMPLOYEE CODE", '', 'L', false, 0);
+    PDF::MultiCell(200, 5, "EMPLOYEE NAME", '', 'L', false, 0);
     PDF::MultiCell(200, 5, "NOTES", '', 'L', false);
-    
+
     PDF::MultiCell(0, 0, "\n");
     PDF::MultiCell(760, 30, "", 'T', 'L', false, 0);
 
     PDF::MultiCell(0, 0, "\n");
-    
-
-    
-   
   }
 
   public function rpt_ht_PDF($config, $data)
@@ -248,11 +244,10 @@ class ht
     }
     $this->pdf_header($config, $data);
 
-    for ($i = 0; $i < count($data); $i++) 
-    {
+    for ($i = 0; $i < count($data); $i++) {
       PDF::SetFont($font, '', 11);
-      PDF::MultiCell(270, 5, $data[$i]['empcode'], '', 'L', false,0);
-      PDF::MultiCell(200, 5, $data[$i]['empname'], '', 'L', false,0);
+      PDF::MultiCell(270, 5, $data[$i]['empcode'], '', 'L', false, 0);
+      PDF::MultiCell(200, 5, $data[$i]['empname'], '', 'L', false, 0);
       PDF::MultiCell(200, 5, $data[$i]['notes'], '', 'L', false);
     }
     PDF::MultiCell(0, 0, "\n");
@@ -277,10 +272,10 @@ class ht
     PDF::MultiCell(266, 0, $config['params']['dataparams']['received'], '', 'L');
 
     return PDF::Output($this->modulename . '.pdf', 'S');
-  
   } //end fn
 
-  public function default_header($params, $data) {
+  public function default_header($params, $data)
+  {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
@@ -294,20 +289,20 @@ class ht
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
     $str .= $this->reporter->begintable('800');
-      $str .= $this->reporter->startrow();
-        $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center .'&nbsp'  .'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
+    $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= '<br><br>';
 
@@ -359,7 +354,8 @@ class ht
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
-    $str = '';$font = "Century Gothic ";
+    $str = '';
+    $font = "Century Gothic ";
     $fontsize = "11";
     $border = "1px solid ";
     $count = 35;
@@ -376,12 +372,12 @@ class ht
       $str .= $this->reporter->col($data[$i]['notes'], '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
       $str .= $this->reporter->endrow();
 
-      if($this->reporter->linecounter==$page){
+      if ($this->reporter->linecounter == $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
-        $str .= $this->default_header($params,$data);
+        $str .= $this->default_header($params, $data);
         $str .= $this->reporter->begintable('800');
-        $page=$page + $count;
+        $page = $page + $count;
       }
     }
     $str .= $this->reporter->endtable();

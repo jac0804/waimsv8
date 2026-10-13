@@ -35,10 +35,10 @@ class leavesetup
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -92,9 +92,9 @@ class leavesetup
 
   public function reportplotting($params, $data)
   {
-    if($params['params']['dataparams']['print'] == "default") {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->rpt_leavesetup_masterfile_layout($params, $data);
-    } else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_leavesetup_PDF($params, $data);
     }
   }
@@ -316,16 +316,16 @@ class leavesetup
     $this->default_leavesetup_header_PDF($params, $data);
 
     // for ($i = 0; $i < count($data); $i++) {
-      // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
-      PDF::SetFont($font, '', $fontsize);
-      PDF::MultiCell(100, 0, $data[0]['docno'], '', 'L', 0, 0, '', '');
-      PDF::MultiCell(100, 0, $data[0]['acno'], '', 'L', 0, 0, '', '');
-      PDF::MultiCell(100, 0, $data[0]['acnoname'], '', 'L', 0, 0, '', '');
-      PDF::MultiCell(100, 0, number_format($data[0]['days'], $decimalqty), '', 'R', 0, 0, '', '');
-      PDF::MultiCell(100, 0, number_format($data[0]['bal'], $decimalqty), '', 'R', 0, 0, '', '');
-      PDF::MultiCell(100, 0, $data[0]['prdstart'], '', 'C', 0, 0, '', '');
-      PDF::MultiCell(100, 0, $data[0]['prdend'], '', 'C', 0, 0, '', '');
-      PDF::MultiCell(100, 0, '', '', 'L', 0, 1, '', '');
+    // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(100, 0, $data[0]['docno'], '', 'L', 0, 0, '', '');
+    PDF::MultiCell(100, 0, $data[0]['acno'], '', 'L', 0, 0, '', '');
+    PDF::MultiCell(100, 0, $data[0]['acnoname'], '', 'L', 0, 0, '', '');
+    PDF::MultiCell(100, 0, number_format($data[0]['days'], $decimalqty), '', 'R', 0, 0, '', '');
+    PDF::MultiCell(100, 0, number_format($data[0]['bal'], $decimalqty), '', 'R', 0, 0, '', '');
+    PDF::MultiCell(100, 0, $data[0]['prdstart'], '', 'C', 0, 0, '', '');
+    PDF::MultiCell(100, 0, $data[0]['prdend'], '', 'C', 0, 0, '', '');
+    PDF::MultiCell(100, 0, '', '', 'L', 0, 1, '', '');
     //   if (intVal($i) + 1 == $page) {
     //     $this->default_leavesetup_header_PDF($params, $data);
     //     $page += $count;
@@ -336,7 +336,7 @@ class leavesetup
     PDF::MultiCell(700, 0, "", "T");
     // PDF::MultiCell(760, 0, '', 'B');
     PDF::MultiCell(0, 0, "\n");
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(100, 0, 'Applied Leave: ', '', 'L', false, 0);
     PDF::MultiCell(100, 0, 'Date Applied', '', 'L', false, 0);
@@ -345,7 +345,7 @@ class leavesetup
     PDF::MultiCell(100, 0, 'Status', '', 'L', false);
 
     PDF::MultiCell(0, 0, "\n");
-    
+
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 0, '', '', 'L', false, 0);
     PDF::MultiCell(100, 0, $data[0]['leavedate'], '', 'L', false, 0);

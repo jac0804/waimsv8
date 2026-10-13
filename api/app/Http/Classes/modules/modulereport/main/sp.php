@@ -33,9 +33,9 @@ class sp
   private $othersClass;
   private $logger;
   private $reporter;
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -43,29 +43,33 @@ class sp
     $this->reporter = new SBCPDF;
   }
 
-public function createreportfilter($config){
-  $companyid = $config['params']['companyid'];
-  $fields = ['radioprint','prepared','approved','received','print'];
-  $col1 = $this->fieldClass->create($fields);
+  public function createreportfilter($config)
+  {
+    $companyid = $config['params']['companyid'];
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
 
-  data_set($col1, 'radioprint.options', [
-    ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-    // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
-  ]);
-  return array('col1'=>$col1);
-}
+    data_set($col1, 'radioprint.options', [
+      ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
+      // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
+    ]);
+    return array('col1' => $col1);
+  }
 
-public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable(
       "select
       'PDFM' as print,
       '' as prepared,
       '' as approved,
       '' as received
-      ");
-}
+      "
+    );
+  }
 
-  public function report_default_query($trno){
+  public function report_default_query($trno)
+  {
 
     $query = "select head.vattype, head.tax, client.tel, stock.rem as remarks, m.model_name as model,item.sizeid,
       date(head.dateid) as dateid, head.docno, client.client, client.clientname, head.address, head.terms, head.rem,head.yourref,head.ourref,
@@ -79,7 +83,7 @@ public function reportparamsdata($config){
       left join client as wh on wh.clientid=stock.whid
       left join item on item.itemid=stock.itemid
       left join model_masterfile as m on m.model_id=item.model
-      where head.doc='sp' and md5(head.trno)='".md5($trno)."'
+      where head.doc='sp' and md5(head.trno)='" . md5($trno) . "'
       union all
       select head.vattype, head.tax, client.tel, stock.rem as remarks, m.model_name as model,item.sizeid,
       date(head.dateid) as dateid, head.docno, client.client, client.clientname, head.address, head.terms, head.rem,head.yourref,head.ourref,
@@ -92,22 +96,24 @@ public function reportparamsdata($config){
       left join model_masterfile as m on m.model_id=item.model
       left join client as ag on ag.clientid=head.agentid
       left join client as wh on wh.clientid=stock.whid
-      where head.doc='sp' and md5(head.trno)='".md5($trno)."'";
+      where head.doc='sp' and md5(head.trno)='" . md5($trno) . "'";
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
-  }//end fn
+  } //end fn
 
 
-  public function reportplotting($params, $data) {
-    if($params['params']['dataparams']['print'] == "default") {
+  public function reportplotting($params, $data)
+  {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_cm_layout($params, $data);
-    } else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_cm_PDF($params, $data);
     }
   }
 
-  private function report_default_header($params,$data){
+  private function report_default_header($params, $data)
+  {
     $companyid = $params['params']['companyid'];
     $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
@@ -120,37 +126,37 @@ public function reportparamsdata($config){
     $border = "1px solid ";
 
     $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->letterhead($center,$username);
+    $str .= $this->reporter->letterhead($center, $username);
     $str .= $this->reporter->endtable();
     $str .= '<br><br>';
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-    $str .= $this->reporter->col($this->modulename,'600',null,false, $border,'','L', $font,'18','B','','');
-    $str .= $this->reporter->col('DOCUMENT # :','120',null,false, $border,'','L', $font,'13','B','','');
-    $str .= $this->reporter->col((isset($data[0]['docno'])? $data[0]['docno']:''),'100',null,false, $border,'B','L', $font,'13','','','').'<br />';
+    $str .= $this->reporter->col($this->modulename, '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
+    $str .= $this->reporter->col('DOCUMENT # :', '120', null, false, $border, '', 'L', $font, '13', 'B', '', '');
+    $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '100', null, false, $border, 'B', 'L', $font, '13', '', '', '') . '<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('CUSTOMER : ','120',null,false, $border,'','L', $font,'12','B','30px','4px');
-    $str .= $this->reporter->col((isset($data[0]['clientname'])?$data[0]['clientname']:''),'520',null,false, $border,'B','L', $font,'12','','30px','4px');
-    $str .= $this->reporter->col('DATE : ','80',null,false, $border,'','L', $font,'12','B','','');
-    $str .= $this->reporter->col((isset($data[0]['dateid'])? $data[0]['dateid']:''),'160',null,false, $border,'B','R', $font,'12','','','');
+    $str .= $this->reporter->col('CUSTOMER : ', '120', null, false, $border, '', 'L', $font, '12', 'B', '30px', '4px');
+    $str .= $this->reporter->col((isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '520', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
+    $str .= $this->reporter->col('DATE : ', '80', null, false, $border, '', 'L', $font, '12', 'B', '', '');
+    $str .= $this->reporter->col((isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '160', null, false, $border, 'B', 'R', $font, '12', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('ADDRESS : ','120',null,false, $border,'','L', $font,'12','B','30px','4px');
-    $str .= $this->reporter->col((isset($data[0]['address'])? $data[0]['address']:''),'520',null,false, $border,'B','L', $font,'12','','30px','4px');
-    $str .= $this->reporter->col('TERMS : ','70',null,false, $border,'','L', $font,'12','B','','');
-    $str .= $this->reporter->col((isset($data[0]['terms'])? $data[0]['terms']:''),'150',null,false, $border,'B','R', $font,'12','','','');
+    $str .= $this->reporter->col('ADDRESS : ', '120', null, false, $border, '', 'L', $font, '12', 'B', '30px', '4px');
+    $str .= $this->reporter->col((isset($data[0]['address']) ? $data[0]['address'] : ''), '520', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
+    $str .= $this->reporter->col('TERMS : ', '70', null, false, $border, '', 'L', $font, '12', 'B', '', '');
+    $str .= $this->reporter->col((isset($data[0]['terms']) ? $data[0]['terms'] : ''), '150', null, false, $border, 'B', 'R', $font, '12', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->startrow(null,null,false, $border,'','R', $font,'10','','','4px');
+    $str .= $this->reporter->startrow(null, null, false, $border, '', 'R', $font, '10', '', '', '4px');
     $str .= $this->reporter->pagenumber('Page');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -160,96 +166,97 @@ public function reportparamsdata($config){
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-    $str .= $this->reporter->col('QTY','50',null,false, $border,'B','C', $font,'12','B','30px','8px');
-    $str .= $this->reporter->col('UNIT','50',null,false, $border,'B','C', $font,'12','B','30px','8px');
-    $str .= $this->reporter->col('D E S C R I P T I O N','500',null,false, $border,'B','L', $font,'12','B','30px','8px');
-    $str .= $this->reporter->col('UNIT PRICE','125',null,false, $border,'B','R', $font,'12','B','30px','8px');
-    $str .= $this->reporter->col('DISC','50',null,false, $border,'B','L', $font,'12','B','30px','8px');
-    $str .= $this->reporter->col('TOTAL','125',null,false, $border,'B','R', $font,'12','B','30px','8px');
+    $str .= $this->reporter->col('QTY', '50', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('UNIT', '50', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('D E S C R I P T I O N', '500', null, false, $border, 'B', 'L', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('UNIT PRICE', '125', null, false, $border, 'B', 'R', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('DISC', '50', null, false, $border, 'B', 'L', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('TOTAL', '125', null, false, $border, 'B', 'R', $font, '12', 'B', '30px', '8px');
     return $str;
   }
 
-  public function default_cm_layout($params,$data){
+  public function default_cm_layout($params, $data)
+  {
     $companyid = $params['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency',$params['params']);
+    $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
     $str = '';
-    $count=35;
-    $page=35;
+    $count = 35;
+    $page = 35;
     $font = "Century Gothic";
     $fontsize = "11";
     $border = "1px solid ";
 
     $str .= $this->reporter->beginreport();
 
-    $str .= $this->report_default_header($params,$data);
+    $str .= $this->report_default_header($params, $data);
 
-    $totalext=0;
-    for($i=0;$i<count($data);$i++){
-    $ext=number_format($data[$i]['ext'],$decimal);
-    $ext = $ext < 0 ? '-' : $ext;
+    $totalext = 0;
+    for ($i = 0; $i < count($data); $i++) {
+      $ext = number_format($data[$i]['ext'], $decimal);
+      $ext = $ext < 0 ? '-' : $ext;
 
-    $str .= $this->reporter->startrow();
-    $str .= $this->reporter->addline();
-    $str .= $this->reporter->col(number_format($data[$i]['qty'],$this->companysetup->getdecimal('qty',$params['params'])),'50',null,false, $border,'','C', $font, $fontsize,'','','2px');
-    $str .= $this->reporter->col($data[$i]['uom'],'50',null,false, $border,'','C', $font, $fontsize,'','','2px');
-    $str .= $this->reporter->col($data[$i]['itemname'],'500',null,false, $border,'','L', $font, $fontsize,'','','2px');
-    $str .= $this->reporter->col(number_format($data[$i]['amt'],$this->companysetup->getdecimal('price',$params['params'])),'125',null,false, $border,'','R', $font, $fontsize,'','','2px');
-    $str .= $this->reporter->col($data[$i]['disc'],'50',null,false, $border,'','L', $font, $fontsize,'','','');
-    $str .= $this->reporter->col($ext,'125',null,false, $border,'','R', $font, $fontsize,'','','2px');
-    $totalext=$totalext+$data[$i]['ext'];
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->addline();
+      $str .= $this->reporter->col(number_format($data[$i]['qty'], $this->companysetup->getdecimal('qty', $params['params'])), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
+      $str .= $this->reporter->col($data[$i]['uom'], '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '2px');
+      $str .= $this->reporter->col($data[$i]['itemname'], '500', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
+      $str .= $this->reporter->col(number_format($data[$i]['amt'], $this->companysetup->getdecimal('price', $params['params'])), '125', null, false, $border, '', 'R', $font, $fontsize, '', '', '2px');
+      $str .= $this->reporter->col($data[$i]['disc'], '50', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($ext, '125', null, false, $border, '', 'R', $font, $fontsize, '', '', '2px');
+      $totalext = $totalext + $data[$i]['ext'];
 
 
 
-    if($this->reporter->linecounter==$page){
-      $str .= $this->reporter->endtable();
-      $str .= $this->reporter->page_break();
-      // ------------ HEADER ----------------
-      $str .= $this->report_default_header($params,$data);
+      if ($this->reporter->linecounter == $page) {
+        $str .= $this->reporter->endtable();
+        $str .= $this->reporter->page_break();
+        // ------------ HEADER ----------------
+        $str .= $this->report_default_header($params, $data);
 
-      $str .= $this->reporter->printline();
-      $page=$page + $count;
+        $str .= $this->reporter->printline();
+        $page = $page + $count;
       }
-    }// end for
+    } // end for
 
     $str .= $this->reporter->startrow();
 
-    $str .= $this->reporter->col('','50',null,false, $border,'T','C', $font,'12','B','30px','8px');
-    $str .= $this->reporter->col('','50',null,false, $border,'T','C', $font,'12','B','30px','8px');
-    $str .= $this->reporter->col('','400',null,false, $border,'T','L', $font,'12','B','30px','8px');
-    $str .= $this->reporter->col(' ','125',null,false, $border,'T','R', $font,'12','B','30px','8px');
-    $str .= $this->reporter->col('GRAND TOTAL :','150',null,false, $border,'T','L', $font,'12','B','30px','8px');
-    $str .= $this->reporter->col(number_format($totalext,$decimal),'125',null,false, $border,'T','R', $font,'12','B','30px','8px');
+    $str .= $this->reporter->col('', '50', null, false, $border, 'T', 'C', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('', '50', null, false, $border, 'T', 'C', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('', '400', null, false, $border, 'T', 'L', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col(' ', '125', null, false, $border, 'T', 'R', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('GRAND TOTAL :', '150', null, false, $border, 'T', 'L', $font, '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col(number_format($totalext, $decimal), '125', null, false, $border, 'T', 'R', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->printline();
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('NOTE : ','40',null,false, $border,'','L', $font,'12','B','','');
-    $str .= $this->reporter->col($data[0]['rem'],'600',null,false, $border,'','L', $font,'12','','','');
-    $str .= $this->reporter->col('','160',null,false, $border,'','L', $font,'12','B','','');
+    $str .= $this->reporter->col('NOTE : ', '40', null, false, $border, '', 'L', $font, '12', 'B', '', '');
+    $str .= $this->reporter->col($data[0]['rem'], '600', null, false, $border, '', 'L', $font, '12', '', '', '');
+    $str .= $this->reporter->col('', '160', null, false, $border, '', 'L', $font, '12', 'B', '', '');
 
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= '<br/><br/>';
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Prepared By : ','266',null,false, $border,'','L', $font,'12','','','');
-    $str .= $this->reporter->col('Approved By :','266',null,false, $border,'','C', $font,'12','','','');
-    $str .= $this->reporter->col('Received By :','266',null,false, $border,'','R', $font,'12','','','');
+    $str .= $this->reporter->col('Prepared By : ', '266', null, false, $border, '', 'L', $font, '12', '', '', '');
+    $str .= $this->reporter->col('Approved By :', '266', null, false, $border, '', 'C', $font, '12', '', '', '');
+    $str .= $this->reporter->col('Received By :', '266', null, false, $border, '', 'R', $font, '12', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= '<br>';
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col($params['params']['dataparams']["prepared"],'266',null,false, $border,'','L', $font,'12','B','','');
-    $str .= $this->reporter->col($params['params']['dataparams']["approved"],'266',null,false, $border,'','C', $font,'12','B','','');
-    $str .= $this->reporter->col($params['params']['dataparams']["received"],'266',null,false, $border,'','R', $font,'12','B','','');
+    $str .= $this->reporter->col($params['params']['dataparams']["prepared"], '266', null, false, $border, '', 'L', $font, '12', 'B', '', '');
+    $str .= $this->reporter->col($params['params']['dataparams']["approved"], '266', null, false, $border, '', 'C', $font, '12', 'B', '', '');
+    $str .= $this->reporter->col($params['params']['dataparams']["received"], '266', null, false, $border, '', 'R', $font, '12', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -257,7 +264,7 @@ public function reportparamsdata($config){
     $str .= $this->reporter->endreport();
 
     return $str;
-  }//end fn
+  } //end fn
 
   public function default_cm_header_PDF($params, $data)
   {
@@ -288,7 +295,7 @@ public function reportparamsdata($config){
     PDF::SetMargins(40, 40);
 
     PDF::SetFont($font, '', 9);
-    if($params['params']['companyid'] != 10 && $params['params']['companyid'] != 12) {
+    if ($params['params']['companyid'] != 10 && $params['params']['companyid'] != 12) {
       $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
@@ -296,7 +303,7 @@ public function reportparamsdata($config){
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // SetFont(family, style, size)
     // MultiCell(width, height, txt, border, align, x, y)
@@ -320,7 +327,7 @@ public function reportparamsdata($config){
     PDF::MultiCell(50, 0, "Date: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 0, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 0, '',  '');
-    
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', $fontsize);
@@ -411,23 +418,23 @@ public function reportparamsdata($config){
       // $maxrow = $countarr;
 
       $maxrow = 1;
-      $qty = number_format($data[$i]['qty'],$decimalqty);
+      $qty = number_format($data[$i]['qty'], $decimalqty);
       $uom = $data[$i]['uom'];
       $itemname = $data[$i]['itemname'];
-      $amt = number_format($data[$i]['amt'],$decimalprice);
+      $amt = number_format($data[$i]['amt'], $decimalprice);
       $disc = $data[$i]['disc'];
-      $ext = number_format($data[$i]['ext'],$decimalprice);
+      $ext = number_format($data[$i]['ext'], $decimalprice);
 
-      $arr_qty = $this->reporter->fixcolumn([$qty],'13',0);
-      $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-      $arr_itemname = $this->reporter->fixcolumn([$itemname],'35',0);
-      $arr_amt = $this->reporter->fixcolumn([$amt],'13',0);
-      $arr_disc = $this->reporter->fixcolumn([$disc],'13',0);
-      $arr_ext = $this->reporter->fixcolumn([$ext],'13',0);
+      $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+      $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+      $arr_itemname = $this->reporter->fixcolumn([$itemname], '35', 0);
+      $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
+      $arr_disc = $this->reporter->fixcolumn([$disc], '13', 0);
+      $arr_ext = $this->reporter->fixcolumn([$ext], '13', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_qty, $arr_uom, $arr_itemname, $arr_amt, $arr_disc, $arr_ext]);
 
-      for($r = 0; $r < $maxrow; $r++) {
+      for ($r = 0; $r < $maxrow; $r++) {
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(80, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '', '', true, 1);
         PDF::MultiCell(100, 0, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '', '', false, 1);
@@ -480,9 +487,9 @@ public function reportparamsdata($config){
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(600, 0, 'GRAND TOTAL: ', '', 'R', false, 0);
     PDF::MultiCell(100, 0, number_format($totalext, $decimalprice), '', 'R');
-    
+
     PDF::MultiCell(0, 0, "\n");
-    
+
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(50, 0, 'NOTE: ', '', 'L', false, 0);
     PDF::MultiCell(560, 0, $data[0]['rem'], '', 'L');
@@ -513,8 +520,4 @@ public function reportparamsdata($config){
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
-
-
-
 }

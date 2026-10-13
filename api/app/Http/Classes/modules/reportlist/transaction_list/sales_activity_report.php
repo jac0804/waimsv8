@@ -29,12 +29,12 @@ class sales_activity_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '800'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -863,7 +863,7 @@ class sales_activity_report
     $str .= $this->reporter->col('Department', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Designation', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Email', '50', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    
+
     $str .= $this->reporter->col('Sales Person', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Source', '50', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('Sales Remarks', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
@@ -908,7 +908,7 @@ class sales_activity_report
       order by dateid DESC LIMIT 1";
         $calllogs = $this->coreFunctions->opentable($qry);
         $salesrem = $data->saleremarks;
-        if(!empty($calllogs)){
+        if (!empty($calllogs)) {
           $salesrem = $calllogs[0]->rem;
         }
         // $str .= $this->reporter->begintable($layoutsize);

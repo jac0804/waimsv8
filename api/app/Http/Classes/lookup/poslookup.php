@@ -422,7 +422,11 @@ class poslookup
 
     public function lookupsjpo($config)
     {
-        $plotting = array('trno' => 'trno', 'docno' => 'docno', 'yourref' => 'yourref');
+        $plotting = array('trno' => 'trno', 'docno' => 'docno', 'yourref' => 'yourref', 'clientname' => 'clientname');
+
+        if ($config['params']['doc'] == 'POSREGISTRATION') {
+            $plotting['clientname'] = 'clientname';
+        }
 
         $plotsetup = array(
             'plottype' => 'plothead',

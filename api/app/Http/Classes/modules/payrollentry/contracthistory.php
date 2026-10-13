@@ -35,10 +35,10 @@ class contracthistory
     private $reporter;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -54,8 +54,33 @@ class contracthistory
 
     public function createTab($config)
     {
-        $columns = ['dateid', 'num',   'year', 'numdays', 'hours', 'months','days',  'othrs', 'workloc',  'basicrate', 'drate',  'othrsextra', 'cola',
-            'apothrs',  'payment', 'comm1', 'comrate',  'leadfrom', 'ssstotal', 'phicee', 'hdmfee',   'eccer',    'agent','tax01','contractn' ];
+        $columns = [
+            'dateid',
+            'num',
+            'year',
+            'numdays',
+            'hours',
+            'months',
+            'days',
+            'othrs',
+            'workloc',
+            'basicrate',
+            'drate',
+            'othrsextra',
+            'cola',
+            'apothrs',
+            'payment',
+            'comm1',
+            'comrate',
+            'leadfrom',
+            'ssstotal',
+            'phicee',
+            'hdmfee',
+            'eccer',
+            'agent',
+            'tax01',
+            'contractn'
+        ];
 
         foreach ($columns as $key => $value) {
             $$value = $key;

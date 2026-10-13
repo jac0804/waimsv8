@@ -48,7 +48,7 @@ class uniqueClass
 		$doc = strtolower($params['doc']);
 		$classname = __NAMESPACE__ . '\\modules\\masterfile\\' . $doc;
 		try {
-			$this->config['docmodule'] = new $classname;
+			$this->config['docmodule'] = new $classname($params);
 		} catch (Exception $e) {
 			echo $e;
 			return $this;

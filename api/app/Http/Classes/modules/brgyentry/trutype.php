@@ -43,10 +43,10 @@ class trutype
   private $logger;
   private $reportheader;
 
-  public function __construct()  //to call functions from other files
+  public function __construct($params = null)  //to call functions from other files
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -152,7 +152,6 @@ class trutype
         foreach ($this->fields as $key2 => $field) {
           $value = isset($data[$key][$field]) ? $data[$key][$field] : null;
           $data2[$field] = $this->othersClass->sanitizekeyfieldFast($field, $value, $lookups);
-
         }
         if (empty(trim($data2['description']))) {
           return ['status' => false, 'msg' => 'Saving failed. Please complete the empty description.'];
@@ -239,8 +238,7 @@ class trutype
     $dateTables = [$this->table];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
-
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
     if ($row['line'] == 0 && $row['description'] != '') {

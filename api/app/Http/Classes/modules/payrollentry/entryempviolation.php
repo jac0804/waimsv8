@@ -43,10 +43,10 @@ class entryempviolation
     private $reportheader;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -216,7 +216,9 @@ class entryempviolation
                 $this->logger->sbcmasterlog(
                     $data['clientid'],
                     $config,
-                    ' CREATE - Violation : ' . $row['violation'] . ' - ' . 'Offense : ' . $row['offense'] . ' - ' . 'Action : ' . $row['vaction'] . ' - ' . 'Type : ' . $row['type'] . ' - ' . 'Code : ' . $row['divcode'] . ' - ' . 'Detachment : ' . $row['divname'], 0, 1
+                    ' CREATE - Violation : ' . $row['violation'] . ' - ' . 'Offense : ' . $row['offense'] . ' - ' . 'Action : ' . $row['vaction'] . ' - ' . 'Type : ' . $row['type'] . ' - ' . 'Code : ' . $row['divcode'] . ' - ' . 'Detachment : ' . $row['divname'],
+                    0,
+                    1
                 );
                 return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
             } else {
@@ -231,7 +233,9 @@ class entryempviolation
                 $this->logger->sbcmasterlog(
                     $data['clientid'],
                     $config,
-                    ' UPDATE - Violation : ' . $row['violation'] . ' - ' . 'Offense : ' . $row['offense'] . ' - ' . 'Action : ' . $row['vaction'] . ' - ' . 'Type : ' . $row['type'] . ' - ' . 'Code : ' . $row['divcode'] . ' - ' . 'Detachment : ' . $row['divname'], 1, 1 
+                    ' UPDATE - Violation : ' . $row['violation'] . ' - ' . 'Offense : ' . $row['offense'] . ' - ' . 'Action : ' . $row['vaction'] . ' - ' . 'Type : ' . $row['type'] . ' - ' . 'Code : ' . $row['divcode'] . ' - ' . 'Detachment : ' . $row['divname'],
+                    1,
+                    1
                 );
                 return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
             } else {
@@ -270,7 +274,9 @@ class entryempviolation
                     $this->logger->sbcmasterlog(
                         $data2['clientid'],
                         $config,
-                        ' CREATE - Violation : ' . $data[$key]['violation'] . ' - ' . 'Offense : ' . $data[$key]['offense'] . ' - ' . 'Action : ' . $data[$key]['vaction'] . ' - ' . 'Type : ' . $data[$key]['type'] . ' - ' . 'Code : ' . $data[$key]['divcode'] . ' - ' . 'Detachment : ' . $data[$key]['divname'], 0, 1
+                        ' CREATE - Violation : ' . $data[$key]['violation'] . ' - ' . 'Offense : ' . $data[$key]['offense'] . ' - ' . 'Action : ' . $data[$key]['vaction'] . ' - ' . 'Type : ' . $data[$key]['type'] . ' - ' . 'Code : ' . $data[$key]['divcode'] . ' - ' . 'Detachment : ' . $data[$key]['divname'],
+                        0,
+                        1
                     );
                 } else {
                     $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -283,7 +289,9 @@ class entryempviolation
                     $this->logger->sbcmasterlog(
                         $data2['clientid'],
                         $config,
-                        ' UPDATE - Violation : ' . $data[$key]['violation'] . ' - ' . 'Offense : ' . $data[$key]['offense'] . ' - ' . 'Action : ' . $data[$key]['vaction'] . ' - ' . 'Type : ' . $data[$key]['type'] . ' - ' . 'Code : ' . $data[$key]['divcode'] . ' - ' . 'Detachment : ' . $data[$key]['divname'], 1, 1
+                        ' UPDATE - Violation : ' . $data[$key]['violation'] . ' - ' . 'Offense : ' . $data[$key]['offense'] . ' - ' . 'Action : ' . $data[$key]['vaction'] . ' - ' . 'Type : ' . $data[$key]['type'] . ' - ' . 'Code : ' . $data[$key]['divcode'] . ' - ' . 'Detachment : ' . $data[$key]['divname'],
+                        1,
+                        1
                     );
                 }
             }

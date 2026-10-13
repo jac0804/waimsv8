@@ -47,7 +47,6 @@ class reportheader
 					case 'PB':
 						PDF::Image($this->companysetup->getlogopath($params['params']) . 'mdc.jpg', 80, 30, 125, 70);
 						PDF::Image($this->companysetup->getlogopath($params['params']) . 'mdcbarcode2.jpg', 975, 30, 120, 65);
-
 						break;
 					default:
 						$qry = "select name,address,tel,email from center where code = '" . $center . "'";
@@ -58,7 +57,6 @@ class reportheader
 								$mdc = 80;
 								$tuvpos = 775;
 								$qrbarcode = 840;
-
 								break;
 							case 'BA':
 								$mdc = 80;
@@ -70,13 +68,11 @@ class reportheader
 								$mdc = 80;
 								$tuvpos = 975; //1020
 								$qrbarcode = 1040;
-
 								break;
 							default:
 								$mdc = 60; //60
 								$tuvpos = 615; //605
 								$qrbarcode = 670; //670
-
 								break;
 						}
 
@@ -90,7 +86,6 @@ class reportheader
 							$fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/ARIALNB.TTF');
 						}
 
-
 						PDF::SetFont($fonthead, '', 17);
 						PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
 						PDF::SetFont($font, '', 5);
@@ -100,7 +95,7 @@ class reportheader
 						PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel, '', 'C');
 						PDF::MultiCell(0, 0, $headerdata[0]->email . "\n\n", '', 'C');
 
-						$style = ['width' => 3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => [255, 0, 0]];
+						$style = array('width' => 3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(255, 0, 0));
 						PDF::SetLineStyle($style);
 
 						PDF::Line(PDF_MARGIN_LEFT, PDF::getY(), PDF::getPageWidth() - PDF_MARGIN_LEFT, PDF::getY());
@@ -108,9 +103,8 @@ class reportheader
 						PDF::Image($this->companysetup->getlogopath($params['params']) . 'mdc.jpg', $mdc, 30, 125, 70);
 						PDF::Image($this->companysetup->getlogopath($params['params']) . 'mdcbarcode2.jpg', $tuvpos, 30, 120, 65);
 
-						$style = ['width' => 1, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => [0, 0, 0]];
+						$style = array('width' => 1, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(0, 0, 0));
 						PDF::SetLineStyle($style);
-
 						break;
 				}
 				break;
@@ -131,16 +125,15 @@ class reportheader
 				PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
 				PDF::SetFont($fontbold, '', 13);
 				PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel), '', 'C');
-
 				break;
-			case 60: //transpower
 
-			    if($params['params']['doc'] == 'CV' || $params['params']['doc'] == 'PV'){
-				  if($params['params']['dataparams']['reporttype'] == 2){
-						  goto defaultCompanyHeader;
-				  }	   
-			    }
-					
+			case 60: //transpower
+				if ($params['params']['doc'] == 'CV' || $params['params']['doc'] == 'PV') {
+					if ($params['params']['dataparams']['reporttype'] == 2) {
+						goto defaultCompanyHeader;
+					}
+				}
+
 				$qry = "select shortname as name,address,tel from center where code = '" . $center . "'";
 				$headerdata = $this->coreFunctions->opentable($qry);
 				$current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -149,9 +142,8 @@ class reportheader
 				$fontbold = "";
 				$fontsize = 11;
 
-	
 				if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
-				    $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
+					$font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
 					$fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
 				}
 				PDF::MultiCell(0, 0, '', '', 'L');
@@ -219,14 +211,18 @@ class reportheader
 								break;
 						}
 
+						if ($params['params']['companyid'] == 29) {
+							PDF::Image(public_path() . '/images/sbc/sscsmi.png', '130', '0', 70, 70);
+						}
+
 						PDF::SetFont($fontbold, '', 14);
 						PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
 						PDF::SetFont($font, '', 13);
 						PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel), '', 'C');
+
+						
 						break;
 				}
-
-
 				break;
 		}
 	}

@@ -22,42 +22,42 @@ use Exception;
 
 class hb
 {
-  private $btnClass;
-  private $fieldClass;
-  private $tabClass;
-  public $modulename = 'Beginning and Closing Balance';
-  public $gridname = 'accounting';
-  private $companysetup;
-  private $coreFunctions;
-  private $othersClass;
-  private $logger;
-  private $sqlquery;
-  public $expirystatus = ['readonly' => false, 'show' => false, 'showdate' => true];
-  public $tablenum = 'hrisnum';
-  public $head = 'hbhead';
-  public $hhead = 'hhbhead';
-  public $detail = 'hbdetail';
-  public $hdetail = 'hhbdetail';
-  public $tablelogs = 'hrisnum_log';
-  public $tablelogs_del = 'del_hrisnum_log';
-  private $stockselect;
-  public $defaultContra = 'IS1';
+    private $btnClass;
+    private $fieldClass;
+    private $tabClass;
+    public $modulename = 'Beginning and Closing Balance';
+    public $gridname = 'accounting';
+    private $companysetup;
+    private $coreFunctions;
+    private $othersClass;
+    private $logger;
+    private $sqlquery;
+    public $expirystatus = ['readonly' => false, 'show' => false, 'showdate' => true];
+    public $tablenum = 'hrisnum';
+    public $head = 'hbhead';
+    public $hhead = 'hhbhead';
+    public $detail = 'hbdetail';
+    public $hdetail = 'hhbdetail';
+    public $tablelogs = 'hrisnum_log';
+    public $tablelogs_del = 'del_hrisnum_log';
+    private $stockselect;
+    public $defaultContra = 'IS1';
 
-  private $fields = ['trno', 'docno', 'dateid', 'empid', 'line', 'pacnoid','uom','db','cr','rem'];
+    private $fields = ['trno', 'docno', 'dateid', 'empid', 'line', 'pacnoid', 'uom', 'db', 'cr', 'rem'];
 
-  private $except = ['trno', 'dateid'];
-  public $acctg = [];
-  public $showfilteroption = true;
-  public $showfilter = true;
-  public $showcreatebtn = true;
-  private $reporter;
-  private $helpClass;
+    private $except = ['trno', 'dateid'];
+    public $acctg = [];
+    public $showfilteroption = true;
+    public $showfilter = true;
+    public $showcreatebtn = true;
+    private $reporter;
+    private $helpClass;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -69,19 +69,19 @@ class hb
     public function getAttrib()
     {
         $attrib = array(
-        'view' => 5978,
-        'edit' => 5979,
-        'new' => 5980,
-        'save' => 5981,
-        'delete' => 5982,
-        'print' => 5983,
-        'lock' => 5984,
-        'unlock' => 5985,
-        'post' => 5986,
-        'unpost' => 5987,
-        'additem' => 5988,
-        'edititem' => 5989,
-        'deleteitem' => 5990
+            'view' => 5978,
+            'edit' => 5979,
+            'new' => 5980,
+            'save' => 5981,
+            'delete' => 5982,
+            'print' => 5983,
+            'lock' => 5984,
+            'unlock' => 5985,
+            'post' => 5986,
+            'unpost' => 5987,
+            'additem' => 5988,
+            'edititem' => 5989,
+            'deleteitem' => 5990
         );
         return $attrib;
     }
@@ -100,7 +100,7 @@ class hb
         $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
         $stockbuttons = ['view', 'duplicatedoc'];
         foreach ($getcols as $key => $value) {
-        $$value = $key;
+            $$value = $key;
         }
         $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
 
@@ -108,7 +108,7 @@ class hb
         $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
         $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
         $cols[$postdate]['label'] = 'Post Date';
-    
+
         return $cols;
     }
 
@@ -126,30 +126,30 @@ class hb
 
 
         switch ($itemfilter) {
-        case 'draft':
-            $condition = ' and num.postdate is null ';
-            break;
-        case 'posted':
-            $condition = ' and num.postdate is not null ';
-            break;
+            case 'draft':
+                $condition = ' and num.postdate is null ';
+                break;
+            case 'posted':
+                $condition = ' and num.postdate is not null ';
+                break;
         }
 
         if (isset($config['params']['search'])) {
-        $searchfield = ['head.docno', 'head.clientname', 'head.yourref', 'head.ourref', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby'];
-        $search = $config['params']['search'];
-        if ($search != "") {
-            $filtersearch = $this->othersClass->multisearch($searchfield, $search);
-        }
+            $searchfield = ['head.docno', 'head.clientname', 'head.yourref', 'head.ourref', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby'];
+            $search = $config['params']['search'];
+            if ($search != "") {
+                $filtersearch = $this->othersClass->multisearch($searchfield, $search);
+            }
         }
 
         $join = "";
         $hjoin = "";
         $field = "";
-        
+
         $dateid = "left(head.dateid,10) as dateid";
         if ($searchfilter == "") $limit = 'limit 150';
         $orderby =  "order by  dateid desc, docno desc";
-    
+
         $qry = "select head.trno,head.docno,head.empid,$dateid, 'DRAFT' as status,
         head.createby,head.editby,head.viewby,num.postedby, date(num.postdate) as postdate    $field       
         from " . $this->head . " as head 
@@ -172,33 +172,33 @@ class hb
     {
         $companyid = $config['params']['companyid'];
         $btns = array(
-        'load',
-        'new',
-        'save',
-        'delete',
-        'cancel',
-        'print',
-        'lock',
-        'unlock',
-        'post',
-        'unpost',
-        'logs',
-        'edit',
-        'backlisting',
-        'toggleup',
-        'toggledown',
-        'help',
-        'others'
+            'load',
+            'new',
+            'save',
+            'delete',
+            'cancel',
+            'print',
+            'lock',
+            'unlock',
+            'post',
+            'unpost',
+            'logs',
+            'edit',
+            'backlisting',
+            'toggleup',
+            'toggledown',
+            'help',
+            'others'
         );
         $buttons = $this->btnClass->create($btns);
         $buttons['others']['items'] = [
-        'first' => ['label' => 'First', 'todo' => ['action' => 'navigation', 'lookupclass' => 'first', 'access' => 'view', 'type' => 'navigation']],
-        'prev' => ['label' => 'Previous', 'todo' => ['action' => 'navigation', 'lookupclass' => 'prev', 'access' => 'view', 'type' => 'navigation']],
-        'next' => ['label' => 'Next', 'todo' => ['action' => 'navigation', 'lookupclass' => 'next', 'access' => 'view', 'type' => 'navigation']],
-        'last' => ['label' => 'Last', 'todo' => ['action' => 'navigation', 'lookupclass' => 'last', 'access' => 'view', 'type' => 'navigation']],
+            'first' => ['label' => 'First', 'todo' => ['action' => 'navigation', 'lookupclass' => 'first', 'access' => 'view', 'type' => 'navigation']],
+            'prev' => ['label' => 'Previous', 'todo' => ['action' => 'navigation', 'lookupclass' => 'prev', 'access' => 'view', 'type' => 'navigation']],
+            'next' => ['label' => 'Next', 'todo' => ['action' => 'navigation', 'lookupclass' => 'next', 'access' => 'view', 'type' => 'navigation']],
+            'last' => ['label' => 'Last', 'todo' => ['action' => 'navigation', 'lookupclass' => 'last', 'access' => 'view', 'type' => 'navigation']],
         ];
         return $buttons;
-    } 
+    }
 
     public function createTab($access, $config)
     {
@@ -220,8 +220,8 @@ class hb
 
         $tab = [
             $this->gridname => [
-            'gridcolumns' => $columns,
-            'headgridbtns' => []
+                'gridcolumns' => $columns,
+                'headgridbtns' => []
             ]
         ];
 
@@ -239,19 +239,19 @@ class hb
 
     public function createtabbutton($config)
     {
-        $tbuttons = [ 'additem','saveitem', 'deleteallitem'];
+        $tbuttons = ['additem', 'saveitem', 'deleteallitem'];
         $obj = $this->tabClass->createtabbutton($tbuttons);
         $obj[0]['label'] = "ADD ACCOUNT";
         $obj[0]['lookupclass'] = 'lookupoacnodetail';
         $obj[0]['action'] = 'addpacno';
         $obj[1]['label'] = "SAVE ACCOUNT";
-        $obj[2]['label'] = "DELETE ACCOUNT";    
+        $obj[2]['label'] = "DELETE ACCOUNT";
         return $obj;
     }
 
     public function createHeadField($config)
     {
-        $fields = ['docno','empcode'];
+        $fields = ['docno', 'empcode'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'empcode.name', 'empname');
         data_set($col1, 'empcode.label', 'Employee Name');
@@ -280,7 +280,7 @@ class hb
         if ($trno == 0) {
             $trno = $this->othersClass->readprofile('TRNO', $config);
             if ($trno == '') {
-            $trno = $this->coreFunctions->datareader("select trno as value from " . $this->tablenum . " where doc=? and center=? order by trno desc limit 1", [$doc, $center]);
+                $trno = $this->coreFunctions->datareader("select trno as value from " . $this->tablenum . " where doc=? and center=? order by trno desc limit 1", [$doc, $center]);
             }
             $config['params']['trno'] = $trno;
         } else {
@@ -319,7 +319,7 @@ class hb
             $this->coreFunctions->sbcupdate($this->head, ['viewdate' => $viewdate, 'viewby' => $viewby], ['trno' => $trno]);
             $msg = 'Data Fetched Success';
             if (isset($config['msg'])) {
-            $msg = $config['msg'];
+                $msg = $config['msg'];
             }
             return  ['head' => $head, 'griddata' => ['accounting' => $detail], 'islocked' => $islocked, 'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg];
         } else {
@@ -329,36 +329,36 @@ class hb
         }
     }
 
-     public function updatehead($config, $isupdate)
+    public function updatehead($config, $isupdate)
     {
         $head = $config['params']['head'];
         $companyid = $config['params']['companyid'];
         $data = [];
         if ($isupdate) {
-        unset($this->fields[1]);
-        unset($head['docno']);
+            unset($this->fields[1]);
+            unset($head['docno']);
         }
 
         $dateTables = [$this->head];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'],  $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key) {
-        if (array_key_exists($key, $head)) {
-            $data[$key] = $head[$key];
-            if (!in_array($key, $this->except)) {
-            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
-            } //end if    
-        }
+            if (array_key_exists($key, $head)) {
+                $data[$key] = $head[$key];
+                if (!in_array($key, $this->except)) {
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+                } //end if    
+            }
         }
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
         if ($isupdate) {
-        $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
+            $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
         } else {
-        $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
-        $data['createby'] = $config['params']['user'];
-        $this->coreFunctions->sbcinsert($this->head, $data);
-        $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['empid']);
+            $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
+            $data['createby'] = $config['params']['user'];
+            $this->coreFunctions->sbcinsert($this->head, $data);
+            $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['empid']);
         }
     } // end function
 
@@ -380,24 +380,7 @@ class hb
     {
         $trno = $config['params']['trno'];
         $user = $config['params']['user'];
-        $doc = $config['params']['doc'];
-
         $docno = $this->coreFunctions->datareader('select docno as value from ' . $config['docmodule']->tablenum . ' where trno=?', [$trno]);
-        $msg = '';
-
-        //less than 0 check
-        $isnegative = $this->coreFunctions->opentable("select trno from " . $this->detail . " where trno=? and (db < 0 or cr < 0) limit 1", [$trno]);
-        if (!empty($isnegative)) {
-            return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. Negative debit or credit are not allowed. Please check.'];
-        }
-        //balance check
-        $bal = $this->coreFunctions->getfieldvalue($this->detail, 'sum(db-cr)', 'trno=?', [$trno]);
-        if ($bal == '' || $bal == null) {
-            $bal = 0;
-        }
-        if ($bal != 0) {
-            return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. Accounting entries are not balance.'];
-        }
 
         $qry = "insert into " . $this->hhead . " (trno, docno, dateid, empid, createby, createdate, editby, editdate, viewby, viewdate, lockdate)
                 select trno, docno, dateid, empid, createby, createdate, editby, editdate, viewby, viewdate, lockdate
@@ -416,16 +399,12 @@ class hb
         $this->coreFunctions->execqry("delete from " . $this->detail . " where trno=?", "delete", [$trno]);
         $this->logger->sbcwritelog($trno, $config, 'POSTED', $docno);
         return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully posted.'];
-    } 
+    }
 
     public function unposttrans($config)
     {
         $trno = $config['params']['trno'];
-        $user = $config['params']['user'];
-        $doc = $config['params']['doc'];
-
         $docno = $this->coreFunctions->datareader('select docno as value from ' . $config['docmodule']->tablenum . ' where trno=?', [$trno]);
-        $msg = '';
 
         $qry = "insert into " . $this->head . " (trno, docno, dateid, empid, createby, createdate, editby, editdate, viewby, viewdate, lockdate)
                 select trno, docno, dateid, empid, createby, createdate, editby, editdate, viewby, viewdate, lockdate
@@ -442,7 +421,7 @@ class hb
         $this->coreFunctions->execqry("delete from " . $this->hdetail . " where trno=?", "delete", [$trno]);
         $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
         return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
-    } 
+    }
 
     private function getdetailselect($config)
     {
@@ -482,7 +461,7 @@ class hb
         where d.trno=? and d.line=?";
         $detail = $this->coreFunctions->opentable($qry, [$trno, $line]);
         return $detail;
-    } 
+    }
 
     public function stockstatus($config)
     {
@@ -491,23 +470,23 @@ class hb
             // return $this->additem('insert', $config);
             // break;
             case 'addpacno':
-            return $this->addpacno($config);
-            break;
+                return $this->addpacno($config);
+                break;
             case 'deleteallitem':
-            return $this->deleteallitem($config);
-            break;
+                return $this->deleteallitem($config);
+                break;
             case 'deleteitem':
-            return $this->deleteitem($config);
-            break;
+                return $this->deleteitem($config);
+                break;
             case 'saveitem': //save all detail edited
-            return $this->updateitem($config);
-            break;
+                return $this->updateitem($config);
+                break;
             case 'saveperitem':
-            return $this->updateperitem($config);
-            break;
+                return $this->updateperitem($config);
+                break;
             default:
-            return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
-            break;
+                return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
+                break;
         }
     }
 
@@ -532,7 +511,7 @@ class hb
             $qry = "select line as value from " . $this->detail . " where trno=? order by line desc limit 1";
             $line = $this->coreFunctions->datareader($qry, [$trno]);
             if ($line == '') {
-            $line = 0;
+                $line = 0;
             }
             $line = $line + 1;
             $config['params']['line'] = $line;
@@ -569,9 +548,9 @@ class hb
             $data['createdate'] = $current_timestamp;
         } elseif ($action == 'update') {
             if ($this->coreFunctions->sbcupdate($this->detail, $data, ['trno' => $trno, 'line' => $line]) == 1) {
-            $status = true;
+                $status = true;
             } else {
-            $status = false;
+                $status = false;
             }
             return ['status' => $status, 'msg' => ''];
         }
@@ -608,12 +587,12 @@ class hb
                 array_push($returnrows, $row[0]);
             }
             $codename = $this->coreFunctions->getfieldvalue('paccount', 'codename', 'line=?', [$pacctrow['line']]);
-            $this->logger->sbcwritelog($trno, $config, 'PAYROLLDETAIL', 'ADD - Line:' . $line . ' Code:' .$codename .'('. $pacctrow['acno'].')');
+            $this->logger->sbcwritelog($trno, $config, 'PAYROLLDETAIL', 'ADD - Line:' . $line . ' Code:' . $codename . '(' . $pacctrow['acno'] . ')');
         }
 
         return ['status' => true, 'msg' => 'Account(s) added successfully...', 'row' => $returnrows, 'reloaddata' => true];
     } // end function
-    
+
 
     public function deleteallitem($config)
     {
@@ -644,19 +623,19 @@ class hb
             $config['params']['data'] = $value;
             $isupdate = $this->additem('update', $config);
             if ($isupdate['status'] == false) {
-            break;
+                break;
             }
         }
         $data = $this->opendetail($config['params']['trno'], $config);
         $data2 = json_decode(json_encode($data), true);
         $msg1 = '';
         foreach ($data2 as $key => $value) {
-             $dbValue = floatval(isset($value['db']) ? $value['db'] : 0);
+            $dbValue = floatval(isset($value['db']) ? $value['db'] : 0);
             $crValue = floatval(isset($value['cr']) ? $value['cr'] : 0);
             if ($dbValue == 0 && $crValue == 0) {
-            $data[$key]->errcolor = 'bg-red-2';
-            $isupdate['status'] = false;
-            $msg1 = ' Some entries have zero value both debit and credit ';
+                $data[$key]->errcolor = 'bg-red-2';
+                $isupdate['status'] = false;
+                $msg1 = ' Some entries have zero value both debit and credit ';
             }
         }
         if ($isupdate['status']) {
@@ -679,18 +658,18 @@ class hb
         }
     }
 
-      public function stockstatusposted($config)
+    public function stockstatusposted($config)
     {
         switch ($config['params']['action']) {
-        case 'duplicatedoc':
-            return $this->othersClass->duplicateTransaction($config);
-            break;
-        case 'navigation':
-            return $this->othersClass->navigatedocno($config);
-            break;
-        default:
-            return ['status' => 'false', 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];
-            break;
+            case 'duplicatedoc':
+                return $this->othersClass->duplicateTransaction($config);
+                break;
+            case 'navigation':
+                return $this->othersClass->navigatedocno($config);
+                break;
+            default:
+                return ['status' => 'false', 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];
+                break;
         }
     }
 
@@ -715,8 +694,4 @@ class hb
 
         return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'reloadhead' => true];
     }
-
-
-    
-
 }

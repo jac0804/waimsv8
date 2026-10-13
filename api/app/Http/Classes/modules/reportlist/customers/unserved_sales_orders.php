@@ -32,12 +32,12 @@ class unserved_sales_orderS
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -50,7 +50,7 @@ class unserved_sales_orderS
     data_set($col1, 'dclientname.label', 'Customer');
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'default', 'color' => 'red'],
-     
+
     ]);
     $fields = ['print'];
     $col2 = $this->fieldClass->create($fields);
@@ -94,7 +94,7 @@ class unserved_sales_orderS
     $center = $config['params']['center'];
     $companyid = $config['params']['companyid'];
     $username = $config['params']['user'];
-   
+
     $result = $this->reportDefaultLayout_Customer($config);
     return $result;
   }
@@ -105,7 +105,7 @@ class unserved_sales_orderS
     $companyid     = $config['params']['companyid'];
     $center     = $config['params']['dataparams']['center'];
     $client     = $config['params']['dataparams']['client'];
-    
+
     $agent       = $config['params']['dataparams']['agent'];
 
     $filter = "";
@@ -116,7 +116,7 @@ class unserved_sales_orderS
       $filter = $filter . " and client.client='$client'";
     }
 
-    
+
 
     if ($center != "") {
       $filter .= " and transnum.center='$center'";
@@ -131,7 +131,7 @@ class unserved_sales_orderS
     $datefilter = " and date(head.dateid) between '" . $start . "' and '" . $end . "'";
 
 
-   
+
     $query = "select client.clientname as cgrp,
           concat(item.groupid,' ',item.brand,' ',item.itemname) as igrp, head.docno,
           client.clientname, item.itemname, item.groupid, item.brand, item.class,stock.disc,
@@ -179,17 +179,17 @@ class unserved_sales_orderS
     $username   = $config['params']['user'];
     $companyid = $config['params']['companyid'];
     $client     = $config['params']['dataparams']['client'];
-  
+
     $agent       = $config['params']['dataparams']['agent'];
     $agentname       = $config['params']['dataparams']['agentname'];
-    
+
     $filtercenter       = $config['params']['dataparams']['dcentername'];
     $start = date("m/d/Y", strtotime($config['params']['dataparams']['start']));
     $end = date("m/d/Y", strtotime($config['params']['dataparams']['end']));
 
     $str = '';
     $layoutsize = '';
-   
+
     $layoutsize == '1150';
 
     $font = $this->companysetup->getrptfont($config['params']);
@@ -211,7 +211,7 @@ class unserved_sales_orderS
     $str .= $this->reporter->endtable();
 
     $cus = $client == '' ? 'ALL' : $client;
-   
+
     $age = $agent == '' ? 'ALL' : $agent . ' ~ ' . $agentname;
     $filtercenter = $filtercenter == '' ? 'ALL' : $filtercenter;
     $str .= $this->reporter->begintable($layoutsize);
@@ -284,7 +284,7 @@ class unserved_sales_orderS
       $bal = $data->unserved;
       $uom = $data->uom;
       $amt = $bal * $data->amt;
-      
+
 
 
       if ($item != '' && $item != ($data->clientname)) {
@@ -300,7 +300,7 @@ class unserved_sales_orderS
         $str .= $this->reporter->col(number_format($amttotal, 2), '100', null, false,  $border, 'T', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-   
+
         $amttotal = 0;
         $ordertotal = 0;
         $tbalance = 0;

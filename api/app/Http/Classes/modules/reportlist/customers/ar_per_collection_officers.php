@@ -32,12 +32,12 @@ class ar_per_collection_officers
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -94,7 +94,7 @@ class ar_per_collection_officers
 
     $query = $this->default_QUERY($config);
 
-    
+
     return $this->coreFunctions->opentable($query);
   }
 
@@ -156,10 +156,10 @@ class ar_per_collection_officers
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('AGENT NAME&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp-&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspCOLLECION OFFICER', '400', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
-  
+
     $str .= $this->reporter->col('CUSTOMER', '200', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('AMOUNT', '200', null, false, $border, 'BT', 'L', $font, $fontsize, 'B', '', '');
-   
+
 
     return $str;
   }
@@ -221,7 +221,7 @@ class ar_per_collection_officers
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('', '400', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-     
+
       $str .= $this->reporter->col($data->customer, '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col(number_format($data->amount, $decimalprice), '200', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
 
@@ -245,7 +245,7 @@ class ar_per_collection_officers
       if ($datacount == $counter) {
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', '400', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-      
+
         $str .= $this->reporter->col('SUB TOTAL: ', '200', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col(number_format($subtotal, $decimalprice), '100', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
@@ -254,7 +254,7 @@ class ar_per_collection_officers
     }
 
     $str .= $this->reporter->col('', '400', null, false, $border, 'TB', 'C', $font, $fontsize, '', '', '');
-    
+
     $str .= $this->reporter->col('TOTAL: ', '200', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col(number_format($gtotal, $decimalprice), '200', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
 

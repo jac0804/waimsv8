@@ -28,10 +28,10 @@ class viewschedulehistory
   public $issearchshow = true;
   public $showclosebtn = false;
 
-  function __construct()
+  function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -39,8 +39,8 @@ class viewschedulehistory
 
   public function getAttrib()
   {
-      $attrib = array('load' => 2030);
-      return $attrib;
+    $attrib = array('load' => 2030);
+    return $attrib;
   }
 
   public function createTab($config)
@@ -52,7 +52,7 @@ class viewschedulehistory
     $dateid = 4;
     $userid = 5;
 
-    $tab = [$this->gridname=>['gridcolumns'=>['dispatchdate', 'dispatchby', 'scheddate', 'truck', 'dateid', 'userid']]];
+    $tab = [$this->gridname => ['gridcolumns' => ['dispatchdate', 'dispatchby', 'scheddate', 'truck', 'dateid', 'userid']]];
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
@@ -75,15 +75,11 @@ class viewschedulehistory
 
   public function loaddata($config)
   {
-      $trno = $config['params']['tableid'];
-      $qry = "select r.trno, left(r.dispatchdate, 10) as dispatchdate, r.dispatchby, left(r.scheddate, 10) as scheddate, client.clientname as truck, left(r.dateid, 10) as dateid, r.userid
+    $trno = $config['params']['tableid'];
+    $qry = "select r.trno, left(r.dispatchdate, 10) as dispatchdate, r.dispatchby, left(r.scheddate, 10) as scheddate, client.clientname as truck, left(r.dateid, 10) as dateid, r.userid
       from reschedule as r left join client on client.clientid=r.truckid
       where trno=?
       order by r.scheddate";
-      return $this->coreFunctions->opentable($qry, [$trno]);
+    return $this->coreFunctions->opentable($qry, [$trno]);
   }
 }
-
-
-
- ?>

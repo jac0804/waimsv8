@@ -32,12 +32,12 @@ class task_errand_report
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -111,7 +111,7 @@ class task_errand_report
 
   public function reportplotting($config)
   {
-     $reporttype = $config['params']['dataparams']['reporttype'];
+    $reporttype = $config['params']['dataparams']['reporttype'];
 
     switch ($reporttype) {
       case 0:

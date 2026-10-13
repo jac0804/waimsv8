@@ -35,11 +35,11 @@ class ttc
     private $payrollcommon;
     public $fields = ['daytype', 'shiftcode', 'schedin', 'schedbrkout', 'schedbrkin', 'schedout', 'reghrs', 'shiftid', 'isok'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -374,7 +374,7 @@ class ttc
                     }
                     foreach ($this->fields as $k) {
                         if (isset($val[$k])) {
-                            $data[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k],$lookups);
+                            $data[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k], $lookups);
                             if ($k == 'dateid') {
                                 $data[$k] = date_format(date_create($val[$k]), "Y-m-d");
                             }

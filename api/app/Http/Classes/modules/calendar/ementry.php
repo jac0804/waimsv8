@@ -31,11 +31,11 @@ class ementry
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->htbtnClass = new htbuttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -92,10 +92,7 @@ class ementry
     return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3];
   }
 
-  public function openstock()
-  {
-
-  }
+  public function openstock() {}
 
 
   public function data()

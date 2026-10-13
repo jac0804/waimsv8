@@ -49,11 +49,11 @@ class prlisting
         // ['val' => 'void', 'label' => 'Void Items', 'color' => 'primary']
     ];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -102,7 +102,30 @@ class prlisting
         $isadv = 23;
 
         $getcols = [
-            'action', 'iscleared', 'ctrlno', 'deadline', 'category',  'createdate', 'docno', 'department', 'itemdesc', 'rrqty', 'uom', 'clientname', 'stat', 'ocrref', 'rrref', 'cvref', 'osiref2', 'ref', 'numdays', 'empname', 'po', 'supplier', 'terms', 'isadv'
+            'action',
+            'iscleared',
+            'ctrlno',
+            'deadline',
+            'category',
+            'createdate',
+            'docno',
+            'department',
+            'itemdesc',
+            'rrqty',
+            'uom',
+            'clientname',
+            'stat',
+            'ocrref',
+            'rrref',
+            'cvref',
+            'osiref2',
+            'ref',
+            'numdays',
+            'empname',
+            'po',
+            'supplier',
+            'terms',
+            'isadv'
         ];
 
         $stockbuttons = ['view', 'showtimeline']; //'customformupdateinfo', 
@@ -279,12 +302,12 @@ class prlisting
                 case 'Client/Project Name':
                     array_push($searchfield, 'head.clientname');
                     break;
-                    // case 'Module Status':
-                    //     array_push($searchfield, '');
-                    //     break;
-                    // case 'OCR Status':
-                    //     array_push($searchfield, '');
-                    //     break;
+                // case 'Module Status':
+                //     array_push($searchfield, '');
+                //     break;
+                // case 'OCR Status':
+                //     array_push($searchfield, '');
+                //     break;
                 case 'Item Status':
                     array_push($searchfield, 'trstat.status');
                     break;
@@ -295,7 +318,7 @@ class prlisting
                     array_push($searchfield, 'emp.clientname');
                     break;
 
-                    // use in the qry that has loop for PO
+                // use in the qry that has loop for PO
                 case 'P.O. No.':
                     array_push($searchfieldpo, 'pohead.docno');
                     break;

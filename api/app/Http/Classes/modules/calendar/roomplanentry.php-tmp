@@ -21,7 +21,7 @@ class roomplanentry {
 
 	public $issearchshow = true;
 
-	public function __construct() {
+	public function __construct($params = null) {
 		$this->fieldClass    = new txtfieldClass;
 		$this->tabClass      = new tabClass;
 		$this->companysetup  = new companysetup;

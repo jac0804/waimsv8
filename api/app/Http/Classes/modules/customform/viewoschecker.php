@@ -30,10 +30,10 @@ class viewoschecker
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -51,8 +51,17 @@ class viewoschecker
         $doc = $config['params']['doc'];
 
         $fields = [
-            ['cur'], ['tin', 'vcur'], ['isqty', 'replaceqty'], ['contact', 'tel'], ['refresh', 'update'], 'minimum', 'lblshipping',
-            ['db', 'bal'], ['cr', 'endbal'], ['begbal', 'clearbal'], 'difference'
+            ['cur'],
+            ['tin', 'vcur'],
+            ['isqty', 'replaceqty'],
+            ['contact', 'tel'],
+            ['refresh', 'update'],
+            'minimum',
+            'lblshipping',
+            ['db', 'bal'],
+            ['cr', 'endbal'],
+            ['begbal', 'clearbal'],
+            'difference'
         ];
 
         $col1 = $this->fieldClass->create($fields);

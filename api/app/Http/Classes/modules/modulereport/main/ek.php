@@ -26,9 +26,9 @@ class ek
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -186,12 +186,12 @@ class ek
         $edindex += 1;
       }
       if ($gdata['Q1'] == '' || $gdata['Q2'] == '' || $gdata['Q3'] == '' || $gdata['Q4'] == '') $gdata['average'] = '';
-      PDF::MultiCell(180, 20, ' '.$gdata['subject'], 1, 'L', false, 0, '', '', true, 0, false, true, 20, 'M');
-      PDF::MultiCell(43, 20, ' '.$gdata['Q1'], 1, 'L', false, 0, '', '', true, 0, false, true, 20, 'M');
-      PDF::MultiCell(43, 20, ' '.$gdata['Q2'], 1, 'L', false, 0, '', '', true, 0, false, true, 20, 'M');
-      PDF::MultiCell(43, 20, ' '.$gdata['Q3'], 1, 'L', false, 0, '', '', true, 0, false, true, 20, 'M');
-      PDF::MultiCell(43, 20, ' '.$gdata['Q4'], 1, 'L', false, 0, '', '', true, 0, false, true, 20, 'M');
-      PDF::MultiCell(43, 20, ' '.$gdata['average'], 1, 'L', false, 0, '', '', true, 0, false, true, 20, 'M');
+      PDF::MultiCell(180, 20, ' ' . $gdata['subject'], 1, 'L', false, 0, '', '', true, 0, false, true, 20, 'M');
+      PDF::MultiCell(43, 20, ' ' . $gdata['Q1'], 1, 'L', false, 0, '', '', true, 0, false, true, 20, 'M');
+      PDF::MultiCell(43, 20, ' ' . $gdata['Q2'], 1, 'L', false, 0, '', '', true, 0, false, true, 20, 'M');
+      PDF::MultiCell(43, 20, ' ' . $gdata['Q3'], 1, 'L', false, 0, '', '', true, 0, false, true, 20, 'M');
+      PDF::MultiCell(43, 20, ' ' . $gdata['Q4'], 1, 'L', false, 0, '', '', true, 0, false, true, 20, 'M');
+      PDF::MultiCell(43, 20, ' ' . $gdata['average'], 1, 'L', false, 0, '', '', true, 0, false, true, 20, 'M');
       PDF::MultiCell(43, 20, '', 1, 'L', false, 1, '', '', true, 0, false, true, 20, 'M');
     }
   }
@@ -626,9 +626,9 @@ class ek
     $dlate = [];
     if (!empty($head)) {
       $totalpresent = $totaltardy = $totalall = 0;
-      $atsetup = $this->coreFunctions->opentable("select jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, `dec`, totaldays, month(startmonth) as startmonth, month(endmonth) as endmonth from en_attendancesetup where syid=".$head[0]->syid." and levelid=".$head[0]->levelid);
-      $attendance = $this->coreFunctions->opentable("select jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, `dec` from en_glstudents where schedtrno=".$head[0]->schedtrno." and clientid=".$stud->clientid);
-      $tardy = $this->coreFunctions->opentable("select tjan, tfeb, tmar, tapr, tmay, tjun, tjul, taug, tsep, toct, tnov, tdec from en_glstudents where schedtrno=".$head[0]->schedtrno." and clientid=".$stud->clientid);
+      $atsetup = $this->coreFunctions->opentable("select jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, `dec`, totaldays, month(startmonth) as startmonth, month(endmonth) as endmonth from en_attendancesetup where syid=" . $head[0]->syid . " and levelid=" . $head[0]->levelid);
+      $attendance = $this->coreFunctions->opentable("select jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, `dec` from en_glstudents where schedtrno=" . $head[0]->schedtrno . " and clientid=" . $stud->clientid);
+      $tardy = $this->coreFunctions->opentable("select tjan, tfeb, tmar, tapr, tmay, tjun, tjul, taug, tsep, toct, tnov, tdec from en_glstudents where schedtrno=" . $head[0]->schedtrno . " and clientid=" . $stud->clientid);
       $atmonths = [];
       $atsmonths = [];
       $tarmonths = [];
@@ -656,20 +656,44 @@ class ek
       if (!empty($atsetup)) {
         $months2 = $this->getMonths($atsetup[0]->startmonth, $atsetup[0]->endmonth);
         if (!empty($atmonths)) {
-          foreach($months2 as $mk => $m) {
+          foreach ($months2 as $mk => $m) {
             switch ($mk) {
-              case 1: $monthname = 'JAN'; break;
-              case 2: $monthname = 'FEB'; break;
-              case 3: $monthname = 'MAR'; break;
-              case 4: $monthname = 'APR'; break;
-              case 5: $monthname = 'MAY'; break;
-              case 6: $monthname = 'JUN'; break;
-              case 7: $monthname = 'JUL'; break;
-              case 8: $monthname = 'AUG'; break;
-              case 9: $monthname = 'SEP'; break;
-              case 10: $monthname = 'OCT'; break;
-              case 11: $monthname = 'NOV'; break;
-              default: $monthname = 'DEC'; break;
+              case 1:
+                $monthname = 'JAN';
+                break;
+              case 2:
+                $monthname = 'FEB';
+                break;
+              case 3:
+                $monthname = 'MAR';
+                break;
+              case 4:
+                $monthname = 'APR';
+                break;
+              case 5:
+                $monthname = 'MAY';
+                break;
+              case 6:
+                $monthname = 'JUN';
+                break;
+              case 7:
+                $monthname = 'JUL';
+                break;
+              case 8:
+                $monthname = 'AUG';
+                break;
+              case 9:
+                $monthname = 'SEP';
+                break;
+              case 10:
+                $monthname = 'OCT';
+                break;
+              case 11:
+                $monthname = 'NOV';
+                break;
+              default:
+                $monthname = 'DEC';
+                break;
             }
             $months2[$mk]['month'] = $monthname;
             $months2[$mk]['total'] = $atsmonths[$mk - 1];
@@ -690,7 +714,7 @@ class ek
         }
         PDF::MultiCell(44, 30, 'TOTAL', 1, 'C', false, 0, '', '', true, 0, false, true, 30, 'M');
         PDF::MultiCell(2, 30, '', 0, 'C', false, 1);
-        
+
         PDF::MultiCell(80, 20, '  Days of School', 1, 'L', false, 0, '', '', true, 0, false, true, 20, 'M');
         foreach ($months2 as $m2) {
           PDF::MultiCell(23, 20, $m2['total'], 1, 'C', false, 0, '', '', true, 0, false, true, 20, 'M');

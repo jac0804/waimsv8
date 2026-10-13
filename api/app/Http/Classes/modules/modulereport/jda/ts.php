@@ -37,9 +37,9 @@ class ts
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -71,18 +71,18 @@ class ts
     public function reportparamsdata($config)
     {
         // $companyid = $config['params']['companyid'];
-
-        // $username = $this->coreFunctions->datareader("select name as value from useraccess where username =? ", [$config['params']['user']]);
-        // $approved = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'approved' and doc =? ", [$config['params']['doc']]);
-        // $received = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'received' and doc =? ", [$config['params']['doc']]);
+        $prepared = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'prepared' and doc =? and userid=? ", [$config['params']['doc'], $config['params']['user']]);
+        $approved = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'approved' and doc =? and userid=? ", [$config['params']['doc'], $config['params']['user']]);
+        $received = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'received' and doc =? and userid=? ", [$config['params']['doc'], $config['params']['user']]);
+        $noted = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'noted' and doc =? and userid=? ", [$config['params']['doc'], $config['params']['user']]);
 
         $paramstr = "select
           'PDFM' as print,
           0 as reporttype,
-          '' as prepared,
-          '' as approved,
-          '' as received,
-          '' as noted";
+          '" . $prepared . "' as prepared,
+          '" . $approved . "' as approved,
+          '" . $received . "' as received,
+          '" . $noted . "' as noted";
 
         return $this->coreFunctions->opentable($paramstr);
     }
@@ -364,9 +364,9 @@ class ts
 
         $destination = "";
         if ($reporttype == 2) {
-            $destination = (isset($data[0]['swh']) ? $data[0]['swh'] : '') . ' ' . (isset($data[0]['clientname']) ? $data[0]['clientname'] . ' (destination)' : '');
+            $destination = (isset($data[0]['swh']) ? $data[0]['client'] : '') . ' ' . (isset($data[0]['clientname']) ? $data[0]['clientname'] . ' (destination)' : '');
         } else {
-            $destination = (isset($data[0]['swh']) ? $data[0]['swh'] : '') . ' ' . (isset($data[0]['clientname']) ? $data[0]['clientname'] : '');
+            $destination = (isset($data[0]['swh']) ? $data[0]['client'] : '') . ' ' . (isset($data[0]['clientname']) ? $data[0]['clientname'] : '');
         }
 
         PDF::SetFont($font, '', $fontsize);
@@ -893,7 +893,7 @@ class ts
         PDF::MultiCell(100, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'C', false, 0, '', '');
 
         $destination = "";
-        $destination = (isset($data[0]['swh']) ? $data[0]['swh'] : '') . ' ' . (isset($data[0]['clientname']) ? $data[0]['clientname'] : '');
+        $destination = (isset($data[0]['swh']) ? $data[0]['swh'] : '') . ' ' . (isset($data[0]['whname']) ? $data[0]['whname'] : '');
 
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(0, 30, "", '', 'L');

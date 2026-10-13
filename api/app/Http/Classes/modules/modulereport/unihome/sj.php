@@ -32,10 +32,10 @@ class sj
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -136,7 +136,7 @@ class sj
     left join client as wh on wh.clientid=head.whid
     left join client as whs on whs.clientid=stock.whid
     where head.doc='sj' and head.trno='$trno' order by line";
-    
+
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
 
     return $result;
@@ -615,7 +615,7 @@ class sj
     PDF::MultiCell(700, 0, '', '');
 
     $countarr = 0;
-    
+
     if (!empty($data)) {
       for ($i = 0; $i < count($data); $i++) {
         $itemname = $this->reporter->fixcolumn([$data[$i]['itemname']], '150', 0);
@@ -924,7 +924,6 @@ class sj
       PDF::MultiCell(350, 0, '', '', 'R', false, 0, '110',  '');
       PDF::MultiCell(0, 0, "\n");
       PDF::MultiCell(350, 0, number_format($totalext, 2), '', 'R', false, 1, '340',  '415');
-
     }
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(80, 0, $params['params']['dataparams']['prepared'], '', 'L', false, 0, '80',  '559');
@@ -1079,7 +1078,12 @@ class sj
 
 
         $maxrow = $this->othersClass->getmaxcolumn([
-          $arr_itemname, $arr_qty, $arr_uom, $arr_amt, $arr_disc, $arr_ext
+          $arr_itemname,
+          $arr_qty,
+          $arr_uom,
+          $arr_amt,
+          $arr_disc,
+          $arr_ext
         ]);
         for ($r = 0; $r < $maxrow; $r++) {
 

@@ -37,10 +37,10 @@ class viewdailytaskattachment
     public $fields = [];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -94,7 +94,7 @@ class viewdailytaskattachment
     {
         $companyid = $config['params']['companyid'];
         $fields = [];
-        $col1 = $this->fieldClass->create($fields); 
+        $col1 = $this->fieldClass->create($fields);
 
         return array('col1' => $col1);
     }

@@ -34,10 +34,10 @@ class bq
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -118,7 +118,7 @@ class bq
 
   public function default_BQ_LAYOUT($params, $data)
   {
-    $mdc = URL::to($this->companysetup->getlogopath($params['params']).'sbc.png');
+    $mdc = URL::to($this->companysetup->getlogopath($params['params']) . 'sbc.png');
     $tuv = URL::to('public/images/reports/tuv.jpg');
 
     $companyid = $params['params']['companyid'];
@@ -133,11 +133,11 @@ class bq
     $this->reporter->linecounter = 0;
     $str .= $this->reporter->beginreport();
 
-    
-      $str .= $this->reporter->begintable('800');
-      $str .= $this->reporter->letterhead($center, $username);
-      $str .= $this->reporter->endtable();
-    
+
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->letterhead($center, $username);
+    $str .= $this->reporter->endtable();
+
 
     $str .= '<br><br>';
 
@@ -337,7 +337,7 @@ class bq
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n\n\n", '', 'C');
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '40', '20', 120, 65);
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '40', '20', 120, 65);
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -425,8 +425,8 @@ class bq
     PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n\n\n", '', 'C');
     PDF::MultiCell(0, 0, "\n\n\n");
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '40', '20', 110, 65);
-   
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '40', '20', 110, 65);
+
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
@@ -477,7 +477,7 @@ class bq
 
   public function default_BQ_PDF($params, $data)
   {
-   
+
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
     $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);

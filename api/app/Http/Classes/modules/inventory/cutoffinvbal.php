@@ -39,11 +39,11 @@ class cutoffinvbal
     public $invbal = 'invbal';
     public $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -200,7 +200,7 @@ class cutoffinvbal
             $msg = 'Accounting cut off was successfully reset.';
             $this->logger->sbcmasterlog(0, $config, "RESET - INVCUTOFF");
         }
-        
+
         return ['status' => true, 'msg' => $msg, 'action' => 'load'];
     }
     public function adprofile($cutoffdate)

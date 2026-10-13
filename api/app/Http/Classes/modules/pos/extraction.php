@@ -47,11 +47,11 @@ class extraction
   private $acctg = [];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -345,8 +345,7 @@ class extraction
 
               foreach ($fields as $k) {
                 $data[$k] = $head[$k];
-                $data[$k] = $this->othersClass->sanitizekeyfieldFast($k, $data[$k],$lookups);
-                
+                $data[$k] = $this->othersClass->sanitizekeyfieldFast($k, $data[$k], $lookups);
               }
               $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
               $data['createby'] = $config['params']['user'];
@@ -376,7 +375,7 @@ class extraction
                 ];
 
                 foreach ($stock as $s => $vv) {
-                  $stock[$s] = $this->othersClass->sanitizekeyfieldFast($s, $stock[$s],$lookups);
+                  $stock[$s] = $this->othersClass->sanitizekeyfieldFast($s, $stock[$s], $lookups);
                 }
 
                 $stock['encodeddate'] = $this->othersClass->getCurrentTimeStamp();
@@ -1173,7 +1172,7 @@ class extraction
           $current_timestamp = $this->othersClass->getCurrentTimeStamp();
           foreach ($this->acctg as $key3 => $value) {
             foreach ($value as $key2 => $value2) {
-              $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
+              $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
             }
             $this->acctg[$key3]['editdate'] = $current_timestamp;
             $this->acctg[$key3]['editby'] = $config['params']['user'];
@@ -2038,7 +2037,7 @@ class extraction
           $current_timestamp = $this->othersClass->getCurrentTimeStamp();
           foreach ($this->acctg as $key3 => $value) {
             foreach ($value as $key2 => $value2) {
-              $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
+              $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
             }
             $this->acctg[$key3]['editdate'] = $current_timestamp;
             $this->acctg[$key3]['editby'] = $config['params']['user'];

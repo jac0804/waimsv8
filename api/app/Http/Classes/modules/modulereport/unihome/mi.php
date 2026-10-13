@@ -34,9 +34,9 @@ class mi
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -103,7 +103,6 @@ class mi
   public function reportplotting($params, $data)
   {
     return $this->default_MI_PDF($params, $data);
-    
   }
 
   public function default_MI_layout($params, $data)
@@ -201,10 +200,10 @@ class mi
     $fontsize = "11";
     $border = "1px solid ";
 
-      $str .= $this->reporter->begintable('800');
-      $str .= $this->reporter->letterhead($center, $username);
-      $str .= $this->reporter->endtable();
-    
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->letterhead($center, $username);
+    $str .= $this->reporter->endtable();
+
     $str .= '<br/><br/>';
 
     $str .= $this->reporter->begintable('800');
@@ -437,7 +436,7 @@ class mi
     PDF::MultiCell(253, 0, $params['params']['dataparams']['prepared'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['received'], '', 'L');
-    
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 }

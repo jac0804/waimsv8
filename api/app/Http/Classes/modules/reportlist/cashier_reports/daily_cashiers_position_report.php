@@ -35,12 +35,12 @@ class daily_cashiers_position_report
 
     private $nogroup = 1;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -363,7 +363,6 @@ class daily_cashiers_position_report
                 select head.yourref,head.ourref,head.sicsino,head.drno,head.rslip from hcehead as head
                 left join transnum as num on num.trno=head.trno
                 where date(head.dateid)  = '$start'  $filter ) as a";
-                
         } else { //pdc
             $query = "
             select sum(amount) as amount,bank, checkdate,checkinfo from (
@@ -1212,13 +1211,13 @@ class daily_cashiers_position_report
         if (!empty($users)) {
             $firstPage = true;
             foreach ($users as $user) {
-                if (!$firstPage) {                    
+                if (!$firstPage) {
                     $str .= $this->reporter->page_break(); // bagong page for next user
-                    
+
                 }
                 $firstPage = false;
 
-                $str .= $this->reporter->beginreport($layoutsize);                
+                $str .= $this->reporter->beginreport($layoutsize);
                 $str .= $this->header_DEFAULT($config);
                 // $str .= $this->renderfirst($config, $user, $total);
                 list($htmlFirst, $totalcash_on_hand) = $this->renderfirst($config, $user, $total);
@@ -1286,7 +1285,7 @@ class daily_cashiers_position_report
                 where num.center ='" . $center . "' and date(dateid) ='" . $start . "' and sicsino <>'' and ce.rem2='' and ce.createby='$user->username'
                 union all
                 select concat(min(sicsino),'-',max(sicsino)) as sicsino from tcoll where center ='" . $center . "' and date(dateid) ='" . $start . "' and sicsino <>'' 
-                and createby='$user->username') as v");//and trnxtype = 'MC UNIT'
+                and createby='$user->username') as v"); //and trnxtype = 'MC UNIT'
 
                 $orno = $this->coreFunctions->datareader("select group_concat(orno order by orno separator ', ') as value from (
                 select concat(min(ourref),'-',max(ourref)) as orno from hcehead as ce left join transnum as num on num.trno = ce.trno 
@@ -1340,7 +1339,7 @@ class daily_cashiers_position_report
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
 
-               ////////////
+                ////////////
 
 
                 $str .= '<br/><br/>';
@@ -1352,7 +1351,7 @@ class daily_cashiers_position_report
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
 
-		$str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
                 $str .= $this->reporter->col('DATE OF CHECK', '200', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->col('AMOUNT', '300', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
@@ -1494,9 +1493,9 @@ class daily_cashiers_position_report
 
         // BEG BALANCE
         //$cash   = $this->coreFunctions->getfieldvalue("eod", "begbal", "date(dateid)<? and closeby = ?", [$start,$user->username], "dateid desc", true);
-        $cash   = $this->coreFunctions->getfieldvalue("eod", "cash", "date(dateid)<? and closeby = ?", [$start,$user->username], "dateid desc", true);
-        $checks = $this->coreFunctions->getfieldvalue("eod", "checks", "date(dateid)<? and closeby = ?", [$start,$user->username], "dateid desc", true);
-        $begbal = $this->coreFunctions->getfieldvalue("eod", "begbal", "date(dateid)=? and closeby = ?", [$start,$user->username], "dateid desc", true);
+        $cash   = $this->coreFunctions->getfieldvalue("eod", "cash", "date(dateid)<? and closeby = ?", [$start, $user->username], "dateid desc", true);
+        $checks = $this->coreFunctions->getfieldvalue("eod", "checks", "date(dateid)<? and closeby = ?", [$start, $user->username], "dateid desc", true);
+        $begbal = $this->coreFunctions->getfieldvalue("eod", "begbal", "date(dateid)=? and closeby = ?", [$start, $user->username], "dateid desc", true);
         $total  = $cash + $checks;
 
         // if($total == 0){
@@ -2401,8 +2400,4 @@ class daily_cashiers_position_report
         // var_dump($query);
         return $this->coreFunctions->opentable($query);
     }
-
-
-
-    
 }

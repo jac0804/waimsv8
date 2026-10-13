@@ -34,10 +34,10 @@ class roomtype
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -45,14 +45,16 @@ class roomtype
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter(){
-    $fields = ['radioprint', 'prepared','approved', 'received','print'];
-    $col1 = $this->fieldClass->create($fields);           
+  public function createreportfilter()
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
 
-    return array('col1'=>$col1);
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable("select 
       'PDFM' as print,
       '' as approved,
@@ -61,7 +63,8 @@ class roomtype
     ");
   }
 
-  public function report_default_query($filters){
+  public function report_default_query($filters)
+  {
     $trno = $filters['params']['dataid'];
     $query = "
       select roomtype, rate1, maxadult, maxchild, maxinfant, beds, additional, issmoking, category, rate2, bfast,
@@ -74,15 +77,17 @@ class roomtype
     return $result;
   }
 
-  public function reportplotting($params, $data) {
-    if($params['params']['dataparams']['print'] == "default") {
+  public function reportplotting($params, $data)
+  {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_roomtype_layout($params, $data);
-    } else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_roomtype_PDF($params, $data);
     }
   }
 
-  public function default_header($params, $data) {
+  public function default_header($params, $data)
+  {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
@@ -123,13 +128,14 @@ class roomtype
     return $str;
   }
 
-  public function default_roomtype_layout($params, $data){
+  public function default_roomtype_layout($params, $data)
+  {
     $companyid = $params['params']['companyid'];
     $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
     $str = '';
     $font = "Century Gothic ";
     $fontsize = "11";
@@ -138,7 +144,7 @@ class roomtype
     $page = 35;
     $str .= $this->reporter->beginreport();
     $str .= $this->default_header($params, $data);
-    
+
     $str .= $this->reporter->begintable('800');
     for ($i = 0; $i < count($data); $i++) {
       $str .= $this->reporter->addline();
@@ -147,13 +153,13 @@ class roomtype
       $str .= $this->reporter->col($data[$i]['isinactive'], '350', null, false, $border, '', 'L', $font, $fontsize, '', '', '2px');
       $str .= $this->reporter->endrow();
 
-      if($this->reporter->linecounter==$page){
+      if ($this->reporter->linecounter == $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
-        $str .= $this->default_header($params,$data);
+        $str .= $this->default_header($params, $data);
         $str .= $this->reporter->begintable('800');
         // $str .= $this->reporter->printline();
-        $page=$page + $count;
+        $page = $page + $count;
       }
     }
     $str .= $this->reporter->endtable();
@@ -234,7 +240,7 @@ class roomtype
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -261,8 +267,7 @@ class roomtype
     PDF::MultiCell(320, 0, "ROOM NO", '', 'L', false, 0);
     PDF::MultiCell(320, 0, "IS INactive", '', 'L', false, 1);
     PDF::MultiCell(700, 0, "", "T");
-    
-   }
+  }
 
   public function default_roomtype_PDF($params, $data)
   {
@@ -293,12 +298,12 @@ class roomtype
       //   $max_height = $max_height + 15;
       // }
       $maxrow = 1;
-      $arr_roomno = $this->reporter->fixcolumn([$data[$i]['roomno']],'25',0);
-      $arr_isinactive = $this->reporter->fixcolumn([$data[$i]['isinactive']],'25',0);
+      $arr_roomno = $this->reporter->fixcolumn([$data[$i]['roomno']], '25', 0);
+      $arr_isinactive = $this->reporter->fixcolumn([$data[$i]['isinactive']], '25', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_roomno, $arr_isinactive]);
 
-      for($r = 0; $r < $maxrow; $r++) {
+      for ($r = 0; $r < $maxrow; $r++) {
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(300, 0, (isset($arr_roomno[$r]) ? $arr_roomno[$r] : ''), 0, 'L', 0, 0);
         PDF::MultiCell(300, 0, (isset($arr_isinactive[$r]) ? $arr_isinactive[$r] : ''), 0, 'L', 0, 1);
@@ -348,5 +353,4 @@ class roomtype
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

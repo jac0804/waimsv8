@@ -34,10 +34,10 @@ class vr
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -242,12 +242,12 @@ class vr
         // $countarr = count($acnonamedescs);
         // $maxrow = $countarr;
         $maxrow = 1;
-        $arr_customer = $this->reporter->fixcolumn([$data[$i]['customer']],'35',0);
-        $arr_customername = $this->reporter->fixcolumn([$data[$i]['customername']],'35',0);
+        $arr_customer = $this->reporter->fixcolumn([$data[$i]['customer']], '35', 0);
+        $arr_customername = $this->reporter->fixcolumn([$data[$i]['customername']], '35', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_customer, $arr_customername]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(300, 0, (isset($arr_customer[$r]) ? $arr_customer[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false, 'M');
           PDF::MultiCell(400, 18, (isset($arr_customername[$r]) ? $arr_customername[$r] : ''), '', 'C', 0, 1, '', '', true, 0, false, false, 'M');

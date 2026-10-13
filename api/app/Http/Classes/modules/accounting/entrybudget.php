@@ -33,11 +33,11 @@ class entrybudget
   public $showclosebtn = false;
   public $fields = ['acnoid', 'projectid', 'amt1', 'amt2', 'amt3', 'amt4', 'amt5', 'amt6', 'amt7', 'amt8', 'amt9', 'amt10', 'amt11', 'amt12', 'deptid', 'branch'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -338,40 +338,40 @@ class entrybudget
     foreach ($rows as $key => $val) {
       if ($val["bgcolor"] != "") {
         if ($companyid == 10) { //afti
-            $val['total'] = $this->othersClass->sanitizekeyfieldFast("amt", $val['total'], $lookups);
-            $budget = round($val['total'] / 12, 2);
-            $val['amt1'] = $budget;
-            $val['amt2'] = $budget;
-            $val['amt3'] = $budget;
-            $val['amt4'] = $budget;
-            $val['amt5'] = $budget;
-            $val['amt6'] = $budget;
-            $val['amt7'] = $budget;
-            $val['amt8'] = $budget;
-            $val['amt9'] = $budget;
-            $val['amt10'] = $budget;
-            $val['amt11'] = $budget;
-            $val['amt12'] = $budget;
-          }
+          $val['total'] = $this->othersClass->sanitizekeyfieldFast("amt", $val['total'], $lookups);
+          $budget = round($val['total'] / 12, 2);
+          $val['amt1'] = $budget;
+          $val['amt2'] = $budget;
+          $val['amt3'] = $budget;
+          $val['amt4'] = $budget;
+          $val['amt5'] = $budget;
+          $val['amt6'] = $budget;
+          $val['amt7'] = $budget;
+          $val['amt8'] = $budget;
+          $val['amt9'] = $budget;
+          $val['amt10'] = $budget;
+          $val['amt11'] = $budget;
+          $val['amt12'] = $budget;
         }
-
-        foreach ($this->fields as $k) {
-          $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k], $lookups);
-        }
-
-        unset($val['acno']);
-        unset($val['acnoname']);
-        unset($val['dept']);
-        unset($val['branchcode']);
-        unset($val['deptname']);
-        unset($val['branchname']);
-        unset($val['ddeptname']);
-        unset($val['bgcolor']);
-        unset($val['total']);
-        $this->coreFunctions->sbcupdate("budget", $val, ['line' => $val["line"]]);
       }
+
+      foreach ($this->fields as $k) {
+        $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k], $lookups);
+      }
+
+      unset($val['acno']);
+      unset($val['acnoname']);
+      unset($val['dept']);
+      unset($val['branchcode']);
+      unset($val['deptname']);
+      unset($val['branchname']);
+      unset($val['ddeptname']);
+      unset($val['bgcolor']);
+      unset($val['total']);
+      $this->coreFunctions->sbcupdate("budget", $val, ['line' => $val["line"]]);
     }
   }
+
 
   public function reportsetup($config)
   {

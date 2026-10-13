@@ -35,12 +35,12 @@ class employee_evaluation_record
 
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -282,7 +282,7 @@ class employee_evaluation_record
             case '002':
                 $companyPath = $this->companysetup->getlogopath($config['params']) . 'mbcpaflogo.png';
                 $localPath = public_path('images/cdohris/mbcpaflogo.png');
-               $img = 'mbcpaflogo.png';
+                $img = 'mbcpaflogo.png';
                 break;
             case '003':
                 $companyPath = $this->companysetup->getlogopath($config['params']) . 'mbcpaflogo.png';
@@ -300,7 +300,7 @@ class employee_evaluation_record
         $localPath   = public_path('images/cdohris/' . $img);
 
         $path = str_replace('public/', '', $companyPath);
-        $logopath = URL::to($path); 
+        $logopath = URL::to($path);
 
 
         $imgPath = file_exists($companyPath) ? $companyPath : $localPath;
@@ -312,8 +312,8 @@ class employee_evaluation_record
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->col("<img src='{$logopath}' width='500' height='100'>", '550', null, false, '', '', 'L', $font, '14', '', '', '');
-        $str .= $this->reporter->col("<span style='font-size:27px;'>HUMAN RESOURCES DEPARTMENT</span>"  . '<br/>' 
-        . "<span style='color:#000000;'>" . $this->coreFunctions->opentable($qry)[0]->address, '450', null, false, '', '', 'R', $font, '14', '', '#029aff', '');
+        $str .= $this->reporter->col("<span style='font-size:27px;'>HUMAN RESOURCES DEPARTMENT</span>"  . '<br/>'
+            . "<span style='color:#000000;'>" . $this->coreFunctions->opentable($qry)[0]->address, '450', null, false, '', '', 'R', $font, '14', '', '#029aff', '');
         $str .= $this->reporter->endtable();
         $str .= '<br/>';
 
@@ -423,7 +423,7 @@ class employee_evaluation_record
 
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col('DATE',    '150', null, false, '1px solid black;background-color:#000000;', 'B', 'C', $font, $font_size, 'B', '#ffffff', '','', '', '', '', 0, '', 0, 0, '');
+            $str .= $this->reporter->col('DATE',    '150', null, false, '1px solid black;background-color:#000000;', 'B', 'C', $font, $font_size, 'B', '#ffffff', '', '', '', '', '', 0, '', 0, 0, '');
             $str .= $this->reporter->col('DETAILS', '700', null, false, '1px solid black;background-color:#000000;', 'B', 'C', $font, $font_size, 'B', '#ffffff', '');
             $str .= $this->reporter->col('DAYS',    '150', null, false, '1px solid black;background-color:#000000;', 'B', 'C', $font, $font_size, 'B', '#ffffff', '');
             $str .= $this->reporter->endrow();
@@ -529,9 +529,18 @@ class employee_evaluation_record
                     $isnologpin   = $row->isnologpin   == 1 ? 'NO AFTERNOON IN'                             : '';
                     $isnologunder = $row->isnologunder == 1 ? 'NO IN/OUT UNDERTIME'                         : '';
 
-                    $parts  = array_filter([$isnologin, $isnombrkout, $isnombrkin, $isnolunchout,
-                                            $isnolunchin, $isnopbrkout, $isnopbrkin, $isnologout,
-                                            $isnologpin, $isnologunder]);
+                    $parts  = array_filter([
+                        $isnologin,
+                        $isnombrkout,
+                        $isnombrkin,
+                        $isnolunchout,
+                        $isnolunchin,
+                        $isnopbrkout,
+                        $isnopbrkin,
+                        $isnologout,
+                        $isnologpin,
+                        $isnologunder
+                    ]);
                     $detail = implode(' , ', $parts);
 
                     if ($detail == '' && $row->penalty == 0) continue;
@@ -607,5 +616,4 @@ class employee_evaluation_record
         $result = $this->coreFunctions->opentable($query);
         return !empty($result) ? $result[0]->cnt : 0;
     }
-
 } // end class

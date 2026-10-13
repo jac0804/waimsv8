@@ -31,10 +31,10 @@ class viewrfreturnsup
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -62,8 +62,11 @@ class viewrfreturnsup
 
 
     $fields = [
-      ['client', 'returndate_sup'], 'clientname',
-      ['lblshipping', ''], ['awb'], 'action'
+      ['client', 'returndate_sup'],
+      'clientname',
+      ['lblshipping', ''],
+      ['awb'],
+      'action'
     ];
 
     if ($check_dateclose == "") {
@@ -197,9 +200,9 @@ class viewrfreturnsup
 
     switch ($config['params']['action2']) {
       case 'close':
-        
 
-         $data = [
+
+        $data = [
           'trno' => $trno,
           'dateclose' => $this->othersClass->sanitizekeyfieldFast('dateclose', $config['params']['dataparams']['dateclose'], $lookups),
         ];
@@ -228,7 +231,7 @@ class viewrfreturnsup
     LIMIT 1";
     $count = $this->coreFunctions->datareader($qry, [$trno, $trno]);
 
-   
+
 
     if ($count != '') {
       $this->coreFunctions->sbcupdate($table, $data, ['trno' => $trno]);

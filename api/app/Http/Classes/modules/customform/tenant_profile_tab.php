@@ -22,9 +22,23 @@ class tenant_profile_tab
   public $modulename = 'PROFILE';
   public $gridname = 'tableentry';
   private $fields = [
-    'leaserate', 'acrate', 'cusarate', 'billtype', 'rentcat', 'mcharge', 'percentsales',
-    'tenanttype', 'emulti', 'elecrate', 'penalty', 'eratecat', 'wratecat', 'classification', 'selecrate',
-    'wmulti', 'waterrate'
+    'leaserate',
+    'acrate',
+    'cusarate',
+    'billtype',
+    'rentcat',
+    'mcharge',
+    'percentsales',
+    'tenanttype',
+    'emulti',
+    'elecrate',
+    'penalty',
+    'eratecat',
+    'wratecat',
+    'classification',
+    'selecrate',
+    'wmulti',
+    'waterrate'
   ];
   private $table = 'tenantinfo';
 
@@ -34,10 +48,10 @@ class tenant_profile_tab
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -56,8 +70,15 @@ class tenant_profile_tab
     $doc = $config['params']['doc'];
 
     $fields = [
-      'leaserate', 'acrate', 'cusarate', 'tenanttype', 'area', 'emulti',
-      'emeter', 'elecrate', 'refresh'
+      'leaserate',
+      'acrate',
+      'cusarate',
+      'tenanttype',
+      'area',
+      'emulti',
+      'emeter',
+      'elecrate',
+      'refresh'
     ];
 
     $col1 = $this->fieldClass->create($fields);

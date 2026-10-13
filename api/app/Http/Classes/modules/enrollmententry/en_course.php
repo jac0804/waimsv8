@@ -41,9 +41,16 @@ class en_course
   private $stockselect;
 
   private $fields = [
-    'coursecode', 'coursename', 'level', 'levelid',
-    'tfaccount', 'deanname', 'deptcode',
-    'isdegree', 'isundergraduate', 'ischinese'
+    'coursecode',
+    'coursename',
+    'level',
+    'levelid',
+    'tfaccount',
+    'deanname',
+    'deptcode',
+    'isdegree',
+    'isundergraduate',
+    'ischinese'
   ];
   private $except = ['clientid', 'client'];
   private $blnfields = ['isdegree', 'isundergraduate', 'ischinese'];
@@ -53,11 +60,11 @@ class en_course
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -154,7 +161,10 @@ class en_course
   public function createHeadField($config)
   {
     $fields = [
-      'client', 'coursename', 'deptcode', 'deanname'
+      'client',
+      'coursename',
+      'deptcode',
+      'deanname'
     ];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.class', 'csclient sbccsenablealways');
@@ -278,7 +288,7 @@ class en_course
     if ($isupdate) {
       $check = $this->checkCourse($data, $head['clientid']);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate record for '.$data['coursecode'], 'clientid' => $head['clientid']];
+        return ['status' => false, 'msg' => 'Duplicate record for ' . $data['coursecode'], 'clientid' => $head['clientid']];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
@@ -288,7 +298,7 @@ class en_course
     } else {
       $check = $this->checkCourse($data, $head['clientid'], 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate record for '.$data['coursecode'], 'clientid' => $clientid];
+        return ['status' => false, 'msg' => 'Duplicate record for ' . $data['coursecode'], 'clientid' => $clientid];
       } else {
         $clientid = $this->coreFunctions->insertGetId($this->head, $data);
         $this->logger->sbcmasterlog($clientid, $config, ' CREATE COURSE - ' . $data['coursecode'] . ' - ' . $data['coursename']);
@@ -299,9 +309,9 @@ class en_course
 
   public function checkCourse($data, $line, $type = 'update')
   {
-    $qry = "select line as value from en_course where coursecode='".$data['coursecode']."'";
+    $qry = "select line as value from en_course where coursecode='" . $data['coursecode'] . "'";
     if ($type == 'update') {
-      $qry = "select line as value from en_course where coursecode='".$data['coursecode']."' and line<>".$line;
+      $qry = "select line as value from en_course where coursecode='" . $data['coursecode'] . "' and line<>" . $line;
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check != '') return true;
@@ -313,10 +323,7 @@ class en_course
     return '';
   }
 
-  public function openstock($trno, $config)
-  {
-    
-  }
+  public function openstock($trno, $config) {}
 
   public function deletetrans($config)
   {

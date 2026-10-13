@@ -34,11 +34,11 @@ class updatelogs
   public $showclosebtn = false;
   public $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -73,7 +73,7 @@ class updatelogs
     $stockbuttons = [];
 
     $obj = [];
-  
+
     return $obj;
   }
 
@@ -91,17 +91,17 @@ class updatelogs
     data_set($col1, 'rem.label', 'Updates');
     data_set($col1, 'rem.type', 'textarea');
     data_set($col1, 'rem.style', 'height: 800px; width: 1000px');
-   
+
     return array('col1' => $col1);
   }
 
   public function paramsdata($config)
   {
     $companyid = $config['params']['companyid'];
-    switch ($companyid){
-        case 55://afli
-            $data['rem'] =$this->afliupdates();
-            break;
+    switch ($companyid) {
+      case 55: //afli
+        $data['rem'] = $this->afliupdates();
+        break;
     }
 
     if (!empty($data)) {
@@ -111,7 +111,8 @@ class updatelogs
     }
   }
 
-  private function afliupdates(){
+  private function afliupdates()
+  {
     return '
     09/11/2025
     - Application of Advance Payment : Apply to current & succeeding month, reversal of income applicable only up to current month, succeeding months will be manually reversed thru JV entry
@@ -154,7 +155,7 @@ class updatelogs
     return [];
   }
 
-  
+
   public function setupreport($config)
   {
     return [];
@@ -162,12 +163,12 @@ class updatelogs
 
   public function createreportfilter($config)
   {
-       return [];
+    return [];
   }
 
   public function reportparamsdata($config)
   {
-   return [];
+    return [];
   }
 
   public function reportdata($config)
@@ -179,7 +180,4 @@ class updatelogs
   {
     return [];
   }
-
-
- 
 } //end class

@@ -31,12 +31,12 @@ class customers_list
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -63,7 +63,7 @@ class customers_list
         $fields = ['radioprint', 'area', 'region', 'province', 'cur', 'industry'];
         break;
       default:
-        $fields = ['radioprint', 'area', 'region', 'province','dcentername'];
+        $fields = ['radioprint', 'area', 'region', 'province', 'dcentername'];
         break;
     }
 
@@ -227,7 +227,7 @@ class customers_list
       $filter 
       order by cust.$sortby";
 
-      // var_dump($query);
+    // var_dump($query);
     return $this->coreFunctions->opentable($query);
   }
 
@@ -1312,7 +1312,7 @@ class customers_list
     }
 
     $filter   = "";
-  
+
     if ($area != "") {
       $filter .= " and cust.area = '$area'";
     }

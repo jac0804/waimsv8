@@ -33,9 +33,9 @@ class BK
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -100,7 +100,7 @@ class BK
 
     public function report_default_brgy($config)
     {
-         $query = "select category, position from reqcategory
+        $query = "select category, position from reqcategory
             where isbrgyoff = 1";
 
         $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
@@ -151,7 +151,7 @@ class BK
         PDF::Image($logo1, 30, 10, 320, 200);  //Backgroung logo temp
         PDF::SetAlpha(1);
 
-        
+
         $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
         PDF::SetX(50);
         PDF::Image(public_path('images/barangay/leftid.png'), 38, 20, 33, 28);
@@ -167,13 +167,12 @@ class BK
 
         PDF::SetX(30);
         PDF::SetFont($font, '', 8);
-        PDF::MultiCell(25, 10, '', 'L', 'C',false,0);
-        PDF::MultiCell(270, 10, strtoupper($headerdata[0]->address), '', 'C',false,0);
+        PDF::MultiCell(25, 10, '', 'L', 'C', false, 0);
+        PDF::MultiCell(270, 10, strtoupper($headerdata[0]->address), '', 'C', false, 0);
         PDF::MultiCell(25, 10, '', 'R', 'C');
 
         PDF::SetX(30);
-        PDF::MultiCell(320, 20,'TeleFax: ' . strtoupper($headerdata[0]->tel), 'LR', 'C');
-
+        PDF::MultiCell(320, 20, 'TeleFax: ' . strtoupper($headerdata[0]->tel), 'LR', 'C');
     }
 
     public function default_front_PDF($params, $data, $brgy)
@@ -203,26 +202,23 @@ class BK
         }
         $this->default_PDF_header($params, $data);
 
-         $officials = [
+        $officials = [
             'punong' => '',
             'secretary' => '',
             'treasurer' => '',
             'kagawad' => []
         ];
-        
+
         foreach ($brgy as $row) {
             $position = strtolower(trim($row['position']));
             $name = strtoupper($row['category']);
 
             if (strpos($position, 'punong') !== false) {
                 $officials['punong'] = $name;
-
             } elseif (strpos($position, 'secretary') !== false) {
                 $officials['secretary'] = $name;
-
             } elseif (strpos($position, 'treasurer') !== false) {
                 $officials['treasurer'] = $name;
-
             } else {
                 $officials['kagawad'][] = $name;
             }
@@ -233,7 +229,7 @@ class BK
         $clientname = isset($header['clientname']) ? $header['clientname'] : '';
         $address = isset($header['addr']) ? $header['addr'] : '';
         $bday = isset($header['bday']) ? $header['bday'] : '';
-        $bdayFormatted = (!empty($bday) && $bday != '0000-00-00')? date('F j, Y', strtotime($bday)) : '';
+        $bdayFormatted = (!empty($bday) && $bday != '0000-00-00') ? date('F j, Y', strtotime($bday)) : '';
         $status = isset($header['civilstatus']) ? $header['civilstatus'] : '';
         $gender = isset($header['sex']) ? $header['sex'] : '';
         $height = isset($header['height']) ? $header['height'] : '';
@@ -258,7 +254,7 @@ class BK
         PDF::SetXY(30, 60);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::SetFont($fontbold, '', 8);
-         PDF::SetTextColor(255, 102, 128); // Light Pink
+        PDF::SetTextColor(255, 102, 128); // Light Pink
         PDF::MultiCell(320, 15, 'B a r a n g a y  I d e n t i f i c a t i o n  C a r d', 'LR', 'C', false, 0);
 
         PDF::SetX(30);
@@ -299,7 +295,7 @@ class BK
         PDF::SetTextColor(0, 70, 127);
         PDF::MultiCell(30, 13, (isset($arr_gender[0]) ? $arr_gender[0] : ''), '', '', true, 0);
         PDF::MultiCell(51, 13, '', '', '', true, 0);
-        PDF::SetTextColor(0, 0, 0);// "Birth Date" in black,value in blue
+        PDF::SetTextColor(0, 0, 0); // "Birth Date" in black,value in blue
         PDF::MultiCell(44, 13, 'Birth Date : ', '', '', true, 0);
         PDF::SetTextColor(0, 70, 127);
         PDF::MultiCell(65, 13, (isset($arr_bdayFormatted[0]) ? $arr_bdayFormatted[0] : ''), '', '', true, 0);
@@ -312,22 +308,22 @@ class BK
         PDF::MultiCell(5, 13, '', 'L', '', true, 0);
         PDF::MultiCell(93, 13, '', 'LR', '', false, 0);
         PDF::MultiCell(6, 13, '', 'L', '', true, 0);
-        PDF::SetTextColor(0, 0, 0);// "Height" in black, value in blue
+        PDF::SetTextColor(0, 0, 0); // "Height" in black, value in blue
         PDF::MultiCell(33, 13, 'Height : ', '', '', true, 0);
         PDF::SetTextColor(0, 70, 127);
         PDF::MultiCell(20, 13, (isset($arr_height[0]) ? $arr_height[0] : ''), '', '', true, 0);
-        PDF::SetTextColor(0, 0, 0);// "Weight" in black, value in blue
+        PDF::SetTextColor(0, 0, 0); // "Weight" in black, value in blue
         PDF::MultiCell(37, 13, 'Weight : ', '', '', true, 0);
         PDF::SetTextColor(0, 70, 127);
         PDF::MultiCell(16, 13, (isset($arr_weight[0]) ? $arr_weight[0] : ''), '', '', true, 0);
-        PDF::SetTextColor(0, 0, 0);// "Status" in black, value in blue
+        PDF::SetTextColor(0, 0, 0); // "Status" in black, value in blue
         PDF::MultiCell(34, 13, 'Status : ', '', '', true, 0);
         PDF::SetTextColor(0, 70, 127);
         PDF::MultiCell(72, 13, (isset($arr_status[0]) ? $arr_status[0] : ''), '', '', true, 0);
         PDF::MultiCell(4, 13, '', 'R', '', false);
         PDF::SetTextColor(0, 0, 0); // reset color        
 
-         // photo image para sa id picture, temp picture muna
+        // photo image para sa id picture, temp picture muna
         PDF::SetX(30);
         if (file_exists($defaultid)) {
             PDF::Image($defaultid, 37.5, 77, 88, 86);
@@ -339,39 +335,39 @@ class BK
         PDF::MultiCell(5, 0, '', 'L', '', true, 0);
         PDF::MultiCell(93, 0, '', 'LR', '', true, 0);
         PDF::MultiCell(6, 0, '', 'L', '', true, 0);
-        PDF::SetTextColor(0, 0, 0);// "Precinct No." in black, value in blue
+        PDF::SetTextColor(0, 0, 0); // "Precinct No." in black, value in blue
         PDF::MultiCell(55, 0, 'Precinct No. : ', '', '', true, 0);
         PDF::SetTextColor(0, 70, 127);
         PDF::MultiCell(45, 0, (isset($arr_precintno[0]) ? $arr_precintno[0] : ''), '', '', true, 0);
         PDF::MultiCell(6, 0, '', '', '', true, 0);
-        PDF::SetTextColor(0, 0, 0);// "Type" in black, value in blue
+        PDF::SetTextColor(0, 0, 0); // "Type" in black, value in blue
         PDF::MultiCell(25, 0, 'Type : ', '', '', true, 0);
         PDF::SetTextColor(0, 70, 127);
         PDF::MultiCell(79, 0, (isset($arr_settlertype[0]) ? $arr_settlertype[0] : ''), '', '', true, 0);
         PDF::MultiCell(6, 0, '', 'R', '', false);
-        PDF::SetTextColor(0, 0, 0);// reset color
+        PDF::SetTextColor(0, 0, 0); // reset color
 
         PDF::SetX(30);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
-        PDF::MultiCell(5, 16, '', 'L', '', true, 0);          
-        PDF::MultiCell(93, 16, '', 'LBR', '', true, 0);         
-        PDF::MultiCell(6, 16, '', 'L', '', true, 0);          
-        PDF::MultiCell(210, 16, '', '', '', true, 0);        
-        PDF::MultiCell(6, 16, '', 'R', '', false); 
-        
+        PDF::MultiCell(5, 16, '', 'L', '', true, 0);
+        PDF::MultiCell(93, 16, '', 'LBR', '', true, 0);
+        PDF::MultiCell(6, 16, '', 'L', '', true, 0);
+        PDF::MultiCell(210, 16, '', '', '', true, 0);
+        PDF::MultiCell(6, 16, '', 'R', '', false);
+
         PDF::SetX(30);
-        PDF::MultiCell(320, 0, "\n",'LR');
+        PDF::MultiCell(320, 0, "\n", 'LR');
         PDF::SetX(30);
-        PDF::MultiCell(320, 0, "\n",'LR');
+        PDF::MultiCell(320, 0, "\n", 'LR');
 
         PDF::SetX(30);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
-        PDF::MultiCell(5, 0, '', 'L', '', true, 0);              
-        PDF::MultiCell(95, 0, '', 'B', '', true, 0);           
-        PDF::MultiCell(6, 0, '', '', '', true, 0); 
-        PDF::SetTextColor(0, 70, 127);             
-        PDF::MultiCell(208, 0, $officials['punong'], '', 'C', true, 0); 
-        PDF::MultiCell(6, 0, '', 'R', '', false);               
+        PDF::MultiCell(5, 0, '', 'L', '', true, 0);
+        PDF::MultiCell(95, 0, '', 'B', '', true, 0);
+        PDF::MultiCell(6, 0, '', '', '', true, 0);
+        PDF::SetTextColor(0, 70, 127);
+        PDF::MultiCell(208, 0, $officials['punong'], '', 'C', true, 0);
+        PDF::MultiCell(6, 0, '', 'R', '', false);
 
         PDF::SetX(30);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
@@ -381,10 +377,10 @@ class BK
         PDF::MultiCell(95, 15, 'Signature', 'TB', 'C', true, 0);
         PDF::MultiCell(6, 15, '', 'B', '', true, 0);
         PDF::SetFont($fontitalic, 'B', $fontsize);
-        PDF::MultiCell(208, 15,'Punong Barangay', 'B', 'C', true, 0);
+        PDF::MultiCell(208, 15, 'Punong Barangay', 'B', 'C', true, 0);
         PDF::MultiCell(6, 15, '', 'RB', '', false);
 
-        
+
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
 
@@ -441,7 +437,7 @@ class BK
         PDF::MultiCell(320, '', '', 'TLR', '', true);
 
         PDF::SetXY(30, 15);
-        
+
         PDF::SetFillColor($setfillW[0], $setfillW[1], $setfillW[2]);
         PDF::SetTextColor($colorRed[0], $colorRed[1], $colorRed[2]);
         PDF::SetFont($fontbold, '', 11);
@@ -510,22 +506,22 @@ class BK
         PDF::SetTextColor(0, 0, 0); // in black
         PDF::MultiCell(35, 15, 'Name : ', 'T', '', true, 0);
         PDF::SetTextColor(0, 70, 127); // in blue
-        PDF::MultiCell(120, 15, $emergencyname, 'T', '', true, 0); 
+        PDF::MultiCell(120, 15, $emergencyname, 'T', '', true, 0);
         PDF::SetTextColor(0, 0, 0); // in black
         PDF::MultiCell(55, 15, 'Relationship : ', 'T', '', true, 0);
         PDF::SetTextColor(0, 70, 127); // in blue
-        PDF::MultiCell(100, 15, $emergencyrel, 'TR', '', true); 
+        PDF::MultiCell(100, 15, $emergencyrel, 'TR', '', true);
 
         PDF::SetX(30);
         PDF::MultiCell(10, 15, '', 'BL', '', true, 0);
         PDF::SetTextColor(0, 0, 0); // in black
         PDF::MultiCell(40, 15, 'Address : ', 'B', '', true, 0);
         PDF::SetTextColor(0, 70, 127); // in blue
-        PDF::MultiCell(115, 15, $emergencyaddr, 'B', '', true, 0); 
+        PDF::MultiCell(115, 15, $emergencyaddr, 'B', '', true, 0);
         PDF::SetTextColor(0, 0, 0); // in black
         PDF::MultiCell(55, 15, 'Contact No. : ', 'B', '', true, 0);
         PDF::SetTextColor(0, 70, 127); // in blue
-        PDF::MultiCell(100, 15, $emergencytel, 'BR', '', true); 
+        PDF::MultiCell(100, 15, $emergencytel, 'BR', '', true);
 
         return PDF::Output($this->modulename . '.pdf', 'S');
     }

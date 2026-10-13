@@ -29,12 +29,12 @@ class asset_accountability_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -133,18 +133,18 @@ class asset_accountability_report
 
     $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('PRINT DATE: ' . date("F d, Y", strtotime($config['params']['dataparams']['start'])), '500', null, false, $border, '', 'L', $font, $font_size, 'B', '', '6px');
-    $str .= $this->reporter->col('(  ) Paper Audit within 5 working days only', '500', null, false, $border, '', 'L', $font, $font_size, 'B', '', '6px');
+    $str .= $this->reporter->col('PRINT DATE: ' . date("F d, Y", strtotime($config['params']['dataparams']['start'])), '500', null, false, $border, '', 'L', $font, $font_size, 'B', '', '2px');
+    $str .= $this->reporter->col('(  ) Paper Audit within 5 working days only', '500', null, false, $border, '', 'L', $font, $font_size, 'B', '', '2px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->startrow();
 
     if (!empty($deptname)) {
-      $str .= $this->reporter->col('DEPARTMENT: ' . $deptname, '500', null, false, $border, '', 'L', $font, $font_size, 'B', '', '6px');
+      $str .= $this->reporter->col('DEPARTMENT: ' . $deptname, '500', null, false, $border, '', 'L', $font, $font_size, 'B', '', '2px');
     } else {
-      $str .= $this->reporter->col('DEPARTMENT: ALL', '500', null, false, $border, '', 'L', $font, $font_size, 'B', '', '6px');
+      $str .= $this->reporter->col('DEPARTMENT: ALL', '500', null, false, $border, '', 'L', $font, $font_size, 'B', '', '2px');
     }
 
-    $str .= $this->reporter->col('(  ) Physical Audit as per Department confirmed schedule', '500', null, false, $border, '', 'L', $font, $font_size, 'B', '', '6px');
+    $str .= $this->reporter->col('(  ) Physical Audit as per Department confirmed schedule', '500', null, false, $border, '', 'L', $font, $font_size, 'B', '', '2px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= '<br/>';
@@ -178,11 +178,12 @@ class asset_accountability_report
   {
     $result = $this->reportDefault($config);
     $border = '1px solid';
-    $font = $this->companysetup->getrptfont($config['params']);
+    // $font = $this->companysetup->getrptfont($config['params']);
+    $font = 'Arial';
     $font_size = '10';
 
-    $count = 45; // kept for reference / potential future use, but no longer accumulated into $page
-    $page = 45;
+    $rowOverhead = 0.45;
+    $page = 68;
     $this->reporter->linecounter = 0;
 
     if (empty($result)) {
@@ -190,6 +191,7 @@ class asset_accountability_report
     }
 
     $str = '';
+    $str .= '<style>#report_content tr { page-break-inside: avoid; }</style>';
     $str .= $this->reporter->beginreport($this->reportParams['layoutSize']);
     $str .= $this->displayHeader($config);
 
@@ -198,60 +200,66 @@ class asset_accountability_report
 
     foreach ($result as $key => $data) {
       if ($empname != $data->empname) {
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col("", null, '40', false, $border, '', 'C', $font, $font_size, '', '', '');
-        $str .= $this->reporter->endrow();
-        $this->reporter->addline();
+        if ($empname != "") {
+          $str .= $this->reporter->startrow();
+          $str .= $this->reporter->col("", 40, null, false, $border, '', 'C', $font, $font_size, '', '', '');
+          $str .= $this->reporter->endrow();
+          $this->reporter->addline();
+          $this->reporter->linecounter += $rowOverhead;
+        }
 
         // FIX: use $data->empname (the employee being printed now), not $empname (the previous one)
-        $headerLines = $this->reporter->estimateLines($data->empname, 180, $font_size, '6px', true);
+        $headerLines = $this->reporter->estimateLines($data->empname, 180, $font_size, '2px', true);
         for ($l = 0; $l < $headerLines; $l++) {
           $this->reporter->addline();
         }
+        $this->reporter->linecounter += $rowOverhead;
 
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
-        $str .= $this->reporter->col($data->empname, '180', null, false, $border, 'TLR', 'L', $font, $font_size, 'B', '', '6px');
-        $str .= $this->reporter->col('', '250', null, false, $border, '', 'L', $font, $font_size, '', '', '6px');
-        $str .= $this->reporter->col('', '120', null, false, $border, '', 'L', $font, $font_size, '', '', '6px');
-        $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
-        $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
-        $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
-        $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
-        $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
-        $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
+        $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
+        $str .= $this->reporter->col($data->empname, '180', null, false, $border, 'TLR', 'L', $font, $font_size, 'B', '', '2px');
+        $str .= $this->reporter->col('', '250', null, false, $border, '', 'L', $font, $font_size, '', '', '2px');
+        $str .= $this->reporter->col('', '120', null, false, $border, '', 'L', $font, $font_size, '', '', '2px');
+        $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
+        $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
+        $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
+        $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
+        $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
+        $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
         $str .= $this->reporter->endrow();
 
         $i = 1;
       }
 
       $lines = $this->reporter->estimateRowLines(array(
-        array($data->barcode,  180, '6px'),
-        array($data->itemname, 250, '6px'),
-        array($data->serialno, 120, '6px'),
-        array($data->rem,      150, '6px'),
+        array($data->barcode,  180, '2px'),
+        array($data->itemname, 250, '2px'),
+        array($data->serialno, 120, '2px'),
+        array($data->rem,      150, '2px'),
       ), $font_size);
 
       for ($l = 0; $l < $lines; $l++) {
         $this->reporter->addline();
       }
+      $this->reporter->linecounter += $rowOverhead;
 
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col($i++, '40', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '6px');
-      $str .= $this->reporter->col($data->barcode, '180', '', false, $border, 'TBLR', 'L', $font, $font_size, '', '', '6px');
-      $str .= $this->reporter->col($data->itemname, '250', '', false, $border, 'TBLR', 'L', $font, $font_size, '', '', '6px');
-      $str .= $this->reporter->col($data->serialno, '120', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '6px');
-      $str .= $this->reporter->col('', '40', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '6px');
-      $str .= $this->reporter->col('', '40', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '6px');
-      $str .= $this->reporter->col('', '40', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '6px');
-      $str .= $this->reporter->col('', '40', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '6px');
-      $str .= $this->reporter->col('', '100', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '6px');
-      $str .= $this->reporter->col($data->rem, '150', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '6px');
+      $str .= $this->reporter->col($i++, '40', '', false, $border, 'TBLR', 'CT', $font, $font_size, '', '', '2px');
+      $str .= $this->reporter->col($data->barcode, '180', '', false, $border, 'TBLR', 'LT', $font, $font_size, '', '', '2px');
+      $str .= $this->reporter->col($data->itemname, '250', '', false, $border, 'TBLR', 'L', $font, $font_size, '', '', '2px');
+      $str .= $this->reporter->col($data->serialno, '120', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '2px');
+      $str .= $this->reporter->col('', '40', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '2px');
+      $str .= $this->reporter->col('', '40', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '2px');
+      $str .= $this->reporter->col('', '40', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '2px');
+      $str .= $this->reporter->col('', '40', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '2px');
+      $str .= $this->reporter->col('', '100', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '2px');
+      $str .= $this->reporter->col($data->rem, '150', '', false, $border, 'TBLR', 'C', $font, $font_size, '', '', '2px');
       $str .= $this->reporter->endrow();
 
       $empname = $data->empname;
 
       if ($this->reporter->linecounter >= $page) {
+
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
         $str .= $this->displayHeader($config);
@@ -275,22 +283,23 @@ class asset_accountability_report
 
         if ($hasMore) {
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
-          $str .= $this->reporter->col($empname, '180', null, false, $border, 'TLR', 'L', $font, $font_size, 'B', '', '6px');
-          $str .= $this->reporter->col('(continued)', '250', null, false, $border, '', 'L', $font, $font_size, 'I', '', '6px');
-          $str .= $this->reporter->col('', '120', null, false, $border, '', 'L', $font, $font_size, '', '', '6px');
-          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
-          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
-          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
-          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
-          $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
-          $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $font_size, '', '', '6px');
+          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
+          $str .= $this->reporter->col($empname, '180', null, false, $border, 'TLR', 'L', $font, $font_size, 'B', '', '2px');
+          $str .= $this->reporter->col('(continued)', '250', null, false, $border, '', 'L', $font, $font_size, 'I', '', '2px');
+          $str .= $this->reporter->col('', '120', null, false, $border, '', 'L', $font, $font_size, '', '', '2px');
+          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
+          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
+          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
+          $str .= $this->reporter->col('', '40', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
+          $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
+          $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $font_size, '', '', '2px');
           $str .= $this->reporter->endrow();
 
-          $headerLines = $this->reporter->estimateLines($empname, 180, $font_size, '6px', true);
+          $headerLines = $this->reporter->estimateLines($empname, 180, $font_size, '2px', true);
           for ($l = 0; $l < $headerLines; $l++) {
             $this->reporter->addline();
           }
+          $this->reporter->linecounter += $rowOverhead;
         }
       }
     } //end foreach
@@ -298,9 +307,9 @@ class asset_accountability_report
     $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
     $str .= '<br/>';
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '150', '', false, $border, '', 'C', $font, $font_size, '', '', '6px');
-    $str .= $this->reporter->col("This is to acknowledge that all of the above-mentioned signed declarations are true, that they are currently in use personally and are physically available with my department. Should there be false declarations, I will be held accountable and be subjected to the company's disciplinary actions, and charges may be applied.", '700', '', false, $border, '', 'C', $font, $font_size, '', '', '6px');
-    $str .= $this->reporter->col('', '150', '', false, $border, '', 'C', $font, $font_size, '', '', '6px');
+    $str .= $this->reporter->col('', '150', '', false, $border, '', 'C', $font, $font_size, '', '', '2px');
+    $str .= $this->reporter->col("This is to acknowledge that all of the above-mentioned signed declarations are true, that they are currently in use personally and are physically available with my department. Should there be false declarations, I will be held accountable and be subjected to the company's disciplinary actions, and charges may be applied.", '700', '', false, $border, '', 'C', $font, $font_size, '', '', '2px');
+    $str .= $this->reporter->col('', '150', '', false, $border, '', 'C', $font, $font_size, '', '', '2px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -310,28 +319,28 @@ class asset_accountability_report
     $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
     $str .= '<br/><br/>';
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '300', '', false, $border, '', 'C', $font, $font_size, '', '', '6px');
+    $str .= $this->reporter->col('', '300', '', false, $border, '', 'C', $font, $font_size, '', '', '2px');
     $str .= $this->reporter->col('BU HEAD SIGNATURE & DATE: ', '200', '', false, $border, '', 'L', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col('', '200', '', false, $border, 'B', 'L', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col('', '300', '', false, $border, '', 'C', $font, $font_size, '', '', '6px');
+    $str .= $this->reporter->col('', '300', '', false, $border, '', 'C', $font, $font_size, '', '', '2px');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '300', '', false, $border, '', 'C', $font, $font_size, '', '', '6px');
+    $str .= $this->reporter->col('', '300', '', false, $border, '', 'C', $font, $font_size, '', '', '2px');
     $str .= $this->reporter->col('', '200', '', false, $border, '', 'L', $font, $font_size, 'B', '', '');
     $str .= $this->reporter->col(strtoupper($depthead), '200', '', false, $border, '', 'C', $font, $font_size, 'B', '', '');
-    $str .= $this->reporter->col('', '300', '', false, $border, '', 'C', $font, $font_size, '', '', '6px');
+    $str .= $this->reporter->col('', '300', '', false, $border, '', 'C', $font, $font_size, '', '', '2px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
     $str .= '<br/>';
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Prepared by: ', '200', '', false, $border, '', 'L', $font, $font_size, 'B', '', '6px');
-    $str .= $this->reporter->col('Audit by: ', '200', '', false, $border, '', 'L', $font, $font_size, 'B', '', '6px');
-    $str .= $this->reporter->col('Checked by: ', '200', '', false, $border, '', 'L', $font, $font_size, 'B', '', '6px');
-    $str .= $this->reporter->col('Tagged by: ', '200', '', false, $border, '', 'L', $font, $font_size, 'B', '', '6px');
-    $str .= $this->reporter->col('Noted by: ', '200', '', false, $border, '', 'L', $font, $font_size, 'B', '', '6px');
+    $str .= $this->reporter->col('Prepared by: ', '200', '', false, $border, '', 'L', $font, $font_size, 'B', '', '2px');
+    $str .= $this->reporter->col('Audit by: ', '200', '', false, $border, '', 'L', $font, $font_size, 'B', '', '2px');
+    $str .= $this->reporter->col('Checked by: ', '200', '', false, $border, '', 'L', $font, $font_size, 'B', '', '2px');
+    $str .= $this->reporter->col('Tagged by: ', '200', '', false, $border, '', 'L', $font, $font_size, 'B', '', '2px');
+    $str .= $this->reporter->col('Noted by: ', '200', '', false, $border, '', 'L', $font, $font_size, 'B', '', '2px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -339,19 +348,19 @@ class asset_accountability_report
     $str .= '<br/>';
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '20', '', false, $border, '', 'L', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col('AMD Data Supervisor', '180', '', false, $border, '', 'L', $font, $font_size, '', '', '6px');
+    $str .= $this->reporter->col('AMD Data Supervisor', '180', '', false, $border, '', 'L', $font, $font_size, '', '', '2px');
     $str .= $this->reporter->col('', '20', '', false, $border, '', 'L', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col('AMD Auditor', '180', '', false, $border, '', 'L', $font, $font_size, '', '', '6px');
+    $str .= $this->reporter->col('AMD Auditor', '180', '', false, $border, '', 'L', $font, $font_size, '', '', '2px');
     $str .= $this->reporter->col('', '20', '', false, $border, '', 'L', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col('Audit Supervisor', '180', '', false, $border, '', 'L', $font, $font_size, '', '', '6px');
+    $str .= $this->reporter->col('Audit Supervisor', '180', '', false, $border, '', 'L', $font, $font_size, '', '', '2px');
     $str .= $this->reporter->col('', '20', '', false, $border, '', 'L', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col('AMD Coordinator', '180', '', false, $border, '', 'L', $font, $font_size, '', '', '6px');
+    $str .= $this->reporter->col('AMD Coordinator', '180', '', false, $border, '', 'L', $font, $font_size, '', '', '2px');
     $str .= $this->reporter->col('', '20', '', false, $border, '', 'L', $font, $font_size, '', '', '');
-    $str .= $this->reporter->col('AMD/RMA Head', '180', '', false, $border, '', 'L', $font, $font_size, '', '', '6px');
+    $str .= $this->reporter->col('AMD/RMA Head', '180', '', false, $border, '', 'L', $font, $font_size, '', '', '2px');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('NOTE:  ALL ITEMS (CODED / NSI & PBS)  SHOULD BE CHECKED AND PROCESSED. ANY ITEM/s MISSING AFTER 5 WORKING DAYS TO BE REPORTED FOR NTH REPORT & CHARGING PROCESS', '1000', '', false, $border, '', 'C', $font, $font_size, '', '', '', '6px', 0, '', 0, 10);
+    $str .= $this->reporter->col('NOTE:  ALL ITEMS (CODED / NSI & PBS)  SHOULD BE CHECKED AND PROCESSED. ANY ITEM/s MISSING AFTER 5 WORKING DAYS TO BE REPORTED FOR NTH REPORT & CHARGING PROCESS', '1000', '', false, $border, '', 'C', $font, $font_size, '', '', '', '2px', 0, '', 0, 10);
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 

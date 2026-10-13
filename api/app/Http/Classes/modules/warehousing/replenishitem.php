@@ -49,11 +49,11 @@ class replenishitem
         ['val' => 'posted', 'label' => 'Validated', 'color' => 'primary']
     ];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -375,7 +375,7 @@ class replenishitem
         $data = [];
         $msg = '';
 
-        $dateTables = ['lahead','lastock'];
+        $dateTables = ['lahead', 'lastock'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $isqty = $this->othersClass->sanitizekeyfieldFast('qty',  $head['isqty'], $lookups);
 
@@ -499,7 +499,7 @@ class replenishitem
                         ];
 
                         foreach ($stock as $key => $v) {
-                              $stock[$key] = $this->othersClass->sanitizekeyfieldFast($key, $stock[$key], $lookups);
+                            $stock[$key] = $this->othersClass->sanitizekeyfieldFast($key, $stock[$key], $lookups);
                         }
 
                         if ($this->coreFunctions->sbcinsert("lastock", $stock)) {

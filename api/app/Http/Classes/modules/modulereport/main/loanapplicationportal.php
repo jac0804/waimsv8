@@ -33,10 +33,10 @@ class loanapplicationportal
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -44,10 +44,10 @@ class loanapplicationportal
     $this->reporter = new SBCPDF;
   }
 
-public function createreportfilter()
+  public function createreportfilter()
   {
     // $fields = ['radioprint','prepared','approved','received', 'print'];
-    $fields = ['prepared','approved','received', 'print'];
+    $fields = ['prepared', 'approved', 'received', 'print'];
 
     $col1 = $this->fieldClass->create($fields);
     return array('col1' => $col1);
@@ -67,7 +67,7 @@ public function createreportfilter()
   public function report_default_query($config)
   {
     $trno = $config['params']['dataid'];
-    
+
     $query = "select ss.trno, ss.docno, date(ss.dateid) as ssdate, ss.remarks,
                 concat(e.emplast,', ',e.empfirst,' ',e.empmiddle) as empname,
                 st.batch, date(st.dateid) as stdate, st.db, st.cr, st.ismanual  
@@ -80,12 +80,12 @@ public function createreportfilter()
     return $result;
   } //end fn
 
-  public function reportplotting($config,$data)
-  { 
+  public function reportplotting($config, $data)
+  {
     $data = $this->report_default_query($config);
-    if($config['params']['dataparams']['print'] == "default"){
+    if ($config['params']['dataparams']['print'] == "default") {
       $str = $this->rpt_loanportal_layout($config, $data);
-    }else{
+    } else {
       $str = $this->rpt_loanportal_PDF($config, $data);
     }
     return $str;
@@ -112,7 +112,7 @@ public function createreportfilter()
     $qry = "select name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -122,30 +122,30 @@ public function createreportfilter()
     PDF::SetMargins(20, 20);
 
     PDF::SetFont($font, '', 9);
-    PDF::MultiCell(0, 0, $center.' - '.date_format(date_create($current_timestamp),'m/d/Y H:i:s').'  '.$username, '', 'L');
+    PDF::MultiCell(0, 0, $center . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . $username, '', 'L');
     PDF::SetFont($fontbold, '', 12);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     PDF::SetFont($fontbold, '', 15);
     PDF::MultiCell(800, 30, "EARNING AND DEDUCTION SETUP", '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(100, 0, "Document # : ", '', 'L', false,0);
+    PDF::MultiCell(100, 0, "Document # : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
-    PDF::MultiCell(420, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '', 'L', false,0);
+    PDF::MultiCell(420, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '', 'L', false, 0);
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(80, 0, "Date : ", '', 'L', false,0);
+    PDF::MultiCell(80, 0, "Date : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(100, 0, (isset($data[0]['ssdate']) ? $data[0]['ssdate'] : ''), '', 'L', false);
 
     PDF::SetFont($font, '', 5);
-    PDF::MultiCell(100, 0, "", '', 'L', false,0);
+    PDF::MultiCell(100, 0, "", '', 'L', false, 0);
     PDF::MultiCell(660, 0, '', '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(100, 20, "EMPLOYEE NAME : ", '', 'L', false,0);
+    PDF::MultiCell(100, 20, "EMPLOYEE NAME : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(660, 20, $data[0]['empname'], '', 'L', false);
 
@@ -168,7 +168,6 @@ public function createreportfilter()
     PDF::MultiCell(60, 0, "", 'B', 'L', false);
 
     PDF::MultiCell(0, 0, "\n");
-
   }
 
   public function rpt_loanportal_PDF($config, $data)
@@ -193,14 +192,14 @@ public function createreportfilter()
 
     for ($i = 0; $i < count($data); $i++) {
       $maxrow = 1;
-      $arr_batch = $this->reporter->fixcolumn([$data[$i]['batch']],'16',0);
-      $arr_stdate = $this->reporter->fixcolumn([$data[$i]['stdate']],'16',0);
-      $arr_debit = $this->reporter->fixcolumn([$data[$i]['db']],'16',0);
-      $arr_credit = $this->reporter->fixcolumn([$data[$i]['cr']],'16',0);
+      $arr_batch = $this->reporter->fixcolumn([$data[$i]['batch']], '16', 0);
+      $arr_stdate = $this->reporter->fixcolumn([$data[$i]['stdate']], '16', 0);
+      $arr_debit = $this->reporter->fixcolumn([$data[$i]['db']], '16', 0);
+      $arr_credit = $this->reporter->fixcolumn([$data[$i]['cr']], '16', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_batch, $arr_stdate, $arr_debit, $arr_credit]);
 
-      for($r = 0; $r < $maxrow; $r++) {
+      for ($r = 0; $r < $maxrow; $r++) {
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(190, 10, (isset($arr_batch[$r]) ? $arr_batch[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(190, 10, (isset($arr_stdate[$r]) ? $arr_stdate[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
@@ -220,7 +219,7 @@ public function createreportfilter()
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(100, 20, "Remarks : ", '', 'L', false,0);
+    PDF::MultiCell(100, 20, "Remarks : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(660, 20, $data[0]['remarks'], '', 'L', false);
 
@@ -235,7 +234,7 @@ public function createreportfilter()
     PDF::MultiCell(266, 0, $config['params']['dataparams']['prepared'], '', 'L', false, 0);
     PDF::MultiCell(266, 0, $config['params']['dataparams']['approved'], '', 'L', false, 0);
     PDF::MultiCell(266, 0, $config['params']['dataparams']['received'], '', 'L');
-   
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   } //end fn
 
@@ -369,8 +368,8 @@ public function createreportfilter()
     return $str;
   } //end fn
 
-  
 
-  
+
+
 
 }

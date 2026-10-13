@@ -35,9 +35,9 @@ class pb
   private $reporter;
   private $reportheader;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -1672,8 +1672,17 @@ class pb
           $countarrtoqty = count($wtodateqty);
           $countarrtoext = count($wtodateext);
           $maxrow = $this->othersClass->getmaxcolumn([
-            $countarrtask, $countarrqty, $countarruom, $countarrcost, $countarrext,
-            $countarrnowqty, $countarrnowext, $countarrtoqty, $countarrtoext, $countarrprevqty, $countarrprevext
+            $countarrtask,
+            $countarrqty,
+            $countarruom,
+            $countarrcost,
+            $countarrext,
+            $countarrnowqty,
+            $countarrnowext,
+            $countarrtoqty,
+            $countarrtoext,
+            $countarrprevqty,
+            $countarrprevext
           ]);
 
           for ($b = 0; $b < $maxrow; $b++) {
@@ -2319,8 +2328,17 @@ class pb
           $countarrtoqty = count($wtodateqty);
           $countarrtoext = count($wtodateext);
           $maxrow = $this->othersClass->getmaxcolumn([
-            $countarrtask, $countarrqty, $countarruom, $countarrcost, $countarrext,
-            $countarrnowqty, $countarrnowext, $countarrtoqty, $countarrtoext, $countarrprevqty, $countarrprevext
+            $countarrtask,
+            $countarrqty,
+            $countarruom,
+            $countarrcost,
+            $countarrext,
+            $countarrnowqty,
+            $countarrnowext,
+            $countarrtoqty,
+            $countarrtoext,
+            $countarrprevqty,
+            $countarrprevext
           ]);
 
           for ($b = 0; $b < $maxrow; $b++) {

@@ -29,12 +29,12 @@ class sales_report_per_sales_agent_per_item_group_graph
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -93,9 +93,7 @@ class sales_report_per_sales_agent_per_item_group_graph
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'graph' => $graph];
   }
 
-  public function reportplotting($config)
-  {
-  }
+  public function reportplotting($config) {}
 
   public function reportDefault($config)
   {

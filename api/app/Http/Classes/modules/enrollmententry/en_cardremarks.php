@@ -40,10 +40,10 @@ class en_cardremarks
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -120,7 +120,7 @@ class en_cardremarks
         if ($data[$key]['line'] == 0) {
           $check = $this->checkCardRem($data[$key], 'new');
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data3['remarks'];
+            $msg .= "\n Duplicate entry for " . $data3['remarks'];
           } else {
             $line = $this->coreFunctions->insertGetId($this->table, $data3);
             $this->logger->sbcmasterlog($data[$key]['line'], $config, ' CREATE - ' . $data[$key]['remarks']);
@@ -128,7 +128,7 @@ class en_cardremarks
         } else {
           $check = $this->checkCardRem($data[$key]);
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data3['remarks'];
+            $msg .= "\n Duplicate entry for " . $data3['remarks'];
           } else {
             $data3['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data3['editby'] = $config['params']['user'];
@@ -138,7 +138,7 @@ class en_cardremarks
       } // end if
     } // foreach
     $returndata = $this->loaddata($config);
-    return ['status' => true, 'msg' => 'All saved successfully.'.$msg, 'data' => $returndata];
+    return ['status' => true, 'msg' => 'All saved successfully.' . $msg, 'data' => $returndata];
   } // end function  
 
   public function save($config)
@@ -146,7 +146,7 @@ class en_cardremarks
     $data = [];
     $row = $config['params']['row'];
     $data2 = [];
-    
+
     $companyid = $config['params']['companyid'];
     $dateTables = ['en_cardremarks'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -168,7 +168,7 @@ class en_cardremarks
     if ($row['line'] == 0) {
       $check = $this->checkCardRem($row, 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$data2['remarks'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $data2['remarks'], 'row' => []];
       } else {
         $line = $this->coreFunctions->insertGetId($this->table, $data2);
         if ($line != 0) {
@@ -182,7 +182,7 @@ class en_cardremarks
     } else {
       $check = $this->checkCardRem($row);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$data2['remarks'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $data2['remarks'], 'row' => []];
       } else {
         $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data2['editby'] = $config['params']['user'];
@@ -198,9 +198,9 @@ class en_cardremarks
 
   public function checkCardRem($data, $type = 'update')
   {
-    $qry = "select line as value from en_cardremarks where remarks='".$data['remarks']."'";
+    $qry = "select line as value from en_cardremarks where remarks='" . $data['remarks'] . "'";
     if ($type == 'update') {
-      $qry = "select line as value from en_cardremarks where remarks='".$data['remarks']."' and line<>".$data['line'];
+      $qry = "select line as value from en_cardremarks where remarks='" . $data['remarks'] . "' and line<>" . $data['line'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check != '') return true;
@@ -320,7 +320,8 @@ class en_cardremarks
   public function reportparamsdata($config)
   {
     return $this->coreFunctions->opentable(
-      "select 'PDFM' as print, '' as prepared, '' as approved, '' as received");
+      "select 'PDFM' as print, '' as prepared, '' as approved, '' as received"
+    );
   }
 
   public function reportdata($config)

@@ -33,9 +33,9 @@ class stockcard
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -109,9 +109,6 @@ class stockcard
         return $this->coreFunctions->opentable($query);
         break;
     }
-
-    
-
   }
 
   public function QUERY_LEDGER($config)
@@ -612,7 +609,7 @@ class stockcard
       if ($tobal == 0) {
         $tobal = '-';
       } else {
-          $tobal = $tobal * 1;
+        $tobal = $tobal * 1;
         $tobal = number_format($tobal, 2);
       }
       $arr_dateid = $this->reporter->fixcolumn([$data[$i]['dateid']], '10', 0);
@@ -1452,7 +1449,7 @@ class stockcard
       if ($tobal == 0) {
         $tobal = '-';
       } else {
-          $tobal = $tobal * -1;
+        $tobal = $tobal * -1;
         $tobal = number_format($tobal, 2);
       } //end if
 

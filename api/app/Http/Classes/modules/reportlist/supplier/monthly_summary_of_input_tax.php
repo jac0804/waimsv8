@@ -29,12 +29,12 @@ class monthly_summary_of_input_tax
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -452,7 +452,7 @@ class monthly_summary_of_input_tax
     $str .= $this->reporter->printline();
     $str .= $this->reporter->begintable('1000');
     $str .= $this->reporter->startrow();
-    
+
     switch ($companyid) {
       case 10:
       case 12:
@@ -536,7 +536,7 @@ class monthly_summary_of_input_tax
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      
+
       switch ($companyid) {
         case 10:
         case 12:
@@ -548,56 +548,54 @@ class monthly_summary_of_input_tax
           $str .= $this->reporter->col(number_format($data_->cr, $decimal_currency), '100', '', false, $border, $fontsize, 'R',  $font, $fontsize,  '', '', '', '', '');
           break;
         case 56: //homeworks
-          
+
           $vat = $this->coreFunctions->datareader("select sum(d.db-d.cr) as value 
             from gldetail as d 
             left join coa as c on c.acnoid=d.acnoid
-            where d.trno = ? and d.clientid = ? and c.alias='TX1'", [$data_->trno,$data_->clientid]);
+            where d.trno = ? and d.clientid = ? and c.alias='TX1'", [$data_->trno, $data_->clientid]);
           $str .= $this->reporter->col($data_->dateid, '100', '', false, $border, '', 'LT',  $font, $fontsize,  '', '', '', '', '');
           $str .= $this->reporter->col($data_->client, '100', '', false, $border, '', 'LT',  $font, $fontsize,  '', '', '', '', '');
           $str .= $this->reporter->col($data_->clientname, '150', '', false, $border, '', 'LT',  $font, $fontsize,  '', '', '', '', '');
           $str .= $this->reporter->col($data_->tin, '125', '', false, $border, '', 'LT',  $font, $fontsize,  '', '', '', '', '');
           $str .= $this->reporter->col($data_->addr, '140', '', false, $border, '', 'LT',  $font, $fontsize,  '', '', '', '', '');
           $str .= $this->reporter->col($data_->docno, '115', '', false, $border, '', 'LT',  $font, $fontsize,  '', '', '', '', '');
-          if(str_contains($data_->docno,'SJS')){
+          if (str_contains($data_->docno, 'SJS')) {
             $str .= $this->reporter->col(number_format($data_->db, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
             $str .= $this->reporter->col(number_format($vat, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
-            $str .= $this->reporter->col(number_format($data_->db-$vat, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
+            $str .= $this->reporter->col(number_format($data_->db - $vat, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
 
             #a
-            $data_->db=$data_->db;
+            $data_->db = $data_->db;
             #b
-            $data_->cr=$vat;
-            
+            $data_->cr = $vat;
+
             #c
-            $data_->net=$data_->db-$vat;
-            
-          }elseif(str_contains($data_->docno,'SRS')){
+            $data_->net = $data_->db - $vat;
+          } elseif (str_contains($data_->docno, 'SRS')) {
             $str .= $this->reporter->col(number_format($data_->db, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
             $str .= $this->reporter->col(number_format($vat, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
-            $str .= $this->reporter->col(number_format(($data_->db-$vat), $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
+            $str .= $this->reporter->col(number_format(($data_->db - $vat), $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
 
             #a
-            $data_->db=$data_->db;
+            $data_->db = $data_->db;
             #b
-            $data_->cr=$vat;
-            
+            $data_->cr = $vat;
+
             #c
-            $data_->net=($data_->db-$vat);
-            
-          }else{
-            $str .= $this->reporter->col(number_format($data_->db+$vat, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
+            $data_->net = ($data_->db - $vat);
+          } else {
+            $str .= $this->reporter->col(number_format($data_->db + $vat, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
             $str .= $this->reporter->col(number_format($vat, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
             $str .= $this->reporter->col(number_format($data_->db, $decimal_currency), '90', '', false, $border, '', 'RT',  $font, $fontsize,  '', '', '', '', '');
 
             #c
-            $data_->net=$data_->db;
+            $data_->net = $data_->db;
             #a
-            $data_->db=$data_->db+$vat;
+            $data_->db = $data_->db + $vat;
             #b
-            $data_->cr=$vat;
+            $data_->cr = $vat;
           }
-          
+
           break;
         default:
           $str .= $this->reporter->col($data_->dateid, '100', '', false, $border, '', 'L',  $font, $fontsize,  '', '', '', '', '');
@@ -641,7 +639,7 @@ class monthly_summary_of_input_tax
     }
 
     $str .= $this->reporter->startrow();
-    
+
     switch ($companyid) {
       case 10: //afti
       case 12: //afti usd
@@ -785,22 +783,21 @@ class monthly_summary_of_input_tax
       $total_total += $value->PURCHASES;
       $total_tax += $value->VATAMT;
       $total_net += $value->NETPURCHASE;
-      
+
       $vat = $this->coreFunctions->datareader("select sum(d.db-d.cr) as value 
           from gldetail as d 
           left join coa as c on c.acnoid=d.acnoid
-          where d.trno = ? and d.clientid = ? and c.alias='TX1'", [$value->trno,$value->clientid]);
-        
-          if(str_contains($value->DOCNO,'SJS')){
-            $value->NETPURCHASE = number_format($value->PURCHASES-$vat, 2);
-            $value->PURCHASES = number_format($value->PURCHASES, 2);
-            $value->VATAMT = number_format($vat, 2);
-          }else{
-            $value->NETPURCHASE = number_format($value->PURCHASES, 2);
-            $value->PURCHASES = number_format($value->PURCHASES+$vat, 2);
-            $value->VATAMT = number_format($vat, 2);
-          }
-      
+          where d.trno = ? and d.clientid = ? and c.alias='TX1'", [$value->trno, $value->clientid]);
+
+      if (str_contains($value->DOCNO, 'SJS')) {
+        $value->NETPURCHASE = number_format($value->PURCHASES - $vat, 2);
+        $value->PURCHASES = number_format($value->PURCHASES, 2);
+        $value->VATAMT = number_format($vat, 2);
+      } else {
+        $value->NETPURCHASE = number_format($value->PURCHASES, 2);
+        $value->PURCHASES = number_format($value->PURCHASES + $vat, 2);
+        $value->VATAMT = number_format($vat, 2);
+      }
     }
 
     // gumawa ng total row

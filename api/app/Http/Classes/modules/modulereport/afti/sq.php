@@ -33,9 +33,9 @@ class sq
   private $reporter;
   private $logger;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -799,8 +799,8 @@ class sq
     }
 
     if ($data[0]['vattype'] == 'VATABLE') {
-      $vat = round($vatsales * .12,2);
-      $amount = round($totalext + $vat,2);
+      $vat = round($vatsales * .12, 2);
+      $amount = round($totalext + $vat, 2);
     } else {
       $vat = 0;
       $amount = $totalext;

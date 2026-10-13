@@ -40,10 +40,10 @@ class updatepricelist
     private $reporter;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -212,7 +212,7 @@ class updatepricelist
                         $operator = '+';
                         break;
                 }
-                if($price !=0){
+                if ($price != 0) {
                     if ($operator == '+') {
                         $newprice = $price + ($price * ($rate / 100));
                     } else {
@@ -225,7 +225,7 @@ class updatepricelist
                         $msg = "Update Record Failed";
                         break;
                     }
-                    $this->logger->sbcwritelog($value->itemid, $config, 'UPDATE PRICE LIST', $msg . ' - Price Level: ' . $pricelevel . ' - Rate: ' . $rate . ' - Type: ' . $type . ' - Price Basis: ' .$price. '('.$basis.')');
+                    $this->logger->sbcwritelog($value->itemid, $config, 'UPDATE PRICE LIST', $msg . ' - Price Level: ' . $pricelevel . ' - Rate: ' . $rate . ' - Type: ' . $type . ' - Price Basis: ' . $price . '(' . $basis . ')');
                 }
             }
             $this->coreFunctions->LogConsole('Processed 100 records.');

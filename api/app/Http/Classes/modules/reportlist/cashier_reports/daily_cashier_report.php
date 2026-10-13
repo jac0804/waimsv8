@@ -35,12 +35,12 @@ class daily_cashier_report
 
     private $nogroup = 1;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -365,7 +365,7 @@ class daily_cashier_report
         where num.center ='" . $center . "' and date(dateid) ='" . $start . "' and sicsino <>'' and ce.rem2='' and ce.createby='$user'
         union all
         select concat(min(sicsino),'-',max(sicsino)) as sicsino from tcoll where center ='" . $center . "' and date(dateid) ='" . $start . "' and sicsino <>'' 
-        and createby='$user') as v");//and trnxtype = 'MC UNIT'
+        and createby='$user') as v"); //and trnxtype = 'MC UNIT'
 
         $orno = $this->coreFunctions->datareader("select group_concat(orno order by orno separator ', ') as value from (
         select concat(min(ourref),'-',max(ourref)) as orno from hcehead as ce left join transnum as num on num.trno = ce.trno 

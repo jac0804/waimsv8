@@ -78,12 +78,13 @@ class employee
     'email',
     'fax',
     'tel',
-    'category'
+    'category',
+    'createdate'
   ];
 
   private $otherfields = ['isapprover', 'idbarcode', 'maxsjamt'];
 
-  private $profilefields = ['sss', 'phic', 'hdmf', 'sssdef', 'philhdef', 'pibigdef', 'bday', 'agencyname', 'agencyfee', 'createdate'];
+  private $profilefields = ['sss', 'phic', 'hdmf', 'sssdef', 'philhdef', 'pibigdef', 'bday', 'agencyname', 'agencyfee'];
 
   //pag magkaiba yung gamit na fields na gamit 
   private  $newcontract = ['hired' => 'datefrom', 'resigned' => 'dateto', 'notes' => 'descr'];
@@ -97,11 +98,11 @@ class employee
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -232,35 +233,31 @@ class employee
     $tab = [];
 
     if ($companyid == 72) { // hahsy
-      $fields = ['picture'];
+      $fields = ['picture', 'rem'];
       $col1 = $this->fieldClass->create($fields);
       data_set($col1, 'picture.lookupclass', 'client');
       data_set($col1, 'picture.folder', 'employee');
       data_set($col1, 'picture.table', 'client');
       data_set($col1, 'picture.fieldid', 'clientid');
 
+      data_set($col1, 'rem.label', 'Notes');
+      data_set($col1, 'rem.type', 'ctextarea');
+      data_set($col1, 'rem.required', false);
+
       $fields = [
-        ['category', 'createdate'],
-        'rem',
+        ['itemcategoryname', 'createdate'],
         ['sss', 'sssdef'],
         ['phic', 'philhdef'],
         ['hdmf', 'pibigdef'],
-        'bday',
-        ['hired', 'updatenotes'],
-        ['resigned', 'notes'],
-        'agencyname',
-        'agencyfee'
+        ['bday', 'agencyfee'],
+        'agencyname'
+
       ];
 
       $col2 = $this->fieldClass->create($fields);
 
       data_set($col2, 'createdate.label', 'Encoded');
       data_set($col2, 'createdate.class', 'cscreatedate');
-      data_set($col2, 'createdate.readonly', true);
-
-      data_set($col2, 'rem.label', 'Notes');
-      data_set($col2, 'rem.type', 'ctextarea');
-      data_set($col2, 'rem.required', false);
 
       data_set($col2, 'sss.label', 'SSS #');
       data_set($col2, 'sss.type', 'cinput');
@@ -278,20 +275,26 @@ class employee
       data_set($col2, 'pibigdef.type', 'cinput');
 
       data_set($col2, 'bday.label', 'Birthday');
-      data_set($col2, 'hired.label', 'Start Date');
-      data_set($col2, 'resigned.label', 'End Date');
-
 
       data_set($col2, 'agencyname.lookupclass', 'lookupagency');
-      data_set($col2, 'category.lookupclass', 'lookupcategoryitemcategory');
-      data_set($col2, 'category.labeldata', 'category');
+      data_set($col2, 'itemcategoryname.lookupclass', 'lookupcategoryitemcategory');
+      data_set($col2, 'itemcategoryname.labeldata', 'category');
 
-      data_set($col2, 'updatenotes.label', 'New Contract');
-      data_set($col2, 'updatenotes.icon', 'archive');
-      data_set($col2, 'updatenotes.lookupclass', 'newcontract');
+      $fields = [
+        ['hired', 'resigned'],
+        ['notes', 'updatenotes']
+      ];
 
+      $col3 = $this->fieldClass->create($fields);
 
-      $tab['multiinput1'] = ['inputcolumn' => ['col1' => $col1, 'col2' => $col2], 'label' => 'PROFILE'];
+      data_set($col3, 'hired.label', 'Start Date');
+      data_set($col3, 'resigned.label', 'End Date');
+
+      data_set($col3, 'updatenotes.label', 'New Contract');
+      data_set($col3, 'updatenotes.icon', 'archive');
+      data_set($col3, 'updatenotes.lookupclass', 'newcontract');
+
+      $tab['multiinput1'] = ['inputcolumn' => ['col1' => $col1, 'col2' => $col2, 'col3' => $col3], 'label' => 'PROFILE'];
       $tab['tableentry'] = ['action' => 'tableentry', 'lookupclass' => 'contracthistory', 'label' => 'CONTRACT HISTORY', 'checkchanges' => 'tableentry'];
     }
 
@@ -577,9 +580,10 @@ class employee
     $data[0]['hired'] = null;
     $data[0]['resigned'] = null;
     $data[0]['notes'] = '';
-    $data[0]['createdate'] = null;
+    $data[0]['createdate'] = $this->othersClass->getCurrentTimeStamp();
     $data[0]['agencyname'] = '';
     $data[0]['agencyfee'] = 0;
+    $data[0]['itemcategoryname'] = '';
 
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }
@@ -651,7 +655,8 @@ class employee
     $qry = $qryselect . ", dept.client as dept, dept.clientname as deptname, emp.client as empcode, 
       emp.clientname as empname, client.wh, ifnull(wh.clientname, '') as whname, 
       ifnull(wh2.clientname, '') as dropoffwhemp, ifnull(custid.client, '') as customercode, 
-      ifnull(custid.clientname, '') as customername
+      ifnull(custid.clientname, '') as customername,
+      ifnull(itemcat.name, '') as itemcategoryname
       from client
       left join client as dept on client.deptid = dept.clientid
       left join client as emp on client.empid = emp.clientid
@@ -660,7 +665,8 @@ class employee
       left join client as wh on wh.client = client.wh
       left join client as wh2 on wh2.clientid = client.dropoffwh
       left join employee as info on info.empid=client.clientid
-      left join client as custid on custid.clientid = client.customerid" . $contractjoin . "
+      left join client as custid on custid.clientid = client.customerid
+      left join itemcategory as itemcat on itemcat.line = client.category" . $contractjoin . "
       where client.clientid = ? and client.isemployee = 1";
 
     $head = $this->coreFunctions->opentable($qry, [$clientid]);
@@ -743,8 +749,15 @@ class employee
       }
     }
 
+    if ($companyid == 72 && isset($head['catid']) && $head['catid'] !== '') {
+      $data['category'] =  $head['catid'];
+    }
+
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
+
+
+
     if ($isupdate) {
       $this->coreFunctions->sbcupdate('client', $data, ['clientid' => $head['clientid']]);
       array_unshift($this->fields, 'client');
@@ -763,6 +776,8 @@ class employee
         $otherdata['empid'] = $clientid;
         $this->coreFunctions->sbcinsert('employee', $otherdata);
       } else {
+        $otherdata['editdate'] = $this->othersClass->getCurrentTimeStamp();
+        $otherdata['editby'] = $config['params']['user'];
         $this->coreFunctions->sbcupdate('employee', $otherdata, ['empid' => $clientid]);
       }
     }

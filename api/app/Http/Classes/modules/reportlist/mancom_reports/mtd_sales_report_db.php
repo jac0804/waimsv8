@@ -29,12 +29,12 @@ class mtd_sales_report_db
     public $directprint = true;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -714,16 +714,16 @@ class mtd_sales_report_db
             }
         }
 
-        
+
         $totalactual = $totjan + $totfeb + $totmar + $totapr + $totmay + $totjun + $totjul + $totaug + $totsep + $totoct + $totnov + $totdec;
         $str .= $this->reporter->col(number_format($totalactual, $decimalprice), '100', null, false, $border, 'LRTB', 'C', $font, $fontsize, 'B', '', '4px');
         $str .= $this->reporter->col(number_format($totaltarget, $decimalprice), '100', null, false, $border, 'LRTB', 'C', $font, $fontsize, 'B', '', '4px');
-        if($totaltarget == 0 || $totalactual == 0){
+        if ($totaltarget == 0 || $totalactual == 0) {
             $str .= $this->reporter->col('0', '100', null, false, $border, 'LRTB', 'C', $font, $fontsize, 'B', '', '4px');
-        }else{
+        } else {
             $str .= $this->reporter->col(number_format(($totalactual / $totaltarget) * 100, $decimalprice), '100', null, false, $border, 'LRTB', 'C', $font, $fontsize, 'B', '', '4px');
         }
-        
+
         $str .= $this->reporter->col(number_format($totaltarget - $totalactual, $decimalprice), '100', null, false, $border, 'LRTB', 'C', $font, $fontsize, 'B', '', '4px');
 
         $str .= $this->reporter->endtable();

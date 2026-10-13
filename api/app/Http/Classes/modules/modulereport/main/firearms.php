@@ -36,9 +36,9 @@ class firearms
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -49,7 +49,7 @@ class firearms
 
     public function createreportfilter($config)
     {
-        $fields = ['radioprint','print'];
+        $fields = ['radioprint', 'print'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'radioprint.options', [
             ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
@@ -82,13 +82,13 @@ class firearms
     public function firearms_QUERY($config)
     {
         $center   = $config['params']['center'];
-        $clientid =$config['params']['dataid'];
-        $query=" select fr.line as clientid, fr.code as client, fr.make, fr.type, fr.expiry as expiry1, fr.serialno, fr.licenseno, fr.cal 
+        $clientid = $config['params']['dataid'];
+        $query = " select fr.line as clientid, fr.code as client, fr.make, fr.type, fr.expiry as expiry1, fr.serialno, fr.licenseno, fr.cal 
         from firearms as fr where fr.line = '$clientid' and fr.center= '$center'";
         return $query;
-    } 
+    }
 
-  
+
 
     //DEFAULT LAYOUT
     public function firearms_PDFs($config, $data)
@@ -106,7 +106,7 @@ class firearms
 
         $str .= $this->reporter->beginreport();
 
-     
+
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->letterhead($center, $username);
@@ -183,7 +183,7 @@ class firearms
     {
         $center = $config['params']['center'];
         $username = $config['params']['user'];
-    
+
         $count = 55;
         $page = 54;
         $fontsize = "10";
@@ -225,7 +225,7 @@ class firearms
 
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(30, 15, ":", '', 'L', false, 0);
-       
+
         PDF::MultiCell(610, 15, (isset($data[0]->client) ? $data[0]->client : ''), '', 'L', false, 1);
 
         PDF::SetFont($font, '', 11);
@@ -276,5 +276,4 @@ class firearms
 
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
-
 }

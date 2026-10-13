@@ -55,11 +55,11 @@ class wr
     public $showcreatebtn = true;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -246,7 +246,7 @@ class wr
         left join cntnum as num on num.trno = head.trno
         left join client as cl on cl.clientid=head.clientid
         where num.doc = '$doc' and num.center = '$center' $condition ";
-        
+
         $data = $this->coreFunctions->opentable($query);
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
     }

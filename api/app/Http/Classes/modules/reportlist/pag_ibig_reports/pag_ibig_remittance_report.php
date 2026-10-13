@@ -35,12 +35,12 @@ class pag_ibig_remittance_report
   // layoutsize: reportWidth
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '700'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -122,10 +122,11 @@ class pag_ibig_remittance_report
       $filter .= " and e.client = '$client'";
     }
     if ($deptname != '') {
-        if ($deptid != 0) {
-            $filter .= " and emp.deptid = $deptid";
-        }}
-    if ($divname != '') {    
+      if ($deptid != 0) {
+        $filter .= " and emp.deptid = $deptid";
+      }
+    }
+    if ($divname != '') {
       if ($divid != 0) {
         if ($config['params']['companyid'] == 58) { //cdo
           $filter .= " and emp.contricompid = $divid";

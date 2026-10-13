@@ -22,7 +22,14 @@ class viewitembaseprice
     public $modulename = 'Base Price';
     public $gridname = 'tableentry';
     private $fields = [
-        'amt16', 'disc16', 'disc17', 'disc18', 'disc19', 'disc20', 'disc21', 'disc22'
+        'amt16',
+        'disc16',
+        'disc17',
+        'disc18',
+        'disc19',
+        'disc20',
+        'disc21',
+        'disc22'
     ];
     private $table = 'item';
 
@@ -33,10 +40,10 @@ class viewitembaseprice
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -118,7 +125,7 @@ class viewitembaseprice
     }
 
     public function loaddata($config)
-    {   
+    {
         $companyid = $config['params']['companyid'];
         $data = [];
         $itemid = $config['params']['itemid'];

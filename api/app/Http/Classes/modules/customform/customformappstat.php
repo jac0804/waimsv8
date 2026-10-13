@@ -33,10 +33,10 @@ class customformappstat
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -101,13 +101,13 @@ class customformappstat
 
     public function loaddata($config)
     {
-        
+
         $companyid = $config['params']['companyid'];
         $app = $config['params']['dataparams'];
         $clientid = $config['params']['dataparams']['empid'];
         $jstat = $config['params']['dataparams']['jstatus'];
         $remarks = $config['params']['dataparams']['remarks'];
-        
+
         $data = [
             'jstatus' => $jstat,
             'jdateid' => $this->othersClass->getCurrentDate(),

@@ -33,9 +33,9 @@ class ss
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -360,23 +360,23 @@ class ss
 
     for ($i = 0; $i < count($data); $i++) {
       $maxrow = 1;
-      $isqty = number_format($data[$i]['isqty'],$decimalqty);
+      $isqty = number_format($data[$i]['isqty'], $decimalqty);
       $uom = $data[$i]['uom'];
       $itemname = $data[$i]['uom'];
       $wh = $data[$i]['wh'];
       $loc = $data[$i]['loc'];
       $expiry = $data[$i]['expiry'];
 
-      $arr_isqty = $this->reporter->fixcolumn([$isqty],'13',0);
-      $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-      $arr_itemname = $this->reporter->fixcolumn([$itemname],'40',0);
-      $arr_wh = $this->reporter->fixcolumn([$wh],'16',0);
-      $arr_loc = $this->reporter->fixcolumn([$loc],'16',0);
-      $arr_expiry = $this->reporter->fixcolumn([$expiry],'16',0);
+      $arr_isqty = $this->reporter->fixcolumn([$isqty], '13', 0);
+      $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+      $arr_itemname = $this->reporter->fixcolumn([$itemname], '40', 0);
+      $arr_wh = $this->reporter->fixcolumn([$wh], '16', 0);
+      $arr_loc = $this->reporter->fixcolumn([$loc], '16', 0);
+      $arr_expiry = $this->reporter->fixcolumn([$expiry], '16', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_isqty, $arr_uom, $arr_itemname, $arr_wh, $arr_loc, $arr_expiry]);
 
-      for($r = 0; $r < $maxrow; $r++) {
+      for ($r = 0; $r < $maxrow; $r++) {
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(50, 0, (isset($arr_isqty[$r]) ? $arr_isqty[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(50, 0, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);

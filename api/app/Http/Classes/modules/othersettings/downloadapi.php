@@ -40,11 +40,11 @@ class downloadapi
   public $tablelogs = 'table_log';
   public $tablelogs_del = 'del_table_log';
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -502,7 +502,7 @@ class downloadapi
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
             foreach ($acctg as $key => $value) {
               foreach ($value as $key2 => $value2) {
-                $acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
+                $acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
               }
               $acctg[$key]['editdate'] = $current_timestamp;
               $acctg[$key]['editby'] = $config['params']['user'];

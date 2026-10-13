@@ -65,11 +65,11 @@ class ts
     ['val' => 'all', 'label' => 'All', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -1634,7 +1634,7 @@ class ts
         stock.line, item.barcode,stock.uom, stock.cost,
         (stock.qty-stock.qa) as qty,stock.rrcost,
         round((stock.qty-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty, 
-        stock.disc,head.rem
+        stock.disc,stock.loc,head.rem
         FROM htrhead as head left join htrstock as stock on stock.trno=head.trno left join item on item.itemid=
         stock.itemid left join uom on uom.itemid=item.itemid and 
         uom.uom=stock.uom where stock.trno = ? and stock.qty>stock.qa and stock.void=0
@@ -1658,7 +1658,7 @@ class ts
           $config['params']['data']['disc'] = $data[$key2]->disc;
           $config['params']['data']['qty'] = $data[$key2]->rrqty;
           $config['params']['data']['wh'] = $wh;
-          $config['params']['data']['loc'] = '';
+          $config['params']['data']['loc'] = $data[$key2]->loc;
           $config['params']['data']['expiry'] = '';
           $config['params']['data']['rem'] = '';
           $config['params']['data']['refx'] = $data[$key2]->trno;
@@ -1696,7 +1696,7 @@ class ts
         stock.line, item.barcode,stock.uom, stock.cost,
         (stock.qty-stock.qa) as qty,stock.rrcost,
         round((stock.qty-stock.qa)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end," . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty, 
-        stock.disc,head.rem
+        stock.disc,stock.loc,head.rem
         FROM htrhead as head left join htrstock as stock on stock.trno=head.trno left join item on item.itemid=
         stock.itemid left join uom on uom.itemid=item.itemid and 
         uom.uom=stock.uom where stock.trno = ? and stock.line=? and stock.qty>stock.qa and stock.void=0
@@ -1720,7 +1720,7 @@ class ts
           $config['params']['data']['disc'] = $data[$key2]->disc;
           $config['params']['data']['qty'] = $data[$key2]->rrqty;
           $config['params']['data']['wh'] = $wh;
-          $config['params']['data']['loc'] = '';
+          $config['params']['data']['loc'] = $data[$key2]->loc;
           $config['params']['data']['expiry'] = '';
           $config['params']['data']['rem'] = '';
           $config['params']['data']['refx'] = $data[$key2]->trno;
@@ -2762,14 +2762,21 @@ class ts
   public function reportdata($config)
   {
     $companyid = $config['params']['companyid'];
+    $dataparams = $config['params']['dataparams'];
 
     switch ($companyid) {
       case 40: //cdo
       case 52: //technolab
-        $dataparams = $config['params']['dataparams'];
         if (isset($dataparams['prepared'])) $this->othersClass->writeSignatories($config, 'prepared', $dataparams['prepared']);
         if (isset($dataparams['approved'])) $this->othersClass->writeSignatories($config, 'approved', $dataparams['approved']);
         if (isset($dataparams['received'])) $this->othersClass->writeSignatories($config, 'received', $dataparams['received']);
+        break;
+
+      case 68: // jda
+        if (isset($dataparams['prepared'])) $this->othersClass->writeSignatories($config, 'prepared', $dataparams['prepared']);
+        if (isset($dataparams['approved'])) $this->othersClass->writeSignatories($config, 'approved', $dataparams['approved']);
+        if (isset($dataparams['received'])) $this->othersClass->writeSignatories($config, 'received', $dataparams['received']);
+        if (isset($dataparams['noted'])) $this->othersClass->writeSignatories($config, 'noted', $dataparams['noted']);
         break;
     }
 

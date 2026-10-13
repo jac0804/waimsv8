@@ -38,11 +38,51 @@ class agent
   public $tagging = "isagent";
 
   private $fields = [
-    'client', 'clientname', 'addr', 'start', 'status', 'tin',
-    'groupid', 'area', 'province', 'region', 'class', 'quota', 'rem', 'parent', 'comm',
-    'contact', 'tel', 'fax', 'tel2', 'email', 'iscustomer', 'issupplier', 'isagent', 'iswarehouse',
-    'isemployee', 'isinactive', 'isdepartment', 'picture', 'agentcode', 'deptid', 'branchid',
-    'issynced', 'uv_ispicker', 'uv_ischecker', 'collectorid', 'isoverride', 'salesgroupid', 'nocomm', 'wh', 'pword', 'isleader', 'pemail', 'enddate', 'position', 'alias'
+    'client',
+    'clientname',
+    'addr',
+    'start',
+    'status',
+    'tin',
+    'groupid',
+    'area',
+    'province',
+    'region',
+    'class',
+    'quota',
+    'rem',
+    'parent',
+    'comm',
+    'contact',
+    'tel',
+    'fax',
+    'tel2',
+    'email',
+    'iscustomer',
+    'issupplier',
+    'isagent',
+    'iswarehouse',
+    'isemployee',
+    'isinactive',
+    'isdepartment',
+    'picture',
+    'agentcode',
+    'deptid',
+    'branchid',
+    'issynced',
+    'uv_ispicker',
+    'uv_ischecker',
+    'collectorid',
+    'isoverride',
+    'salesgroupid',
+    'nocomm',
+    'wh',
+    'pword',
+    'isleader',
+    'pemail',
+    'enddate',
+    'position',
+    'alias'
   ];
   private $clinfo = ['fname', 'lname', 'mname'];
   private $except = ['clientid'];
@@ -54,11 +94,11 @@ class agent
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -89,7 +129,7 @@ class agent
       $this->modulename = 'EMPLOYEE LEDGER';
       $this->prefix = 'EE';
     }
-    switch ($company){
+    switch ($company) {
       case 34:
         $getcols = ['action', 'listclient', 'listclientname', 'listposition'];
         break;
@@ -143,8 +183,8 @@ class agent
     }
 
     $addedfield = '';
-    if ($company == 64){ // excelin
-    $addedfield .= ", client.alias";
+    if ($company == 64) { // excelin
+      $addedfield .= ", client.alias";
     }
 
 

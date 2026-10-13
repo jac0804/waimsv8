@@ -34,10 +34,10 @@ class posregistration
     public $showclosebtn = false;
     private $scbscript;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -102,7 +102,7 @@ class posregistration
     public function createHeadField($config)
     {
 
-        $fields = ['divname', 'docno', 'yourref', 'create'];
+        $fields = ['divname', 'docno', 'clientname', 'yourref', 'create'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'yourref.type', 'input');
         data_set($col1, 'yourref.label', 'PO #');
@@ -187,6 +187,7 @@ class posregistration
       select
       0 as trno, 
       '' as docno,
+      '' as clientname,
       '' as yourref,
       '' as divname,
       '' as company,

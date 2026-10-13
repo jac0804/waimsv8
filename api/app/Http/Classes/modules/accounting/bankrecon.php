@@ -36,11 +36,11 @@ class bankrecon
     public $issearchshow = false;
     public $showclosebtn = false;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -368,7 +368,7 @@ class bankrecon
         $deductions = $this->othersClass->sanitizekeyfieldFast('amt', $deductions, $lookups);
         $endbal = $this->othersClass->sanitizekeyfieldFast('amt', $endbal, $lookups);
 
-    
+
         $date1 = $this->othersClass->sbcdateformat($date1);
         $date2 = $this->othersClass->sbcdateformat($date2);
         $clearday = $this->othersClass->sbcdateformat($clearday);

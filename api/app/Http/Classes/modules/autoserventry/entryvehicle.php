@@ -35,10 +35,10 @@ class entryvehicle
     private $enrollmentlookup;
     private $logger;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -55,8 +55,25 @@ class entryvehicle
     public function createTab($config)
     {
 
-        $getcols = ['action', 'description','cryear', 'licenseno', 'mileage', 'cmake', 'model', 'sub_model', 'crtype', 
-                    'carengine', 'transmission', 'motorno', 'chassis', 'mvno', 'insurance', 'labor', 'code'];
+        $getcols = [
+            'action',
+            'description',
+            'cryear',
+            'licenseno',
+            'mileage',
+            'cmake',
+            'model',
+            'sub_model',
+            'crtype',
+            'carengine',
+            'transmission',
+            'motorno',
+            'chassis',
+            'mvno',
+            'insurance',
+            'labor',
+            'code'
+        ];
 
         foreach ($getcols as $key => $value) {
             $$value = $key;

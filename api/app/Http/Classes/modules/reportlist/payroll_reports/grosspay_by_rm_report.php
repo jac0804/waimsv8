@@ -32,12 +32,12 @@ class grosspay_by_rm_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1200'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -119,7 +119,7 @@ class grosspay_by_rm_report
             $filter1 .= " and division.divname = '$divname'";
         }
 
-        if ( $deptname != "") {
+        if ($deptname != "") {
             $filter2 .= " and dept.clientname = '$deptname'";
         }
 
@@ -162,7 +162,7 @@ class grosspay_by_rm_report
                 order by divname, deptname, sectname, clientname 
 
                 ;";
-                // var_dump($query);
+        // var_dump($query);
         return $this->coreFunctions->opentable($query);
     }
 
@@ -219,7 +219,7 @@ class grosspay_by_rm_report
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Batch:' . $batch. ' Payroll Period: From'. $startformat. 'to' . $endformat, null, null, false, $border, '', 'C', $font, $fontsize_header, '', '', '');
+        $str .= $this->reporter->col('Batch:' . $batch . ' Payroll Period: From' . $startformat . 'to' . $endformat, null, null, false, $border, '', 'C', $font, $fontsize_header, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         $str .= '</br>';
@@ -248,7 +248,7 @@ class grosspay_by_rm_report
         $str .= $this->reporter->endtable();
         return $str;
     }
-    
+
     public function report_md_Layout_ot($config, $batchdate)
     {
         $result = $this->reportDefault($config);
@@ -272,8 +272,8 @@ class grosspay_by_rm_report
         $str .= $this->header_md($config, $layoutsize, $batchdate);
         foreach ($result as $key => $data) {
 
-            $deptChange = ($dept !== $data->deptname && $dept !== null);//if change, subtotal
-            $newDept = ($dept !== $data->deptname);//if new, deptname
+            $deptChange = ($dept !== $data->deptname && $dept !== null); //if change, subtotal
+            $newDept = ($dept !== $data->deptname); //if new, deptname
             if ($rowCount > 0 && $rowCount > $maxRows) {  //row counter limit
                 $str .= $this->reporter->page_break();
                 $str .= $this->header_md($config, $layoutsize, $batchdate);
@@ -289,7 +289,7 @@ class grosspay_by_rm_report
                 $str .= $this->reporter->col('', null, null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
-                $subGross = 0;//reset
+                $subGross = 0; //reset
             }
             if ($newDept) { //for new dept
                 $str .= '</br>';
@@ -302,14 +302,14 @@ class grosspay_by_rm_report
                 $str .= $this->reporter->col('', 175, null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->col('', null, null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
                 $str .= $this->reporter->endrow();
-                $str .= $this->reporter->endtable();  
+                $str .= $this->reporter->endtable();
             }
 
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('', 300, null, false, $border, '', 'C', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col($data->clientname, 300, null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-            $str .= $this->reporter->col(number_format($data->gross, 2 ), 300, null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(number_format($data->gross, 2), 300, null, false, $border, '', 'R', $font, $fontsize, '', '', '');
             $str .= $this->reporter->col('', 'null', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
@@ -317,7 +317,7 @@ class grosspay_by_rm_report
             $rowCount++;
             $subGross += $data->gross;
             $grandGross += $data->gross;
-            $str .= $this->reporter->begintable($layoutsize);//small space
+            $str .= $this->reporter->begintable($layoutsize); //small space
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('', null, 15, false, $border, '', 'L', $font, 9, 'B', '', '');
             $str .= $this->reporter->endrow();
@@ -355,8 +355,4 @@ class grosspay_by_rm_report
         $str .= $this->reporter->endreport();
         return $str;
     }
-
-
-
-
 }

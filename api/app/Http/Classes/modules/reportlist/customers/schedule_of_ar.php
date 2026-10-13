@@ -29,12 +29,12 @@ class schedule_of_ar
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -469,7 +469,7 @@ class schedule_of_ar
         $str .= $this->displayHeader_SUMMARIZED($config);
         $amt = null;
         foreach ($result as $key => $data) {
-            $bal =$data->balance;         
+            $bal = $data->balance;
 
             $uncleared = $data->pdc;
             $crlimit = $data->crlimit;
@@ -477,7 +477,7 @@ class schedule_of_ar
             $bal =  number_format($data->balance, 2);
             if ($bal == 0) {
                 $bal = '-';
-            }            
+            }
 
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->addline();

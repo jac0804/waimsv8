@@ -30,12 +30,12 @@ class cash_disbursement_book
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -1032,7 +1032,7 @@ class cash_disbursement_book
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('DOCUMENT #', 120, null, '', $border, 'TB', 'C', $font, $fontsize10, 'B', '', '');
-    $str .= $this->reporter->col('PAYEE NAME PARTICULARS', 220, null, '', $border, 'TB', 'l', $font, $fontsize10, 'B', '', ''); 
+    $str .= $this->reporter->col('PAYEE NAME PARTICULARS', 220, null, '', $border, 'TB', 'l', $font, $fontsize10, 'B', '', '');
     $str .= $this->reporter->col('DATE', 80, null, '', $border, 'TB', 'C', $font, $fontsize10, 'B', '', '');
     $str .= $this->reporter->col('ACCOUNT CODE', 70, null, '', $border, 'TB', 'R', $font, $fontsize10, 'B', '', '');
     $str .= $this->reporter->col('ACCOUNT DESCRIPTION', 200, null, '', $border, 'TB', 'C', $font, $fontsize10, 'B', '', '');
@@ -1182,7 +1182,7 @@ class cash_disbursement_book
         $rem = "";
       } else {
         if ($docno != "") {
-            //Sub total
+          //Sub total
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->addline();
           $str .= $this->reporter->col('', 120, null, '', '1px solid ', 'T', '', $font, $fontsize10, '', '', '');

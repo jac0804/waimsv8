@@ -37,9 +37,9 @@ class customer
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -803,7 +803,7 @@ class customer
             }
         }
 
-        
+
         $result2 = json_decode(json_encode($this->coreFunctions->opentable($qry2)), true);
         return $result2;
     }
@@ -1136,7 +1136,7 @@ class customer
                     PDF::MultiCell(60, 0, '', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
                     PDF::MultiCell(60, 0, '' . (isset($arr_orno[$j]) ? $arr_orno[$j] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
                     PDF::MultiCell(60, 0, '' . (isset($arr_ma[$j]) ? $arr_ma[$j] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-                    PDF::MultiCell(60, 0, '' , '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+                    PDF::MultiCell(60, 0, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
                     PDF::MultiCell(60, 0, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
                     PDF::MultiCell(60, 0, '' . (isset($arr_current[$j]) ? $arr_current[$j] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
                     PDF::MultiCell(80, 0, '' . (isset($arr_totalar[$j]) ? $arr_totalar[$j] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
@@ -1179,8 +1179,8 @@ class customer
                     where  detail.refx = $trr and left(detail.postdate,10)='$post' and coa.alias in ('AR5')) as a 
                     group by trno,yourref,docno,postdate,refx,ardate,penalty";
 
-                $crd = $this->coreFunctions->opentable($qryh);//payments
-            
+                $crd = $this->coreFunctions->opentable($qryh); //payments
+
                 if (isset($data2[$i]['rem'])) {
                     $rem2 = $data2[$i]['rem'];
                 } else {

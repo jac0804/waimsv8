@@ -29,12 +29,12 @@ class jo_completion_list
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -101,7 +101,7 @@ class jo_completion_list
 
   public function reportplotting($config)
   {
-     $reporttype = $config['params']['dataparams']['reporttype'];
+    $reporttype = $config['params']['dataparams']['reporttype'];
     switch ($reporttype) {
       case '0': // SUMMARIZED
         $result = $this->reportDefaultLayout_SUMMARIZED($config);
@@ -227,7 +227,7 @@ class jo_completion_list
 
   public function default_QUERY_SUMMARIZED($config)
   {
-   $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $client     = $config['params']['dataparams']['client'];
     $clientid = $config['params']['dataparams']['clientid'];

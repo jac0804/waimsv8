@@ -33,9 +33,9 @@ class su
   private $reporter;
   private $logger;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -606,9 +606,7 @@ class su
     return $str;
   } //end fn
 
-  public function bir_form_rr_layout($params, $data)
-  {
-  }
+  public function bir_form_rr_layout($params, $data) {}
 
   public function default_pdfheader($params, $data, $font)
   {
@@ -1496,9 +1494,7 @@ class su
           PDF::MultiCell(75, $padding, number_format($unitprice, 4), 'R', 'C', false, 0);
           PDF::MultiCell(100, $padding, number_format($linetotal, 2), 'LR', 'C', 1);
           $total += $linetotal;
-
         }
-
       }
     }
 
@@ -1652,7 +1648,6 @@ class su
     PDF::MultiCell(220, 0, 'Description', '1', 'C', 1, 0);
     PDF::MultiCell(70, 0, 'QTY', '1', 'C', 1, 0);
     PDF::MultiCell(70, 0, 'UOM', '1', 'C', 1);
-
   }
 
   public function PACKING_LAYOUT($params, $data)

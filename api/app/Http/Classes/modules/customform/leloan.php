@@ -27,7 +27,7 @@ class leloan
   public $tablelogs = 'transnum_log';
   public $tablelogs_del = 'del_transnum_log';
   private $companysetup;
-  
+
   private $coreFunctions;
   private $logger;
   public $style = 'width:1500px;max-width:1500px;';
@@ -35,10 +35,10 @@ class leloan
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -65,27 +65,27 @@ class leloan
     $doc = $config['params']['doc'];
     $isposted = $this->othersClass->isposted($config);
 
-    $fields = [['intannum','interest'],'pf','nf','amortization','penalty','voidint'];
+    $fields = [['intannum', 'interest'], 'pf', 'nf', 'amortization', 'penalty', 'voidint'];
 
     $tblname = 'eahead';
-    if($isposted){
-      $tblname ='heahead';
+    if ($isposted) {
+      $tblname = 'heahead';
     }
-    $planid =$this->coreFunctions->getfieldvalue($tblname,"planid","trno = ?",[$config['params']['trno']]);
-    $this->coreFunctions->LogConsole($planid.'----');
-    $isdiminish = $this->coreFunctions->getfieldvalue("reqcategory","isdiminishing","line = ?",[$planid],'',true);
-    $this->coreFunctions->LogConsole($isdiminish.'----');
-    if($isdiminish ==1){
-      $fields = [['intannum','interest'],'amortization','penalty','voidint'];
+    $planid = $this->coreFunctions->getfieldvalue($tblname, "planid", "trno = ?", [$config['params']['trno']]);
+    $this->coreFunctions->LogConsole($planid . '----');
+    $isdiminish = $this->coreFunctions->getfieldvalue("reqcategory", "isdiminishing", "line = ?", [$planid], '', true);
+    $this->coreFunctions->LogConsole($isdiminish . '----');
+    if ($isdiminish == 1) {
+      $fields = [['intannum', 'interest'], 'amortization', 'penalty', 'voidint'];
     }
-    
-    
+
+
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'penalty.readonly', false);
     data_set($col1, 'penalty.label', 'Penalty(%)');
     data_set($col1, 'interest.label', 'Interest(%)');
 
-    if($isposted || $doc=='LA'){
+    if ($isposted || $doc == 'LA') {
       data_set($col1, 'interest.readonly', true);
       data_set($col1, 'pf.readonly', true);
       data_set($col1, 'nf.readonly', true);
@@ -94,10 +94,10 @@ class leloan
       data_set($col1, 'intannum.readonly', true);
       data_set($col1, 'voidint.readonly', true);
     }
-    
-    $fields = ['update','lblsource','fmons','fannum','frate'];//, 'refresh'
-    if($isposted || $doc=='LA'){
-      $fields = ['lblsource','fmons','fannum','frate'];
+
+    $fields = ['update', 'lblsource', 'fmons', 'fannum', 'frate']; //, 'refresh'
+    if ($isposted || $doc == 'LA') {
+      $fields = ['lblsource', 'fmons', 'fannum', 'frate'];
     }
 
     $col2 = $this->fieldClass->create($fields);
@@ -106,7 +106,7 @@ class leloan
     data_set($col2, 'refresh.action', 'compute');
     data_set($col2, 'refresh.action', 'compute');
     data_set($col2, 'lblsource.label', 'Housing Loan Factors');
-   
+
     return array('col1' => $col1, 'col2' => $col2);
   }
 
@@ -119,11 +119,11 @@ class leloan
   public function get_head($config)
   {
     $doc = $config['params']['doc'];
-    $trno = (isset($config['params']['trno'])) ? $config['params']['trno'] : $config['params']['dataparams']['trno'] ;
+    $trno = (isset($config['params']['trno'])) ? $config['params']['trno'] : $config['params']['dataparams']['trno'];
     $filter = "";
     $field = "";
 
-    if($doc=='LA'){
+    if ($doc == 'LA') {
       $field = "'$trno' as cptrno,info.trno as trno,";
       $source1 = "
       from lahead as cp
@@ -136,7 +136,7 @@ class leloan
       left join heainfo as info on head.trno = info.trno
       left join terms on terms.terms = head.terms";
       $filter = "and cp.trno=$trno";
-    }else{
+    } else {
       $field = "'$trno' as trno,info.fmons,info.fannum,info.frate,";
       $source1 = "
       from eainfo as info
@@ -165,25 +165,24 @@ class leloan
     $source2
     where 1=1 $filter";
     return $qry;
-    
   }
 
   public function data($config)
   {
     $doc = $config['params']['doc'];
-    if($doc == 'LA'){
+    if ($doc == 'LA') {
       $cptrno = (isset($config['params']['trno'])) ? $config['params']['trno'] : $config['params']['dataparams']['trno'];
       $qry = "select aftrno as value from lahead where trno=$cptrno
       union all
       select aftrno as value from glhead where trno=$cptrno";
       $trno = $this->coreFunctions->datareader($qry);
-    }else{
+    } else {
       $trno = (isset($config['params']['trno'])) ? $config['params']['trno'] : $config['params']['dataparams']['trno'];
     }
-    
+
     $qry = "select * from (select line,format(interest,2) as interest,format(principal,2) as principal,format(pfnf,2) as pfnf,format(nf,2) as nf,format(principal+interest+pfnf+nf+dst+mri,2) as ext,format(bal,2) as bal,format(dst,2) as dst ,format(mri,2) as mri  from tempdetailinfo where trno =  " . $trno .
-    " union all
-    select line,format(interest,2) as interest,format(principal,2) as principal,format(pfnf,2) as pfnf,format(nf,2) as nf,format(principal+interest+pfnf+nf+dst+mri,2) as ext,format(bal,2) as bal,format(dst,2) as dst ,format(mri,2) as mri from htempdetailinfo where trno =  " . $trno.") as a order by line";
+      " union all
+    select line,format(interest,2) as interest,format(principal,2) as principal,format(pfnf,2) as pfnf,format(nf,2) as nf,format(principal+interest+pfnf+nf+dst+mri,2) as ext,format(bal,2) as bal,format(dst,2) as dst ,format(mri,2) as mri from htempdetailinfo where trno =  " . $trno . ") as a order by line";
     $data = $this->coreFunctions->opentable($qry);
     return $data;
   }
@@ -204,30 +203,30 @@ class leloan
     $info['voidint'] = $config['params']['dataparams']['voidint'];
     $loanamt = $config['params']['dataparams']['amount'];
 
-    $dateTables = ['eahead','eainfo'];
+    $dateTables = ['eahead', 'eainfo'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-    
-    switch ($button){
-      case 'update': 
-         
-    
 
-        $info['pf'] = $this->othersClass->sanitizekeyfieldFast('amt', $config['params']['dataparams']['pf'],$lookups);
-        $info['amortization'] = $this->othersClass->sanitizekeyfieldFast('amt',$config['params']['dataparams']['amortization'],$lookups);
-        $info['penalty'] = $this->othersClass->sanitizekeyfieldFast('amt',$config['params']['dataparams']['penalty'],$lookups);
-        $info['nf'] = $this->othersClass->sanitizekeyfieldFast('amt',$config['params']['dataparams']['nf'],$lookups);
-        
-        if($info['intannum']!=0){
-          $head['interest'] = $info['intannum']/12;
+    switch ($button) {
+      case 'update':
+
+
+
+        $info['pf'] = $this->othersClass->sanitizekeyfieldFast('amt', $config['params']['dataparams']['pf'], $lookups);
+        $info['amortization'] = $this->othersClass->sanitizekeyfieldFast('amt', $config['params']['dataparams']['amortization'], $lookups);
+        $info['penalty'] = $this->othersClass->sanitizekeyfieldFast('amt', $config['params']['dataparams']['penalty'], $lookups);
+        $info['nf'] = $this->othersClass->sanitizekeyfieldFast('amt', $config['params']['dataparams']['nf'], $lookups);
+
+        if ($info['intannum'] != 0) {
+          $head['interest'] = $info['intannum'] / 12;
         }
 
-        
 
 
-        $head['interest'] = $this->othersClass->sanitizekeyfieldFast('amt',$head['interest'],$lookups);
-        $info['intannum'] = $this->othersClass->sanitizekeyfieldFast('amt',$config['params']['dataparams']['intannum'],$lookups);
 
-        $info['voidint'] = $this->othersClass->sanitizekeyfieldFast('qty',$config['params']['dataparams']['voidint'],$lookups);
+        $head['interest'] = $this->othersClass->sanitizekeyfieldFast('amt', $head['interest'], $lookups);
+        $info['intannum'] = $this->othersClass->sanitizekeyfieldFast('amt', $config['params']['dataparams']['intannum'], $lookups);
+
+        $info['voidint'] = $this->othersClass->sanitizekeyfieldFast('qty', $config['params']['dataparams']['voidint'], $lookups);
 
         $this->coreFunctions->sbcupdate('eahead', $head, ['trno' => $trno]);
         $this->coreFunctions->sbcupdate('eainfo', $info, ['trno' => $trno]);
@@ -236,12 +235,13 @@ class leloan
         break;
       case 'compute':
         return $this->compute($config);
-       
+
         break;
     }
   } //end function
 
-  private function compute($config){
+  private function compute($config)
+  {
     $companyid = $config['params']['companyid'];
     $trno = $config['params']['dataparams']['trno'];
     $head = [];
@@ -254,211 +254,209 @@ class leloan
     $info['intannum'] = $config['params']['dataparams']['intannum'];
     $info['voidint'] = $config['params']['dataparams']['voidint'];
     $loanamt = $config['params']['dataparams']['amount'];
-    $isdiminish = $this->coreFunctions->getfieldvalue("reqcategory","isdiminishing","line = ?",[$config['params']['dataparams']['planid']],'',true);
+    $isdiminish = $this->coreFunctions->getfieldvalue("reqcategory", "isdiminishing", "line = ?", [$config['params']['dataparams']['planid']], '', true);
     $balmons =  $config['params']['dataparams']['terms'];
-    $rdate = strtotime($this->coreFunctions->getfieldvalue("eahead","dateid","trno=?",[$trno]));
-    $pdate = date("Y-m-d",$rdate);
+    $rdate = strtotime($this->coreFunctions->getfieldvalue("eahead", "dateid", "trno=?", [$trno]));
+    $pdate = date("Y-m-d", $rdate);
     $msg = 'Computed Successfully';
-    
-    $dateTables = ['eainfo','tempdetailinfo'];
+
+    $dateTables = ['eainfo', 'tempdetailinfo'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-      $dinfo =[];
-      $di=[];
-      if($loanamt != 0){
-        if($isdiminish == 0){
-          $freeintmos = 0;  
-          $interest = $loanamt * ($config['params']['dataparams']['interest']/100);
-          $totint = $interest *  $config['params']['dataparams']['terms'];
-          if($config['params']['dataparams']['voidint'] !=0){
-            $freeintmos = $config['params']['dataparams']['voidint'];
-            $balmons = $balmons + $freeintmos;
-            $interest = $totint / ($config['params']['dataparams']['terms']+$freeintmos);
-          }
-          
-          $pf = $config['params']['dataparams']['pf'];
-          $nf = $config['params']['dataparams']['nf'];
-          $dst = $config['params']['dataparams']['dst'];//info.docstamp monthly
-          $mri = $config['params']['dataparams']['mri'];
-          $totdst = round($dst * $config['params']['dataparams']['terms'],2);
-          $totmri = round($mri * $config['params']['dataparams']['terms'],2);
-          $totpf = $pf * $config['params']['dataparams']['terms'];
-          $totnf = $nf * $config['params']['dataparams']['terms'];
-
-          $principal = $loanamt / ($config['params']['dataparams']['terms']+$freeintmos);
-          $amort = $principal+$interest+$pf+$nf+$dst+$mri;
-          
-          $info['amortization'] = $this->othersClass->sanitizekeyfieldFast("amt", $amort, $lookups);
-          $this->coreFunctions->sbcupdate('eainfo', ['amortization'=>round($amort,2)], ['trno' => $trno]);         
-                    
-          $loanproc = 0;
-          $tmri =0;
-          $tdst=0;
-          $tprincipal =0;
-          $tinterest =0;
-          $tpf=0;
-          $tnf =0;
-          $atmri =0;
-          $atdst=0;
-          $atprincipal =0;
-          $atinterest =0;
-          $atpf=0;
-          $atnf =0;
-         
-          for ($y = 1; $y <= $balmons; $y++) {
-            // if($y == $balmons){              
-            //   $atinterest = $totint - ($tinterest + $interest);
-            //   if($atinterest !=0){
-            //     $this->coreFunctions->LogConsole($atinterest.'interest diff');
-            //     $interest = $interest + $atinterest;
-            //   }
-
-
-            //   $atprincipal = $loanamt - ($tprincipal + $principal);
-            //   if($atprincipal !=0){
-            //     $this->coreFunctions->LogConsole($atprincipal);
-            //     $principal = $principal + $atprincipal;
-            //   }
-
-            //   $atdst = $totdst - ($tdst + $dst);
-            //   $this->coreFunctions->LogConsole($atdst.'dst diff'.$totdst.'total'.$tdst.'dst:'.$dst);
-            //   if($atdst !=0){
-            //     $this->coreFunctions->LogConsole($atdst.'dst diff'.$totdst.'total'.$tdst.'dst:'.$dst);
-            //     $dst = $dst + $atdst;
-            //     $this->coreFunctions->LogConsole($atdst.'dst diff'.$totdst.'total'.$tdst.'dst:'.$dst);
-            //   }
-
-            //   $atmri = $totmri - ($tmri + $mri);
-            //   if($atmri !=0){
-            //     $mri = $mri + $atmri;
-            //   }
-
-            //   $atpf = $totpf - ($tpf + $pf);
-            //   if($atpf !=0){
-            //     $pf = $pf + $atpf;
-            //   }
-
-            //   $atnf = $totnf - ($tnf + $nf);
-            //   if($atnf !=0){
-            //     $nf = $nf + $atnf;
-            //   }
-
-
-            // }            
-
-            $di['trno'] = $trno;
-            $di['line'] = $y;
-            $di['interest'] = $interest;
-            $di['principal'] = $principal;
-            $di['pfnf'] = $pf;
-            $di['nf'] = $nf;
-            $di['dst'] = $dst;
-            $di['mri'] = $mri;
-            $di['dateid'] = $pdate;
-
-            $tmri += round($mri,2);
-            $tdst += round($dst,2);
-            $tprincipal += $principal;
-            $tinterest += $interest;
-            $tpf += $pf;
-            $tnf += $nf;
-            
-            $pdate = date("Y-m-d", strtotime("+$y month", $rdate));
-            array_push($dinfo, $di);
-          }
-          $this->logger->sbcdel_log($trno, $config, 'LE','LOANCOMP');
-          $this->coreFunctions->execqry("delete from tempdetailinfo where trno = " . $trno);
-          $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-          foreach ($dinfo as $key => $value) {
-            foreach ($value as $key2 => $value2) {
-              $dinfo[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
-            }
-            $dinfo[$key]['editdate'] = $current_timestamp;
-            $dinfo[$key]['editby'] = $config['params']['user'];
-            $dinfo[$key]['interest'] = round($dinfo[$key]['interest'], 2);
-            $dinfo[$key]['principal'] = round($dinfo[$key]['principal'], 2);
-            $dinfo[$key]['pfnf'] = round($dinfo[$key]['pfnf'], 2);
-            $dinfo[$key]['nf'] = round($dinfo[$key]['nf'], 2);
-            $dinfo[$key]['dst'] = round($dinfo[$key]['dst'], 2);
-            $dinfo[$key]['mri'] = round($dinfo[$key]['mri'], 2);
-          }
-          
-          $this->logger->sbcwritelog($trno, $config, 'LOANCOMP', 'interest: '.$dinfo[$key]['interest'].', '.'principal: '.$dinfo[$key]['principal'].', '.'pfnf: '.$dinfo[$key]['pfnf'].', '.'nf: '.$dinfo[$key]['nf'].', '.'dst: '.$dinfo[$key]['dst'].', '.'mri: '.$dinfo[$key]['mri']);
-          if (!$this->coreFunctions->sbcinsert('tempdetailinfo', $dinfo)) {
-            $status = false;
-            $msg = 'Error in Creating Loan Schedule';
-          }
-        }else{
-          //if interest rate is per annum use formula below
-          if($config['params']['dataparams']['intannum'] !=0){
-            $intrate = $config['params']['dataparams']['intannum']/12;          
-            $fmons = ($intrate/100)*pow((1+($intrate/100)),$balmons);
-            $fannum = (pow((1+($intrate/100)),$balmons))-1;
-            $frate = $fmons/$fannum;
-            $amort = $frate*$loanamt;
-          }else{
-            return ['status' => false, 'msg' => 'Enter interest per annum', 'txtdata' => [],'data' => []];
-            //if interest rate is already per month use formula below
-            // $fannum = $config['params']['dataparams']['interest']*12;
-            // $fmons = ($config['params']['dataparams']['interest']/100)*pow((1+($config['params']['dataparams']['interest']/100)),$balmons);
-            // $fannum = (pow((1+($config['params']['dataparams']['interest']/100)),$balmons))-1;
-          }
-      
-          $this->coreFunctions->sbcupdate('eainfo', ['fmons'=>round($fmons,6),'fannum'=>round($fannum,6),'frate'=>round($frate,6),'amortization'=>round($amort,2)], ['trno' => $trno]); 
-          $loanbal = $loanamt;
-          for ($y = 1; $y <= $balmons; $y++) {
-            $di['trno'] = $trno;
-            $di['line'] = $y;
-            $interest = $loanbal*($intrate/100);
-            $principal = $amort - round($interest,2);
-            $this->coreFunctions->LogConsole('int:'.$interest);
-            $this->coreFunctions->LogConsole('prin:'.$principal);
-            $di['interest'] = $interest;
-            $di['principal'] = $principal;
-            $di['pfnf'] = 0;
-            $di['nf'] = 0;
-            $di['dateid'] = $pdate;            
-            $di['bal'] = $loanbal - $principal;
-            
-            $pdate = date("Y-m-d", strtotime("+$y month", $rdate));
-            array_push($dinfo, $di);
-            $loanbal = $loanbal - $principal;
-          }
-          
-          $this->logger->sbcdel_log($trno, $config, 'LE','LOANCOMP');
-          $this->coreFunctions->execqry("delete from tempdetailinfo where trno = " . $trno);
-          $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-          foreach ($dinfo as $key => $value) {
-            foreach ($value as $key2 => $value2) {
-              $dinfo[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
-            }
-            $dinfo[$key]['editdate'] = $current_timestamp;
-            $dinfo[$key]['editby'] = $config['params']['user'];
-            $dinfo[$key]['interest'] = round($dinfo[$key]['interest'], 2);
-            $dinfo[$key]['principal'] = round($dinfo[$key]['principal'], 2);
-            $dinfo[$key]['pfnf'] = round($dinfo[$key]['pfnf'], 2);
-            $dinfo[$key]['nf'] = round($dinfo[$key]['nf'], 2);
-            $dinfo[$key]['bal'] = round($dinfo[$key]['bal'], 2);
-          }
-          
-          $this->logger->sbcwritelog($trno, $config, 'LOANCOMP', 'interest: '.$dinfo[$key]['interest'].', '.'principal: '.$dinfo[$key]['principal'].', '.'pfnf: '.$dinfo[$key]['pfnf'].', '.'nf: '.$dinfo[$key]['nf'].', '.'dst: '.$dinfo[$key]['dst'].', '.'mri: '.$dinfo[$key]['mri']);
-          if (!$this->coreFunctions->sbcinsert('tempdetailinfo', $dinfo)) {
-            $status = false;
-            $msg = 'Error in Creating Loan Schedule';
-          }
-
+    $dinfo = [];
+    $di = [];
+    if ($loanamt != 0) {
+      if ($isdiminish == 0) {
+        $freeintmos = 0;
+        $interest = $loanamt * ($config['params']['dataparams']['interest'] / 100);
+        $totint = $interest *  $config['params']['dataparams']['terms'];
+        if ($config['params']['dataparams']['voidint'] != 0) {
+          $freeintmos = $config['params']['dataparams']['voidint'];
+          $balmons = $balmons + $freeintmos;
+          $interest = $totint / ($config['params']['dataparams']['terms'] + $freeintmos);
         }
-        
-      }else{
-        $msg = 'Loan amount is zero';
+
+        $pf = $config['params']['dataparams']['pf'];
+        $nf = $config['params']['dataparams']['nf'];
+        $dst = $config['params']['dataparams']['dst']; //info.docstamp monthly
+        $mri = $config['params']['dataparams']['mri'];
+        $totdst = round($dst * $config['params']['dataparams']['terms'], 2);
+        $totmri = round($mri * $config['params']['dataparams']['terms'], 2);
+        $totpf = $pf * $config['params']['dataparams']['terms'];
+        $totnf = $nf * $config['params']['dataparams']['terms'];
+
+        $principal = $loanamt / ($config['params']['dataparams']['terms'] + $freeintmos);
+        $amort = $principal + $interest + $pf + $nf + $dst + $mri;
+
+        $info['amortization'] = $this->othersClass->sanitizekeyfieldFast("amt", $amort, $lookups);
+        $this->coreFunctions->sbcupdate('eainfo', ['amortization' => round($amort, 2)], ['trno' => $trno]);
+
+        $loanproc = 0;
+        $tmri = 0;
+        $tdst = 0;
+        $tprincipal = 0;
+        $tinterest = 0;
+        $tpf = 0;
+        $tnf = 0;
+        $atmri = 0;
+        $atdst = 0;
+        $atprincipal = 0;
+        $atinterest = 0;
+        $atpf = 0;
+        $atnf = 0;
+
+        for ($y = 1; $y <= $balmons; $y++) {
+          // if($y == $balmons){              
+          //   $atinterest = $totint - ($tinterest + $interest);
+          //   if($atinterest !=0){
+          //     $this->coreFunctions->LogConsole($atinterest.'interest diff');
+          //     $interest = $interest + $atinterest;
+          //   }
+
+
+          //   $atprincipal = $loanamt - ($tprincipal + $principal);
+          //   if($atprincipal !=0){
+          //     $this->coreFunctions->LogConsole($atprincipal);
+          //     $principal = $principal + $atprincipal;
+          //   }
+
+          //   $atdst = $totdst - ($tdst + $dst);
+          //   $this->coreFunctions->LogConsole($atdst.'dst diff'.$totdst.'total'.$tdst.'dst:'.$dst);
+          //   if($atdst !=0){
+          //     $this->coreFunctions->LogConsole($atdst.'dst diff'.$totdst.'total'.$tdst.'dst:'.$dst);
+          //     $dst = $dst + $atdst;
+          //     $this->coreFunctions->LogConsole($atdst.'dst diff'.$totdst.'total'.$tdst.'dst:'.$dst);
+          //   }
+
+          //   $atmri = $totmri - ($tmri + $mri);
+          //   if($atmri !=0){
+          //     $mri = $mri + $atmri;
+          //   }
+
+          //   $atpf = $totpf - ($tpf + $pf);
+          //   if($atpf !=0){
+          //     $pf = $pf + $atpf;
+          //   }
+
+          //   $atnf = $totnf - ($tnf + $nf);
+          //   if($atnf !=0){
+          //     $nf = $nf + $atnf;
+          //   }
+
+
+          // }            
+
+          $di['trno'] = $trno;
+          $di['line'] = $y;
+          $di['interest'] = $interest;
+          $di['principal'] = $principal;
+          $di['pfnf'] = $pf;
+          $di['nf'] = $nf;
+          $di['dst'] = $dst;
+          $di['mri'] = $mri;
+          $di['dateid'] = $pdate;
+
+          $tmri += round($mri, 2);
+          $tdst += round($dst, 2);
+          $tprincipal += $principal;
+          $tinterest += $interest;
+          $tpf += $pf;
+          $tnf += $nf;
+
+          $pdate = date("Y-m-d", strtotime("+$y month", $rdate));
+          array_push($dinfo, $di);
+        }
+        $this->logger->sbcdel_log($trno, $config, 'LE', 'LOANCOMP');
+        $this->coreFunctions->execqry("delete from tempdetailinfo where trno = " . $trno);
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+        foreach ($dinfo as $key => $value) {
+          foreach ($value as $key2 => $value2) {
+            $dinfo[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
+          }
+          $dinfo[$key]['editdate'] = $current_timestamp;
+          $dinfo[$key]['editby'] = $config['params']['user'];
+          $dinfo[$key]['interest'] = round($dinfo[$key]['interest'], 2);
+          $dinfo[$key]['principal'] = round($dinfo[$key]['principal'], 2);
+          $dinfo[$key]['pfnf'] = round($dinfo[$key]['pfnf'], 2);
+          $dinfo[$key]['nf'] = round($dinfo[$key]['nf'], 2);
+          $dinfo[$key]['dst'] = round($dinfo[$key]['dst'], 2);
+          $dinfo[$key]['mri'] = round($dinfo[$key]['mri'], 2);
+        }
+
+        $this->logger->sbcwritelog($trno, $config, 'LOANCOMP', 'interest: ' . $dinfo[$key]['interest'] . ', ' . 'principal: ' . $dinfo[$key]['principal'] . ', ' . 'pfnf: ' . $dinfo[$key]['pfnf'] . ', ' . 'nf: ' . $dinfo[$key]['nf'] . ', ' . 'dst: ' . $dinfo[$key]['dst'] . ', ' . 'mri: ' . $dinfo[$key]['mri']);
+        if (!$this->coreFunctions->sbcinsert('tempdetailinfo', $dinfo)) {
+          $status = false;
+          $msg = 'Error in Creating Loan Schedule';
+        }
+      } else {
+        //if interest rate is per annum use formula below
+        if ($config['params']['dataparams']['intannum'] != 0) {
+          $intrate = $config['params']['dataparams']['intannum'] / 12;
+          $fmons = ($intrate / 100) * pow((1 + ($intrate / 100)), $balmons);
+          $fannum = (pow((1 + ($intrate / 100)), $balmons)) - 1;
+          $frate = $fmons / $fannum;
+          $amort = $frate * $loanamt;
+        } else {
+          return ['status' => false, 'msg' => 'Enter interest per annum', 'txtdata' => [], 'data' => []];
+          //if interest rate is already per month use formula below
+          // $fannum = $config['params']['dataparams']['interest']*12;
+          // $fmons = ($config['params']['dataparams']['interest']/100)*pow((1+($config['params']['dataparams']['interest']/100)),$balmons);
+          // $fannum = (pow((1+($config['params']['dataparams']['interest']/100)),$balmons))-1;
+        }
+
+        $this->coreFunctions->sbcupdate('eainfo', ['fmons' => round($fmons, 6), 'fannum' => round($fannum, 6), 'frate' => round($frate, 6), 'amortization' => round($amort, 2)], ['trno' => $trno]);
+        $loanbal = $loanamt;
+        for ($y = 1; $y <= $balmons; $y++) {
+          $di['trno'] = $trno;
+          $di['line'] = $y;
+          $interest = $loanbal * ($intrate / 100);
+          $principal = $amort - round($interest, 2);
+          $this->coreFunctions->LogConsole('int:' . $interest);
+          $this->coreFunctions->LogConsole('prin:' . $principal);
+          $di['interest'] = $interest;
+          $di['principal'] = $principal;
+          $di['pfnf'] = 0;
+          $di['nf'] = 0;
+          $di['dateid'] = $pdate;
+          $di['bal'] = $loanbal - $principal;
+
+          $pdate = date("Y-m-d", strtotime("+$y month", $rdate));
+          array_push($dinfo, $di);
+          $loanbal = $loanbal - $principal;
+        }
+
+        $this->logger->sbcdel_log($trno, $config, 'LE', 'LOANCOMP');
+        $this->coreFunctions->execqry("delete from tempdetailinfo where trno = " . $trno);
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+        foreach ($dinfo as $key => $value) {
+          foreach ($value as $key2 => $value2) {
+            $dinfo[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
+          }
+          $dinfo[$key]['editdate'] = $current_timestamp;
+          $dinfo[$key]['editby'] = $config['params']['user'];
+          $dinfo[$key]['interest'] = round($dinfo[$key]['interest'], 2);
+          $dinfo[$key]['principal'] = round($dinfo[$key]['principal'], 2);
+          $dinfo[$key]['pfnf'] = round($dinfo[$key]['pfnf'], 2);
+          $dinfo[$key]['nf'] = round($dinfo[$key]['nf'], 2);
+          $dinfo[$key]['bal'] = round($dinfo[$key]['bal'], 2);
+        }
+
+        $this->logger->sbcwritelog($trno, $config, 'LOANCOMP', 'interest: ' . $dinfo[$key]['interest'] . ', ' . 'principal: ' . $dinfo[$key]['principal'] . ', ' . 'pfnf: ' . $dinfo[$key]['pfnf'] . ', ' . 'nf: ' . $dinfo[$key]['nf'] . ', ' . 'dst: ' . $dinfo[$key]['dst'] . ', ' . 'mri: ' . $dinfo[$key]['mri']);
+        if (!$this->coreFunctions->sbcinsert('tempdetailinfo', $dinfo)) {
+          $status = false;
+          $msg = 'Error in Creating Loan Schedule';
+        }
       }
+    } else {
+      $msg = 'Loan amount is zero';
+    }
 
-      $qry = $this->get_head($config);
-      $txtdata = $this->coreFunctions->opentable($qry);
+    $qry = $this->get_head($config);
+    $txtdata = $this->coreFunctions->opentable($qry);
 
-      $data = $this->data($config);
+    $data = $this->data($config);
 
-      return ['status' => true, 'msg' => $msg, 'txtdata' => $txtdata,'data' => $data,'reloadtableentry'=>true];
+    return ['status' => true, 'msg' => $msg, 'txtdata' => $txtdata, 'data' => $data, 'reloadtableentry' => true];
   }
 
 
@@ -469,7 +467,7 @@ class leloan
   {
     $lookupclass2 = $config['params']['lookupclass2'];
     switch ($lookupclass2) {
-      
+
       case 'lookuplogs':
         return $this->lookuplogs($config);
         break;
@@ -480,7 +478,7 @@ class leloan
     }
   }
 
-  
+
   public function lookuplogs($config)
   {
     $main_doc = $config['params']['doc'];
@@ -536,5 +534,4 @@ class leloan
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, $qry];
   }
-
 } //end class

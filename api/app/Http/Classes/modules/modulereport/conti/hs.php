@@ -35,9 +35,9 @@ class hs
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -45,7 +45,8 @@ class hs
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter(){
+  public function createreportfilter()
+  {
     $fields = ['radioprint', 'radioreporttype', 'prepared', 'approved', 'print'];
     $col1 = $this->fieldClass->create($fields);
 
@@ -54,12 +55,13 @@ class hs
       ['label' => 'Embarkation Order', 'value' => '1', 'color' => 'orange'],
       ['label' => 'Disembarkation Order', 'value' => '2', 'color' => 'orange']
     ]);
-    data_set($col1, 'prepared.label', 'Recommended By');     
+    data_set($col1, 'prepared.label', 'Recommended By');
 
-    return array('col1'=>$col1);
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable("select 
       'PDFM' as print,
       '' as approved,
@@ -72,7 +74,7 @@ class hs
   public function report_default_query($filters)
   {
     $trno = $filters['params']['dataid'];
-    $query="
+    $query = "
     select
       head.trno, head.docno, head.empid, date(head.dateid) as dateid,
       concat(emp.empfirst, ' ', emp.empmiddle, ' ', emp.emplast) as empname,
@@ -205,57 +207,55 @@ class hs
   }
 
 
-  public function reportplotting($params,$data)
-  { 
+  public function reportplotting($params, $data)
+  {
     $data = $this->report_default_query($params);
-    $reporttype = $params['params']['dataparams']['reporttype'];    
-      if($params['params']['dataparams']['print'] == "default"){
-        switch ($reporttype) {
-          case '0':
-            $str = $this->rpt_hs_layout($params, $data);
-         
-          break;
-          case '1':
-            $str = $this->rpt_hs_embarkation_layout($params, $data);
-    
-          break;
-          case '2':
-            $str = $this->rpt_hs_disembarkation_layout($params, $data);
-      
-          break;
-        }
-      
-      }else if($params['params']['dataparams']['print'] == "PDFM") {
-        switch ($reporttype) {
-          case '0':
-            $str = $this->rpt_hs_PDF($params, $data);
+    $reporttype = $params['params']['dataparams']['reporttype'];
+    if ($params['params']['dataparams']['print'] == "default") {
+      switch ($reporttype) {
+        case '0':
+          $str = $this->rpt_hs_layout($params, $data);
 
           break;
-          case '1':
-            $str = $this->rpt_hs_embarkation_PDF($params, $data);
-    
-          break;
-          case '2':
-            $str = $this->rpt_hs_disembarkation_PDF($params, $data);
+        case '1':
+          $str = $this->rpt_hs_embarkation_layout($params, $data);
 
           break;
-        }
-      
+        case '2':
+          $str = $this->rpt_hs_disembarkation_layout($params, $data);
+
+          break;
       }
-      return $str;
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
+      switch ($reporttype) {
+        case '0':
+          $str = $this->rpt_hs_PDF($params, $data);
+
+          break;
+        case '1':
+          $str = $this->rpt_hs_embarkation_PDF($params, $data);
+
+          break;
+        case '2':
+          $str = $this->rpt_hs_disembarkation_PDF($params, $data);
+
+          break;
+      }
+    }
+    return $str;
   }
 
   public function rpt_hs_PDF($params, $data)
   {
     $border = '1px solid';
     $fontsize = '11';
- 
+
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
     $font = "";
     $fontbold = "";
-    
+
     $count = 55;
     $page = 54;
 
@@ -284,129 +284,129 @@ class hs
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
     PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(100, 0, $data[0]['posted'], '', 'L',false);
+    PDF::MultiCell(100, 0, $data[0]['posted'], '', 'L', false);
 
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', 12);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, 'EMPLOYMENT STATUS CHANGE'."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, 'EMPLOYMENT STATUS CHANGE' . "\n\n\n", '', 'C');
 
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(130, 16, "Employee : ", '', 'L', false,0);
-    PDF::MultiCell(390, 16, (isset($data[0]['empname']) ? $data[0]['empname'] : ''), '', 'L', false,0);
-    PDF::MultiCell(90, 16, "DocNo : ", '', 'L', false,0);
+    PDF::MultiCell(130, 16, "Employee : ", '', 'L', false, 0);
+    PDF::MultiCell(390, 16, (isset($data[0]['empname']) ? $data[0]['empname'] : ''), '', 'L', false, 0);
+    PDF::MultiCell(90, 16, "DocNo : ", '', 'L', false, 0);
     PDF::MultiCell(150, 16, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '', 'L', false);
 
-    PDF::MultiCell(130, 16, "Job Title : ", '', 'L', false,0);
-    PDF::MultiCell(390, 16, (isset($data[0]['jobtitle']) ? $data[0]['jobtitle'] : ''), '', 'L', false,0);
-    PDF::MultiCell(90, 16, "Doc Date : ", '', 'L', false,0);
+    PDF::MultiCell(130, 16, "Job Title : ", '', 'L', false, 0);
+    PDF::MultiCell(390, 16, (isset($data[0]['jobtitle']) ? $data[0]['jobtitle'] : ''), '', 'L', false, 0);
+    PDF::MultiCell(90, 16, "Doc Date : ", '', 'L', false, 0);
     PDF::MultiCell(150, 16, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '', 'L', false);
 
-    PDF::MultiCell(130, 16, "Department : ", '', 'L', false,0);
-    PDF::MultiCell(390, 16, (isset($data[0]['employeedept']) ? $data[0]['employeedept'] : ''), '', 'L', false,0);
-    PDF::MultiCell(90, 16, "Date Hired : ", '', 'L', false,0);
+    PDF::MultiCell(130, 16, "Department : ", '', 'L', false, 0);
+    PDF::MultiCell(390, 16, (isset($data[0]['employeedept']) ? $data[0]['employeedept'] : ''), '', 'L', false, 0);
+    PDF::MultiCell(90, 16, "Date Hired : ", '', 'L', false, 0);
     PDF::MultiCell(150, 16, (isset($data[0]['datehired']) ? $data[0]['datehired'] : ''), '', 'L', false);
 
-    PDF::MultiCell(130, 16, "Effective Date : ", '', 'L', false,0);
+    PDF::MultiCell(130, 16, "Effective Date : ", '', 'L', false, 0);
     PDF::MultiCell(390, 16, (isset($data[0]['effdate']) ? $data[0]['effdate'] : ''), '', 'L', false);
 
-    PDF::MultiCell(130, 16, "Status Change : ", '', 'L', false,0);
+    PDF::MultiCell(130, 16, "Status Change : ", '', 'L', false, 0);
     PDF::MultiCell(390, 16, (isset($data[0]['statdesc']) ? $data[0]['statdesc'] : ''), '', 'L', false);
 
-    PDF::MultiCell(130, 16, "Description : ", '', 'L', false,0);
+    PDF::MultiCell(130, 16, "Description : ", '', 'L', false, 0);
     PDF::MultiCell(390, 16, (isset($data[0]['description']) ? $data[0]['description'] : ''), '', 'L', false);
 
-    PDF::MultiCell(130, 16, "End of Employment : ", '', 'L', false,0);
+    PDF::MultiCell(130, 16, "End of Employment : ", '', 'L', false, 0);
     PDF::MultiCell(390, 16, (isset($data[0]['resigned']) ? $data[0]['resigned'] : ''), '', 'L', false);
 
-    PDF::MultiCell(130, 16, "Remarks : ", '', 'L', false,0);
+    PDF::MultiCell(130, 16, "Remarks : ", '', 'L', false, 0);
     PDF::MultiCell(390, 16, (isset($data[0]['remarks']) ? $data[0]['remarks'] : ''), '', 'L', false);
 
     PDF::MultiCell(0, 0, "\n");
 
-    
+
     PDF::MultiCell(760, 0, '', 'B', 'L', false);
 
     PDF::SetFont($font, '', 5);
-    PDF::MultiCell(130, 0, "", '', 'L', false,0);
+    PDF::MultiCell(130, 0, "", '', 'L', false, 0);
     PDF::MultiCell(390, 0, "", '', 'L', false);
 
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(267, 0, 'DESCRIPTION', '', 'L', false,0);
-    PDF::MultiCell(266, 0, 'FROM', '', 'L', false,0);
+    PDF::MultiCell(267, 0, 'DESCRIPTION', '', 'L', false, 0);
+    PDF::MultiCell(266, 0, 'FROM', '', 'L', false, 0);
     PDF::MultiCell(266, 0, 'TO', '', 'L', false);
 
     PDF::SetFont($font, '', 5);
-    PDF::MultiCell(130, 0, "", '', 'L', false,0);
+    PDF::MultiCell(130, 0, "", '', 'L', false, 0);
     PDF::MultiCell(390, 0, "", '', 'L', false);
 
     PDF::MultiCell(760, 0, '', 'T', 'L', false);
 
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(267, 16, 'TYPE', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['ftype']) ? $data[0]['ftype'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'TYPE', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['ftype']) ? $data[0]['ftype'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['ttype']) ? $data[0]['ttype'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'LEVEL', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['flevel']) ? $data[0]['flevel'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'LEVEL', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['flevel']) ? $data[0]['flevel'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['tlevel']) ? $data[0]['tlevel'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'JOB TITLE', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['fromjobtitlename']) ? $data[0]['fromjobtitlename'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'JOB TITLE', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['fromjobtitlename']) ? $data[0]['fromjobtitlename'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['tojobtitlename']) ? $data[0]['tojobtitlename'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'EMPLOYMENT STATUS', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['fempstatus']) ? $data[0]['fempstatus'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'EMPLOYMENT STATUS', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['fempstatus']) ? $data[0]['fempstatus'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['tempstatus']) ? $data[0]['tempstatus'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'RANK', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['frank']) ? $data[0]['frank'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'RANK', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['frank']) ? $data[0]['frank'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['trank']) ? $data[0]['trank'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'JOB GRADE', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['fjobgrade']) ? $data[0]['fjobgrade'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'JOB GRADE', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['fjobgrade']) ? $data[0]['fjobgrade'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['tjobgrade']) ? $data[0]['tjobgrade'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'DEPARTMENT', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['fromdeptname']) ? $data[0]['fromdeptname'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'DEPARTMENT', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['fromdeptname']) ? $data[0]['fromdeptname'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['todeptname']) ? $data[0]['todeptname'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'LOCATION', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['flocation']) ? $data[0]['flocation'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'LOCATION', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['flocation']) ? $data[0]['flocation'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['tlocation']) ? $data[0]['tlocation'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'MODE OF PAYMENT', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['fpaymode']) ? $data[0]['fpaymode'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'MODE OF PAYMENT', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['fpaymode']) ? $data[0]['fpaymode'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['tpaymode']) ? $data[0]['tpaymode'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'PAY GROUP', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['fpaygroup']) ? $data[0]['fpaygroup'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'PAY GROUP', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['fpaygroup']) ? $data[0]['fpaygroup'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['tpaygroup']) ? $data[0]['tpaygroup'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'CLASS RATE', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['fpayrate']) ? $data[0]['fpayrate'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'CLASS RATE', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['fpayrate']) ? $data[0]['fpayrate'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['tpayrate']) ? $data[0]['tpayrate'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'ALLOWANCE', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['fallowrate']) ? $data[0]['fallowrate'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'ALLOWANCE', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['fallowrate']) ? $data[0]['fallowrate'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['tallowrate']) ? $data[0]['tallowrate'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'BASIC SALARY', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['fbasicrate']) ? $data[0]['fbasicrate'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'BASIC SALARY', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['fbasicrate']) ? $data[0]['fbasicrate'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['tbasicrate']) ? $data[0]['tbasicrate'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'DIVISION', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['fdivname']) ? $data[0]['fdivname'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'DIVISION', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['fdivname']) ? $data[0]['fdivname'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['tdivname']) ? $data[0]['tdivname'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'SECTION', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['fsectname']) ? $data[0]['fsectname'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'SECTION', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['fsectname']) ? $data[0]['fsectname'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['tsectname']) ? $data[0]['tsectname'] : ''), '', 'L', false);
 
-    PDF::MultiCell(267, 16, 'ROLE', '', 'L', false,0);
-    PDF::MultiCell(266, 16, (isset($data[0]['frole']) ? $data[0]['frole'] : ''), '', 'L', false,0);
+    PDF::MultiCell(267, 16, 'ROLE', '', 'L', false, 0);
+    PDF::MultiCell(266, 16, (isset($data[0]['frole']) ? $data[0]['frole'] : ''), '', 'L', false, 0);
     PDF::MultiCell(266, 16, (isset($data[0]['trole']) ? $data[0]['trole'] : ''), '', 'L', false);
 
 
@@ -428,7 +428,7 @@ class hs
     PDF::MultiCell(180, 0, $params['params']['dataparams']['approved'], 'T', 'C', false, 0);
     PDF::MultiCell(140, 0, '', '', 'L');
 
-    
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   } //end fn
 
@@ -436,13 +436,13 @@ class hs
   {
     $border = '1px solid';
     $fontsize = '11';
-    
+
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
     $font = "";
     $fontbold = "";
-    
+
     $count = 55;
     $page = 54;
 
@@ -470,7 +470,7 @@ class hs
     PDF::SetFont($font, '', 9);
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
     PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
-    
+
     PDF::MultiCell(0, 0, "\n\n\n\n");
 
     PDF::SetFont($font, '', 13);
@@ -550,15 +550,15 @@ class hs
 
     PDF::MultiCell(0, 0, "\n\n");
     PDF::SetFont($font, '', $fontsize);
-    
+
     PDF::MultiCell(300, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
-    
+
     PDF::MultiCell(300, 0, '', '', 'L');
 
-    PDF::MultiCell(300, 0, 'DPA/Port Captain', '', 'L', false,0);
+    PDF::MultiCell(300, 0, 'DPA/Port Captain', '', 'L', false, 0);
     PDF::MultiCell(200, 0, '', 'B', 'L', false);
 
-    
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   } //end fn
 
@@ -571,7 +571,7 @@ class hs
 
     $font = "";
     $fontbold = "";
-    
+
     $count = 55;
     $page = 54;
 
@@ -599,7 +599,7 @@ class hs
     PDF::SetFont($font, '', 9);
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
     PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
-    
+
     PDF::MultiCell(0, 0, "\n\n\n\n");
 
     PDF::SetFont($font, '', 13);
@@ -679,15 +679,15 @@ class hs
 
     PDF::MultiCell(0, 0, "\n\n");
     PDF::SetFont($font, '', $fontsize);
-    
+
     PDF::MultiCell(300, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
-    
+
     PDF::MultiCell(300, 0, '', '', 'L');
 
-    PDF::MultiCell(300, 0, 'DPA/Port Captain', '', 'L', false,0);
+    PDF::MultiCell(300, 0, 'DPA/Port Captain', '', 'L', false, 0);
     PDF::MultiCell(200, 0, '', 'B', 'L', false);
 
-    
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   } //end fn
 
@@ -709,20 +709,20 @@ class hs
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
     $str .= $this->reporter->begintable('600');
-      $str .= $this->reporter->startrow();
-        $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center .'&nbsp'  .'RSSC', '500', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
-        $str .=  $this->reporter->col($data[0]['posted'], '100', null, false, '1px solid ', '', 'L', 'Century Gothic', '17', 'B', '', '');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '500', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
+    $str .=  $this->reporter->col($data[0]['posted'], '100', null, false, '1px solid ', '', 'L', 'Century Gothic', '17', 'B', '', '');
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable('600');
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') ;
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '');
+    $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Employment Status Change', null, null, false, '1px solid ', '', 'c', 'Century Gothic', '15', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('Employment Status Change', null, null, false, '1px solid ', '', 'c', 'Century Gothic', '15', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
     $str .= '<br>';
@@ -872,7 +872,7 @@ class hs
     $str .= $this->reporter->col($data[0]['fdivname'], '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col($data[0]['tdivname'], '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->endrow();
-    
+
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('SECTION', '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col($data[0]['fsectname'], '200', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
@@ -886,7 +886,7 @@ class hs
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
-    
+
     $str .= '<br/><br/><br/><br/><br/><br/><br/><br/>';
     $str .= $this->reporter->begintable('600');
     $str .= $this->reporter->startrow();
@@ -933,9 +933,9 @@ class hs
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
     $str .= $this->reporter->begintable('600');
-      $str .= $this->reporter->startrow();
-        $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center .'&nbsp'  .'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
+    $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
     $str .= '<br><br>';
@@ -1088,9 +1088,9 @@ class hs
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
     $str .= $this->reporter->begintable('600');
-      $str .= $this->reporter->startrow();
-        $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center .'&nbsp'  .'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
+    $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
     $str .= '<br><br>';

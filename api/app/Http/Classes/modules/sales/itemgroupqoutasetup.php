@@ -36,11 +36,11 @@ class itemgroupqoutasetup
   public $tablelogs_del = 'del_masterfile_log';
   public $fields = ['yr', 'projectid', 'amt'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -51,7 +51,8 @@ class itemgroupqoutasetup
   public function getAttrib()
   {
     $attrib = array(
-      'view' => 3858, 'save' => 3859,
+      'view' => 3858,
+      'save' => 3859,
       'saveallentry' => 3859
     );
     return $attrib;

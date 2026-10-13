@@ -37,10 +37,10 @@ class issuemultipleexpiry
   private $reportheader;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -60,11 +60,11 @@ class issuemultipleexpiry
   {
     $companyid = $config['params']['companyid'];
     $doc = $config['params']['doc'];
-    $columns = ['itemdesc', 'qty','bal', 'loc', 'expiry', 'wh'];
+    $columns = ['itemdesc', 'qty', 'bal', 'loc', 'expiry', 'wh'];
     if ($companyid == 71 && ($doc == 'ST' || $doc == 'UE')) { // buenatech lang
       array_splice($columns, 2, 0, 'pending');
     }
-   
+
     $tab = [
       $this->gridname => [
         'gridcolumns' => $columns
@@ -87,22 +87,22 @@ class issuemultipleexpiry
     $obj[0][$this->gridname]['columns'][$expiry]['type'] = "label";
     $obj[0][$this->gridname]['columns'][$wh]['type'] = "label";
     $obj[0][$this->gridname]['columns'][$bal]['type'] = "label";
-    if($companyid == 71){//buena
-      $obj[0][$this->gridname]['columns'][$loc]['label'] = "Lot#";  
+    if ($companyid == 71) { //buena
+      $obj[0][$this->gridname]['columns'][$loc]['label'] = "Lot#";
     }
-    if(isset($config['params']['row']['pending'])){
-      $this->modulename = "LOT/EXPIRY ( Pending Qty: " .$config['params']['row']['pending'] .")";
+    if (isset($config['params']['row']['pending'])) {
+      $this->modulename = "LOT/EXPIRY ( Pending Qty: " . $config['params']['row']['pending'] . ")";
     }
-    
+
     return $obj;
   }
 
 
   public function createtabbutton($config)
   {
-   // $tableid = $config['params']['tableid'];
+    // $tableid = $config['params']['tableid'];
     $tbuttons = ['saveallentry'];
-   
+
     $obj = $this->tabClass->createtabbutton($tbuttons);
     $obj[0]['label'] = 'ACCEPT';
     $obj[0]['action'] = 'issuemultipleexpiry';
@@ -120,16 +120,13 @@ class issuemultipleexpiry
 
   private function selectqry()
   {
-    $qry = ""; 
+    $qry = "";
     return $qry;
   }
 
-  public function saveallentry($config)
-  {
-    
-  } // end function
+  public function saveallentry($config) {} // end function
 
-  
+
   public function save($config)
   {
     $d = $config['params']['data'];
@@ -140,11 +137,11 @@ class issuemultipleexpiry
     $data = $this->saveMultiWarehouseSplit($config, $d);
     $path = $this->getapppath($doc);
     $rows = [];
-    $refx =0;
-    $client ='';
-    
+    $refx = 0;
+    $client = '';
+
     if (!empty($data)) {
-     
+
       $refx = $data[0]['refx'];
       $client = $data[0]['client'];
       foreach ($data as $key2 => $value) {
@@ -153,18 +150,18 @@ class issuemultipleexpiry
         $config['params']['trno'] = $trno;
         $config['params']['data']['disc'] = $data[$key2]['disc'];
         if ($doc == 'UE') {
-          $config['params']['data']['qty'] = $data[$key2]['qty']*-1;
-        }else{
+          $config['params']['data']['qty'] = $data[$key2]['qty'] * -1;
+        } else {
           $config['params']['data']['qty'] = $data[$key2]['qty'];
         }
-       
-        $config['params']['data']['wh'] =$data[$key2]['wh'];
+
+        $config['params']['data']['wh'] = $data[$key2]['wh'];
         $config['params']['data']['loc'] = $data[$key2]['loc'];
         $config['params']['data']['expiry'] = $data[$key2]['expiry'];
         $config['params']['data']['rem'] = '';
         $config['params']['data']['refx'] = $data[$key2]['refx'];
         $config['params']['data']['linex'] = $data[$key2]['linex'];
-        $config['params']['data']['ref'] = (isset($data[$key2]['docno']) ? $data[$key2]['docno'] :'') ;
+        $config['params']['data']['ref'] = (isset($data[$key2]['docno']) ? $data[$key2]['docno'] : '');
         $config['params']['data']['amt'] = $data[$key2]['amt'];
         if ($config['params']['companyid'] == 71) { //buenatech
           $config['params']['data']['issp'] = $data[$key2]['issp'];
@@ -172,42 +169,42 @@ class issuemultipleexpiry
 
         if ($doc == 'UE' || $doc == 'ST') {
           $return = app($path)->additem('insert', $config, true);
-        }else{
+        } else {
           $return = app($path)->additem('insert', $config);
         }
-        
-          if ($return['status']) {
-            $line = $return['row'][0]->line;
-            if(isset($return['haserror'])){
-              if($return['haserror']){
-                $this->coreFunctions->execqry("delete from ".app($path)->stock." where trno = $trno and line = $line");
-              }
+
+        if ($return['status']) {
+          $line = $return['row'][0]->line;
+          if (isset($return['haserror'])) {
+            if ($return['haserror']) {
+              $this->coreFunctions->execqry("delete from " . app($path)->stock . " where trno = $trno and line = $line");
             }
-            
-            if ($data[$key2]['refx'] != 0) {//serve SO
-              if (app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']) == 0) {
-                $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
-                $config['params']['trno'] = $trno;
-                $config['params']['line'] = $line;
-                $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $trno, 'line' => $line]);
-                app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']);
-                $row = app($path)->openstockline($config);
-                $return = ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
-              }
+          }
+
+          if ($data[$key2]['refx'] != 0) { //serve SO
+            if (app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']) == 0) {
+              $data2 = [app($path)->dqty => 0, app($path)->hqty => 0, 'ext' => 0];
+              $config['params']['trno'] = $trno;
+              $config['params']['line'] = $line;
+              $this->coreFunctions->sbcupdate(app($path)->stock, $data2, ['trno' => $trno, 'line' => $line]);
+              app($path)->setserveditems($data[$key2]['refx'], $data[$key2]['linex']);
+              $row = app($path)->openstockline($config);
+              $return = ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
             }
-            //array_push($rows, $return['row'][0]);
-          }      
+          }
+          //array_push($rows, $return['row'][0]);
+        }
       } // end foreach
     } //end if
 
 
-    $stock = app($path)->openstock($trno,$config);
+    $stock = app($path)->openstock($trno, $config);
     $status = true;
-    $msg = 'Successfully added';
-    if(isset($return['haserror'])){
-      if($return['haserror']){
-      $status = false;
-      $msg = $return['msg'];
+    $msg = 'Successfully added. '.$return['msg'];
+    if (isset($return['haserror'])) {
+      if ($return['haserror']) {
+        $status = false;
+        $msg = $return['msg'];
       }
     }
     // if ($doc == 'ST') {
@@ -224,22 +221,22 @@ class issuemultipleexpiry
     //   }
     // }
 
-    if($refx != 0){
+    if ($refx != 0) {
       //condition per lookup
       $config['params']['client'] = $client;
-      switch($config['params']['doc']){
+      switch ($config['params']['doc']) {
         case 'ST':
         case 'UE':
           $lookupdata = $this->sqlquery->getpendingjodetails($config);
           break;
         default:
           $lookupdata = $this->sqlquery->getpendingsodetailsperserial($config);
-        break; 
+          break;
       }
-      
-      return ['status' => $status, 'msg'=> $msg,'closemodalfromlookup' =>true , 'lookupdata'=>$lookupdata, 'reloadgriddata' => ['inventory' => $stock]];
-    }else{
-      return ['status' => $status, 'msg'=> $msg,'closemodalfromlookup' =>true, 'reloadgriddata' => ['inventory' => $stock]];
+
+      return ['status' => $status, 'msg' => $msg, 'closemodalfromlookup' => true, 'lookupdata' => $lookupdata, 'reloadgriddata' => ['inventory' => $stock]];
+    } else {
+      return ['status' => $status, 'msg' => $msg, 'closemodalfromlookup' => true, 'reloadgriddata' => ['inventory' => $stock]];
     }
   } //end function
 
@@ -253,16 +250,16 @@ class issuemultipleexpiry
     }
 
     // ibang company/doc, walang binago ang behavior
-    return array_filter($d, function ($r) { return $r['qty'] != 0;});
+    return array_filter($d, function ($r) {
+      return $r['qty'] != 0;
+    });
   }
 
-  public function delete($config)
-  {
-  }
+  public function delete($config) {}
 
   private function loaddataperrecord($trno, $line)
   {
-    $data =[];
+    $data = [];
     return $data;
   }
 
@@ -275,9 +272,9 @@ class issuemultipleexpiry
     $row = $config['params']['row'];
     $limit = '';
     $filtersearch = "";
-    $searcfield = ['item.barcode','item.itemname'];
-    $search = ''; 
-    $latestprice=[];
+    $searcfield = ['item.barcode', 'item.itemname'];
+    $search = '';
+    $latestprice = [];
 
     if (isset($config['params']['filter'])) {
       $search = $config['params']['filter'];
@@ -294,52 +291,52 @@ class issuemultipleexpiry
     $refx = 0;
     $linex = 0;
     $uom = '';
-    $amt =0;
-    $disc ='';
+    $amt = 0;
+    $disc = '';
     $ref = '';
-    $client ='';
+    $client = '';
     $issp = 0;
-    $pending=0;
+    $pending = 0;
 
-    if (isset($row['docno'])){
-      $ref= $row['docno'];
+    if (isset($row['docno'])) {
+      $ref = $row['docno'];
     }
 
-    if (isset($row['refx'])){
-      $refx= $row['refx'];
+    if (isset($row['refx'])) {
+      $refx = $row['refx'];
     }
 
-    if (isset($row['linex'])){
-      $linex= $row['linex'];
+    if (isset($row['linex'])) {
+      $linex = $row['linex'];
     }
 
-    if (isset($row['uom'])){
-      $uom= $row['uom'];
+    if (isset($row['uom'])) {
+      $uom = $row['uom'];
     }
 
-    if (isset($row['amt'])){
-      $amt= $row['amt'];
+    if (isset($row['amt'])) {
+      $amt = $row['amt'];
     }
 
-    if (isset($row['disc'])){
-      $disc= $row['disc'];
+    if (isset($row['disc'])) {
+      $disc = $row['disc'];
     }
 
-    if (isset($row['client'])){
-      $client= $row['client'];
+    if (isset($row['client'])) {
+      $client = $row['client'];
     }
     if (isset($row['issp'])) {
       $issp = $row['issp'];
     }
 
-    if($refx == 0){
+    if ($refx == 0) {
       $config['params']['barcode'] = $row['barcode'];
-      $config['params']['client'] = $row['client'];      
+      $config['params']['client'] = $row['client'];
 
       $path = $this->getapppath($doc);
       $latesprice = app($path)->getlatestprice($config);
 
-      if(!empty($latesprice[0])){
+      if (!empty($latesprice[0])) {
         $disc = $latesprice[0]->disc;
         $amt = $latesprice[0]->amt;
         $uom = $latesprice[0]->uom;
@@ -357,7 +354,7 @@ class issuemultipleexpiry
     format(sum(bal),2) as bal from rrstatus as rr left join item on item.itemid = rr.itemid
     left join client as wh on wh.clientid = rr.whid
     where rr.itemid =? and rr.bal<>0  " . $filtersearch . " group by  item.itemid,item.barcode,item.itemname,wh.client,rr.loc,rr.expiry order by rr.expiry";
-    $data = $this->coreFunctions->opentable($qry,[$itemid]);
+    $data = $this->coreFunctions->opentable($qry, [$itemid]);
     return $data;
   }
 
@@ -365,7 +362,7 @@ class issuemultipleexpiry
   {
     $lookupclass2 = $config['params']['lookupclass2'];
     switch ($lookupclass2) {
-     
+
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup under WH documents'];
         break;
@@ -374,19 +371,21 @@ class issuemultipleexpiry
 
   private function getapppath($doc)
   {
-    switch($doc){
-      case 'SO': case 'SJ': case 'CM':
+    switch ($doc) {
+      case 'SO':
+      case 'SJ':
+      case 'CM':
         $path = 'App\Http\Classes\modules\sales\\' . strtolower($doc);
         break;
-      case 'UE'://Buenatech
+      case 'UE': //Buenatech
         $path = 'App\Http\Classes\modules\b937d22d7044b3dea38a2a3628b7d6d37\\' . strtolower($doc);
         break;
       case 'ST': //Buenatech
         $path = 'App\Http\Classes\modules\b937d22d7044b3dea38a2a3628b7d6d37\\' . strtolower($doc);
-        break;    
+        break;
       default:
         $path = 'App\Http\Classes\modules\purchase\\' . strtolower($doc);
-      break;
+        break;
     }
     return $path;
   }
@@ -450,8 +449,4 @@ class issuemultipleexpiry
 
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
   }
-
-
-
-
 } //end loantype

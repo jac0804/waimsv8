@@ -34,11 +34,11 @@ class nb
   public $style = 'width:100%;max-width:100%;';
   public $issearchshow = false;
   public $showclosebtn = false;
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -99,55 +99,54 @@ class nb
     switch ($config['params']['action']) {
 
       case 'readfile':
-            $csv = $config['params']['csv'];
-            $arrcsv = explode("\r\n", $csv);
+        $csv = $config['params']['csv'];
+        $arrcsv = explode("\r\n", $csv);
 
-            $counter = 1;
-            foreach ($arrcsv as $arr) {
-              $name = '';
-              $time = '';
-              $machno = '';
-              $type = '';
+        $counter = 1;
+        foreach ($arrcsv as $arr) {
+          $name = '';
+          $time = '';
+          $machno = '';
+          $type = '';
 
-              $newarr = explode("\t", $arr);
-              // $this->othersClass->logConsole($counter . ' - ' . json_encode($newarr));
-              if (count($newarr) == 1) {
-                goto exithere;
-              }
+          $newarr = explode("\t", $arr);
+          // $this->othersClass->logConsole($counter . ' - ' . json_encode($newarr));
+          if (count($newarr) == 1) {
+            goto exithere;
+          }
 
-              // list($name, $time, $na1, $type, $machno) = $newarr;
-              $name = trim($newarr[0]);
-              $time = date('Y-m-d H:i:s', strtotime(trim($newarr[1])));
-              $type = trim($newarr[2]);
-              $machno = trim($newarr[3]);
+          // list($name, $time, $na1, $type, $machno) = $newarr;
+          $name = trim($newarr[0]);
+          $time = date('Y-m-d H:i:s', strtotime(trim($newarr[1])));
+          $type = trim($newarr[2]);
+          $machno = trim($newarr[3]);
 
-              if ($type == "0") {
-                $type = "IN";
-              } else {
-                $type = "OUT";
-              }
+          if ($type == "0") {
+            $type = "IN";
+          } else {
+            $type = "OUT";
+          }
 
-              $cdate = date('Y-m-d', strtotime($time));
+          $cdate = date('Y-m-d', strtotime($time));
 
-              // $this->othersClass->logConsole('time - ' . $cdate . ' -> ' . $start . ' to ' . $end);
+          // $this->othersClass->logConsole('time - ' . $cdate . ' -> ' . $start . ' to ' . $end);
 
-              // if ($companyid == 58) goto SkipDateHere; //cdo 
+          // if ($companyid == 58) goto SkipDateHere; //cdo 
 
-              // if (($cdate >= $start) && ($cdate <= $end)) {
-                // SkipDateHere:
-                $chkexist = $this->coreFunctions->datareader("select userid as value from timerec where userid='" . $name . "' and timeinout='" . $time . "'");
-                if ($chkexist == "") {
-                  $qry = "insert into timerec (machno,userid,timeinout,mode,curdate) values (" . $machno . ",'" . $name . "','" . $time . "','" . $type . "','" . $cdate . "') ";
-                  $this->coreFunctions->execqry($qry);
-                }
-              // }
-              $counter = $counter + 1;
-            }
+          // if (($cdate >= $start) && ($cdate <= $end)) {
+          // SkipDateHere:
+          $chkexist = $this->coreFunctions->datareader("select userid as value from timerec where userid='" . $name . "' and timeinout='" . $time . "'");
+          if ($chkexist == "") {
+            $qry = "insert into timerec (machno,userid,timeinout,mode,curdate) values (" . $machno . ",'" . $name . "','" . $time . "','" . $type . "','" . $cdate . "') ";
+            $this->coreFunctions->execqry($qry);
+          }
+          // }
+          $counter = $counter + 1;
+        }
 
         exithere:
         return ['status' => true, 'msg' => 'Readfile Successfully', 'data' => $arrcsv];
         break;
-
     }
   }
 
@@ -175,6 +174,4 @@ class nb
   {
     return [];
   }
-
-
 } //end class

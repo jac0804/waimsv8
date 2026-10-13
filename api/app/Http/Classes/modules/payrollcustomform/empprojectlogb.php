@@ -34,11 +34,11 @@ class empprojectlogb
     public $issearchshow = true;
     public $showclosebtn = false;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -285,7 +285,7 @@ class empprojectlogb
         $dateTables = [$this->table];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($data as $key => $value) {
-            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         if ($action == 'insert') {
             $data['createdate'] = $this->othersClass->getCurrentTimeStamp();

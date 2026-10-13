@@ -36,10 +36,10 @@ class entrysection
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -124,13 +124,13 @@ class entrysection
     $dateTables = ['en_section'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $data['courseid'] = $config['params']['tableid'];
     if ($row['line'] == 0) {
       $check = $this->checkSection($data, 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate Section '.$data['section'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate Section ' . $data['section'], 'row' => []];
       } else {
         $line = $this->coreFunctions->insertGetId($this->table, $data);
         if ($line != 0) {
@@ -144,7 +144,7 @@ class entrysection
     } else {
       $check = $this->checkSection($data);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate Section '.$data['section'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate Section ' . $data['section'], 'row' => []];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
@@ -160,9 +160,9 @@ class entrysection
 
   public function checkSection($data, $type = 'update')
   {
-    $qry = "select line as value from en_section where section='".$data['section']."'";
+    $qry = "select line as value from en_section where section='" . $data['section'] . "'";
     if ($type == 'update') {
-      $qry = "select line as value from en_section where section='".$data['section']."' and line<>".$data['line'];
+      $qry = "select line as value from en_section where section='" . $data['section'] . "' and line<>" . $data['line'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check != '') return true;

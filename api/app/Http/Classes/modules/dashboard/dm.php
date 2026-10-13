@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Classes\modules\dashboard;
 
 use Illuminate\Http\Request;
@@ -15,7 +16,8 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\sqlquery;
 
-class dm {
+class dm
+{
   private $fieldClass;
   private $tabClass;
   public $modulename = 'DM TRANSACTION';
@@ -27,84 +29,92 @@ class dm {
   public $issearchshow = true;
   public $showclosebtn = true;
 
- 
 
-  public function __construct() {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+
+  public function __construct($params = null)
+  {
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
   }
 
-  public function createTab($config){
-    $tab = [$this->gridname=>['gridcolumns'=>['status','dateid','docno','db','cr','bal','ref','rem']
-                        ]
-           ];
-    
+  public function createTab($config)
+  {
+    $tab = [
+      $this->gridname => [
+        'gridcolumns' => ['status', 'dateid', 'docno', 'db', 'cr', 'bal', 'ref', 'rem']
+      ]
+    ];
+
     $stockbuttons = [];
 
-    $obj = $this->tabClass->createtab($tab,$stockbuttons);
+    $obj = $this->tabClass->createtab($tab, $stockbuttons);
     // 3 = db
-     $obj[0][$this->gridname]['columns'][3]['align'] = 'right';      
+    $obj[0][$this->gridname]['columns'][3]['align'] = 'right';
     // 4 = cr
-    $obj[0][$this->gridname]['columns'][4]['align'] = 'right';      
+    $obj[0][$this->gridname]['columns'][4]['align'] = 'right';
     // 5 = bal
-    $obj[0][$this->gridname]['columns'][5]['align'] = 'right';      
+    $obj[0][$this->gridname]['columns'][5]['align'] = 'right';
 
 
     return $obj;
   }
 
-  public function createtabbutton($config){
+  public function createtabbutton($config)
+  {
     $tbuttons = [];
     $obj = $this->tabClass->createtabbutton($tbuttons);
     return $obj;
   }
 
-  public function createHeadField($config){
-       $fields = ['dateid'];
-       $col1 = $this->fieldClass->create($fields);
-       data_set($col1,'dateid.readonly',false);       
+  public function createHeadField($config)
+  {
+    $fields = ['dateid'];
+    $col1 = $this->fieldClass->create($fields);
+    data_set($col1, 'dateid.readonly', false);
 
-       $fields = ['refresh'];
-       $col2 = $this->fieldClass->create($fields);
-       data_set($col2,'refresh.action','dm');       
+    $fields = ['refresh'];
+    $col2 = $this->fieldClass->create($fields);
+    data_set($col2, 'refresh.action', 'dm');
 
-       $fields = [['db','cr']];
-       $col3 = $this->fieldClass->create($fields);
+    $fields = [['db', 'cr']];
+    $col3 = $this->fieldClass->create($fields);
 
-       $fields = ['bal'];
-       $col4 = $this->fieldClass->create($fields);
+    $fields = ['bal'];
+    $col4 = $this->fieldClass->create($fields);
 
-       return array('col1'=>$col1,'col2'=>$col2,'col3'=>$col3,'col4'=>$col4);
-
+    return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
   }
 
-  public function paramsdata($config){
+  public function paramsdata($config)
+  {
     $classid = $config['params']['classid'];
-    switch($classid){
+    switch ($classid) {
       case 'posted':
         $this->modulename = 'POSTED - DM TRANSACzxcTION';
-      break;
+        break;
       case 'unposted':
         $this->modulename = 'UNPOSTED - DM TRANSAqweCTION';
-      break;
+        break;
     }
-    return $this->coreFunctions->opentable('select adddate(left(now(),10),-360) as dateid, 0.0 as db, 0.0 as cr,0.0 as bal,? as classid',[$classid]);
+    return $this->coreFunctions->opentable('select adddate(left(now(),10),-360) as dateid, 0.0 as db, 0.0 as cr,0.0 as bal,? as classid', [$classid]);
   }
 
-  public function data(){
+  public function data()
+  {
     return [];
   }
 
-  public function loaddata($config){
+  public function loaddata($config)
+  {
     $center = $config['params']['center'];
     $date = date('Y-m-d', strtotime($config['params']['dataparams']['dateid']));
     $classid = $config['params']['dataparams']['classid'];
-    switch($classid){
+    switch ($classid) {
       case 'posted':
-    $qry = "select trno, line, doc, docno, date_format(dateid,'%m/%d/%y') as dateid, 
+        $qry = "select trno, line, doc, docno, date_format(dateid,'%m/%d/%y') as dateid, 
             FORMAT(db,2) as db, 
             FORMAT(cr,2) as cr,
             FORMAT(bal,2) as bal,
@@ -118,10 +128,10 @@ class dm {
             on(((detail.trno = apledger.trno) and (detail.line = apledger.line))))
             left join glhead as head on((head.trno = cntnum.trno)))) where cntnum.doc='DM' and apledger.bal>0 and apledger.dateid>='$date'
             and cntnum.center = '$center'
-            ) as t  order by dateid desc,docno";      
-      break;
+            ) as t  order by dateid desc,docno";
+        break;
       case 'unposted':
-    $qry = "select trno, line, doc, docno, date_format(dateid,'%m/%d/%y') as dateid, 
+        $qry = "select trno, line, doc, docno, date_format(dateid,'%m/%d/%y') as dateid, 
             FORMAT(db,2) as db, 
             FORMAT(cr,2) as cr,
             FORMAT(bal,2) as bal,
@@ -138,43 +148,12 @@ class dm {
             group by 
             head.doc,head.docno,head.trno,detail.line,head.dateid,
             client.clientid,detail.rem
-            ) as t  order by dateid desc,docno";      
-      break;
+            ) as t  order by dateid desc,docno";
+        break;
     }
 
 
     $data = $this->coreFunctions->opentable($qry);
-    return ['status'=>true,'msg'=> 'Successfully loaded.','data'=>$data];
+    return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data];
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 } //end class

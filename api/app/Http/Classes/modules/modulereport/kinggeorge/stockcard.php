@@ -36,9 +36,9 @@ class stockcard
     private $reporter;
     private $reportheader;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -1644,7 +1644,6 @@ class stockcard
                 PDF::MultiCell(70, 0, number_format($tobal, $qtydec), '', 'R', false, 0);
                 PDF::MultiCell(50, 0, $data->statux, '', 'C', false, 0);
                 PDF::MultiCell(70, 0, $data->rem, '', 'R', false);
-              
             } //end if
             $totaliss += $iss;
             $totalqty += $qty;

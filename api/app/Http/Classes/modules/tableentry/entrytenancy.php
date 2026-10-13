@@ -40,10 +40,10 @@ class entrytenancy
   public $issearchshow = false;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -70,7 +70,7 @@ class entrytenancy
     $end = 4;
     $rem = 5;
     $tab = [
-      $this->gridname => ['gridcolumns' => ['status', 'months','dateeffect', 'start', 'end', 'rem']] //'pallet',
+      $this->gridname => ['gridcolumns' => ['status', 'months', 'dateeffect', 'start', 'end', 'rem']] //'pallet',
     ];
 
     $stockbuttons = [];
@@ -93,11 +93,11 @@ class entrytenancy
   {
     $tbuttons = []; //saveallentry
     $obj = $this->tabClass->createtabbutton($tbuttons);
-   
+
     return $obj;
   }
 
-    public function loaddata($config)
+  public function loaddata($config)
   {
     $clientid = $config['params']['tableid'];
 
@@ -106,6 +106,4 @@ class entrytenancy
     $data = $this->coreFunctions->opentable($qry, [$clientid]);
     return $data;
   }
-
- 
 } //end class

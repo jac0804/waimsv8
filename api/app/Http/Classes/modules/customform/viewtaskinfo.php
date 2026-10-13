@@ -33,10 +33,10 @@ class viewtaskinfo
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -48,18 +48,18 @@ class viewtaskinfo
     $row = $config['params']['row'];
     $this->modulename = strtoupper($config['params']['row']['title']);
     $fields = ['lblrem', 'task'];
-    
-    if($config['params']['doc'] !='TK'){
-       array_push($fields,'refresh');
-     }
+
+    if ($config['params']['doc'] != 'TK') {
+      array_push($fields, 'refresh');
+    }
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'lblrem.label', 'TASK INFO');
-   
-    if($config['params']['doc'] !='TK'){
-       data_set($col1, 'refresh.label', 'Submit');
-      }else{
-       data_set($col1, 'task.readonly', true);
-      }
+
+    if ($config['params']['doc'] != 'TK') {
+      data_set($col1, 'refresh.label', 'Submit');
+    } else {
+      data_set($col1, 'task.readonly', true);
+    }
 
     return array('col1' => $col1);
   }
@@ -128,39 +128,39 @@ class viewtaskinfo
 
     $dateTables = ['tmdetail'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-   
-      $task = $this->othersClass->sanitizekeyfieldFast('task', $config['params']['dataparams']['task'], $lookups);
 
-      $data = [
-        'trno' => $trno,
-        'line' => $line,
-        'task' => $task
-      ];
+    $task = $this->othersClass->sanitizekeyfieldFast('task', $config['params']['dataparams']['task'], $lookups);
 
-      $tablename = 'tmdetail';
-      $label='Successfully loaded.';
+    $data = [
+      'trno' => $trno,
+      'line' => $line,
+      'task' => $task
+    ];
 
-      if ($isnew) {
+    $tablename = 'tmdetail';
+    $label = 'Successfully loaded.';
 
-        if (!$this->checkdata($trno, $line, $tablename)) {
-          $this->coreFunctions->sbcinsert($tablename, $data);
-          $this->logger->sbcwritelog(
-            $trno,
-            $config,
-            'TASKINFO',
-            'ADD - Line:' . $line
-              . ' Task:' . $task
-          );
-        } else {
-          $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-          $data['editby'] = $config['params']['user'];
-          $this->coreFunctions->sbcupdate($tablename, $data, ['trno' => $trno, 'line' => $line]);
-        }
+    if ($isnew) {
+
+      if (!$this->checkdata($trno, $line, $tablename)) {
+        $this->coreFunctions->sbcinsert($tablename, $data);
+        $this->logger->sbcwritelog(
+          $trno,
+          $config,
+          'TASKINFO',
+          'ADD - Line:' . $line
+            . ' Task:' . $task
+        );
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
         $this->coreFunctions->sbcupdate($tablename, $data, ['trno' => $trno, 'line' => $line]);
       }
+    } else {
+      $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+      $data['editby'] = $config['params']['user'];
+      $this->coreFunctions->sbcupdate($tablename, $data, ['trno' => $trno, 'line' => $line]);
+    }
 
     $txtdata = $this->paramsdata($config);
     // /$doc = $config['params']['doc'];
@@ -168,7 +168,7 @@ class viewtaskinfo
     // $path = 'App\Http\Classes\modules\\' . strtolower($modtype) . '\\' . strtolower($doc);
     // $config['params']['trno'] = $trno;
     // $stock = app($path)->openstock($trno, $config);
-    return ['status' => true, 'msg' => $label, 'data' => []];// 'reloadgriddata' => ['inventory' => $stock]
+    return ['status' => true, 'msg' => $label, 'data' => []]; // 'reloadgriddata' => ['inventory' => $stock]
   }
 
   private function checkdata($trno, $line, $tblname)

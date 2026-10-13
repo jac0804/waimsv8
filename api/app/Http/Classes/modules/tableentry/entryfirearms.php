@@ -38,10 +38,10 @@ class entryfirearms
     private $reporter;
     private $logger;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -69,7 +69,7 @@ class entryfirearms
         }
 
         $isposted = $this->isposted($config);
-        $stockbuttons = $isposted ? [] : ['delete']; 
+        $stockbuttons = $isposted ? [] : ['delete'];
 
         $tab = [
             $this->gridname => [
@@ -124,7 +124,7 @@ class entryfirearms
         $obj[$deleteallitem]['lookupclass'] = 'loaddata';
 
         if ($this->isposted($config)) {
-            $obj[$addrecord]['visible'] = false;   
+            $obj[$addrecord]['visible'] = false;
             $obj[$deleteallitem]['visible'] = false;
         }
 

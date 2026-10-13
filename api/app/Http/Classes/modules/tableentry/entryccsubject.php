@@ -33,10 +33,10 @@ class entryccsubject
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -53,7 +53,13 @@ class entryccsubject
   {
     $tab = [$this->gridname => [
       'gridcolumns' => [
-        'action', 'subjectcode', 'subjectname', 'units', 'lecture', 'laboratory', 'hours'
+        'action',
+        'subjectcode',
+        'subjectname',
+        'units',
+        'lecture',
+        'laboratory',
+        'hours'
       ],
     ]];
     $stockbuttons = ['save', 'delete'];

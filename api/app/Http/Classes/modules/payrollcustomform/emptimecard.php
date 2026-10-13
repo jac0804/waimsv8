@@ -23,6 +23,7 @@ class emptimecard
   private $btnClass;
   private $fieldClass;
   private $tabClass;
+  private $logger;
   public $modulename = 'Employee`s Timecard';
   public $gridname = 'entrygrid';
   private $companysetup;
@@ -33,14 +34,15 @@ class emptimecard
   public $showclosebtn = false;
   public $fields = ['empid', 'dateid', 'daytype', 'schedin', 'schedout', 'schedbrkin', 'schedbrkout', 'actualin', 'actualout', 'actualbrkin', 'actualbrkout', 'brk1stin', 'brk1stout', 'brk2ndin', 'brk2ndout', 'abrk1stin', 'abrk1stout', 'abrk2ndin', 'abrk2ndout', 'reghrs', 'absdays', 'latehrs', 'underhrs', 'earlyothrs', 'othrs', 'ndiffhrs', 'ndiffot', 'ismactualin', 'ismactualout', 'isobactualin', 'isobactualout', 'ischangesched', 'ismbrkin', 'ismbrkout', 'ismlunchin', 'ismlunchout', 'logactualin', 'logactualout', 'loglunchin', 'loglunchout', 'shiftid', 'pgline'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
+    $this->logger = new Logger;
   }
 
   public function getAttrib()
@@ -805,6 +807,7 @@ class emptimecard
             }
           }
         }
+        $this->logger->sbcmasterlog2($val["empid"], $config, 'Update timecard for ' . $val["empid"] . ' on ' . $val["dateid"], 'payroll_log');
         $this->coreFunctions->sbcupdate("timecard", $data, ['empid' => $val["empid"], 'dateid' => $val["dateid"]]);
         $data = [];
       }

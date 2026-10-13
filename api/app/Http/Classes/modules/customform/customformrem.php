@@ -33,10 +33,10 @@ class customformrem
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -123,11 +123,11 @@ class customformrem
             'returnrem' => $rem
         ];
 
-        $dateTables = ['issueitemstock','iteminfo'];
+        $dateTables = ['issueitemstock', 'iteminfo'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key) {
-             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $this->coreFunctions->sbcupdate("issueitemstock", $data, ['trno' => $trno, 'line' => [$line]]);
         $this->coreFunctions->sbcupdate("iteminfo", ['empid' => 0, 'locid' => 0], ['itemid' => $itemid, 'empid' => $empid]);

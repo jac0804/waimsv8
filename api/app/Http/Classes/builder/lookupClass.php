@@ -1963,7 +1963,12 @@ class lookupClass
     case 'lookupempgrid':
         return $this->lookupempgrid($config);
         break;
-
+    case 'lookupdeptsection':
+        return $this->lookupdeptsection($config);
+        break;
+    case 'lookupitemdesc':
+        return $this->lookupitemdesc($config);
+        break;
       default:
         return ['status' => false, 'msg' => 'Action ' . $config['params']['action'] . ' is not yet in Lookupsetup under lookupClass'];
         break;
@@ -3290,6 +3295,12 @@ class lookupClass
           $plotting['tax'] = 'tax';
         }
         break;
+      case 67: //yulick
+        if ($config['params']['doc'] == 'SJ') {
+          $plotting['vendorname'] = 'vendorname';  //rfno
+          $plotting['clientpref'] = 'clientpref';
+        }
+        break;
     }
 
     switch ($lookupclass) {
@@ -3310,6 +3321,8 @@ class lookupClass
 
     $lookuptype = 'single';
     $actionsearch = '';
+    $jdawh='';
+    $jdablankwh='';
 
     switch ($lookupclass) {
       case 'customercor':
@@ -3476,6 +3489,13 @@ class lookupClass
           $addonfield .= ", client.vattype, client.tax";
         }
 
+        if ($config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR') {
+          $plotting['vattype'] = 'vattype';
+          $plotting['tax'] = 'tax';
+          $plotting['dvattype'] = 'dvattype';
+          $addonfield .= ", client.vattype, client.tax, concat(client.tax,'~',client.vattype) as dvattype";
+        }
+
         if ($config['params']['companyid'] == 56) { //homeworks
           $plotting['ewtid'] = 'ewtid';
           $plotting['ewtrate'] = 'ewtrate';
@@ -3558,8 +3578,21 @@ class lookupClass
             break;
           case 'whledger':
             $plottype = 'plotledger';
+            switch ($config['params']['companyid']) {
+                  case 68: // JDA
+                      if ($config['params']['doc'] == 'STOCKCARD') {
+                          $plotting = array('wh' => 'client', 'whname' => 'warehousename');
+                          $jdawh = ", concat(client.client, ' ~ ', client.clientname) as warehousename";
+                          $jdablankwh =", '' as warehousename";
+                        } else {
+                          $plotting = array('wh' => 'client');
+                      }
+                      break;
 
-            $plotting = array('wh' => 'client');
+                  default:
+                      $plotting = array('wh' => 'client');
+                      break;
+              }
             break;
           case 'whtslip':
             $plottype = 'plothead';
@@ -4595,6 +4628,11 @@ class lookupClass
             break;
           case 60: //transpower
             $addonfield .= ",client.tax,client.vattype";
+            break;
+          case 67: //yulick
+            if ($config['params']['doc'] == 'SJ') {
+              $addonfield .= ", client.vendorname, client.clientpref";
+            }
             break;
         }
 
@@ -6012,9 +6050,9 @@ class lookupClass
           case 'STOCKCARD':
             switch ($config['params']['lookupclass']) {
               case 'whledger':
-                $qry = "select 0 as clientid,'' as client,'' as clientname,'' as addr
+                $qry = "select 0 as clientid,'' as client,'' as clientname,'' as addr $jdablankwh
               union all
-                select client.clientid,client.client,client.clientname,client.addr
+                select client.clientid,client.client,client.clientname,client.addr $jdawh
                 
                 from client 
                 left join forex_masterfile as f on f.line = client.forexid 
@@ -6616,6 +6654,11 @@ class lookupClass
         break;
       case 'gridbarcode':
         $plotting = array('barcode' => 'barcode', 'itemname' => 'itemname', 'itemid' => 'itemid', 'uom' => 'uom');
+       if ($config['params']['doc'] == 'DA') {
+              $plotting['category'] = 'categoryname';
+              $plotting['rate'] = 'payrate';
+              $plotting['boxcount'] = 'payqty';
+          }
         $plotsetup = array(
           'plottype' => 'plotgrid',
           'action' => 'lookupitem',
@@ -10455,6 +10498,9 @@ class lookupClass
       array_push($cols, array('name' => 'sadesc', 'label' => 'SA #', 'align' => 'left', 'field' => 'sadesc', 'sortable' => true, 'style' => 'font-size:16px;'));
       array_push($cols, array('name' => 'podesc', 'label' => 'PO #', 'align' => 'left', 'field' => 'podesc', 'sortable' => true, 'style' => 'font-size:16px;'));
     }
+    if ($companyid == 67 && $config['params']['doc'] == 'SJ') { //yulick
+      array_push($cols, array('name' => 'yourref', 'label' => 'PO #', 'align' => 'left', 'field' => 'yourref', 'sortable' => true, 'style' => 'font-size:16px;'));
+    }
 
     if ($config['params']['doc'] == 'PO') {
       $data = $this->sqlquery->getpendingsoposummary($config);
@@ -13354,6 +13400,11 @@ class lookupClass
         break;
       case 'lookupcategoryitemcategory':
         $plotting = array('category' => 'category', 'catid' => 'catid');
+        if ($companyid == 72) { // hahsy
+          // $plotting = array('itemcategoryname' => 'category', 'catid' => 'catid');
+          $plottype = 'plotmulti';
+          $plotting = array('catid' => 'keyid', 'itemcategoryname' => 'category');
+        }
         break;
       default:
         $plotting = array('categoryname' => 'category', 'categoryid' => 'catid');
@@ -13365,6 +13416,17 @@ class lookupClass
       'title' => $title,
       'style' => 'width:900px;max-width:900px;'
     );
+
+    if ($companyid == 72 && $config['params']['lookupclass'] == 'lookupcategoryitemcategory') {
+      $lookupsetup = array(
+        'type' => 'multi',
+        'rowkey' => 'keyid',
+        'title' => $title,
+        'btns' => [],
+        'style' => 'width:900px;max-width:900px;'
+      );
+    }
+
     $plotsetup = array(
       'plottype' => $plottype,
       'action' => '',
@@ -13380,9 +13442,13 @@ class lookupClass
         $qry = "select line as catid, name as category from powercat order by name";
         break;
       case 'lookupcategoryitemcategory':
-        $qry = "select '0' as catid,'' as category 
-        union all 
-        select line as catid, name as category from itemcategory" . $sortby;
+        if ($companyid == 72) {
+          $qry = "select line as keyid, name as category from itemcategory order by name";
+        } else {
+          $qry = "select '0' as catid,'' as category 
+          union all 
+          select line as catid, name as category from itemcategory" . $sortby;
+        }
         break;
       default:
         $qry = "select '0' as catid,'' as category union all select cat_id as catid, cat_name as category from category_masterfile " . $sortby;
@@ -14943,6 +15009,37 @@ class lookupClass
         select 'OT' as doc, 'OT' as pdoc, 'OT Application' as modulename,'pendingotapplications' as sbcpendingapp
         union all
         select 'UNDERTIME' as doc, 'UNDERTIME' as pdoc, 'UNDERTIME Application' as modulename,'pendingutapplications' as sbcpendingapp";
+    }
+
+    if ($config['params']['companyid'] == 62) { // onesky
+      $addunion = "
+      union all
+      select 'EARNINGDEDUCTIONSETUP' as doc, 'EARNINGDEDUCTIONSETUP' as pdoc, 'EARNING and DEDUCTION SETUP' as modulename
+      union all
+      select 'ADVANCESETUP' as doc, 'ADVANCESETUP' as pdoc, 'Advance Setup' as modulename
+      union all
+      select 'ALLOWANCESETUP' as doc, 'ALLOWANCESETUP' as pdoc, 'Allowance Setup' as modulename
+      union all
+      select 'LEAVEAPPLICATION' as doc, 'LEAVEAPPLICATION' as pdoc, 'Leave Application' as modulename
+      union all
+      select 'LOANAPPLICATION' as doc, 'LOANAPPLICATION' as pdoc, 'Loan Application' as modulename
+      union all
+      select 'BATCHSETUP' as doc, 'BATCHSETUP' as pdoc, 'Batch Setup' as modulename
+      union all
+      select 'EMPTIMECARD' as doc, 'EMPTIMECARD' as pdoc, 'Employee Time Card' as modulename
+      union all
+      select 'PAYROLLPROCESS' as doc, 'PAYROLLPROCESS' as pdoc, 'Payroll Process' as modulename
+      union all
+      select 'EMPTIMECARDPERDAY' as doc, 'EMPTIMECARDPERDAY' as pdoc, 'Employee Time Card Per Day' as modulename
+      union all
+      select 'TIMEREC' as doc, 'TIMEREC' as pdoc, 'Time IN/OUT' as modulename
+      union all
+      select 'ENTRYOTAPPROVAL' as doc, 'ENTRYOTAPPROVAL' as pdoc, 'Entry OT Approval' as modulename
+      union all
+      select 'PAYROLLENTRY' as doc, 'PAYROLLENTRY' as pdoc, 'Payroll Entry' as modulename
+      union all
+      select 'TIMEADJ' as doc, 'TIMEADJ' as pdoc, 'Time Adjustment' as modulename
+      ";
     }
 
     if ($config['params']['lookupclass'] == 'barcodeassigning') {
@@ -26195,7 +26292,7 @@ class lookupClass
   }
 
 
-  public function lookupagency($config)
+public function lookupagency($config)
 {
     $plotting = array('agencyname' => 'agencyname');
 
@@ -26250,5 +26347,82 @@ class lookupClass
     $rowindex = $config['params']['index'];
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'table' => $table, 'rowindex' => $rowindex];
   }
+
+public function lookupdeptsection($config)
+{
+    $plotting = array('sectioncode' => 'sectioncode', 'sectionname' => 'sectionname', 'sectid' => 'sectid');
+
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => 'List of Section',
+      'style' => 'width:900px;max-width:900px;'
+    );
+    $plotsetup = array(
+      'plottype' => 'plothead',
+      'action' => '',
+      'plotting' => $plotting
+    );
+
+    // lookup columns
+    $cols = [
+      ['name' => 'sectioncode', 'label' => 'Code', 'align' => 'left', 'field' => 'sectioncode', 'sortable' => true, 'style' => 'font-size:16px;'],
+      ['name' => 'sectionname', 'label' => 'Description', 'align' => 'left', 'field' => 'sectionname', 'sortable' => true, 'style' => 'font-size:16px;'],
+    ];
+
+    $client = '';
+    if (isset($config['params']['addedparams'][0])) {
+        $client = $config['params']['addedparams'][0];
+    }
+
+    if ($client == '') {
+        return ['status' => false, 'msg' => 'Please select a department first.'];
+    }
+
+    $qry = "select '' as sectid, '' as sectioncode, '' as sectionname
+        union all
+        select s.sectid, s.sectcode as sectioncode, s.sectname as sectionname
+        from section as s
+        left join client as c on c.clientid = s.deptid
+        where c.client = ? and c.isdepartment = 1
+        order by sectionname";
+    $data = $this->coreFunctions->opentable($qry, [$client]);
+
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];
+}
+
+
+public function lookupitemdesc($config)
+  {
+    $itemid= $config['params']['itemid'];
+    $company = $config['params']['companyid'];
+    $plotting = array('rem' => 'itemdesc');
+
+
+    $title = 'List of Item Descriptions';
+    $doc = $config['params']['doc'];
+    $plottype = 'plotgrid';
+   
+    $lookupsetup = array(
+      'type' => 'single',
+      'title' => $title,
+      'style' => 'width:900px;max-width:900px;'
+    );
+    $plotsetup = array(
+      'plottype' => $plottype,
+      'action' => '',
+      'plotting' => $plotting
+    );
+
+    // lookup columns
+    $cols = [['name' => 'itemdesc', 'label' => 'Item Description', 'align' => 'left', 'field' => 'itemdesc', 'sortable' => true, 'style' => 'font-size:16px;']];
+    $qry = "select ith.itemdesc from itemothname as ith where ith.itemid=? group by ith.itemdesc";
+    // var_dump($qry,$itemid);
+    $data = $this->coreFunctions->opentable($qry, [$itemid]);
+    $table = $config['params']['table'];
+    $rowindex = $config['params']['index'];
+    return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup, 'table' => $table,'rowindex' => $rowindex];
+      
+  } // end function
+
 
 } // end class

@@ -44,11 +44,11 @@ class ju
     public $showcreatebtn = true;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -334,7 +334,7 @@ class ju
             FROM " . $this->head . " where trno=? limit 1";
 
         $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
-        
+
         if ($posthead) {
             // Update transnum with postdate and postedby
             $date = $this->othersClass->getCurrentTimeStamp();

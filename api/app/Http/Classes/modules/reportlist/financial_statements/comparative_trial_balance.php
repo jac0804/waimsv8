@@ -29,12 +29,12 @@ class comparative_trial_balance
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -215,16 +215,16 @@ class comparative_trial_balance
 
     if ($center != '') {
       $branchid = $filters['params']['dataparams']['branchid'];
-      $filter .= " and detail.branch=". $branchid;
+      $filter .= " and detail.branch=" . $branchid;
     }
     // $cost_filter = '';
     if ($costcenter != "") {
       $costcenterid = $filters['params']['dataparams']['costcenterid'];
-      $filter1 = " and detail.project=". $costcenterid;
+      $filter1 = " and detail.project=" . $costcenterid;
     }
     if ($dept != "") {
       $deptid = $filters['params']['dataparams']['deptid'];
-      $filter2 = " and head.deptid=". $deptid;
+      $filter2 = " and head.deptid=" . $deptid;
     }
 
     $query2 = "select '' as acno,'' as acnoname,0 as levelid,'' as cat,'' as parent,0 as detail,0 as year1,0 as year2,0 as year3, 0 as debit, 0 as credit";
@@ -254,7 +254,12 @@ class comparative_trial_balance
     //test end
 
     $coa[] = array(
-      'acno' => '//4999', 'acnoname' => 'GRAND TOTAL', 'levelid' => 1, 'cat' => 'X', 'parent' => 'X', 'detail' => 2,
+      'acno' => '//4999',
+      'acnoname' => 'GRAND TOTAL',
+      'levelid' => 1,
+      'cat' => 'X',
+      'parent' => 'X',
+      'detail' => 2,
       'year1' => $monthL2['year1'] + $monthC2['year1'] + $monthR2['year1'] + $monthE2['year1'] + $monthO2['year1'],
       'year2' => $monthL2['year2'] + $monthC2['year2'] + $monthR2['year2'] + $monthE2['year2'] + $monthO2['year2'],
       'year3' => $monthL2['year3'] + $monthC2['year3'] + $monthR2['year3'] + $monthE2['year3'] + $monthO2['year3'],
@@ -297,8 +302,11 @@ class comparative_trial_balance
         case 'MONTHLY':
           if ($oldacno == '' || $oldacno != $result2[$b]['acno']) {
             $a[] = array(
-              'acno' => $result2[$b]['acno'], 'acnoname' => $result2[$b]['acnoname'], 'levelid' => $result2[$b]['levelid'],
-              'cat' => $result2[$b]['cat'], 'parent' => $result2[$b]['parent'],
+              'acno' => $result2[$b]['acno'],
+              'acnoname' => $result2[$b]['acnoname'],
+              'levelid' => $result2[$b]['levelid'],
+              'cat' => $result2[$b]['cat'],
+              'parent' => $result2[$b]['parent'],
               'detail' => $result2[$b]['detail'],
               'monjan' => number_format((float)$result2[$b]['monjan'], 2, '.', ''),
               'monfeb' => number_format((float)$result2[$b]['monfeb'], 2, '.', ''),
@@ -376,9 +384,12 @@ class comparative_trial_balance
             $debit3 = isset($result2[$b]['debit3']) ? $result2[$b]['debit3'] : 0;
             $credit3 = isset($result2[$b]['credit3']) ? $result2[$b]['credit3'] : 0;
             $a[] = array(
-              'acno' => $result2[$b]['acno'], 'acnoname' => $result2[$b]['acnoname'],
-              'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'],
-              'parent' => $result2[$b]['parent'], 'detail' => $result2[$b]['detail'],
+              'acno' => $result2[$b]['acno'],
+              'acnoname' => $result2[$b]['acnoname'],
+              'levelid' => $result2[$b]['levelid'],
+              'cat' => $result2[$b]['cat'],
+              'parent' => $result2[$b]['parent'],
+              'detail' => $result2[$b]['detail'],
               'year1' => number_format((float)$result2[$b]['year1'], 2, '.', ''),
               'year2' => number_format((float)$result2[$b]['year2'], 2, '.', ''),
               'year3' => number_format((float)$result2[$b]['year3'], 2, '.', ''),
@@ -445,16 +456,27 @@ class comparative_trial_balance
             switch ($view) {
               case 'MONTHLY':
                 $a[] = array(
-                  'acno' => $result2[$b]['acno'], 'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'],
-                  'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'],
-                  'parent' => $result2[$b]['parent'], 'detail' => 2,
-                  'monjan' => $month['mjan'], 'monfeb' => $month['mfeb'],
-                  'monmar' => $month['mmar'], 'monapr' => $month['mapr'],
-                  'monmay' => $month['mmay'], 'monjun' => $month['mjun'],
-                  'monjul' => $month['mjul'], 'monaug' => $month['maug'],
-                  'monsep' => $month['msep'], 'monoct' => $month['moct'],
-                  'monnov' => $month['mnov'], 'mondec' => $month['mdec'],
-                  'debit' => $month['db'], 'credit' => $month['cr'], 'yr' => $year1
+                  'acno' => $result2[$b]['acno'],
+                  'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'],
+                  'levelid' => $result2[$b]['levelid'],
+                  'cat' => $result2[$b]['cat'],
+                  'parent' => $result2[$b]['parent'],
+                  'detail' => 2,
+                  'monjan' => $month['mjan'],
+                  'monfeb' => $month['mfeb'],
+                  'monmar' => $month['mmar'],
+                  'monapr' => $month['mapr'],
+                  'monmay' => $month['mmay'],
+                  'monjun' => $month['mjun'],
+                  'monjul' => $month['mjul'],
+                  'monaug' => $month['maug'],
+                  'monsep' => $month['msep'],
+                  'monoct' => $month['moct'],
+                  'monnov' => $month['mnov'],
+                  'mondec' => $month['mdec'],
+                  'debit' => $month['db'],
+                  'credit' => $month['cr'],
+                  'yr' => $year1
                 );
                 $month['mjan'] = 0;
                 $month['mfeb'] = 0;
@@ -475,13 +497,19 @@ class comparative_trial_balance
 
               case '3YEARS':
                 $a[] = array(
-                  'acno' => $result2[$b]['acno'], 'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'],
-                  'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'],
-                  'parent' => $result2[$b]['parent'], 'detail' => 2,
-                  'year1' => $month['year1'], 'year2' => $month['year2'],
+                  'acno' => $result2[$b]['acno'],
+                  'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'],
+                  'levelid' => $result2[$b]['levelid'],
+                  'cat' => $result2[$b]['cat'],
+                  'parent' => $result2[$b]['parent'],
+                  'detail' => 2,
+                  'year1' => $month['year1'],
+                  'year2' => $month['year2'],
                   'year3' => $month['year3'],
-                  'debit2' => $month['debit2'], 'credit2' => $month['credit2'],
-                  'debit3' => $month['debit3'], 'credit3' => $month['credit3']
+                  'debit2' => $month['debit2'],
+                  'credit2' => $month['credit2'],
+                  'debit3' => $month['debit3'],
+                  'credit3' => $month['credit3']
                 );
                 $month['year1'] = 0;
                 $month['year2'] = 0;
@@ -552,37 +580,63 @@ class comparative_trial_balance
 
 
               $a[] = array(
-                'acno' => '\3999', 'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
-                'levelid' => $result2[$b]['levelid'] + 1, 'cat' => $result2[$b]['cat'],
-                'parent' => $result2[$b]['parent'], 'detail' => 1,
-                'year1' => $L1, 'year2' => $L2, 'year3' => $L3, 'debit2' => $L4, 'credit2' => $L5, 'debit3' => $L6, 'credit3' => $L7
+                'acno' => '\3999',
+                'acnoname' => 'NET INCOME/LOSS TO BALANCE SHEET',
+                'levelid' => $result2[$b]['levelid'] + 1,
+                'cat' => $result2[$b]['cat'],
+                'parent' => $result2[$b]['parent'],
+                'detail' => 1,
+                'year1' => $L1,
+                'year2' => $L2,
+                'year3' => $L3,
+                'debit2' => $L4,
+                'credit2' => $L5,
+                'debit3' => $L6,
+                'credit3' => $L7
               );
             }
 
             switch ($view) {
               case 'MONTHLY':
                 $a[] = array(
-                  'acno' => $result2[$b]['acno'], 'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'],
-                  'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'],
-                  'parent' => $result2[$b]['parent'], 'detail' => 2,
-                  'monjan' => $month2['mjan'], 'monfeb' => $month2['mfeb'],
-                  'monmar' => $month2['mmar'], 'monapr' => $month2['mapr'],
-                  'monmay' => $month2['mmay'], 'monjun' => $month2['mjun'],
-                  'monjul' => $month2['mjul'], 'monaug' => $month2['maug'],
-                  'monsep' => $month2['msep'], 'monoct' => $month2['moct'],
-                  'monnov' => $month2['mnov'], 'mondec' => $month2['mdec'],
-                  'debit' => $month2['db'], 'credit' => $month2['cr']
+                  'acno' => $result2[$b]['acno'],
+                  'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'],
+                  'levelid' => $result2[$b]['levelid'],
+                  'cat' => $result2[$b]['cat'],
+                  'parent' => $result2[$b]['parent'],
+                  'detail' => 2,
+                  'monjan' => $month2['mjan'],
+                  'monfeb' => $month2['mfeb'],
+                  'monmar' => $month2['mmar'],
+                  'monapr' => $month2['mapr'],
+                  'monmay' => $month2['mmay'],
+                  'monjun' => $month2['mjun'],
+                  'monjul' => $month2['mjul'],
+                  'monaug' => $month2['maug'],
+                  'monsep' => $month2['msep'],
+                  'monoct' => $month2['moct'],
+                  'monnov' => $month2['mnov'],
+                  'mondec' => $month2['mdec'],
+                  'debit' => $month2['db'],
+                  'credit' => $month2['cr']
                 );
                 break;
 
               case '3YEARS':
                 $a[] = array(
-                  'acno' => $result2[$b]['acno'], 'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'],
-                  'levelid' => $result2[$b]['levelid'], 'cat' => $result2[$b]['cat'],
-                  'parent' => $result2[$b]['parent'], 'detail' => 2,
-                  'year1' => $month2['year1'], 'year2' => $month2['year2'], 'year3' => $month2['year3'],
-                  'debit2' => $month2['debit2'], 'credit2' => $month2['credit2'],
-                  'debit3' => $month2['debit3'], 'credit3' => $month2['credit3']
+                  'acno' => $result2[$b]['acno'],
+                  'acnoname' => 'TOTAL ' . $result2[$b]['acnoname'],
+                  'levelid' => $result2[$b]['levelid'],
+                  'cat' => $result2[$b]['cat'],
+                  'parent' => $result2[$b]['parent'],
+                  'detail' => 2,
+                  'year1' => $month2['year1'],
+                  'year2' => $month2['year2'],
+                  'year3' => $month2['year3'],
+                  'debit2' => $month2['debit2'],
+                  'credit2' => $month2['credit2'],
+                  'debit3' => $month2['debit3'],
+                  'credit3' => $month2['credit3']
                 );
                 break;
             }

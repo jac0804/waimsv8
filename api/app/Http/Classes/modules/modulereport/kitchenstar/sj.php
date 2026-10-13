@@ -37,9 +37,9 @@ class sj
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -277,15 +277,15 @@ class sj
         $font = "";
         $fontbold = "";
         $border = "1px solid ";
-        $fontsize = "8";//9
+        $fontsize = "8"; //9
         //if (Storage::disk('sbcpath')->exists('/fonts/calibri.ttf')) {
         //    $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/calibri.ttf');
         //    $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/calibriB.ttf');
         //}
-         if (Storage::disk('sbcpath')->exists('/fonts/ARIAL.ttf')) {
-             $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/ARIAL.ttf');
-             $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/ARIALB.ttf');
-         }
+        if (Storage::disk('sbcpath')->exists('/fonts/ARIAL.ttf')) {
+            $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/ARIAL.ttf');
+            $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/ARIALB.ttf');
+        }
         $this->default_sj_header_PDF($params, $data);
 
         $countline = 15;

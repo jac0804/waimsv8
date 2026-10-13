@@ -42,10 +42,10 @@ class entrymodeoftransaction
     private $reportheader;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -126,7 +126,7 @@ class entrymodeoftransaction
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
                 if ($data[$key]['line'] == 0 && $data[$key]['name'] != '') {
                     $qry = "select name from mode_masterfile where name = '" . $data[$key]['name'] . "' limit 1";
@@ -142,8 +142,8 @@ class entrymodeoftransaction
                 if (trim($data[$key]['name'] == '')) {
                     return ['status' => false, 'msg' => 'Mode Name is empty'];
                 }
-                $data2['issp'] = $this->othersClass->sanitizekeyfieldFast('issp', $data[$key]['issp'],$lookups);
-                $data2['ismc'] = $this->othersClass->sanitizekeyfieldFast('ismc', $data[$key]['ismc'],$lookups);
+                $data2['issp'] = $this->othersClass->sanitizekeyfieldFast('issp', $data[$key]['issp'], $lookups);
+                $data2['ismc'] = $this->othersClass->sanitizekeyfieldFast('ismc', $data[$key]['ismc'], $lookups);
                 if ($data[$key]['line'] == 0) {
                     $line = $this->coreFunctions->insertGetId($this->table, $data2);
                     $this->logger->sbcmasterlog($line, $config, ' CREATE - ' . $data[$key]['name']);
@@ -186,7 +186,7 @@ class entrymodeoftransaction
         $dateTables = [$this->table];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
         if ($row['line'] == 0 && $row['name'] != '') {
             $qry = "select name from mode_masterfile where name = '" . $row['name'] . "' limit 1";
@@ -201,8 +201,8 @@ class entrymodeoftransaction
         if (trim($row['name'] == '')) {
             return ['status' => false, 'msg' => 'Mode Name is empty'];
         }
-        $data2['issp'] = $this->othersClass->sanitizekeyfieldFast('issp', $row['issp'],$lookups);
-        $data2['ismc'] = $this->othersClass->sanitizekeyfieldFast('ismc', $row['ismc'],$lookups);
+        $data2['issp'] = $this->othersClass->sanitizekeyfieldFast('issp', $row['issp'], $lookups);
+        $data2['ismc'] = $this->othersClass->sanitizekeyfieldFast('ismc', $row['ismc'], $lookups);
         if ($row['line'] == 0) {
             $line = $this->coreFunctions->insertGetId($this->table, $data);
             if ($line != 0) {

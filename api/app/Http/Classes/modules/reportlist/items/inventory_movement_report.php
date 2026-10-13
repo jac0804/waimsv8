@@ -33,12 +33,12 @@ class inventory_movement_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -59,7 +59,7 @@ class inventory_movement_report
         $fields = ['radioprint', 'start', 'end', 'ditemname', 'divsion', 'brand', 'classname', 'dwhname'];
         break;
       case 47:
-        array_push($fields,'radiolayoutformat');
+        array_push($fields, 'radiolayoutformat');
         break;
       default:
         break;
@@ -231,7 +231,7 @@ class inventory_movement_report
     $brandname = $config['params']['dataparams']['brandname'];
     $partname  = $config['params']['dataparams']['partname'];
     $barcode  = $config['params']['dataparams']['barcode'];
-    
+
     $filter = "";
     if ($wh != "") {
       $whid = $config['params']['dataparams']['whid'];
@@ -361,8 +361,8 @@ class inventory_movement_report
 
     $itemfield = "item.itemname";
 
-    
-    if($companyid == 47){//kstar
+
+    if ($companyid == 47) { //kstar
       if ($excwh) {
         $filter .= " and stock.whid <> 1014";
         $itemfield = "concat(item.itemname,' ',item.color,' ',item.sizeid)";
@@ -395,7 +395,7 @@ class inventory_movement_report
     from (
     select itemid,category,barcode,itemname,uom,(sum(qty)-sum(iss)) as begbal,0 as totin,0 as totout,0 as cost $classname
     from(
-    select item.itemid,cat.name as category,item.barcode,".$itemfield." as itemname,item.uom,stock.qty,stock.iss $addclassname
+    select item.itemid,cat.name as category,item.barcode," . $itemfield . " as itemname,item.uom,stock.qty,stock.iss $addclassname
     from lastock as stock
     left join item on item.itemid = stock.itemid
     $addjoinclass
@@ -407,7 +407,7 @@ class inventory_movement_report
     UNION ALL
 
     select item.itemid,cat.name as category,item.barcode,
-    ".$itemfield." as itemname,item.uom, stock.qty,stock.iss $addclassname
+    " . $itemfield . " as itemname,item.uom, stock.qty,stock.iss $addclassname
     from glstock as stock
     left join item on item.itemid = stock.itemid
     $addjoinclass
@@ -421,7 +421,7 @@ class inventory_movement_report
 
     select itemid,category,barcode,itemname,uom,0 as begbal,sum(qty) as totin,sum(iss) as totout,0 as cost $classname
     from(
-    select item.itemid,cat.name as category,item.barcode,".$itemfield." as itemname,item.uom, stock.qty,stock.iss $addclassname
+    select item.itemid,cat.name as category,item.barcode," . $itemfield . " as itemname,item.uom, stock.qty,stock.iss $addclassname
     from lastock as stock
     left join item on item.itemid = stock.itemid
     $addjoinclass
@@ -432,7 +432,7 @@ class inventory_movement_report
     
     UNION ALL
 
-    select item.itemid,cat.name as category,item.barcode,".$itemfield." as itemname,item.uom, stock.qty,stock.iss $addclassname
+    select item.itemid,cat.name as category,item.barcode," . $itemfield . " as itemname,item.uom, stock.qty,stock.iss $addclassname
     from glstock as stock
     left join item on item.itemid = stock.itemid
     $addjoinclass
@@ -445,7 +445,7 @@ class inventory_movement_report
     where barcode <> '' $conditonclass
     group by itemid, category, barcode, itemname, uom $classname
     order by category,itemname";
-    
+
     return $query;
   }
 

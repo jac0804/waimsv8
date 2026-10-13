@@ -29,10 +29,10 @@ class em
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -112,7 +112,7 @@ class em
   } //end fn
 
 
-  
+
   public function default_header($params, $data)
   {
     $center = $params['params']['center'];
@@ -189,7 +189,7 @@ class em
 
   public function reportplotting($params, $data,  $trno)
   {
-    
+
     $companyid = $params['params']['companyid'];
     $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
@@ -222,25 +222,24 @@ class em
     $str .= $this->reporter->col('Student Name', '200', null, false, $border, 'TLRB', 'C', $font, $fontsize, 'B', '', '');
 
     for ($i = 0; $i < count($type); $i++) {
-      if ($attendance =="") {
+      if ($attendance == "") {
         $str .= $this->reporter->col((isset($type[$i]['type']) ? $type[$i]['type'] : ''), '100', null, false, $border, 'TLRB', 'C', $font, $fontsize, 'B', '', '');
-      }else {
+      } else {
         if ($attendance == $type[$i]['type']) {
           $str .= $this->reporter->col((isset($type[$i]['type']) ? $type[$i]['type'] : ''), '100', null, false, $border, 'TLRB', 'C', $font, $fontsize, 'B', '', '');
         }
       }
-      
     }
     $str .= $this->reporter->endrow();
 
     if ($student == "") {
-        $stud = "";
-    }else {
-        $studid = $params['params']['dataparams']['clientid'];
-        $stud = " and client.clientid = '".$studid."'";
+      $stud = "";
+    } else {
+      $studid = $params['params']['dataparams']['clientid'];
+      $stud = " and client.clientid = '" . $studid . "'";
     }
 
-  
+
     if ($student == "" && $attendance == "") {
       $query = "select head.trno,head.docno,head.dateid,sy.sy,period.code as period,head.schedday,
                   head.schedtime,sec.section,i.client as instructorcode,i.clientname as instructorname,
@@ -258,7 +257,7 @@ class em
                   left join en_bldg as bldg on bldg.line=rm.bldgid
                   left join en_course as course on course.line=head.courseid
                   left join client on client.clientid=stock.clientid
-                  where head.trno = ".$trno." and stock.status=0
+                  where head.trno = " . $trno . " and stock.status=0
                 group by head.trno,head.docno,head.dateid,sy.sy,period.code,head.schedday,
                   head.schedtime,sec.section,i.client,i.clientname,
                   head.scheddocno,subj.subjectcode,subj.subjectname,rm.roomcode,bldg.bldgcode,
@@ -282,14 +281,13 @@ class em
                   left join en_course as course on course.line=head.courseid
                   left join client on client.clientid=stock.clientid
                   left join en_attendancetype as attype on attype.line=stock.status
-                  where head.trno = ".$trno." and stock.status<>0
+                  where head.trno = " . $trno . " and stock.status<>0
                 group by head.trno,head.docno,head.dateid,sy.sy,period.code,head.schedday,
                   head.schedtime,sec.section,i.client,i.clientname,
                   head.scheddocno,subj.subjectcode,subj.subjectname,rm.roomcode,bldg.bldgcode,
                   course.coursecode,course.coursename,head.curriculumcode,head.curriculumdocno,
                   client.clientid,client.client,client.clientname,attype.type, attype.line order by clientname, cline";
-    
-    }else{
+    } else {
       if ($attendance == 'PRESENT') {
         $query = "select head.trno,head.docno,head.dateid,sy.sy,period.code as period,head.schedday,
                     head.schedtime,sec.section,i.client as instructorcode,i.clientname as instructorname,
@@ -307,18 +305,17 @@ class em
                     left join en_bldg as bldg on bldg.line=rm.bldgid
                     left join en_course as course on course.line=head.courseid
                     left join client on client.clientid=stock.clientid
-                    where head.trno = ".$trno." $stud and stock.status=0
+                    where head.trno = " . $trno . " $stud and stock.status=0
                   group by head.trno,head.docno,head.dateid,sy.sy,period.code,head.schedday,
                     head.schedtime,sec.section,i.client,i.clientname,
                     head.scheddocno,subj.subjectcode,subj.subjectname,rm.roomcode,bldg.bldgcode,
                     course.coursecode,course.coursename,head.curriculumcode,head.curriculumdocno,
                     client.clientid,client.client,client.clientname order by clientname";
-      }else {
+      } else {
         if ($attendance == "") {
           $attd = "";
-        }else {
-          $attd = " and attype.type = '".$attendance."' ";
-
+        } else {
+          $attd = " and attype.type = '" . $attendance . "' ";
         }
         if ($student <> "" && $attendance == "") {
           $query = "select head.trno,head.docno,head.dateid,sy.sy,period.code as period,head.schedday,
@@ -337,7 +334,7 @@ class em
                   left join en_bldg as bldg on bldg.line=rm.bldgid
                   left join en_course as course on course.line=head.courseid
                   left join client on client.clientid=stock.clientid
-                  where head.trno = ".$trno." $stud and stock.status=0
+                  where head.trno = " . $trno . " $stud and stock.status=0
                 group by head.trno,head.docno,head.dateid,sy.sy,period.code,head.schedday,
                   head.schedtime,sec.section,i.client,i.clientname,
                   head.scheddocno,subj.subjectcode,subj.subjectname,rm.roomcode,bldg.bldgcode,
@@ -361,15 +358,14 @@ class em
                   left join en_course as course on course.line=head.courseid
                   left join client on client.clientid=stock.clientid
                   left join en_attendancetype as attype on attype.line=stock.status
-                  where head.trno = ".$trno." $stud and stock.status<>0
+                  where head.trno = " . $trno . " $stud and stock.status<>0
                 group by head.trno,head.docno,head.dateid,sy.sy,period.code,head.schedday,
                   head.schedtime,sec.section,i.client,i.clientname,
                   head.scheddocno,subj.subjectcode,subj.subjectname,rm.roomcode,bldg.bldgcode,
                   course.coursecode,course.coursename,head.curriculumcode,head.curriculumdocno,
                   client.clientid,client.client,client.clientname,attype.type, attype.line order by clientname, cline";
-    
-        }else {
-          $query ="select head.trno,head.docno,head.dateid,sy.sy,period.code as period,head.schedday,
+        } else {
+          $query = "select head.trno,head.docno,head.dateid,sy.sy,period.code as period,head.schedday,
                     head.schedtime,sec.section,i.client as instructorcode,i.clientname as instructorname,
                     head.scheddocno,subj.subjectcode,subj.subjectname,rm.roomcode,bldg.bldgcode,
                     course.coursecode,course.coursename,head.curriculumcode,head.curriculumdocno,
@@ -386,16 +382,14 @@ class em
                     left join en_course as course on course.line=head.courseid
                     left join client on client.clientid=stock.clientid
                     left join en_attendancetype as attype on attype.line=stock.status
-                    where head.trno = ".$trno." $attd $stud and stock.status<>0
+                    where head.trno = " . $trno . " $attd $stud and stock.status<>0
                   group by head.trno,head.docno,head.dateid,sy.sy,period.code,head.schedday,
                     head.schedtime,sec.section,i.client,i.clientname,
                     head.scheddocno,subj.subjectcode,subj.subjectname,rm.roomcode,bldg.bldgcode,
                     course.coursecode,course.coursename,head.curriculumcode,head.curriculumdocno,
                     client.clientid,client.client,client.clientname,attype.type, attype.line order by clientname, cline";
         }
-        
       }
-      
     }
 
     $result1 = $this->coreFunctions->opentable($query);
@@ -414,21 +408,21 @@ class em
 
     foreach ($result1 as $k => $detail) {
 
-      if($name != ''){
+      if ($name != '') {
         if ($detail->clientname != $name) {
-      $str .= $this->reporter->startrow();
+          $str .= $this->reporter->startrow();
 
-          $str .= $this->reporter->col('&nbsp&nbsp&nbsp'.$name, '200', null, false, $border, 'TLRB', 'L', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col('&nbsp&nbsp&nbsp' . $name, '200', null, false, $border, 'TLRB', 'L', $font, $fontsize, '', '', '');
 
-         
 
-      //test
-          if ($attendance == "") {  
+
+          //test
+          if ($attendance == "") {
             foreach ($subtotal as $key => $total) {
-                $str .= $this->reporter->col($total, '100', null, false, $border, 'TLRB', 'C', $font, $fontsize, '', '', '');
+              $str .= $this->reporter->col($total, '100', null, false, $border, 'TLRB', 'C', $font, $fontsize, '', '', '');
             }
-          }else {
-            for ($i=0; $i < count($detail); $i++) { 
+          } else {
+            for ($i = 0; $i < count($detail); $i++) {
               if ($attendance == $detail->type) {
                 $str .= $this->reporter->col($subtotal[$attendance], '100', null, false, $border, 'TLRB', 'C', $font, $fontsize, '', '', '');
               }
@@ -440,42 +434,40 @@ class em
           $str .= $this->reporter->endrow();
           $subtotal = [];
         }
-      
       }
 
 
       foreach ($type as $key => $countattend) {
         $ctype = 0;
         if ($countattend['type'] == $detail->type) {
-          if(isset($subtotal[$countattend['type']])){
+          if (isset($subtotal[$countattend['type']])) {
             $ctype = $subtotal[$countattend['type']] + $detail->ctype;
-          }else{
+          } else {
             $ctype = $detail->ctype;
           }
-          
+
           $subtotal[$countattend['type']] = $ctype;
-          
         } else {
-          if(isset($subtotal[$countattend['type']])){
+          if (isset($subtotal[$countattend['type']])) {
             $ctype = $subtotal[$countattend['type']] + 0;
-          }else{
+          } else {
             $ctype = 0;
           }
           $subtotal[$countattend['type']] = $ctype;
         }
       }
-      
-      if(count($result1) == $counter){
+
+      if (count($result1) == $counter) {
         $str .= $this->reporter->startrow();
-  
-        $str .= $this->reporter->col('&nbsp&nbsp&nbsp'.$detail->clientname, '200', null, false, $border, 'TLRB', 'L', $font, $fontsize, '', '', '');
-        
-        if ($attendance == "") {  
+
+        $str .= $this->reporter->col('&nbsp&nbsp&nbsp' . $detail->clientname, '200', null, false, $border, 'TLRB', 'L', $font, $fontsize, '', '', '');
+
+        if ($attendance == "") {
           foreach ($subtotal as $key => $total) {
-              $str .= $this->reporter->col($total, '100', null, false, $border, 'TLRB', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($total, '100', null, false, $border, 'TLRB', 'C', $font, $fontsize, '', '', '');
           }
-        }else {
-          for ($i=0; $i < count($detail); $i++) { 
+        } else {
+          for ($i = 0; $i < count($detail); $i++) {
             if ($attendance == $detail->type) {
               $str .= $this->reporter->col($subtotal[$attendance], '100', null, false, $border, 'TLRB', 'C', $font, $fontsize, '', '', '');
             }
@@ -483,18 +475,15 @@ class em
         }
 
 
-      //   foreach ($subtotal as $key => $total) {
-      //     $str .= $this->reporter->col($total, '100', null, false, $border, 'TLRB', 'C', $font, $fontsize, '', '', '');
-      //  }
+        //   foreach ($subtotal as $key => $total) {
+        //     $str .= $this->reporter->col($total, '100', null, false, $border, 'TLRB', 'C', $font, $fontsize, '', '', '');
+        //  }
         $str .= $this->reporter->endrow();
-
-
       }
 
 
-$name = $detail->clientname;
-$counter = $counter + 1;
-
+      $name = $detail->clientname;
+      $counter = $counter + 1;
     }
 
 

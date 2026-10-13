@@ -29,19 +29,19 @@ class item_by_category_comparison
     public $style = 'width:1200px;max-width:1200px;';
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
-    
-    public function __construct()
+
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
     public function createHeadField($config)
     {
-        $fields = ['radioprint', 'start', 'end','categoryname'];
+        $fields = ['radioprint', 'start', 'end', 'categoryname'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'categoryname.action', 'lookupcategoryitemstockcard');
         data_set($col1, 'categoryname.lookupclass', 'lookupcategoryitemstockcard');
@@ -85,11 +85,11 @@ class item_by_category_comparison
         $categoryname = $config['params']['dataparams']['categoryname'];
         $filter = '';
 
-        if ($categoryname != '' ){
-            $filter .= "and cat.name = '" .$categoryname . "'";
+        if ($categoryname != '') {
+            $filter .= "and cat.name = '" . $categoryname . "'";
         }
 
-        $query ="
+        $query = "
         select  cat.name as category, class.cl_name as class,year(head.dateid) as syear,
         (stock.ext-ifnull(info.lessvat,0)-ifnull(info.sramt,0)-ifnull(info.pwdamt,0)) as ext
         from lahead as head
@@ -113,7 +113,7 @@ class item_by_category_comparison
         order by syear, category, class
         ";
         // var_dump($query);
-        return $this->coreFunctions->opentable($query);        
+        return $this->coreFunctions->opentable($query);
     }
 
     public function header_layout($config)
@@ -131,7 +131,7 @@ class item_by_category_comparison
         $layoutsize = '1000';
         $font = $this->companysetup->getrptfont($config['params']);
         $fontsize = "10";
-        $border = "1px solid"; 
+        $border = "1px solid";
         $str .= '<br><br>';
 
         $str .= $this->reporter->begintable($layoutsize);
@@ -140,7 +140,7 @@ class item_by_category_comparison
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '', '', 'l', $font, '14', 'B', '', '');
-        $str .= $this->reporter->col('Print Date : '.date_format(date_create($current_timestamp), 'm/d/Y h:i:s A'), null, null, false, '', '', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('Print Date : ' . date_format(date_create($current_timestamp), 'm/d/Y h:i:s A'), null, null, false, '', '', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -148,8 +148,8 @@ class item_by_category_comparison
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('ITEM SUMMARY COMPARISON', null, null, false, $border, '', 'L', $font, '15', 'B', '', '');
         $str .= $this->reporter->pagenumber('Page ', null, null, false, $border, '', 'R', $font, $fontsize, '', 'false', '');
-       
-       
+
+
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         $str .= '<br>';
@@ -176,7 +176,7 @@ class item_by_category_comparison
         $layoutsize = '1000';
         $font = $this->companysetup->getrptfont($config['params']);
         $fontsize = "10";
-        $border = "1px solid"; 
+        $border = "1px solid";
         $page = 0;
 
         if ($numYear > 5) { //if more than 5 rows on years
@@ -195,7 +195,7 @@ class item_by_category_comparison
         $grandtotal = [];
 
         if (empty($query)) {
-        return $this->othersClass->emptydata($config);
+            return $this->othersClass->emptydata($config);
         }
 
 
@@ -203,13 +203,13 @@ class item_by_category_comparison
         foreach ($query as $row) {
             $grouped[$row->category][$row->class][$row->syear] = $row->ext;
         }
-        foreach($grouped as $category => $classes){ //category
+        foreach ($grouped as $category => $classes) { //category
             $subtotal = [];
             foreach ($classes as $class => $years) { //class
 
-                if($catname != $category){
+                if ($catname != $category) {
                     $catname = $catshown = $category;
-                }else if ($catname == $category){ //if stored category = current vategory
+                } else if ($catname == $category) { //if stored category = current vategory
                     $catshown = '';
                 }
 
@@ -220,17 +220,17 @@ class item_by_category_comparison
                 ], $fontsize  * 0.5);
                 for ($l = 0; $l < $lines; $l++) {
                     $this->reporter->addline();
-                }// row calculation END
+                } // row calculation END
 
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
                 $str .= $this->reporter->col($catshown, '150', 30, false, $border, 'L', 'C', $font, '10', 'B', '', '');
                 $str .= $this->reporter->col($class, '250', 30, false, $border, 'BL', 'L', $font, '10', '', '', '');
-                for ($i = 0; $i < $numYear; $i++) {//loop on how many years
-                    $str .= $this->reporter->col((!isset($years[$start + $i]) || $years[$start + $i] == 0)? '-' :  number_format($years[$start + $i],2), '120', 30, false, $border, 'BLR', 'R', $font, '10', '', '', '');
-                    
+                for ($i = 0; $i < $numYear; $i++) { //loop on how many years
+                    $str .= $this->reporter->col((!isset($years[$start + $i]) || $years[$start + $i] == 0) ? '-' :  number_format($years[$start + $i], 2), '120', 30, false, $border, 'BLR', 'R', $font, '10', '', '', '');
+
                     $subtotal[$start + $i] = (isset($subtotal[$start + $i]) ? $subtotal[$start + $i] : 0) + (isset($years[$start + $i]) ? $years[$start + $i] : 0); //sub total accumulation
-                    }
+                }
                 $str .= $this->reporter->col('', '300', 30, false, $border, '', 'L', $font, '12', '', '', '');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
@@ -242,41 +242,39 @@ class item_by_category_comparison
                 }
             }
             //subtotal
-                $str .= $this->reporter->begintable($layoutsize);
-                $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('', '150', 30, false, $border, 'LB', 'C', $font, '10', 'B', '', '');
-                $str .= $this->reporter->col('CLASS SUBTOTAL:', '250', 30, false, $border, 'BL', 'R', $font, '10', 'B', '', '');
-                for ($i = 0; $i < $numYear; $i++) {//loop on how many years
-                    $str .= $this->reporter->col( number_format($subtotal[$start + $i],2), '120', 30, false, $border, 'BLR', 'R', $font, '10', 'B', '', '');
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', '150', 30, false, $border, 'LB', 'C', $font, '10', 'B', '', '');
+            $str .= $this->reporter->col('CLASS SUBTOTAL:', '250', 30, false, $border, 'BL', 'R', $font, '10', 'B', '', '');
+            for ($i = 0; $i < $numYear; $i++) { //loop on how many years
+                $str .= $this->reporter->col(number_format($subtotal[$start + $i], 2), '120', 30, false, $border, 'BLR', 'R', $font, '10', 'B', '', '');
 
-                    $grandtotal[$start + $i] = (isset($grandtotal[$start + $i]) ? $grandtotal[$start + $i] : 0) + $subtotal[$start + $i]; //grand total accumulation
-                }
-                $str .= $this->reporter->col('', '300', 30, false, $border, '', 'L', $font, '12', 'B', '', '');
-                $str .= $this->reporter->endrow();
-                $str .= $this->reporter->endtable();
+                $grandtotal[$start + $i] = (isset($grandtotal[$start + $i]) ? $grandtotal[$start + $i] : 0) + $subtotal[$start + $i]; //grand total accumulation
+            }
+            $str .= $this->reporter->col('', '300', 30, false, $border, '', 'L', $font, '12', 'B', '', '');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
 
-                $this->reporter->addline();
-                if ($this->reporter->linecounter >= $page) {
-                    $str .= $this->reporter->page_break();
-                    $str .= $this->header_layout($config);
-                    $this->reporter->linecounter = 0;
-                }
+            $this->reporter->addline();
+            if ($this->reporter->linecounter >= $page) {
+                $str .= $this->reporter->page_break();
+                $str .= $this->header_layout($config);
+                $this->reporter->linecounter = 0;
+            }
         }
         //grand total
-                $str .= $this->reporter->begintable($layoutsize);
-                $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('', '150', 30, false, $border, 'LB', 'C', $font, '10', 'B', '', '');
-                $str .= $this->reporter->col('GRAND TOTAL:', '250', 30, false, $border, 'B', 'R', $font, '10', 'B', '', '');
-                for ($i = 0; $i < $numYear; $i++) {//loop on how many years
-                    $str .= $this->reporter->col( isset($grandtotal[$start + $i]) ? number_format($grandtotal[$start + $i],2) : '-', '120', 30, false, $border, 'BLR', 'R', $font, '12', 'B', '', '');
-                }
-                $str .= $this->reporter->col('', '300', 30, false, $border, '', 'L', $font, '11', 'B', '', '');
-                $str .= $this->reporter->endrow();
-                $str .= $this->reporter->endtable();
-    
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->startrow();
+        $str .= $this->reporter->col('', '150', 30, false, $border, 'LB', 'C', $font, '10', 'B', '', '');
+        $str .= $this->reporter->col('GRAND TOTAL:', '250', 30, false, $border, 'B', 'R', $font, '10', 'B', '', '');
+        for ($i = 0; $i < $numYear; $i++) { //loop on how many years
+            $str .= $this->reporter->col(isset($grandtotal[$start + $i]) ? number_format($grandtotal[$start + $i], 2) : '-', '120', 30, false, $border, 'BLR', 'R', $font, '12', 'B', '', '');
+        }
+        $str .= $this->reporter->col('', '300', 30, false, $border, '', 'L', $font, '11', 'B', '', '');
+        $str .= $this->reporter->endrow();
+        $str .= $this->reporter->endtable();
+
         $str .= $this->reporter->endreport();
         return $str;
     }
-
-
 }

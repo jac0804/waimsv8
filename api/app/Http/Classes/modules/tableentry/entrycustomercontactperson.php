@@ -36,10 +36,10 @@ class entrycustomercontactperson
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -74,8 +74,19 @@ class entrycustomercontactperson
     $deptname = 12;
 
     $tab = [$this->gridname => ['gridcolumns' => [
-      'action', 'salutation', 'fname', 'mname', 'lname',
-      'email', 'contactno', 'mobile', 'bday', 'department', 'designation', 'activity', 'deptname'
+      'action',
+      'salutation',
+      'fname',
+      'mname',
+      'lname',
+      'email',
+      'contactno',
+      'mobile',
+      'bday',
+      'department',
+      'designation',
+      'activity',
+      'deptname'
     ]]];
 
     $stockbuttons = ['save', 'delete'];
@@ -433,8 +444,13 @@ class entrycustomercontactperson
     $data = $this->coreFunctions->opentable($qry);
 
     return [
-      'status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup,
-      'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $rowindex
+      'status' => true,
+      'msg' => 'ok',
+      'data' => $data,
+      'lookupsetup' => $lookupsetup,
+      'cols' => $cols,
+      'plotsetup' => $plotsetup,
+      'index' => $rowindex
     ];
   }
 
@@ -513,8 +529,13 @@ class entrycustomercontactperson
     $data = $this->coreFunctions->opentable($qry);
 
     return [
-      'status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup,
-      'cols' => $cols, 'plotsetup' => $plotsetup, 'index' => $rowindex
+      'status' => true,
+      'msg' => 'ok',
+      'data' => $data,
+      'lookupsetup' => $lookupsetup,
+      'cols' => $cols,
+      'plotsetup' => $plotsetup,
+      'index' => $rowindex
     ];
   } //end function
 

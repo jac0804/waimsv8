@@ -66,11 +66,11 @@ class fg
 
   private $barcode;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -314,7 +314,7 @@ class fg
   {
     $islocation = $this->companysetup->getislocation($config['params']);
     $locname = $this->companysetup->getlocname($config['params']);
-    $companyid= $config['params']['companyid'];
+    $companyid = $config['params']['companyid'];
     $action = 0;
     $itemdesc = 1;
     $rrqty = 2;
@@ -359,7 +359,6 @@ class fg
 
     if ($companyid == 24 || $companyid == 69) { //goodfound, cemphil
       $obj[0][$this->gridname]['columns'][$itemdesc]['type'] = 'coldel';
-    
     }
 
     $obj[0][$this->gridname]['columns'][$loc]['label'] = $locname;
@@ -377,7 +376,7 @@ class fg
           $obj[0][$this->gridname]['columns'][$loc]['type'] = 'coldel';
           break;
       }
-    } 
+    }
 
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;

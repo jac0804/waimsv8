@@ -38,10 +38,10 @@ class entryrcattendance
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -127,13 +127,25 @@ class entryrcattendance
     $data = [];
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $total = $data['rcmonthjan'] + $data['rcmonthfeb'] + $data['rcmonthmar'] + $data['rcmonthapr'] + $data['rcmonthmay'] + $data['rcmonthjun'] + $data['rcmonthjul'] + $data['rcmonthaug'] + $data['rcmonthsep'] + $data['rcmonthoct'] + $data['rcmonthnov'] + $data['rcmonthdec'];
     $data2 = [
-      'trno' => $data['trno'], 'line' => $data['line'], 'dayspresent' => $total, 'jan' => $data['rcmonthjan'], 'feb' => $data['rcmonthfeb'],
-      'mar' => $data['rcmonthmar'], 'apr' => $data['rcmonthapr'], 'may' => $data['rcmonthmay'], 'jun' => $data['rcmonthjun'], 'jul' => $data['rcmonthjul'],
-      'aug' => $data['rcmonthaug'], 'sep' => $data['rcmonthsep'], 'oct' => $data['rcmonthoct'], 'nov' => $data['rcmonthnov'], 'dec' => $data['rcmonthdec']
+      'trno' => $data['trno'],
+      'line' => $data['line'],
+      'dayspresent' => $total,
+      'jan' => $data['rcmonthjan'],
+      'feb' => $data['rcmonthfeb'],
+      'mar' => $data['rcmonthmar'],
+      'apr' => $data['rcmonthapr'],
+      'may' => $data['rcmonthmay'],
+      'jun' => $data['rcmonthjun'],
+      'jul' => $data['rcmonthjul'],
+      'aug' => $data['rcmonthaug'],
+      'sep' => $data['rcmonthsep'],
+      'oct' => $data['rcmonthoct'],
+      'nov' => $data['rcmonthnov'],
+      'dec' => $data['rcmonthdec']
     ];
     if ($data['line'] != 0) {
       if ($this->coreFunctions->sbcupdate($this->table, $data2, ['trno' => $data['trno'], 'line' => $data['line']]) == 1) {
@@ -172,7 +184,7 @@ class entryrcattendance
     if ($isposted) {
       $schedtrno = $this->coreFunctions->getfieldvalue($this->hhead, 'schedtrno', 'trno=?', [$trno]);
     }
-    $qry = $selectqry." from ".$this->htable." where schedtrno=? and clientid=?";
+    $qry = $selectqry . " from " . $this->htable . " where schedtrno=? and clientid=?";
     $stock = $this->coreFunctions->opentable($qry, [$schedtrno, $clientid]);
     return $stock;
   }

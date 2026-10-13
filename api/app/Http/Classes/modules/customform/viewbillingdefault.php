@@ -30,10 +30,10 @@ class viewbillingdefault
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -68,13 +68,24 @@ class viewbillingdefault
 
     if ($access == 0) {
       $fields = [
-        ['lblshipping', 'shipid'], 'shipping',
-        ['tasktitle', 'designation'], ['leadfrom', 'industry'], ['partno', 'year'], ['payor', 'prepared'], ['shipcontactname', 'shipcontactno']
+        ['lblshipping', 'shipid'],
+        'shipping',
+        ['tasktitle', 'designation'],
+        ['leadfrom', 'industry'],
+        ['partno', 'year'],
+        ['payor', 'prepared'],
+        ['shipcontactname', 'shipcontactno']
       ];
     } else {
       $fields = [
-        ['lblshipping', 'shipid'], 'shipping',
-        ['tasktitle', 'designation'], ['leadfrom', 'industry'], ['partno', 'year'], ['payor', 'prepared'], ['shipcontactname', 'shipcontactno'], 'refresh'
+        ['lblshipping', 'shipid'],
+        'shipping',
+        ['tasktitle', 'designation'],
+        ['leadfrom', 'industry'],
+        ['partno', 'year'],
+        ['payor', 'prepared'],
+        ['shipcontactname', 'shipcontactno'],
+        'refresh'
       ];
     }
 
@@ -144,8 +155,13 @@ class viewbillingdefault
 
 
     $fields = [
-      ['lblbilling', 'billid'], 'billing',
-      ['assignto', 'contactname'], ['leadto', 'agentcno'], ['subcode', 'month'], ['position', 'approved'], ['billcontactname', 'billcontactno']
+      ['lblbilling', 'billid'],
+      'billing',
+      ['assignto', 'contactname'],
+      ['leadto', 'agentcno'],
+      ['subcode', 'month'],
+      ['position', 'approved'],
+      ['billcontactname', 'billcontactno']
     ];
 
     if (strtoupper($systemtype) == 'VSCHED' || strtoupper($systemtype) == 'ATI') {

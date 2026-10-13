@@ -35,9 +35,9 @@ class qs
 
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -60,9 +60,9 @@ class qs
                 break;
 
             default:
-                $fields = ['radioquotation', 'fdecimal','radiopoafti', 'radiosjaftilogo', 'print'];
+                $fields = ['radioquotation', 'fdecimal', 'radiopoafti', 'radiosjaftilogo', 'print'];
                 $col1 = $this->fieldClass->create($fields);
-                        
+
                 data_set($col1, 'radiopoafti.label', 'Formats');
                 data_set($col1, 'radiopoafti.options', [
                     ['label' => 'Original', 'value' => 'og', 'color' => 'red'],
@@ -289,7 +289,7 @@ class qs
         return $result;
     } //end fn
 
-    
+
 
     //Quotation Printing - Layout 1
     public function reportquoteplottingpdf($params, $data)
@@ -451,8 +451,8 @@ class qs
         }
 
         if ($data[0]['vattype'] == 'VATABLE') {
-            $vat = round($vatsales * .12,2);
-            $amount = round($totalext + $vat,2);
+            $vat = round($vatsales * .12, 2);
+            $amount = round($totalext + $vat, 2);
         } else {
             $vat = 0;
             $amount = $totalext;
@@ -1200,7 +1200,7 @@ class qs
         PDF::SetFont($font, '', $fontsize12);
         PDF::MultiCell(525, 15, 'DDR : ' . date("F d,Y", strtotime($data[0]['deldate'])), '', 'L', false);
         //public function MultiCell($w, $h, $txt, $border=0, $align='J', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='T', $fitcell=false) {
-        PDF::MultiCell(400, 15, $data[0]['dtcno']."\n".$data[0]['rem2']."\n". $data[0]['instructions'], '', 'L', false);
+        PDF::MultiCell(400, 15, $data[0]['dtcno'] . "\n" . $data[0]['rem2'] . "\n" . $data[0]['instructions'], '', 'L', false);
 
         PDF::MultiCell(0, 0, "\n");
 
@@ -1791,9 +1791,9 @@ class qs
         // write2DBarcode(code, type, x, y, width, height, style, align)
 
         // PDF::Image($this->companysetup->getlogopath($params['params']) . 'qslogo.png', '', '', 310, 80);
-         
+
         // PDF::MultiCell(0, 20, "\n");
-         if ($sjlogo == 'wlogo' && $ogordp == 'og') {
+        if ($sjlogo == 'wlogo' && $ogordp == 'og') {
             // PDF::Image($this->companysetup->getlogopath($params['params']) . 'qslogo.png', '', '', 310, 65);
             PDF::Image($this->companysetup->getlogopath($params['params']) . 'qslogo.png', '', '', 310, 80);
             // PDF::SetFont($font, 'B', $fontsize14, $border);
@@ -1813,7 +1813,7 @@ class qs
             PDF::MultiCell(100, 15, (isset($data[0]['proinvoice']) ? $data[0]['proinvoice'] : ''),  '', 'L', false);
         }
 
-           if ($sjlogo == 'wlogo' && $ogordp == 'dp') {
+        if ($sjlogo == 'wlogo' && $ogordp == 'dp') {
             PDF::Image($this->companysetup->getlogopath($params['params']) . 'qslogo.png', '', '', 310, 80);
             PDF::MultiCell(340, 15, '', '', 'L', 0, 0, '', '', false, 0, false, false, 0);
             // PDF::SetFont($font, 'B', $fontsize14);
@@ -1846,8 +1846,8 @@ class qs
         // Kapag empty ang yourref, mag-iwan pa rin ng isang row
         // para hindi umangat ang kasunod na text.  
         if ($yourref == '') {
-                $cyourref = 1;
-            }
+            $cyourref = 1;
+        }
 
         for ($r = 0; $r < $cyourref; $r++) {
             $lbl = '';
@@ -1960,7 +1960,7 @@ class qs
         $this->addrow('TLR');
     }
 
-    
+
     public function report_SI_headerpdf($params, $data, $font)
     {
         $sjlogo = $params['params']['dataparams']['radiosjaftilogo'];
@@ -2331,7 +2331,7 @@ class qs
                         PDF::MultiCell(140, 0, isset($itemcoldes[$r]) ? ' ' . $itemcoldes[$r] : '', 'LR', 'L', false, 0, '', '', true, 1, true, true, 0, 'B', true);
                         PDF::MultiCell(20, 0, $vattype, 'LR', 'C', false, 0, '', '', true, 1, true, true, 0, 'B', true);
                         PDF::MultiCell(50, 0, isset($arrqty[$r]) ? $arrqty[$r] : '', 'LR', 'C', false, 0, '', '', true, 1, true, true, 0, 'B', true);
-                        
+
                         PDF::MultiCell(25, 0, isset($arracurr[$r]) ? $arracurr[$r] : '', 'L', 'L', false, 0, '', '', true, 1, true, true, 0, 'B', true);
                         PDF::MultiCell(75, 0, isset($arrprice[$r]) ? $arrprice[$r] : '', 'R', 'R', false, 0, '', '', true, 1, true, true, 0, 'B', true);
                         PDF::MultiCell(25, 0, isset($arracurr[$r]) ? $arracurr[$r] : '', 'L', 'L', false, 0, '', '', true, 1, true, true, 0, 'B', true);
@@ -2441,11 +2441,11 @@ class qs
         PDF::MultiCell(100, 10, '', 'BLR', 'R', false);
 
         //6
-         PDF::MultiCell(10, 10, '', '', 'R', false, 0);
+        PDF::MultiCell(10, 10, '', '', 'R', false, 0);
         PDF::MultiCell(300, 10, '', '', 'R', false, 0);
         // PDF::MultiCell(85, 10, '', '', 'R', false, 0);
         PDF::MultiCell(55, 10, '', '', 'R', false, 0);
-       
+
         PDF::MultiCell(110, 10, 'Add: VAT ', 'TBLR', 'R', false, 0);
 
         PDF::MultiCell(30, 10, " " . $cur, 'TB', 'L', false, 0);
@@ -2531,7 +2531,7 @@ class qs
         PDF::MultiCell(165, 10, '', '', 'R', false, 0);
         PDF::MultiCell(60, 10, '', '', 'R', false, 0);
         PDF::MultiCell(350, 10, 'proper court in Makati in case of litigation.', '', 'L', false);
-         
+
         PDF::MultiCell(0, 10, "\n");
 
         PDF::MultiCell(575, 10, '"THIS DOCUMENT IS NOT VALID FOR CLAIM OF INPUT TAX."', '', 'C', false);
@@ -2554,7 +2554,7 @@ class qs
 
         return $pdf;
     }
-    
+
     //ADD ROWS
     private function addrowsj($border)
     {
@@ -2568,15 +2568,15 @@ class qs
         // PDF::MultiCell(100, 0, '', $border, 'L', false, 0, '', '', false, 1);
         // PDF::MultiCell(100, 0, '', $border, 'R', false, 1, '', '', false, 1);
 
-         PDF::MultiCell(25, 0, '', $border, 'L', false, 0, '', '', true, 1);
+        PDF::MultiCell(25, 0, '', $border, 'L', false, 0, '', '', true, 1);
         PDF::MultiCell(70, 0, '', $border, 'C', false, 0, '', '', false, 1);
         PDF::MultiCell(70, 0, '', $border, 'L', false, 0, '', '', false, 1);
         PDF::MultiCell(140, 0, '', $border, 'L', false, 0, '', '', false, 1);
         PDF::MultiCell(20, 0, '', $border, 'R', false, 0, '', '', false, 1);
         PDF::MultiCell(50, 0, '', $border, 'L', false, 0, '', '', false, 1);
         PDF::MultiCell(25, 0, '', 'L', 'L', false, 0, '', '', false, 1);
-         PDF::MultiCell(75, 0, '', 'R', 'L', false, 0, '', '', false, 1);
-          PDF::MultiCell(25, 0, '', 'L', 'L', false, 0, '', '', false, 1);
+        PDF::MultiCell(75, 0, '', 'R', 'L', false, 0, '', '', false, 1);
+        PDF::MultiCell(25, 0, '', 'L', 'L', false, 0, '', '', false, 1);
         PDF::MultiCell(75, 0, '', 'R', 'R', false, 1, '', '', false, 1);
     }
 }

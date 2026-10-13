@@ -58,11 +58,11 @@ class pw
     ['val' => 'all', 'label' => 'All', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -456,7 +456,7 @@ class pw
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -1163,11 +1163,11 @@ class pw
     $isqty3 = $this->othersClass->sanitizekeyfieldFast('qty', $isqty3, $lookups);
     $isqty2 = $this->othersClass->sanitizekeyfieldFast('qty', $isqty2, $lookups);
 
-  
+
 
     $qty = $isqty3 - $isqty2;
     // if ($isqty2 == 0)  $qty = 0;
-      $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
     $factor = 1;
     $computedata = $this->othersClass->computestock($amt, '', $qty, $factor);

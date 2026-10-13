@@ -39,7 +39,13 @@ class roomtype
     private $stockselect;
 
     private $fields = [
-        'roomtype', 'inactive', 'category', 'additional', 'maxadult', 'beds', 'issmoking'
+        'roomtype',
+        'inactive',
+        'category',
+        'additional',
+        'maxadult',
+        'beds',
+        'issmoking'
     ];
     private $except = ['client', 'clientid'];
     private $blnfields = ['inactive', 'issmoking'];
@@ -50,11 +56,11 @@ class roomtype
     private $reporter;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -260,10 +266,8 @@ class roomtype
         } else {
             $clientid = $this->coreFunctions->insertGetId($this->head, $data);
             $this->logger->sbcmasterlog($clientid, $config, ' CREATE ROOM TYPE - ' . $data['roomtype']);
-
         }
         return ['status' => $msg == '' ? true : false, 'msg' => $msg, 'clientid' => $clientid];
-        
     } // end function   
 
 
@@ -279,7 +283,7 @@ class roomtype
 
     public function reportsetup($config)
     {
-        
+
 
         $txtfield = app($this->companysetup->getreportpath($config['params']))->createreportfilter($config);
         $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);

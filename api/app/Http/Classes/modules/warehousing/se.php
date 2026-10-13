@@ -64,11 +64,11 @@ class se
   private $helpClass;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -868,7 +868,7 @@ class se
 
   public function autoadditem($config)
   {
-    
+
     $companyid = $config['params']['companyid'];
     $dateTables = ['rrstatus'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -1093,7 +1093,7 @@ class se
 
   // insert and update item
   public function additem($action, $config)
-  { 
+  {
     $companyid = $config['params']['companyid'];
     $ispallet = $this->companysetup->getispallet($config['params']);
     $uom = $config['params']['data']['uom'];
@@ -1159,10 +1159,10 @@ class se
     }
 
 
-      $dateTables = ['lastock'];
-      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-      $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
-      $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv
@@ -1696,7 +1696,7 @@ class se
 
   public function createdistribution($config)
   {
-    
+
     $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $status = true;
@@ -1763,7 +1763,7 @@ class se
       $current_timestamp = $this->othersClass->getCurrentTimeStamp();
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
-           $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];

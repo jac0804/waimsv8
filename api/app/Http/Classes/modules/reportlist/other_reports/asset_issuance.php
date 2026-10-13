@@ -30,12 +30,12 @@ class asset_issuance
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -43,8 +43,17 @@ class asset_issuance
   {
 
     $fields = [
-      'radioprint', 'start', 'end', 'clientname', 'ddeptname', 'ditemname', 'divsion', 'brandname',
-      'model', 'class', 'radioreporttype'
+      'radioprint',
+      'start',
+      'end',
+      'clientname',
+      'ddeptname',
+      'ditemname',
+      'divsion',
+      'brandname',
+      'model',
+      'class',
+      'radioreporttype'
     ];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'clientname.type', 'lookup');

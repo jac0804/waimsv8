@@ -56,11 +56,11 @@ class op
   private $reporter;
   private $helpClass;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -95,7 +95,7 @@ class op
 
   public function createdoclisting($config)
   {
-    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'listsource','qtref', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'listsource', 'qtref', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
     $stockbuttons = ['view'];
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
     $cols[0]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
@@ -216,7 +216,7 @@ class op
 
     $filtersearch = "";
     if (isset($config['params']['search'])) {
-      $searchfield = ['a.docno', 'a.clientname', 'a.source', 'a.postedby', 'a.createby', 'a.editby', 'a.viewby','a.qtref'];
+      $searchfield = ['a.docno', 'a.clientname', 'a.source', 'a.postedby', 'a.createby', 'a.editby', 'a.viewby', 'a.qtref'];
       $search = $config['params']['search'];
       if ($search != "") {
         $filtersearch = $this->othersClass->multisearch($searchfield, $search);
@@ -238,7 +238,7 @@ class op
                                select docno,optrno from hqshead where optrno<>0) as a where a.optrno = head.trno) as qtref
      from " . $this->hhead . " as head left join " . $this->tablenum . " as num 
      on num.trno=head.trno " . $hjoin . " where head.doc=? and num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . "
-     order by date2 desc,docno desc $limit ) as a where '' = '' ". $filtersearch;
+     order by date2 desc,docno desc $limit ) as a where '' = '' " . $filtersearch;
 
     $data = $this->coreFunctions->opentable($qry, [$doc, $center, $date1, $date2, $doc, $center, $date1, $date2]);
     return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
@@ -692,7 +692,7 @@ class op
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key], $lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if    
       }
     }
@@ -701,7 +701,34 @@ class op
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
     if ($isupdate) {
+      if ($companyid == 10) {
+        $old = $this->coreFunctions->opentable(
+          "select client, sourceid, participantid from " . $this->head . " where trno=?",
+          [$head['trno']]
+        );
+
+        if (!empty($old) && $old[0]->sourceid != 0) {
+          $linkedAttendee = $this->coreFunctions->getfieldvalue(
+            "attendee",
+            "line",
+            "exhibitid = ? and line = ? and optrno = ? and clientid <> 0",
+            [$old[0]->sourceid, $old[0]->participantid, $head['trno']],
+            '',
+            true
+          );
+
+          if ($linkedAttendee > 0) {
+            $changed = trim($old[0]->client) != trim($head['client']);
+
+            if ($changed) {
+              return ['status' => false, 'msg' => 'Customer is already linked to this source attendee and cannot be changed.'];
+            }
+          }
+        }
+      }
+
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
+
       if ($head['sourceid'] != 0) {
         $this->coreFunctions->sbcupdate("attendee", ["optrno" => 0], ['optrno' => $head['trno']]);
         $this->coreFunctions->sbcupdate("attendee", ["optrno" => $head['trno'], 'salesid' => $head['agentid'], 'salesperson' => $head['agentname']], ['exhibitid' => $head['sourceid'], 'line' => $head['participantid']]);
@@ -715,28 +742,28 @@ class op
 
         if ($unposted_olddocno) { //unposted yung qs
           if ($unposted_olddocno != $head['qtno']) { //update yung old na unposted
-            $updateold = $this->coreFunctions->execqry("update qshead set optrno = 0 where docno = ?",  'update', [$unposted_olddocno]);
+            $updateold = $this->coreFunctions->execqry("update qshead set optrno = 0 where docno = ?", 'update', [$unposted_olddocno]);
             if ($updateold) {
               //check kung yung bagong galing sa lookup ay posted o unposted
               $unposted_newdocno = $this->coreFunctions->getfieldvalue("qshead", "docno", "docno=?", [$head['qtno']]);
               if ($unposted_newdocno) {
-                $this->coreFunctions->execqry("update qshead set optrno = ? where docno = ?",  'update', [$head['trno'], $head['qtno']]);
+                $this->coreFunctions->execqry("update qshead set optrno = ? where docno = ?", 'update', [$head['trno'], $head['qtno']]);
               } else { //posted yung bagong galing sa lookup
-                $this->coreFunctions->execqry("update hqshead set optrno = ? where docno = ?",  'update', [$head['trno'], $head['qtno']]);
+                $this->coreFunctions->execqry("update hqshead set optrno = ? where docno = ?", 'update', [$head['trno'], $head['qtno']]);
               }
             }
           }
         } else { //posted yung qs
           $posted_olddocno = $this->coreFunctions->getfieldvalue("hqshead", "docno", "trno=?", [$head['quotation']]);
           if ($posted_olddocno != $head['qtno']) {
-            $updateold = $this->coreFunctions->execqry("update hqshead set optrno = 0 where docno = ?",  'update', [$posted_olddocno]);
+            $updateold = $this->coreFunctions->execqry("update hqshead set optrno = 0 where docno = ?", 'update', [$posted_olddocno]);
             //check kung yung bagong docno na galing sa lookup ay posted o unposted
 
             $posted_newdocno = $this->coreFunctions->getfieldvalue("hqshead", "docno", "docno=?", [$head['qtno']]);
             if ($posted_newdocno) { //posted
-              $this->coreFunctions->execqry("update hqshead set optrno = ? where docno = ?",  'update', [$head['trno'], $head['qtno']]);
+              $this->coreFunctions->execqry("update hqshead set optrno = ? where docno = ?", 'update', [$head['trno'], $head['qtno']]);
             } else { //unposted 
-              $this->coreFunctions->execqry("update qshead set optrno = ? where docno = ?",  'update', [$head['trno'], $head['qtno']]);
+              $this->coreFunctions->execqry("update qshead set optrno = ? where docno = ?", 'update', [$head['trno'], $head['qtno']]);
             }
           }
         }
@@ -745,11 +772,11 @@ class op
           //check kung posted o unposted yung galing sa lookup
           $unposted_olddocno = $this->coreFunctions->getfieldvalue("qshead", "docno", "docno=?", [$head['qtno']]);
           if ($unposted_olddocno) {
-            $this->coreFunctions->execqry("update qshead set optrno = ? where docno = ?",  'update', [$head['trno'], $head['qtno']]);
+            $this->coreFunctions->execqry("update qshead set optrno = ? where docno = ?", 'update', [$head['trno'], $head['qtno']]);
           } else {
             $posted_olddocno = $this->coreFunctions->getfieldvalue("hqshead", "docno", "docno=?", [$head['qtno']]);
             if ($posted_olddocno) {
-              $this->coreFunctions->execqry("update hqshead set optrno = ? where docno = ?",  'update', [$head['trno'], $head['qtno']]);
+              $this->coreFunctions->execqry("update hqshead set optrno = ? where docno = ?", 'update', [$head['trno'], $head['qtno']]);
             }
           }
         }
@@ -759,6 +786,7 @@ class op
       $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
       $data['createby'] = $config['params']['user'];
       $insert = $this->coreFunctions->sbcinsert($this->head, $data);
+
       if ($head['sourceid'] != 0) {
         $this->coreFunctions->sbcupdate("attendee", ["optrno" => $head['trno'], 'salesid' => $head['agentid'], 'salesperson' => $head['agentname']], ['exhibitid' => $head['sourceid'], 'line' => $head['participantid']]);
       }
@@ -768,11 +796,11 @@ class op
       if ($head['qtno'] != '') {
         $unposted_qs = $this->coreFunctions->getfieldvalue("qshead", "docno", "docno=?", [$head['qtno']]);
         if ($unposted_qs) {
-          $this->coreFunctions->execqry("update qshead set optrno = ? where docno = ?",  'update', [$head['trno'], $head['qtno']]);
+          $this->coreFunctions->execqry("update qshead set optrno = ? where docno = ?", 'update', [$head['trno'], $head['qtno']]);
         } else {
           $posted_qs = $this->coreFunctions->getfieldvalue("hqshead", "docno", "docno=?", [$head['qtno']]);
           if ($posted_qs) {
-            $this->coreFunctions->execqry("update hqshead set optrno = ? where docno = ?",  'update', [$head['trno'], $head['qtno']]);
+            $this->coreFunctions->execqry("update hqshead set optrno = ? where docno = ?", 'update', [$head['trno'], $head['qtno']]);
           }
         }
       }
@@ -1148,7 +1176,7 @@ class op
     if ($attendee != 0) {
       $this->coreFunctions->execqry('update attendee set clientid = ? where exhibitid= ? and line =?', 'update', [$clientid, $sourceid, $attendee]);
     }
-    return ['status' => true, 'msg' => 'Successfully fetched.', 'reloadhead' => true];
+    return ['status' => true, 'msg' => 'Successfully fetched.', 'reloadhead' => true, 'action' => 'showmsg', 'trno' => $clientid, 'access' => 'view', 'lookupclass' => '', 'url' => '/ledgergrid/masterfile/customer', 'moduletype' => 'ledgergrid'];
   }
 
   private function getnewclient($config)

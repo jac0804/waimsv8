@@ -36,9 +36,9 @@ class so
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -86,13 +86,13 @@ class so
   public function report_default_query($config, $trno)
   {
     $format = $config['params']['dataparams']['amountformat'];
-    $addfilter="";
-    $addf=",stock.isqty as qty, stock.ext ";
-    
-    if($format == '4' || $format == '5'){ //unserved items
-          $addfilter=" and stock.qa <> stock.iss and stock.void = 0";
-          $addf = ", (stock.iss - stock.qa) / uom.factor as qty, (((stock.iss - stock.qa) / uom.factor) * stock.isamt) as ext ";
-        }
+    $addfilter = "";
+    $addf = ",stock.isqty as qty, stock.ext ";
+
+    if ($format == '4' || $format == '5') { //unserved items
+      $addfilter = " and stock.qa <> stock.iss and stock.void = 0";
+      $addf = ", (stock.iss - stock.qa) / uom.factor as qty, (((stock.iss - stock.qa) / uom.factor) * stock.isamt) as ext ";
+    }
 
     switch ($format) {
       case '2':
@@ -173,11 +173,11 @@ class so
 
       default:
         $sotrno = empty($data) ? 0 : $data[0]['trno'];
-         if ($sotrno == 0) {
+        if ($sotrno == 0) {
           return $this->no_trans();
-          } else {
+        } else {
           return $this->default_so_PDF($params, $data);
-          }
+        }
         break;
     }
   }
@@ -289,7 +289,7 @@ class so
       PDF::MultiCell(70, 0, "UNIT", '', 'R', false, 0);
       PDF::MultiCell(60, 0, "PCS / PACK", '', 'C', false, 0);
       PDF::MultiCell(70, 0, "TOTAL PCS", '', 'R', false, 0);
-     // PDF::MultiCell(5, 0, "", '', 'L', false, 0);
+      // PDF::MultiCell(5, 0, "", '', 'L', false, 0);
       PDF::MultiCell(185, 0, "DESCRIPTION", '', 'L', false, 0);
       PDF::MultiCell(60, 0, "NOTES", '', 'L', false, 0);
       PDF::MultiCell(65, 0, "UNIT PRICE", '', 'R', false, 0);
@@ -330,7 +330,7 @@ class so
       $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
-  
+
     $this->default_so_header_PDF($params, $data);
 
     PDF::SetFont($font, '', 5);
@@ -385,10 +385,10 @@ class so
             PDF::MultiCell(75, 15, (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(50, 15, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(70, 15, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(60, 15,(isset($arr_factor[$r]) ? $arr_factor[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(60, 15, (isset($arr_factor[$r]) ? $arr_factor[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(70, 15, (isset($arr_iss[$r]) ? $arr_iss[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-           // PDF::MultiCell(5, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-            PDF::MultiCell(185, 15,(isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+            // PDF::MultiCell(5, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(185, 15, (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(60, 15, (isset($arr_notes[$r]) ? $arr_notes[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(65, 15, (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(35, 15, (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
@@ -440,8 +440,7 @@ class so
 
 
       return PDF::Output($this->modulename . '.pdf', 'S');
-    
-  }
+    }
   }
 
   public function default_deliverylabel_PDF($params, $data)
@@ -931,7 +930,7 @@ class so
     }
   }
 
-    public function no_trans()
+  public function no_trans()
   {
     $font = "";
     $fontbold = "";

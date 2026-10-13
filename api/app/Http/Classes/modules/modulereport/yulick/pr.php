@@ -37,9 +37,9 @@ class pr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -52,7 +52,7 @@ class pr
   {
     $companyid = $config['params']['companyid'];
 
-    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $fields = ['radioprint', 'approved', 'received', 'print'];
     $col1 = $this->fieldClass->create($fields);
 
     data_set($col1, 'radioprint.options', [
@@ -71,6 +71,8 @@ class pr
     // $approved = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'approved' and doc =? ", [$config['params']['doc']]);
     // $received = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'received' and doc =? ", [$config['params']['doc']]);
 
+    // $prepared = !empty($user) ? $user[0]->prepared : $config['params']['user'];
+
     $paramstr = "select
           'PDFM' as print,
           '' as prepared,
@@ -83,7 +85,7 @@ class pr
   public function report_default_query($trno)
   {
 
-    $query = "select date(head.dateid) as dateid, head.docno, client.client, client.clientname, head.address, 
+    $query = "select date(head.dateid) as dateid, head.docno, client.client, client.clientname, head.address,head.createby, 
         head.terms,head.rem, item.partno, item.barcode,
         item.itemname, stock.rrqty as qty, stock.uom, stock.rrcost as netamt, stock.disc, stock.ext,m.model_name as model,item.sizeid
         from prhead as head left join prstock as stock on stock.trno=head.trno 
@@ -92,8 +94,8 @@ class pr
         left join model_masterfile as m on m.model_id = item.model
         where head.doc='PR' and head.trno='$trno'
         union all
-        select date(head.dateid) as dateid, head.docno, client.client, client.clientname, 
-        head.address, head.terms,head.rem, item.partno, item.barcode,
+        select date(head.dateid) as dateid, head.docno, client.client, client.clientname,head.address,head.createby,  
+        head.terms,head.rem, item.partno, item.barcode,
         item.itemname, stock.rrqty as qty, stock.uom, stock.rrcost as netamt, stock.disc, stock.ext,m.model_name as model,item.sizeid
         from hprhead as head left join hprstock as stock on stock.trno=head.trno 
         left join client on client.client=head.client
@@ -485,7 +487,7 @@ class pr
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(253, 0, $params['params']['dataparams']['prepared'], '', 'L', false, 0);
+    PDF::MultiCell(253, 0, (isset($data[0]['createby']) ? $data[0]['createby'] : ''), '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['received'], '', 'L');
 

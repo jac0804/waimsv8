@@ -34,12 +34,12 @@ class payroll_monthly_summary
   // layoutsize: reportWidth
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1150'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -128,14 +128,16 @@ class payroll_monthly_summary
     }
 
     if ($deptname != '') {
-        if ($deptid != 0) {
-            $filter .= " and emp.deptid = $deptid";
-    }}
+      if ($deptid != 0) {
+        $filter .= " and emp.deptid = $deptid";
+      }
+    }
 
     if ($divname != '') {
-        if ($divid != 0) {
-            $filter .= " and emp.divid = $divid";
-    }}
+      if ($divid != 0) {
+        $filter .= " and emp.divid = $divid";
+      }
+    }
 
     $filter3 = " and pa.alias not in ('YIS','YIM','YIP','YSR','YER','YMR','YPR','MPF','MPFER')";
     $emplvl = $this->othersClass->checksecuritylevel($config);

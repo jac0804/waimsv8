@@ -35,11 +35,11 @@ class othercharges
   public $tablelogs_del = 'del_masterfile_log';
   public $fields = [];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -79,7 +79,10 @@ class othercharges
 
     $tab = [$this->gridname => [
       'gridcolumns' => [
-        'description', 'amt', 'rem', 'status'
+        'description',
+        'amt',
+        'rem',
+        'status'
       ]
     ]];
 
@@ -257,7 +260,7 @@ class othercharges
     foreach ($rows as $key => $val) {
       if ($val["bgcolor"] != "") {
         foreach ($this->fields as $k) {
-          $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k],$lookups);
+          $val[$k] = $this->othersClass->sanitizekeyfieldFast($k, $val[$k], $lookups);
         }
 
         if ($val['bgcolor'] != "" && $val["isposted"] != 1) {

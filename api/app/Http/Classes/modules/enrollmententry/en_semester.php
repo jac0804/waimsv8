@@ -40,10 +40,10 @@ class en_semester
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -106,10 +106,11 @@ class en_semester
     return $qry;
   }
 
-  public function checkSemester($data, $type = 'update') {
-    $qry = "select line as value from en_term where term='".$data['term']."'";
+  public function checkSemester($data, $type = 'update')
+  {
+    $qry = "select line as value from en_term where term='" . $data['term'] . "'";
     if ($type == 'update') {
-      $qry = "select line as value from en_term where term='".$data['term']."' and line<>".$data['line'];
+      $qry = "select line as value from en_term where term='" . $data['term'] . "' and line<>" . $data['line'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check == '') return false;
@@ -134,7 +135,7 @@ class en_semester
         if ($data[$key]['line'] == 0) {
           $check = $this->checkSemester($data[$key], 'new');
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data[$key]['term'];
+            $msg .= "\n Duplicate entry for " . $data[$key]['term'];
           } else {
             $line = $this->coreFunctions->insertGetId($this->table, $data2);
             $this->logger->sbcmasterlog($data[$key]['line'], $config, ' CREATE - ' . $data[$key]['term']);
@@ -142,7 +143,7 @@ class en_semester
         } else {
           $check = $this->checkSemester($data[$key]);
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data[$key]['term'];
+            $msg .= "\n Duplicate entry for " . $data[$key]['term'];
           } else {
             $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data2['editby'] = $config['params']['user'];
@@ -152,7 +153,7 @@ class en_semester
       } // end if
     } // foreach
     $returndata = $this->loaddata($config);
-    return ['status' => true, 'msg' => 'All saved successfully. '.$msg, 'data' => $returndata];
+    return ['status' => true, 'msg' => 'All saved successfully. ' . $msg, 'data' => $returndata];
   } // end function   
 
   public function save($config)
@@ -170,7 +171,7 @@ class en_semester
     if ($row['line'] == 0) {
       $check = $this->checkSemester($row, 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$row['term'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $row['term'], 'row' => []];
       } else {
         $line = $this->coreFunctions->insertGetId($this->table, $data);
         if ($line != 0) {
@@ -184,7 +185,7 @@ class en_semester
     } else {
       $check = $this->checkSemester($row);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$row['term'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $row['term'], 'row' => []];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];

@@ -35,9 +35,9 @@ class cv
   private $reporter;
   private $logger;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -518,7 +518,7 @@ class cv
     $username = $params['params']['user'];
     $count = $page = 35;
     $totalext = 0;
-    $decimal = $this->companysetup->getdecimal('currency', $params['params'] );
+    $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
     $font = "";
     $fontbold = "";
@@ -1272,7 +1272,7 @@ class cv
   public function PDF_DEFAULT_CCVOUCHER_LAYOUT2($data, $filters)
   {
     $companyid = $filters['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency', $filters['params'] );
+    $decimal = $this->companysetup->getdecimal('currency', $filters['params']);
 
     $center = $filters['params']['center'];
     $username = $filters['params']['user'];
@@ -1807,7 +1807,7 @@ class cv
   {
 
     $companyid = $filters['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency', $filters['params'] );
+    $decimal = $this->companysetup->getdecimal('currency', $filters['params']);
 
     $center = $filters['params']['center'];
     $username = $filters['params']['user'];
@@ -1969,7 +1969,7 @@ class cv
   {
 
     $companyid = $filters['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency', $filters['params'] );
+    $decimal = $this->companysetup->getdecimal('currency', $filters['params']);
 
     $center = $filters['params']['center'];
     $username = $filters['params']['user'];
@@ -2114,7 +2114,7 @@ class cv
   public function rpt_DEFAULT_CCVOUCHER_LAYOUT1($data, $filters)
   {
     $companyid = $filters['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency', $filters['params'] );
+    $decimal = $this->companysetup->getdecimal('currency', $filters['params']);
 
     $center = $filters['params']['center'];
     $username = $filters['params']['user'];
@@ -2201,7 +2201,7 @@ class cv
   public function rpt_DEFAULT_CCVOUCHER_LAYOUT2($data, $filters)
   {
     $companyid = $filters['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency', $filters['params'] );
+    $decimal = $this->companysetup->getdecimal('currency', $filters['params']);
 
     $center = $filters['params']['center'];
     $username = $filters['params']['user'];
@@ -3022,7 +3022,7 @@ class cv
   {
 
     $companyid = $filters['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency', $filters['params'] );
+    $decimal = $this->companysetup->getdecimal('currency', $filters['params']);
 
     $center = $filters['params']['center'];
     $username = $filters['params']['user'];

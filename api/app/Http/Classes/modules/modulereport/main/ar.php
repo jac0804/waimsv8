@@ -37,9 +37,9 @@ class ar
   private $reporter;
   private $reportheader;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -414,7 +414,7 @@ class ar
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 15, "", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(470, 15,'', '', 'L', false, 0, '',  '');
+    PDF::MultiCell(470, 15, '', '', 'L', false, 0, '',  '');
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 15, "Date: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
@@ -440,9 +440,9 @@ class ar
     PDF::MultiCell(50, 15, "Our Ref: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 15, (isset($data[0]['ourref']) ? $data[0]['ourref'] : ''), '', 'L', false, 0, '',  '');
-    
+
     PDF::MultiCell(0, 0, "\n");
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 30, "Notes: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);

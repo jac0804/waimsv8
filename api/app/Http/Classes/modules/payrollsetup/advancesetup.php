@@ -37,8 +37,25 @@ class advancesetup
   private $stockselect;
 
   private $fields = [
-    'docno', 'dateid', 'empid', 'remarks', 'acno', 'amt', 'w1', 'w2', 'w3', 'w4', 'w5',
-    'halt', 'priority', 'amortization', 'effdate', 'balance', 'pament', 'w13', 'acnoid'
+    'docno',
+    'dateid',
+    'empid',
+    'remarks',
+    'acno',
+    'amt',
+    'w1',
+    'w2',
+    'w3',
+    'w4',
+    'w5',
+    'halt',
+    'priority',
+    'amortization',
+    'effdate',
+    'balance',
+    'pament',
+    'w13',
+    'acnoid'
   ];
   // 'remarks','acno','days','bal',
   private $except = ['clientid', 'client'];
@@ -53,11 +70,11 @@ class advancesetup
     ['val' => 'posted', 'label' => 'Without Balance', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -327,7 +344,7 @@ class advancesetup
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }

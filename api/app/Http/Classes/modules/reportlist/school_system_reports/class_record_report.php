@@ -30,12 +30,12 @@ class class_record_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1200'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -116,16 +116,18 @@ class class_record_report
                 $table = 'en_glhead';
                 $stable = 'en_glgrades';
                 $table2 = 'en_glsubcomponent';
-                if ($status == 1) $table = 'en_gehead'; $stable = 'en_gegrades'; $table2 = 'en_gesubcomponent';
+                if ($status == 1) $table = 'en_gehead';
+                $stable = 'en_gegrades';
+                $table2 = 'en_gesubcomponent';
                 $query = "select client.clientname, g.gccode, g.gcsubcode, c.coursecode, sec.section, gs.quarterid, gcg.scoregrade,
                     gcg.totalgrade, gcg.percentgrade, gc.line as gcline, gc.gcname, gssub.line as gssubline, gssub.topic, g.noofitems,
                     g.points, g.clientid, gssub.noofitems as subpercent, gc.gcpercent, head.subjectid, sub.subjectcode, sub.subjectname,
                     sy.sy, c.coursename, q.name as quartername, info.gender, gssub.trno as gssubtrno, gssub.compid as gssubcompid,
                     gc.trno as gctrno, gq.tentativetotal,gq.finaltotal
-                    from ".$table." as head left join ".$stable." as g on head.trno =g.trno
+                    from " . $table . " as head left join " . $stable . " as g on head.trno =g.trno
                     left join client on client.clientid=g.clientid
                     left join en_studentinfo as info on info.clientid=client.clientid
-                    left join ".$table2." as gs on gs.trno=g.trno and gs.line=g.gsline
+                    left join " . $table2 . " as gs on gs.trno=g.trno and gs.line=g.gsline
                     left join en_gssubcomponent as gssub on gssub.trno=gs.getrno and gs.gccode=gssub.gcsubcode
                     left join en_gscomponent as gc on gssub.trno=gc.trno and gc.line=gssub.compid
                     left join en_subject as sub on sub.trno=head.subjectid
@@ -276,7 +278,7 @@ class class_record_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($config['params']['dataparams']['quartername'], 1200, null, false, $border, 'TLR', 'L', $font, $fontsize, 'B', '', '', '', 0, 'max-width:200px;word-wrap;break-word;',0,8);
+        $str .= $this->reporter->col($config['params']['dataparams']['quartername'], 1200, null, false, $border, 'TLR', 'L', $font, $fontsize, 'B', '', '', '', 0, 'max-width:200px;word-wrap;break-word;', 0, 8);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col("LEARNER'S NAME", 200, null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:200px;max-width:200px;word-wrap:break-word;');
@@ -290,7 +292,7 @@ class class_record_report
             }
             $cwidth = ($counts + 3) * $w;
             if ($counts != 0) {
-                $str .= $this->reporter->col($component[$a]->gcname.' ('.(int)$component[$a]->gcpercent.'%)', $cwidth, null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:'.$cwidth.'px;max-width:' . $cwidth . 'px;word-wrap;break-word;');
+                $str .= $this->reporter->col($component[$a]->gcname . ' (' . (int)$component[$a]->gcpercent . '%)', $cwidth, null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:' . $cwidth . 'px;max-width:' . $cwidth . 'px;word-wrap;break-word;');
             }
         }
         $str .= $this->reporter->col('', 100, null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:100px;max-width:100px;word-wrap;break-word;');
@@ -328,16 +330,16 @@ class class_record_report
                 $subsize = ($fieldsize2 / ($scope2[0]->count + 1));
                 // $str .= $this->reporter->col($topic[$c]->topic, ($w * $scope2[0]->count), null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'max-width:' . ($w * $scope2[0]->count) . 'px;word-wrap:break-word;');
                 $fsize = $w * $scope2[0]->count;
-                $str .= $this->reporter->col('', $fsize, null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:'.$fsize.'px;max-width:'.$fsize.'px !important;word-wrap:break-word;');
+                $str .= $this->reporter->col('', $fsize, null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:' . $fsize . 'px;max-width:' . $fsize . 'px !important;word-wrap:break-word;');
                 // $str .= $this->reporter->col($topic[$c]->subpercent, $w, null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'max-width:' . $w . 'px;word-wrap:break-word;');
                 $subpercent += $topic[$c]->subpercent;
                 $fieldtotal += $topicsize + $subsize;
             }
             if ($b <= count($component) - 1) {
                 if (count($topic) > 0) {
-                    $str .= $this->reporter->col('Total', $w, null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:'.$w.'px;max-width:' . $w . 'px;word-wrap:break-word;');
-                    $str .= $this->reporter->col('PS', $w, null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:'.$w.'px;max-width:' . $w . 'px;word-wrap:break-word;');
-                    $str .= $this->reporter->col('WS', $w, null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:'.$w.'px;max-width:' . $w . 'px;word-wrap:break-word;');
+                    $str .= $this->reporter->col('Total', $w, null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:' . $w . 'px;max-width:' . $w . 'px;word-wrap:break-word;');
+                    $str .= $this->reporter->col('PS', $w, null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:' . $w . 'px;max-width:' . $w . 'px;word-wrap:break-word;');
+                    $str .= $this->reporter->col('WS', $w, null, false, $border, 'TLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:' . $w . 'px;max-width:' . $w . 'px;word-wrap:break-word;');
                     $subpercent = 0;
                     $fieldtotal = 0;
                 }
@@ -391,14 +393,14 @@ class class_record_report
             for ($i = 0; $i < count($topic); $i++) {
                 $noofitems = $this->getcolval($mqry, 'distinct noofitems,totalgrade,gcsubcode', ' and gcname= "' . $component[$h]->gcname . '" and topic= "' . $topic[$i]->topic . '"', '');
                 for ($j = 0; $j < count($noofitems); $j++) {
-                    $str .= $this->reporter->col($noofitems[$j]->noofitems, $w, null, false, $border, 'BTLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:'.$w.'px;max-width:' . $w . 'px;word-wrap:break-word;');
+                    $str .= $this->reporter->col($noofitems[$j]->noofitems, $w, null, false, $border, 'BTLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:' . $w . 'px;max-width:' . $w . 'px;word-wrap:break-word;');
                     $totnum += $noofitems[$j]->noofitems;
                 }
                 // $str .= $this->reporter->col($noofitems[0]->totalgrade.'-', $w, null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:'.$w.'px;max-width:' . $w . 'px;word-wrap:break-word;');
                 if ($i == count($topic) - 1) {
-                    $str .= $this->reporter->col($totnum, $w, null, false, $border, 'BTLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:'.$w.'px;max-width:'.$w.'px;word-wrap:break-word;');
-                    $str .= $this->reporter->col('100', $w, null, false, $border, 'BTLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:'.$w.'px;max-width:'.$w.'px;word-wrap:break-word;');
-                    $str .= $this->reporter->col((int)$component[$h]->gcpercent.'%', $w, null, false, $border, 'BTLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:'.$w.'px;max-width:'.$w.'px;word-wrap:break-word;');
+                    $str .= $this->reporter->col($totnum, $w, null, false, $border, 'BTLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:' . $w . 'px;max-width:' . $w . 'px;word-wrap:break-word;');
+                    $str .= $this->reporter->col('100', $w, null, false, $border, 'BTLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:' . $w . 'px;max-width:' . $w . 'px;word-wrap:break-word;');
+                    $str .= $this->reporter->col((int)$component[$h]->gcpercent . '%', $w, null, false, $border, 'BTLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:' . $w . 'px;max-width:' . $w . 'px;word-wrap:break-word;');
                 }
             }
         }
@@ -426,7 +428,7 @@ class class_record_report
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col($counter + 1, 50, null, false, $border, 'BTLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:50px;max-width:50px;word-wrap:break-word;');
             $counter++;
-            $str .= $this->reporter->col($client[$g]->clientname, 150, null, false, $border, 'BTLR', 'C', $font, $fontsize, '','', '', '', 0, 'min-width:150px;max-width:150px;word-wrap:break-word;');
+            $str .= $this->reporter->col($client[$g]->clientname, 150, null, false, $border, 'BTLR', 'C', $font, $fontsize, '', '', '', '', 0, 'min-width:150px;max-width:150px;word-wrap:break-word;');
             $initgrade = 0;
             for ($k = 0; $k < count($component); $k++) {
                 $gpercent = 0;
@@ -445,20 +447,20 @@ class class_record_report
                     $points = $this->getcolval($mqry, 'points,percentgrade', ' and gcname= "' . $component[$k]->gcname . '" and topic= "' . $topic[$l]->topic . '" and clientid=' . $client[$g]->clientid . '', '');
 
                     for ($m = 0; $m < count($points); $m++) {
-                        $str .= $this->reporter->col($points[$m]->points, $w, null, false, $border, 'BTLR', 'C', $font, $fontsize, '','', '', '', 0, 'min-width:'.$w.'px;max-width:' . $w . 'px;word-wrap:break-word;');
+                        $str .= $this->reporter->col($points[$m]->points, $w, null, false, $border, 'BTLR', 'C', $font, $fontsize, '', '', '', '', 0, 'min-width:' . $w . 'px;max-width:' . $w . 'px;word-wrap:break-word;');
                         $totpoints += $points[$m]->points;
                     }
 
                     $gpercent += $points[0]->percentgrade;
                 }
-                $psnum = number_format(($totpoints/$totnum)*100,2);
-                $wsnum = number_format($psnum * ($component[$k]->gcpercent/100),2);
+                $psnum = number_format(($totpoints / $totnum) * 100, 2);
+                $wsnum = number_format($psnum * ($component[$k]->gcpercent / 100), 2);
                 $initgrade += $wsnum;
-                $str .= $this->reporter->col($totpoints, $w, null, false, $border, 'TBLR', 'C', $font, $fontsize, '', '', '', '', 0, 'min-width:'.$w.'px;max-width:'.$w.'px;word-wrap:break-word;');
-                $str .= $this->reporter->col($psnum, $w, null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:'.$w.'px;max-width:'.$w.'px;word-wrap:break-word;');
-                $str .= $this->reporter->col($wsnum, $w, null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:'.$w.'px;max-width:'.$w.'px;word-wrap:break-word;');
+                $str .= $this->reporter->col($totpoints, $w, null, false, $border, 'TBLR', 'C', $font, $fontsize, '', '', '', '', 0, 'min-width:' . $w . 'px;max-width:' . $w . 'px;word-wrap:break-word;');
+                $str .= $this->reporter->col($psnum, $w, null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:' . $w . 'px;max-width:' . $w . 'px;word-wrap:break-word;');
+                $str .= $this->reporter->col($wsnum, $w, null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:' . $w . 'px;max-width:' . $w . 'px;word-wrap:break-word;');
             }
-            $qGrade = $this->coreFunctions->datareader("select equivalent as value from en_gradeequivalent where '".$initgrade."' between range1 and range2");
+            $qGrade = $this->coreFunctions->datareader("select equivalent as value from en_gradeequivalent where '" . $initgrade . "' between range1 and range2");
             $str .= $this->reporter->col($initgrade, 100, null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:100px;max-width:100px;word-wrap:break-word;');
             $str .= $this->reporter->col($qGrade, 100, null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '', '', 0, 'min-width:100px;max-width:100px;word-wrap:break-word;');
         }

@@ -30,12 +30,12 @@ class budget_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -136,7 +136,7 @@ class budget_report
     $join = '';
     $layoutformat = '';
     $name = '';
-    $grp='';
+    $grp = '';
     if ($config['params']['dataparams']['layoutformat'] == 'perdept') {
       $layoutformat = " and b.deptid <> 0";
       $name = "ifnull(dept.clientname, '') as name,";
@@ -148,38 +148,38 @@ class budget_report
       $grp = " p.name";
       $join = " and d.projectid = b.projectid";
     }
-                
-                $query ="select c.acnoname, $name case
-                when month('".$asof."') = 1 then amt1
-                when month('".$asof."') = 2 then amt1 + amt2
-                when month('".$asof."') = 3 then amt1 + amt2 + amt3
-                when month('".$asof."') = 4 then amt1 + amt2 + amt3 + amt4
-                when month('".$asof."') = 5 then amt1 + amt2 + amt3 + amt4 + amt5
-                when month('".$asof."') = 6 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6
-                when month('".$asof."') = 7 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6 + amt7
-                when month('".$asof."') = 8 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6 + amt7 + amt8
-                when month('".$asof."') = 9 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6 + amt7 + amt8 + amt9
-                when month('".$asof."') = 10 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6 + amt7 + amt8 + amt9 + amt10
-                when month('".$asof."') = 11 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6 + amt7 + amt8 + amt9 + amt10 + amt11
-                when month('".$asof."') = 12 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6 + amt7 + amt8 + amt9 + amt10 + amt11 + amt12 end as budget, ifnull(sum(d.db-d.cr), 0) as actual
+
+    $query = "select c.acnoname, $name case
+                when month('" . $asof . "') = 1 then amt1
+                when month('" . $asof . "') = 2 then amt1 + amt2
+                when month('" . $asof . "') = 3 then amt1 + amt2 + amt3
+                when month('" . $asof . "') = 4 then amt1 + amt2 + amt3 + amt4
+                when month('" . $asof . "') = 5 then amt1 + amt2 + amt3 + amt4 + amt5
+                when month('" . $asof . "') = 6 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6
+                when month('" . $asof . "') = 7 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6 + amt7
+                when month('" . $asof . "') = 8 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6 + amt7 + amt8
+                when month('" . $asof . "') = 9 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6 + amt7 + amt8 + amt9
+                when month('" . $asof . "') = 10 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6 + amt7 + amt8 + amt9 + amt10
+                when month('" . $asof . "') = 11 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6 + amt7 + amt8 + amt9 + amt10 + amt11
+                when month('" . $asof . "') = 12 then amt1 + amt2 + amt3 + amt4 + amt5 + amt6 + amt7 + amt8 + amt9 + amt10 + amt11 + amt12 end as budget, ifnull(sum(d.db-d.cr), 0) as actual
                 from budget as b
                 left join (
                 select detail.db,detail.cr,detail.deptid,detail.projectid,detail.acnoid from ladetail as detail
                 left join lahead as head on head.trno = detail.trno
-                where  year(head.dateid) = '".$year."' and head.dateid <= '".$asof."'  
+                where  year(head.dateid) = '" . $year . "' and head.dateid <= '" . $asof . "'  
                 union all
                 select detail.db,detail.cr ,detail.deptid,detail.projectid,detail.acnoid from gldetail as detail
                 left join glhead as head on head.trno = detail.trno
-                where  year(head.dateid) = '".$year."' and head.dateid <= '".$asof."'
+                where  year(head.dateid) = '" . $year . "' and head.dateid <= '" . $asof . "'
                 ) as d on  d.acnoid = b.acnoid  $join
                 left join coa as c on c.acnoid = b.acnoid
                 left join projectmasterfile as p on p.line = b.projectid
                 left join client as dept on dept.clientid = b.deptid
-                where  b.year ='".$year."' and b.total <>0  " . $layoutformat . " " . $filter . "
+                where  b.year ='" . $year . "' and b.total <>0  " . $layoutformat . " " . $filter . "
                 group by c.acnoname,  $grp, b.amt1 , b.amt2 , b.amt3, b.amt4 , b.amt5 , b.amt6 ,b.amt7 , b.amt8 , b.amt9, b.amt10, b.amt11,b.amt12 order by name";
 
-              $this->coreFunctions->LogConsole($query);
-              return $query;
+    $this->coreFunctions->LogConsole($query);
+    return $query;
   }
 
   private function reportDefaultLayout($config)
@@ -215,12 +215,12 @@ class budget_report
       $actualsdg = $data->actual / $forexsgd;
       $phpvariance = $data->budget - $data->actual;
       $sgdvariance = $phpvariance / $forexsgd;
-      if($data->budget !=0){
+      if ($data->budget != 0) {
         $percentage = ($phpvariance / $data->budget) * 100;
-      }else{
+      } else {
         $percentage = 0;
       }
-      
+
 
       if ($name != $data->name) {
         if ($name != '') {
@@ -259,10 +259,10 @@ class budget_report
       $totalbudgetsgd += $budgetsdg;
       $totalactualsgd += $actualsdg;
       $totalvariancesgd += $sgdvariance;
-    
-      if($totalbudget !=0){
+
+      if ($totalbudget != 0) {
         $totalpercentage = ($totalvariance / $totalbudget) * 100;
-      }else{
+      } else {
         $totalpercentage = 0;
       }
 

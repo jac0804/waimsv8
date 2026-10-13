@@ -32,12 +32,12 @@ class sales_order_report
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -150,7 +150,7 @@ class sales_order_report
         switch ($companyid) {
           case 19: //housegem
             // $result = $this->report_DETAILED_housegem($config);
-            
+
             $result = $this->report_housegem_detailed_layout2($config);
             break;
           default:
@@ -1262,7 +1262,7 @@ class sales_order_report
     return $str;
   }
 
-  
+
   public function tableheader_housegem_detailed_layout2($layoutsize, $config)
   {
     $companyid = $config['params']['companyid'];
@@ -1271,33 +1271,33 @@ class sales_order_report
     $fontsize = "10";
     $border = "1px solid ";
 
-    
+
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Docno', '100', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('Customer', '100', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('Agent', '90', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('Date', '60', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('Category', '60', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('Area', '60', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
+    $str .= $this->reporter->col('Docno', '100', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('Customer', '100', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('Agent', '90', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('Date', '60', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('Category', '60', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('Area', '60', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
 
 
-    $str .= $this->reporter->col('Barcode', '100', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('Item Description', '90', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('Quantity', '60', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('UOM', '60', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('Price', '100', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('Discount', '60', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('Total Price', '90', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('Warehouse', '60', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('Location', '60', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
-    $str .= $this->reporter->col('Notes', '60', null, false, $border, 'B', 'C', $font, $fontsize-1, 'B', '', '', '');
+    $str .= $this->reporter->col('Barcode', '100', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('Item Description', '90', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('Quantity', '60', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('UOM', '60', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('Price', '100', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('Discount', '60', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('Total Price', '90', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('Warehouse', '60', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('Location', '60', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
+    $str .= $this->reporter->col('Notes', '60', null, false, $border, 'B', 'C', $font, $fontsize - 1, 'B', '', '', '');
     $str .= $this->reporter->endrow();
 
     return $str;
   }
 
-  
+
   public function detailed_layout2_header_housegem($config)
   {
     $center     = $config['params']['center'];
@@ -1385,7 +1385,7 @@ class sales_order_report
     return $str;
   }
 
-  
+
   public function report_housegem_detailed_layout2($config)
   {
     $result = $this->reportDefault($config);
@@ -1409,32 +1409,32 @@ class sales_order_report
     $i = 0;
     $total = 0;
 
-    
+
     $str .= $this->tableheader_housegem_detailed_layout2($layoutsize, $config);
-    
+
 
     if (!empty($result)) {
       foreach ($result as $key => $data) {
-        
+
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($data->docno, '100', null, false, $border, '', 'L', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col($data->supplier, '100', null, false, $border, '', 'L', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col($data->agentname, '90', null, false, $border, '', 'L', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col($data->dateid, '60', null, false, $border, '', 'C', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col($data->category, '60', null, false, $border, '', 'C', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col($data->area, '60', null, false, $border, '', 'L', $font, $fontsize-2, '', '', '', '');
+        $str .= $this->reporter->col($data->docno, '100', null, false, $border, '', 'L', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col($data->supplier, '100', null, false, $border, '', 'L', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col($data->agentname, '90', null, false, $border, '', 'L', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col($data->dateid, '60', null, false, $border, '', 'C', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col($data->category, '60', null, false, $border, '', 'C', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col($data->area, '60', null, false, $border, '', 'L', $font, $fontsize - 2, '', '', '', '');
 
 
-        $str .= $this->reporter->col($data->barcode, '100', null, false, $border, '', 'C', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col($data->itemname, '90', null, false, $border, '', 'L', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col(number_format($data->iss, 2), '60', null, false, $border, '', 'R', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col($data->uom, '60', null, false, $border, '', 'C', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col(number_format($data->isamt, 2), '90', null, false, $border, '', 'R', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col($data->disc, '60', null, false, $border, '', 'C', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col(number_format($data->ext, 2), '90', null, false, $border, '', 'R', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col($data->clientname, '60', null, false, $border, '', 'C', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col($data->loc, '60', null, false, $border, '', 'C', $font, $fontsize-2, '', '', '', '');
-        $str .= $this->reporter->col($data->rem, '60', null, false, $border, '', 'C', $font, $fontsize-2, '', '', '', '');
+        $str .= $this->reporter->col($data->barcode, '100', null, false, $border, '', 'C', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col($data->itemname, '90', null, false, $border, '', 'L', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col(number_format($data->iss, 2), '60', null, false, $border, '', 'R', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col($data->uom, '60', null, false, $border, '', 'C', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col(number_format($data->isamt, 2), '90', null, false, $border, '', 'R', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col($data->disc, '60', null, false, $border, '', 'C', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col(number_format($data->ext, 2), '90', null, false, $border, '', 'R', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col($data->clientname, '60', null, false, $border, '', 'C', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col($data->loc, '60', null, false, $border, '', 'C', $font, $fontsize - 2, '', '', '', '');
+        $str .= $this->reporter->col($data->rem, '60', null, false, $border, '', 'C', $font, $fontsize - 2, '', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->addline();
 

@@ -33,9 +33,9 @@ class sj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -513,7 +513,7 @@ class sj
     // write2DBarcode(code, type, x, y, width, height, style, align)
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
-    PDF::MultiCell(0, 20,'');
+    PDF::MultiCell(0, 20, '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(300, 0, $data[0]['docno'], '', 'L', false, 1, 600, 60); //Business Sty;e
     PDF::SetFont($font, '', $fontsize);
@@ -546,7 +546,7 @@ class sj
       PDF::Cell($indent, $lineHeight, '', 0, 0); // empty space
       PDF::Cell($labelWidth, $lineHeight, $label != "" ? '' : '', 0, 0);
       PDF::Cell($colonWidth, $lineHeight, '', 0, 0);
-      if($label == 'Business Address'){
+      if ($label == 'Business Address') {
         PDF::SetFont($font, '', 13);
       }
       PDF::Cell(0, $lineHeight, $value, 0, 1);
@@ -591,7 +591,7 @@ class sj
       for ($i = 0; $i < count($data); $i++) {
         $maxrow = 1;
 
-        $itemname = $data[$i]['itemname'] . ' ' . $data[$i]['loc'] . ' ' . $data[$i]['expiry'];// $data[$i]['itemname'];
+        $itemname = $data[$i]['itemname'] . ' ' . $data[$i]['loc'] . ' ' . $data[$i]['expiry']; // $data[$i]['itemname'];
         $qty = number_format($data[$i]['qty'], 2);
         $uom = $data[$i]['uom'];
         $amt = number_format($data[$i]['amt'], 2);
@@ -621,8 +621,8 @@ class sj
       }
       PDF::MultiCell(0, 0, '', '', 'L', false, 1);
       PDF::MultiCell(10, 23.5, '', '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      PDF::MultiCell(720, 23.5, 'Notes: '.$data[0]['rem'], '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
-      
+      PDF::MultiCell(720, 23.5, 'Notes: ' . $data[0]['rem'], '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', false);
+
       $this->getlines($j);
       PDF::setCellPaddings(0, 0, 0, 0);
       $vat = 0;

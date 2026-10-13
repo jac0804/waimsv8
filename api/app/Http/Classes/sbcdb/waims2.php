@@ -3929,7 +3929,7 @@ class waims2
 
     $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["invoicedate"], "DATETIME DEFAULT NULL", 1);
     $this->coreFunctions->sbcaddcolumngrp(["cntnum", "transnum"], ['iscsv'], "tinyint(1) NOT NULL DEFAULT '0'", 0);
-    $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["ewtrate"], "decimal(18,2) NOT NULL DEFAULT '0'", 1);
+    $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["ewtrate","qty"], "decimal(18,2) NOT NULL DEFAULT '0'", 1);
     $this->coreFunctions->sbcaddcolumngrp(["ewtlist"], ["rate"], "decimal(18,2) NOT NULL DEFAULT '0'", 1);
     $this->coreFunctions->sbcaddcolumngrp(["krhead", "hkrhead"], ["disc"], "VARCHAR(15) NOT NULL DEFAULT ''", 0);
 
@@ -4532,7 +4532,7 @@ class waims2
       `rem` varchar(500) not null default '',
       `dateid` datetime DEFAULT NULL,
       `whid` int(11) NOT NULL DEFAULT '0',
-      `createdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      `createdate` DATETIME DEFAULT NULL,
       `createby` varchar(100) NOT NULL,
       `editby` varchar(100) NOT NULL,
       `editdate` datetime DEFAULT NULL,
@@ -4545,6 +4545,30 @@ class waims2
     ) ENGINE=MyISAM DEFAULT CHARSET=latin1";
     $this->coreFunctions->sbccreatetable("dahead", $qry);
 
+
+    $qry = "CREATE TABLE  `hdahead` (
+      `trno` int(10) unsigned NOT NULL AUTO_INCREMENT,
+      `doc` char(2) NOT NULL DEFAULT '',
+      `docno` char(20) NOT NULL,
+      `type` varchar(10) NOT NULL DEFAULT '',
+      `rem` varchar(500) not null default '',
+      `dateid` datetime DEFAULT NULL,
+      `whid` int(11) NOT NULL DEFAULT '0',
+      `createdate` DATETIME DEFAULT NULL,
+      `createby` varchar(100) NOT NULL,
+      `editby` varchar(100) NOT NULL,
+      `editdate` datetime DEFAULT NULL,
+      `viewby` varchar(100) not null default '',
+      `viewdate` datetime DEFAULT NULL,
+      `lockuser` varchar(50) NOT NULL DEFAULT '',
+      `lockdate` datetime DEFAULT NULL,
+      PRIMARY KEY (`trno`),
+      KEY `Index_dahead` (`docno`,`dateid`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1";
+    $this->coreFunctions->sbccreatetable("hdahead", $qry);
+
+
+
     $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["itemid"], "int(10) NOT NULL DEFAULT '0'", 0); 
     $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["whid"], "int(11) NOT NULL DEFAULT '0'", 0); 
     $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["amount", "restday", "night", "holiday", "adjustmnt", "thirteenmos", "admin", "canteen", "cacanteen", "cahahsy", "charge"], "decimal(18,4) NOT NULL DEFAULT '0'", 0);
@@ -4556,7 +4580,34 @@ class waims2
     $this->coreFunctions->execqry("ALTER TABLE piecetrans DROP PRIMARY KEY, ADD PRIMARY KEY (`line`, `trno`)", 'drop');
 
     $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ['brokerage'], "decimal(19,6) NOT NULL DEFAULT '0.000000'", 0);
-    $this->coreFunctions->sbcaddcolumngrp(["dahead"], ["lockuser"], "varchar(50) NOT NULL DEFAULT ''", 0);
-    $this->coreFunctions->sbcaddcolumngrp(["dahead"], ["lockdate"], "datetime DEFAULT NULL", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["item"], ["iscatchwt"],  "TINYINT(2) NOT NULL DEFAULT 0");
+    $this->coreFunctions->sbcaddcolumngrp(["iteminfo"], ["wt"],  "decimal(18,6) NOT NULL DEFAULT '0.000000'");
+
+    $this->coreFunctions->sbcaddcolumngrp(["standardsetup", "standardsetupadv"], ["w8"], "tinyint(1) NOT NULL DEFAULT '0'");
+    $this->coreFunctions->sbcaddcolumngrp(["section"], ['deptid'], "int(11) NOT NULL DEFAULT '0'");
+    $this->coreFunctions->sbcaddcolumngrp(["section"], ["createdate"], "datetime DEFAULT NULL");
+    $this->coreFunctions->sbcaddcolumngrp(["section"], ["createby"], "varchar(150) NOT NULL DEFAULT ''");
+    
+    $qry = "CREATE TABLE hpiecetrans like piecetrans";
+    $this->coreFunctions->sbccreatetable("hpiecetrans", $qry);
+
+    $this->coreFunctions->sbcaddcolumngrp(["prhead", "hprhead"], ['sectid'], "INT(11) NOT NULL DEFAULT 0");
+    $this->coreFunctions->sbcaddcolumngrp(["client"], ['isparentname'], "TINYINT(2) NOT NULL DEFAULT 0");
+
+    $qry = " CREATE TABLE  `itemothname` (
+      `line` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `itemid` int(11) NOT NULL DEFAULT 0,
+      `itemdesc` varchar(100) not null default '',
+      `createdate` DATETIME DEFAULT NULL,
+      `createby` varchar(100) NOT NULL,
+      `editby` varchar(100) NOT NULL DEFAULT '',
+      `editdate` datetime DEFAULT NULL,
+      PRIMARY KEY (`line`),
+      KEY `Index_ItemID` (`itemid`)
+    )";
+    $this->coreFunctions->sbccreatetable("itemothname", $qry);
+
+    $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["lot", "expiry"], "varchar(150) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["pdhead", "hpdhead"], ["prodqa"], "decimal(18,6) NOT NULL DEFAULT '0.000000'", 0);
   }
 }

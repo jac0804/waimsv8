@@ -37,9 +37,9 @@ class po
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -102,10 +102,10 @@ class po
   public function reportplotting($params, $data)
   {
     if ($params['params']['dataparams']['print'] == "PDFM") {
-      
+
       return $this->default_PO_PDF($params, $data);
-    } else{
-      
+    } else {
+
       return $this->excel_po_layout($params, $data);
     }
   }
@@ -128,35 +128,35 @@ class po
 
 
     $str .= '<br><br>';
-    
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
     $str .= $this->reporter->col($this->modulename, '100', null, false, $border, '', 'L', $font, '18', 'B', '', '');
     $str .= $this->reporter->col('', '480', null, false, $border, '', 'L', $font, '18', 'B', '', '');
     $str .= $this->reporter->col('Docno #', '120', null, false, $border, '', 'L', $font, '13', 'B', '', '');
-    $str .= $this->reporter->col((isset($data[0]['docno']) ? ':'.$data[0]['docno'] : ''), '100', null, false, $border, 'B', 'L', $font, '13', '', '', '') . '<br />';
+    $str .= $this->reporter->col((isset($data[0]['docno']) ? ':' . $data[0]['docno'] : ''), '100', null, false, $border, 'B', 'L', $font, '13', '', '', '') . '<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     // 80,470,50,100
     $date = date_create($data[0]['dateid']);
-    $date = date_format($date,"Y-m-d");
-    
+    $date = date_format($date, "Y-m-d");
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Supplier ', '100', null, false, $border, '', 'L', $font, '12', 'B', '30px', '4px');
-    $str .= $this->reporter->col((isset($data[0]['clientname']) ? ':'.$data[0]['clientname'] : ''), '500', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
+    $str .= $this->reporter->col((isset($data[0]['clientname']) ? ':' . $data[0]['clientname'] : ''), '500', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
     $str .= $this->reporter->col('Date ', '100', null, false, $border, '', 'L', $font, '12', 'B', '', '');
     // $str .= $this->reporter->col($date, '100', null, false, $border, 'B', 'R', $font, '12', '', '', '');
-    $str .= $this->reporter->col((isset($date) ? ':'.$date  : ''), '100', null, false, $border, 'B', 'L', $font, '12', '', '', '');
+    $str .= $this->reporter->col((isset($date) ? ':' . $date  : ''), '100', null, false, $border, 'B', 'L', $font, '12', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Address ', '80', null, false, $border, '', 'L', $font, '12', 'B', '30px', '4px');
-    $str .= $this->reporter->col((isset($data[0]['address']) ? ':'.$data[0]['address'] : ''), '520', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
+    $str .= $this->reporter->col((isset($data[0]['address']) ? ':' . $data[0]['address'] : ''), '520', null, false, $border, 'B', 'L', $font, '12', '', '30px', '4px');
     $str .= $this->reporter->col('Terms ', '60', null, false, $border, '', 'L', $font, '12', 'B', '', '');
-    $str .= $this->reporter->col((isset($data[0]['terms']) ? ':'.$data[0]['terms'] : ''), '140', null, false, $border, 'B', 'R', $font, '12', '', '', '');
+    $str .= $this->reporter->col((isset($data[0]['terms']) ? ':' . $data[0]['terms'] : ''), '140', null, false, $border, 'B', 'R', $font, '12', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -522,7 +522,7 @@ class po
     PDF::MultiCell(50, 0, "Date: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 0, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 0, '',  '');
-    
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', $fontsize);

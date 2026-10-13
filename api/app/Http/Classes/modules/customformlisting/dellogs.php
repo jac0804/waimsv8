@@ -34,11 +34,11 @@ class dellogs
   public $showclosebtn = false;
   public $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -431,10 +431,10 @@ class dellogs
     $date1 = date('Y-m-d', strtotime($config['params']['dataparams']['start']));
     $date2 = date('Y-m-d', strtotime($config['params']['dataparams']['end']));
     $filter  = "";
-    if ($user != '') $filter .= " and userid='".$user."' ";
-    $qry = "select docno, userid, dateid from del_table_log where 1=1 ".$filter." and dateid between '".$date1."' and '".$date2."'
+    if ($user != '') $filter .= " and userid='" . $user . "' ";
+    $qry = "select docno, userid, dateid from del_table_log where 1=1 " . $filter . " and dateid between '" . $date1 . "' and '" . $date2 . "'
       union all
-      select docno, userid, dateid from del_transnum_log where 1=1 ".$filter." and dateid between '".$date1."' and '".$date2."' order by dateid desc";
+      select docno, userid, dateid from del_transnum_log where 1=1 " . $filter . " and dateid between '" . $date1 . "' and '" . $date2 . "' order by dateid desc";
     $data = $this->coreFunctions->opentable($qry);
     return [
       'status' => true,

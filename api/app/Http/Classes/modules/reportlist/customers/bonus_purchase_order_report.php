@@ -31,19 +31,19 @@ class bonus_purchase_order_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
     public function createHeadField($config)
     {
         $companyid = $config['params']['companyid'];
-        $fields = ['radioprint', 'radiodatetype','year', 'dclientname', 'area', 'dagentname'];
+        $fields = ['radioprint', 'radiodatetype', 'year', 'dclientname', 'area', 'dagentname'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'radiodatetype.label', 'Coverage Period');
 
@@ -75,8 +75,7 @@ class bonus_purchase_order_report
             '' as agentname,
             '' as dagentname,
             '' as agent,
-            '' as area"
-            ;
+            '' as area";
 
         return $this->coreFunctions->opentable($paramstr);
     }
@@ -204,10 +203,10 @@ class bonus_purchase_order_report
         // $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow(null, null, '', $border, '', 'r', $font, '10', '', '');
 
-         if ($dateType == '0') {
-           $str .= $this->reporter->col('From 01/01/'. $year. ' to 06/30/'. $year, null, null, '', $border, '', 'C', $font, '12', '', '', '');
+        if ($dateType == '0') {
+            $str .= $this->reporter->col('From 01/01/' . $year . ' to 06/30/' . $year, null, null, '', $border, '', 'C', $font, '12', '', '', '');
         } else {
-            $str .= $this->reporter->col('From 07/01/'. $year . ' to 12/31/'. $year, null, null, '', $border, '', 'C', $font, '12', '', '', '');
+            $str .= $this->reporter->col('From 07/01/' . $year . ' to 12/31/' . $year, null, null, '', $border, '', 'C', $font, '12', '', '', '');
         }
 
         $str .= $this->reporter->endrow();
@@ -296,7 +295,7 @@ class bonus_purchase_order_report
                 $this->reporter->linecounter++;
                 $str .= $this->reporter->startrow();
                 $str .= $this->reporter->col('>>', '100', null, false, $border, 'TLB', 'C', $font, $font_size + 1, 'B', '', '5px');
-                $str .= $this->reporter->col(''.strtoupper($areas).'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.strtoupper($province), '700', null, false, $border, 'TB', 'L', $font, $font_size + 1, 'B', '', '5px');
+                $str .= $this->reporter->col('' . strtoupper($areas) . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . strtoupper($province), '700', null, false, $border, 'TB', 'L', $font, $font_size + 1, 'B', '', '5px');
                 $str .= $this->reporter->col('', '200', null, false, $border, 'TBR', 'L', $font, $font_size + 1, 'B', '',  '5px');
                 $str .= $this->reporter->endrow();
                 // $str .= $this->reporter->endtable();
@@ -358,10 +357,10 @@ class bonus_purchase_order_report
                 //timestamp
                 $printeddate = $this->othersClass->getCurrentTimeStamp();
                 $datetime = new DateTime($printeddate);
-                $formattedDate = $datetime->format('m/d/Y h:i:s a'); 
+                $formattedDate = $datetime->format('m/d/Y h:i:s a');
                 $str .= $this->reporter->begintable('1100');
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col( $formattedDate, '700', null, true, $border, '', 'L', $font, 13, '', '',  '5px');
+                $str .= $this->reporter->col($formattedDate, '700', null, true, $border, '', 'L', $font, 13, '', '',  '5px');
                 $str .= $this->reporter->pagenumber('Page ', '200', null, true, $border, '', 'R', $font, 13, '', '',  '5px');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
@@ -378,12 +377,12 @@ class bonus_purchase_order_report
 
                 // reprint current agent name
                 if (!$isLastOfArea) {
-                $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('', '100', null, false, $border, 'TBL', 'L', $font, $font_size + 1, 'B', '', '5px');
-                $str .= $this->reporter->col(strtoupper($areas).'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.strtoupper($province), '700', null, false, $border, 'TB', 'L', $font, $font_size + 1, 'B', '', '5px');
-                $str .= $this->reporter->col('&nbsp;', '200', null, false, $border, 'TBR', 'C', $font, $font_size + 1, 'B', '', '5px');
-                $str .= $this->reporter->endrow();
-                $this->reporter->linecounter++;
+                    $str .= $this->reporter->startrow();
+                    $str .= $this->reporter->col('', '100', null, false, $border, 'TBL', 'L', $font, $font_size + 1, 'B', '', '5px');
+                    $str .= $this->reporter->col(strtoupper($areas) . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . strtoupper($province), '700', null, false, $border, 'TB', 'L', $font, $font_size + 1, 'B', '', '5px');
+                    $str .= $this->reporter->col('&nbsp;', '200', null, false, $border, 'TBR', 'C', $font, $font_size + 1, 'B', '', '5px');
+                    $str .= $this->reporter->endrow();
+                    $this->reporter->linecounter++;
                 }
             }
         }
@@ -419,10 +418,10 @@ class bonus_purchase_order_report
 
         $printeddate = $this->othersClass->getCurrentTimeStamp();
         $datetime = new DateTime($printeddate);
-        $formattedDate = $datetime->format('m/d/Y h:i:s a'); 
+        $formattedDate = $datetime->format('m/d/Y h:i:s a');
         $str .= $this->reporter->begintable('1100');
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col( $formattedDate, '700', null, true, $border, '', 'L', $font, 13, '', '',  '5px');
+        $str .= $this->reporter->col($formattedDate, '700', null, true, $border, '', 'L', $font, 13, '', '',  '5px');
         $str .= $this->reporter->pagenumber('Page ', '200', null, true, $border, '', 'R', $font, 13, '', '',  '5px');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
@@ -442,7 +441,7 @@ class bonus_purchase_order_report
             foreach ($col as $key => $txt) {
                 $collen = isset($len[$key]) ? $len[$key] : 0;
                 if ($collen > 0) {
-                    array_push($arr, $this->reporter->fixcolumn([$txt], $collen, 0));  
+                    array_push($arr, $this->reporter->fixcolumn([$txt], $collen, 0));
                 }
             }
             $lines = $this->othersClass->getmaxcolumn($arr);  //whichever column wrapped into the most lines

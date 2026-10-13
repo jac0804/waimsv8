@@ -23,7 +23,13 @@ class tenancy
   public $gridname = 'tableentry';
 
   private $fields = [
-    'status', 'effectdate', 'datefrom', 'dateto', 'clientid', 'monthsno', 'rem'
+    'status',
+    'effectdate',
+    'datefrom',
+    'dateto',
+    'clientid',
+    'monthsno',
+    'rem'
   ];
   private $table = 'tenancystatus';
 
@@ -33,10 +39,10 @@ class tenancy
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;

@@ -34,9 +34,9 @@ class hj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -170,7 +170,7 @@ class hj
       if ($data[0]['dcode'] == '003') {
         PDF::Image($this->companysetup->getlogopath($config['params']) . 'logoridefund.png', '645', '-10', 160, 160);
       }
-      
+
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(0, 0, $center . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . $username, '', 'L');
       PDF::MultiCell(0, 0, "\n");
@@ -178,7 +178,6 @@ class hj
       PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'L');
       PDF::SetFont($fontbold, '', 11);
       PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'L');
-
     } else {
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(0, 0, $center . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . $username, '', 'L');

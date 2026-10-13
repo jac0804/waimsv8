@@ -29,14 +29,14 @@ class entryempcitation
   private $logger;
   private $othersClass;
   public $style = 'width:100%;';
-  private $fields = ['empid', 'title', 'dateid','iscitation'];
+  private $fields = ['empid', 'title', 'dateid', 'iscitation'];
   public $showclosebtn = false;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -105,7 +105,7 @@ class entryempcitation
     //   $tbuttons = [];
     // } else {
     //   if ($doc != 'MYINFO') {
-    $tbuttons = ['addrecord', 'saveallentry','masterfilelogs'];
+    $tbuttons = ['addrecord', 'saveallentry', 'masterfilelogs'];
     //   }
     // }
 
@@ -150,15 +150,15 @@ class entryempcitation
     $data = [];
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
-      $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
-      $data['createby'] = $config['params']['user'];
+    $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
+    $data['createby'] = $config['params']['user'];
     if ($row['trno'] == 0) {
       $trno = $this->coreFunctions->insertGetId($this->table, $data);
       if ($trno != 0) {
         $returnrow = $this->loaddataperrecord($row['empid'], $trno);
-// 'title', 'dateid','iscitation'
+        // 'title', 'dateid','iscitation'
         $config['params']['doc'] = strtoupper('CITATION');
         $this->logger->sbcwritelog(
           $row['empid'],
@@ -197,9 +197,9 @@ class entryempcitation
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
-        
+
         $data2['createdate'] = $this->othersClass->getCurrentTimeStamp();
         $data2['createby'] = $config['params']['user'];
         if ($data[$key]['trno'] == 0) {
@@ -211,8 +211,8 @@ class entryempcitation
             $config,
             'CONTRACT',
             'CREATE - TRNO: ' . $trno
-            . ' - TITLE#: ' . $data2['title']
-            . ' , DATE: ' . $data2['dateid']
+              . ' - TITLE#: ' . $data2['title']
+              . ' , DATE: ' . $data2['dateid']
           );
         } else {
           $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
@@ -237,8 +237,8 @@ class entryempcitation
       $config,
       'CONTRACT',
       'DELETE - TRNO: ' . $row['trno']
-            . ' - TITLE#: ' . $row['title']
-            . ' , DATE: ' . $row['dateid']
+        . ' - TITLE#: ' . $row['title']
+        . ' , DATE: ' . $row['dateid']
     );
 
     return ['status' => true, 'msg' => 'Successfully deleted.'];

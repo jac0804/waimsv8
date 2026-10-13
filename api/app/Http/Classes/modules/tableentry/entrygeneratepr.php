@@ -32,10 +32,10 @@ class entrygeneratepr
     public $showclosebtn = true;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -191,7 +191,7 @@ class entrygeneratepr
         $msg = '';
 
         $trno = 0;
-        
+
         $companyid = $config['params']['companyid'];
         $dateTables = ['prstock'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -262,7 +262,7 @@ class entrygeneratepr
 
                             if ($value['prqty'] == 0) continue;
 
-                            $qa = $this->othersClass->sanitizekeyfieldFast('qa', $value['qa'],$lookups);
+                            $qa = $this->othersClass->sanitizekeyfieldFast('qa', $value['qa'], $lookups);
                             if ($qa > 0) {
 
                                 $itemid = $value['itemid'];

@@ -5463,6 +5463,8 @@ class dashboardClass
         $value->picture = ltrim($value->picture, '/');
       }
 
+      if ($value->agecount == 0) $value->age = $value->age - 1;
+
       $line = [
         'subtitle' => $value->emplast . ", " .  $value->empfirst,
         'subtitle2' => $value->job,
@@ -5527,6 +5529,9 @@ class dashboardClass
       if ($value->picture == '') {
         $value->picture = '/images/employee/default_emp_portal.png';
       }
+
+      if ($value->annivcount == 0)  $value->yrs =  $value->yrs - 1;
+      if ($value->yrs == 0) continue;
 
       $line = [
         'subtitle' => $value->clientname,

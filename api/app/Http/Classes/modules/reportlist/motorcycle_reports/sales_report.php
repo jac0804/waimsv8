@@ -29,12 +29,12 @@ class sales_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1340'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -307,8 +307,8 @@ class sales_report
                 $qry = "select crno,rfno,sicsino,drno,chsino,swsno,dateid from (select yourref as crno,ourref as rfno,sicsino,drno,chsino,swsno,head.dateid from mchead as head left join mcdetail as detail on detail.trno = head.trno where detail.refx = ?
                 union all
                 select yourref as crno,ourref as rfno,sicsino,drno,chsino,swsno,head.dateid from hmchead as head left join hmcdetail as detail on detail.trno = head.trno where detail.refx = ?) as mc order by dateid limit 1";
-  
-             
+
+
                 $mc = $this->coreFunctions->opentable($qry, [$data->trno, $data->trno]);
 
                 $str .= $this->reporter->col(isset($mc[0]->crno) ? $mc[0]->crno : '', '46', null, false, $border, '', 'L', $font, $fontsize, '', '', '');

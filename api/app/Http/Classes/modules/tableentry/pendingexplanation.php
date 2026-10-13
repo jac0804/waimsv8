@@ -37,10 +37,10 @@ class pendingexplanation
     public $hhead = 'hdisciplinary';
     public $tablelogs_del = 'del_hrisnum_log';
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -55,7 +55,7 @@ class pendingexplanation
         );
         return $attrib;
     }
-    
+
     public function createTab($config)
     {
         $row = $config['params']['row'];
@@ -63,38 +63,38 @@ class pendingexplanation
 
         // var_dump($approver);
 
-         $cols = ['action', 'code', 'articlename', 'section', 'description','reason' ];
+        $cols = ['action', 'code', 'articlename', 'section', 'description', 'reason'];
         foreach ($cols as $key => $value) {
             $$value = $key;
         }
         $tab = [$this->gridname => ['gridcolumns' => $cols]];
 
-    
-        if($approver != ''){
+
+        if ($approver != '') {
             $stockbuttons = ['jumpmodule'];
-        }else{
+        } else {
             $stockbuttons = ['approve'];
         }
-     
-        $obj = $this->tabClass->createtab($tab, $stockbuttons);
-        
-         $obj[0][$this->gridname]['columns'][$code]['type'] = 'label';
-         $obj[0][$this->gridname]['columns'][$articlename]['type'] = 'label';
-         $obj[0][$this->gridname]['columns'][$section]['type'] = 'label';
-         $obj[0][$this->gridname]['columns'][$description]['type'] = 'label';
-         $obj[0][$this->gridname]['columns'][$reason]['label'] = 'Explanation';
-        //  $obj[0][$this->gridname]['columns'][$reason]['type'] = 'textarea';
-         $obj[0][$this->gridname]['columns'][$reason]['style'] = 'width:400px;whiteSpace: normal;min-width:400px; max-width:400px;';
-         $obj[0][$this->gridname]['columns'][$code]['style'] = 'width:100px;whiteSpace: normal;min-width:100px; max-width:100px;';
-         $obj[0][$this->gridname]['columns'][$description]['style'] = 'width:150px;whiteSpace: normal;min-width:150px; max-width:150px;';
-         $obj[0][$this->gridname]['columns'][$section]['style'] = 'width:100px;whiteSpace: normal;min-width:100px; max-width:100px;';
 
-         if($approver != ''){
-             $obj[0][$this->gridname]['columns'][0]['btns']['jumpmodule']['label'] = 'View';
-             $obj[0][$this->gridname]['columns'][$reason]['type'] = 'label';
-         }else{
-             $obj[0][$this->gridname]['columns'][0]['btns']['approve']['label'] = 'Save';
-         }
+        $obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+        $obj[0][$this->gridname]['columns'][$code]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$articlename]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$section]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$description]['type'] = 'label';
+        $obj[0][$this->gridname]['columns'][$reason]['label'] = 'Explanation';
+        //  $obj[0][$this->gridname]['columns'][$reason]['type'] = 'textarea';
+        $obj[0][$this->gridname]['columns'][$reason]['style'] = 'width:400px;whiteSpace: normal;min-width:400px; max-width:400px;';
+        $obj[0][$this->gridname]['columns'][$code]['style'] = 'width:100px;whiteSpace: normal;min-width:100px; max-width:100px;';
+        $obj[0][$this->gridname]['columns'][$description]['style'] = 'width:150px;whiteSpace: normal;min-width:150px; max-width:150px;';
+        $obj[0][$this->gridname]['columns'][$section]['style'] = 'width:100px;whiteSpace: normal;min-width:100px; max-width:100px;';
+
+        if ($approver != '') {
+            $obj[0][$this->gridname]['columns'][0]['btns']['jumpmodule']['label'] = 'View';
+            $obj[0][$this->gridname]['columns'][$reason]['type'] = 'label';
+        } else {
+            $obj[0][$this->gridname]['columns'][0]['btns']['approve']['label'] = 'Save';
+        }
 
         $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
@@ -130,8 +130,8 @@ class pendingexplanation
         // $approver = $row['approver'];
         $url = "/module/hris/";
         $adminid = $config['params']['adminid'];
-       
-            $qry = "select head.docno, m.modulename as doc,head.trno,m.sbcpendingapp,'$url' as url,
+
+        $qry = "select head.docno, m.modulename as doc,head.trno,m.sbcpendingapp,'$url' as url,
                    'DBTODO' as tabtype,'module' as moduletype, '' as bgcolor,
                     ir.docno as irno, chead.code,chead.description as articlename,
                     cdetail.description,cdetail.section,head.explanation as reason,head.empid,inhead.fempid as reporterid
@@ -144,37 +144,35 @@ class pendingexplanation
                    left join codedetail as cdetail on head.sectionno=cdetail.line and chead.artid=cdetail.artid
                    left join hincidenthead as inhead on inhead.trno=head.refx
                    where p.clientid=" . $adminid . " ";
-      
+
 
         $data = $this->coreFunctions->opentable($qry);
         return $data;
     }
 
-    
+
     public function updateapp($config, $status)
-    {   
-     
+    {
+
         $row = $config['params']['row'];
         $trno = $row['trno'];
-        $inputexp=$row['reason'];
-        $reporterid=$row['reporterid'];
+        $inputexp = $row['reason'];
+        $reporterid = $row['reporterid'];
         $label = '';
         //save explanation 
-        if($status == 'A'){
-             
-             if($inputexp != ''){ //pag hindi empty yung reason
-                 $expl = $this->coreFunctions->sbcupdate('disciplinary', ['explanation' => $inputexp], ['trno' => $trno]);
-                 $label=' saved.';
-                 if($expl){ //pag nasave na sa disciplinary update sa pending app change id ng nag report
-                 $this->coreFunctions->sbcupdate('pendingapp', ['clientid' => $reporterid,'approver'=>'NEWEXPLANATION'], ['trno' => $trno]);
-              } 
-             }else{
+        if ($status == 'A') {
+
+            if ($inputexp != '') { //pag hindi empty yung reason
+                $expl = $this->coreFunctions->sbcupdate('disciplinary', ['explanation' => $inputexp], ['trno' => $trno]);
+                $label = ' saved.';
+                if ($expl) { //pag nasave na sa disciplinary update sa pending app change id ng nag report
+                    $this->coreFunctions->sbcupdate('pendingapp', ['clientid' => $reporterid, 'approver' => 'NEWEXPLANATION'], ['trno' => $trno]);
+                }
+            } else {
                 return ['status' => false, 'msg' => 'Please input your explanation.'];
-             }
-             
+            }
         }
 
-           return ['status' => true, 'msg' => 'Successfully ' . $label . ' ', 'data' => [], 'reloadsbclist' => true, 'action' => 'gapplications', 'deleterow' => true];
-  }
-
+        return ['status' => true, 'msg' => 'Successfully ' . $label . ' ', 'data' => [], 'reloadsbclist' => true, 'action' => 'gapplications', 'deleterow' => true];
+    }
 } //end class

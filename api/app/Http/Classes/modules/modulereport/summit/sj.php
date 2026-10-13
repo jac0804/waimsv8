@@ -34,9 +34,9 @@ class sj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -62,7 +62,7 @@ class sj
 
   public function reportparamsdata($config)
   {
-     return $this->coreFunctions->opentable(
+    return $this->coreFunctions->opentable(
       "select
         'PDFM' as print,
         '0' as reporttype,
@@ -172,7 +172,7 @@ class sj
     PDF::MultiCell(10, 0, '', '', 'R', 0, 0, '', '', true, 0, true, false);
     PDF::MultiCell(110, 0, 'TOTAL AMOUNT : ', 'T', 'R', 0, 0, '', '', true, 0, true, false);
     PDF::MultiCell(130, 0, number_format($totalext, $decimalprice), 'T', 'R', 0, 1);
-   
+
     for ($i = 0; $i < count($data); $i++) {
       if ($uom != $data[$i]['uom']) {
         if ($uom != '') {
@@ -423,7 +423,7 @@ class sj
         $disc = $data[$i]['disc'];
         $ext = number_format($data[$i]['ext'], 2);
 
-   
+
         $arr_itemname = $this->reporter->fixcolumn([$itemname], '33', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '8', 0);
         $arr_uom = $this->reporter->fixcolumn([$uom], '8', 0);

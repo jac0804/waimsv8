@@ -52,11 +52,11 @@ class pa
   private $helpClass;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -405,7 +405,7 @@ class pa
             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
           } else {
             // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
-            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
           }
         } //end if    
       }
@@ -615,7 +615,7 @@ class pa
     // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
 
-    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt,$lookups);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
 
@@ -649,7 +649,7 @@ class pa
     ];
     foreach ($data as $key => $value) {
       // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
-      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;

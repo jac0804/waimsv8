@@ -34,9 +34,9 @@ class pv
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -110,12 +110,12 @@ class pv
         case 2:
           $str = $this->PDF_CV_WTAXREPORT($data, $config);
           break;
-          // case 1:
-          //   $str = $this->rpt_DEFAULT_CCVOUCHER_LAYOUT2($data,$config);
-          //   break;
-          // case 2:
-          //   $str = $this->PDF_CV_WTAXREPORT($data, $config);
-          //   break;
+        // case 1:
+        //   $str = $this->rpt_DEFAULT_CCVOUCHER_LAYOUT2($data,$config);
+        //   break;
+        // case 2:
+        //   $str = $this->PDF_CV_WTAXREPORT($data, $config);
+        //   break;
         case 3:
           $str = $this->PDF_CV_WTAXREPORT_NEW($data, $config);
           break;
@@ -588,7 +588,7 @@ class pv
       PDF::MultiCell(80, $max_height, $key, 'LRB', '', false, 0);
 
       switch ($data['head'][0]['month']) {
-          // case '1': case '2': case '3':
+        // case '1': case '2': case '3':
         case '1':
         case '4':
         case '7':
@@ -598,7 +598,7 @@ class pv
           PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
           $totalwtx1 +=  $data['detail'][$key]['oamt'];
           break;
-          // case '4': case '5': case '6':
+        // case '4': case '5': case '6':
         case '2':
         case '5':
         case '8':

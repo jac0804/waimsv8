@@ -35,9 +35,9 @@ class pn
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -117,7 +117,7 @@ class pn
     left join item as i on i.itemid = pe.itemid
     where head.doc='PN' and head.trno='$trno' order by line";
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
-    
+
     return $result;
   } //end fn
 

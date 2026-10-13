@@ -135,11 +135,11 @@ class stockcard
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -689,21 +689,21 @@ class stockcard
       unset($this->fields[1]);
     }
     $itemid = 0;
-    
+
     $companyid = $config['params']['companyid'];
     $dateTables = ['item', 'iteminfo'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key) {
       $data[$key] = $head[$key];
       if (!in_array($key, $this->except)) {
-        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+        $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
       } //end if    
     }
 
     foreach ($this->iteminfo as $key) {
       if (!in_array($key, $this->except)) {
         $iteminfo[$key] = $head[$key];
-        $iteminfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $iteminfo[$key],$lookups);
+        $iteminfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $iteminfo[$key], $lookups);
       } //end if    
     }
 

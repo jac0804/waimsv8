@@ -33,17 +33,17 @@ class entrybillingaddr
   public $tablelogs = 'masterfile_log';
   public $tablelogs_del = 'del_masterfile_log';
   private $fields = ['clientid', 'contact', 'contactno',  'addr',  'isbilling', 'isshipping', 'isinactive', 'addrtype',  'addrline1', 'addrline2',  'city',  'province', 'country', 'zipcode',   'fax',  'deptid',  'address1',  'cperson',  'contactno2'];
-  private $truckingf = ['clientid','addr'];
+  private $truckingf = ['clientid', 'addr'];
   public $showclosebtn = false;
   private $reporter;
   private $logger;
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -66,26 +66,26 @@ class entrybillingaddr
     $docx = $config['params']['doc'];
     $customername = $this->coreFunctions->datareader("select clientname as value from client where clientid = ? ", [$clientid]);
 
-    switch($companyid){
+    switch ($companyid) {
       case 19: //housegem
         $this->modulename = 'Shipping Address Setup' . ' - ' . $customername;
         break;
       case 72: //hahsy
         $this->modulename = 'Trucking Address' . ' - ' . $customername;
-        break;  
+        break;
       default:
         $this->modulename = $this->modulename . ' - ' . $customername;
-        break;  
+        break;
     }
 
 
     $systemtype = $this->companysetup->getsystemtype($config['params']);
-    $cols= ['action', 'isshipping', 'isbilling', 'isinactive', 'client', 'clientname', 'addr', 'addrtype', 'addrline1', 'addrline2', 'city', 'province', 'country', 'zipcode', 'contactno', 'fax', 'deptname', 'address1', 'cperson', 'contactno2'];
+    $cols = ['action', 'isshipping', 'isbilling', 'isinactive', 'client', 'clientname', 'addr', 'addrtype', 'addrline1', 'addrline2', 'city', 'province', 'country', 'zipcode', 'contactno', 'fax', 'deptname', 'address1', 'cperson', 'contactno2'];
 
-    if($companyid==72 && $docx== 'CUSTOMER'){ //hahsy
+    if ($companyid == 72 && $docx == 'CUSTOMER') { //hahsy
       $cols = ['action', 'addr'];
     }
-    
+
     foreach ($cols as $key => $value) {
       $$value = $key;
     }
@@ -110,7 +110,7 @@ class entrybillingaddr
 
       $obj[0][$this->gridname]['columns'][$client]['style'] = "width:180px;whiteSpace: normal;min-width:180px;";
       $obj[0][$this->gridname]['columns'][$clientname]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
-    
+
       $obj[0][$this->gridname]['columns'][$addrtype]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
       $obj[0][$this->gridname]['columns'][$addrline1]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
       $obj[0][$this->gridname]['columns'][$addrline2]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
@@ -122,7 +122,7 @@ class entrybillingaddr
       $obj[0][$this->gridname]['columns'][$fax]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
       $obj[0][$this->gridname]['columns'][$zipcode]['type'] = "cinput";
       $obj[0][$this->gridname]['columns'][$zipcode]['maxlength'] = "10";
-   
+
       $obj[0][$this->gridname]['columns'][$address1]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
       $obj[0][$this->gridname]['columns'][$cperson]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
       $obj[0][$this->gridname]['columns'][$contactno2]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
@@ -197,11 +197,10 @@ class entrybillingaddr
         $obj[0][$this->gridname]['columns'][$cperson]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$contactno2]['type'] = "coldel";
       }
-
-    }else{ //hashi
+    } else { //hashi
       $obj[0][$this->gridname]['columns'][$addr]['style'] = "width:500px;whiteSpace: normal;min-width:500px;";
     }
-    
+
 
 
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -231,8 +230,8 @@ class entrybillingaddr
       $tbuttons = ['print', 'whlog'];
     } else {
       $tbuttons = ['addrecord', 'saveallentry', 'print', 'whlog'];
-      if($companyid==72 && $docx =='CUSTOMER'){
-         $tbuttons = ['addrecord', 'saveallentry', 'whlog'];
+      if ($companyid == 72 && $docx == 'CUSTOMER') {
+        $tbuttons = ['addrecord', 'saveallentry', 'whlog'];
       }
     }
 
@@ -278,7 +277,7 @@ class entrybillingaddr
     $data['client'] = '';
     $data['clientname'] = '';
 
-    if($companyid !=72 && $doc != 'CUSTOMER') { // not hahsy
+    if ($companyid != 72 && $doc != 'CUSTOMER') { // not hahsy
 
       $data['contactno'] = '';
       $data['contact'] = '';
@@ -304,12 +303,11 @@ class entrybillingaddr
         $data['deptid'] = '0';
       }
       $data['deptname'] = '';
-     
+
 
       $data['address1'] = '';
       $data['cperson'] = '';
       $data['contactno2'] = '';
-
     }
 
     return $data;
@@ -382,7 +380,7 @@ class entrybillingaddr
               . ", LINE: " . $line
               . " " . $cdata[0]->client . '~' . $cdata[0]->clientname
               . ", ADDR: " . $data2['addr']);
-          }else{
+          } else {
 
             $this->logger->sbcmasterlog($config['params']['tableid'], $params, ' CREATE - '
               . ", LINE: " . $line
@@ -402,9 +400,7 @@ class entrybillingaddr
               . ", CONTACT PERSON: " . $data2['cperson']
               . ", COLLECTION ADDR: " . $data2['address1']
               . ", COLLECTION CONTACT#: " . $data2['contactno2']);
-
           }
-         
         } else {
           $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
           $data2['editby'] = $config['params']['user'];
@@ -429,25 +425,23 @@ class entrybillingaddr
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $sfields = $this->fields;
-    if($companyid==72 && $docx== 'CUSTOMER'){
-      $sfields= $this->truckingf;
+    if ($companyid == 72 && $docx == 'CUSTOMER') {
+      $sfields = $this->truckingf;
     }
     foreach ($sfields as $key => $value) {
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
 
-      if (strtoupper($systemtype) != 'VSCHED' && strtoupper($systemtype) != 'ATI') {
-       
-        if($companyid !=72 ){ // not hahsy
-        if ($row['zipcode'] == "") {
-            return ['status' => false, 'msg' => 'Zipcode is required'];
-          }
+    if (strtoupper($systemtype) != 'VSCHED' && strtoupper($systemtype) != 'ATI') {
 
+      if ($companyid != 72) { // not hahsy
+        if ($row['zipcode'] == "") {
+          return ['status' => false, 'msg' => 'Zipcode is required'];
         }
-       
       }
-    
-    
+    }
+
+
     if ($row['line'] == 0) {
       $line = $this->coreFunctions->insertGetId($this->table, $data);
       if ($line != 0) {
@@ -456,7 +450,7 @@ class entrybillingaddr
 
         $params['params']['doc'] = strtoupper("billing_add_tab");
 
-        if($companyid ==72 && $docx== 'CUSTOMER'){ //hahsy
+        if ($companyid == 72 && $docx == 'CUSTOMER') { //hahsy
           $this->logger->sbcmasterlog(
             $config['params']['tableid'],
             $params,
@@ -465,7 +459,7 @@ class entrybillingaddr
               . " " . $cdata[0]->client . '~' . $cdata[0]->clientname
               . ", ADDR: " . $data['addr']
           );
-        }else{
+        } else {
           $this->logger->sbcmasterlog(
             $config['params']['tableid'],
             $params,
@@ -489,7 +483,7 @@ class entrybillingaddr
               . ", COLLECTION CONTACT#: " . $data['contactno2']
           );
         }
-       
+
         return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
       } else {
         return ['status' => false, 'msg' => 'Saving failed.'];
@@ -514,7 +508,7 @@ class entrybillingaddr
     $trno = $config['params']['tableid'];
 
 
-      $exist = $this->coreFunctions->datareader("select trno as value from lahead where shipid=? or billid=?
+    $exist = $this->coreFunctions->datareader("select trno as value from lahead where shipid=? or billid=?
                 union all
                 select trno as value from glhead where shipid=? or billid=?
                 union all    
@@ -529,12 +523,12 @@ class entrybillingaddr
     $this->coreFunctions->execqry($qry, 'delete', [$row['line']]);
 
     $config['params']['doc'] = strtoupper("billing_add_tab");
-    if($companyid==72 && $doc=='CUSTOMER'){ //hahsy
-      $this->logger->sbcdelmaster_log($row['line'], $config, 'REMOVE - Line : ' .$row['line']. ' ~ '. $row['addr'], 0, $trno);
-    }else{
+    if ($companyid == 72 && $doc == 'CUSTOMER') { //hahsy
+      $this->logger->sbcdelmaster_log($row['line'], $config, 'REMOVE - Line : ' . $row['line'] . ' ~ ' . $row['addr'], 0, $trno);
+    } else {
       $this->logger->sbcdelmaster_log($row['line'], $config, 'REMOVE - ' . $row['client'] . '~' . $row['clientname']);
     }
-   
+
     return ['status' => true, 'msg' => 'Successfully deleted.'];
   }
 
@@ -718,8 +712,8 @@ class entrybillingaddr
     $original_doc = $config['params']['doc'];
 
     $del_log = 'log.trno';
-    if($companyid==72 && $original_doc== 'CUSTOMER'){ //hahsy
-      $del_log='log.trno2';
+    if ($companyid == 72 && $original_doc == 'CUSTOMER') { //hahsy
+      $del_log = 'log.trno2';
     }
 
 

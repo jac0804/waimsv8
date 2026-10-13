@@ -38,10 +38,10 @@ class pvbudget
     private $logger;
     private $reportheader;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -109,11 +109,18 @@ class pvbudget
 
     private function budget($config, $trno)
     {
-        $qry = "select head.dateid,c.acnoid,head.projectid,detail.db,detail.cr from lahead as head
+        $qry = "select head.dateid,c.acnoid,detail.projectid,detail.db,detail.cr from lahead as head
                 left join ladetail as detail on detail.trno=head.trno
                 left join coa as c on c.acnoid=detail.acnoid
-                where head.trno=$trno and head.doc='PV'";
+                where head.trno=$trno and head.doc='PV' 
 
+                union all 
+
+                select head.dateid,c.acnoid,detail.projectid,detail.db,detail.cr from glhead as head
+                left join gldetail as detail on detail.trno=head.trno
+                left join coa as c on c.acnoid=detail.acnoid
+                where head.trno=$trno and head.doc='PV'
+                ";
         $resmain = $this->coreFunctions->opentable($qry);
 
         $results = array();
@@ -129,7 +136,7 @@ class pvbudget
             $month = (int) date('m', strtotime($dateid));
             $year  = date('Y', strtotime($dateid));
 
-            $qry = "select amt" . $month . " as budget, $acnoid as acnoid, $projectid as projectid,$db as db, $cr as cr  from budget as b
+            $qry = "select amt" . $month . " as budget, $acnoid as acnoid, $projectid as projectid,$db as db, $cr as cr, $month as mon, $year as yr from budget as b
                 where b.year = $year and b.acnoid=$acnoid and b.projectid=$projectid";
 
             $data = $this->coreFunctions->opentable($qry);
@@ -156,14 +163,22 @@ class pvbudget
             $db = isset($row->db) ? $row->db : 0;
             $cr = isset($row->cr) ? $row->cr : 0;
 
-            $qry = "select  c.acnoname,proj.name as project,format(sum(detail.db), 2) as amount,
-                       format($db,2) as fdb, format($cr,2) as fcr,$budget as amount2,  format($budget - sum(detail.db),2) as amt
-                 from lahead as head
+            $qry = "select acnoname, project, format(sum(amount),2) as amount, format(sum(fdb),2) as fdb, format(sum(fcr),2) as fcr, format($budget,2) as amount2, format(($budget-sum(amount)),2) as amt from (
+            select  c.acnoname,proj.name as project,detail.db as amount,$db as fdb, $cr as fcr
+                from lahead as head
                 left join ladetail as detail on detail.trno=head.trno
                 left join coa as c on c.acnoid=detail.acnoid
-                left join projectmasterfile as proj on proj.line=head.projectid where  head.doc='PV' and head.trno <=$trno
-                and c.acnoid=$acnoid and head.projectid=$projectid
-                group by c.acnoname,proj.name";
+                left join projectmasterfile as proj on proj.line=detail.projectid where  head.doc='PV' and head.trno <=$trno
+                and detail.acnoid=$acnoid and detail.projectid=$projectid and year(head.dateid)=$row->yr and month(head.dateid)=$row->mon
+
+                union all 
+
+                select  c.acnoname,proj.name as project,detail.db as amount,$db as fdb, $cr as fcr
+                from glhead as head
+                left join gldetail as detail on detail.trno=head.trno
+                left join coa as c on c.acnoid=detail.acnoid
+                left join projectmasterfile as proj on proj.line=detail.projectid where  head.doc='PV' and head.trno <=$trno
+                and detail.acnoid=$acnoid and detail.projectid=$projectid and year(head.dateid)=$row->yr and month(head.dateid)=$row->mon) as t group by acnoname, project";
             $data = $this->coreFunctions->opentable($qry);
 
             foreach ($data as $row2) {
@@ -172,5 +187,4 @@ class pvbudget
         }
         return $results;
     }
-
 } //end class

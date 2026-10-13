@@ -35,17 +35,17 @@ class entryrepacker
     public $style = 'width:100%;';
     public $tablelogs = 'masterfile_log';
     public $tablelogs_del = 'del_masterfile_log';
-    private $fields = ['category','isrepacker','reqtype','code','position'];
+    private $fields = ['category', 'isrepacker', 'reqtype', 'code', 'position'];
     public $showclosebtn = false;
     private $reporter;
     public $logger;
     private $reportheader;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -64,7 +64,7 @@ class entryrepacker
 
     public function createTab($config)
     {
-        $columns = ['action', 'category','reqtype','code','position'];
+        $columns = ['action', 'category', 'reqtype', 'code', 'position'];
         foreach ($columns as $key => $value) {
             $$value = $key;
         }
@@ -82,7 +82,7 @@ class entryrepacker
         $obj[0][$this->gridname]['columns'][$action]['style'] = 'width:50px;whiteSpace: normal;min-width:50px;';
         $obj[0][$this->gridname]['columns'][$category]['style'] = 'width:125px;whiteSpace: normal;min-width:125px;';
         $obj[0][$this->gridname]['columns'][$reqtype]['style'] = 'width:125px;whiteSpace: normal;min-width:125px;';
-        
+
         $obj[0][$this->gridname]['columns'][$code]['style'] = 'width:125px;whiteSpace: normal;min-width:125px;';
         $obj[0][$this->gridname]['columns'][$position]['style'] = 'width:125px;whiteSpace: normal;min-width:125px;';
 
@@ -132,7 +132,7 @@ class entryrepacker
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
 
 
@@ -154,10 +154,10 @@ class entryrepacker
                     $line = $this->coreFunctions->insertGetId($this->table, $data2);
                     $params = $config;
                     $params['params']['doc'] = strtoupper('entryrepacker');
-                    $this->logger->sbcmasterlog($line, $config, ' CREATE - Group : ' . $data[$key]['category'].' '.' Repacker 1 : '. $data[$key]['reqtype'].' '.' Repacker 2 : '. $data[$key]['code'].' '.'Repacker 3 : '. $data[$key]['position']);
+                    $this->logger->sbcmasterlog($line, $config, ' CREATE - Group : ' . $data[$key]['category'] . ' ' . ' Repacker 1 : ' . $data[$key]['reqtype'] . ' ' . ' Repacker 2 : ' . $data[$key]['code'] . ' ' . 'Repacker 3 : ' . $data[$key]['position']);
                 } else {
                     if ($data[$key]['line'] != 0 && $data[$key]['category'] != '') {
-                        $qry = "select category,line from reqcategory where category = '" . $data[$key]['category'] . "'  and isrepacker=1 and line <> ".$data[$key]['line']." limit 1";
+                        $qry = "select category,line from reqcategory where category = '" . $data[$key]['category'] . "'  and isrepacker=1 and line <> " . $data[$key]['line'] . " limit 1";
                         $opendata = $this->coreFunctions->opentable($qry);
                         $resultdata =  json_decode(json_encode($opendata), true);
                         if (!empty($resultdata)) {
@@ -184,7 +184,7 @@ class entryrepacker
         $dateTables = [$this->table];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
         if ($row['line'] == 0 && $row['category'] != '') {
@@ -209,14 +209,14 @@ class entryrepacker
                 $returnrow = $this->loaddataperrecord($line);
                 $params = $config;
                 $params['params']['doc'] = strtoupper('entryrepacker');
-                $this->logger->sbcmasterlog($line, $config, ' CREATE - Group :  ' . $data['category'].' '.'Repacker 1 : '. $data['reqtype'].' '.' Repacker 2 : '. $data['code'].' '.'Repacker 3 : '. $data['position']);
+                $this->logger->sbcmasterlog($line, $config, ' CREATE - Group :  ' . $data['category'] . ' ' . 'Repacker 1 : ' . $data['reqtype'] . ' ' . ' Repacker 2 : ' . $data['code'] . ' ' . 'Repacker 3 : ' . $data['position']);
                 return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
             } else {
                 return ['status' => false, 'msg' => 'Saving failed.'];
             }
         } else {
             if ($row['category'] != '') {
-                $qry = "select line,category,reqtype from  reqcategory where category = '" . $row['category'] . "' and line <> ".$row['line']. " and isrepacker=1 limit 1";
+                $qry = "select line,category,reqtype from  reqcategory where category = '" . $row['category'] . "' and line <> " . $row['line'] . " and isrepacker=1 limit 1";
                 $opendata = $this->coreFunctions->opentable($qry);
                 $resultdata =  json_decode(json_encode($opendata), true);
                 if (!empty($resultdata)) {

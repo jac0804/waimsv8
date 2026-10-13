@@ -38,9 +38,9 @@ class sj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -130,7 +130,7 @@ class sj
             left join client as ag on ag.clientid=head.agentid
             left join client as wh on wh.clientid=head.whid
             where head.doc='sj' and head.trno='$trno' order by line";
-        // var_dump($query);
+    // var_dump($query);
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn

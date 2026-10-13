@@ -34,12 +34,12 @@ class length_of_service
 
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -49,13 +49,13 @@ class length_of_service
         // $companyid = 58;
         // $fields = ['radioprint', 'dclientname','year'];
         // if ($companyid == 58) { // cdohris 
-            $fields = ['radioprint', 'dclientname','ddivname', 'year'];
+        $fields = ['radioprint', 'dclientname', 'ddivname', 'year'];
         // }
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'dclientname.lookupclass', 'lookupemployee');
         data_set($col1, 'dclientname.label', 'Employee');
         // if ($companyid == 58) { // cdohris 
-            data_set($col1, 'ddivname.label', 'Company');
+        data_set($col1, 'ddivname.label', 'Company');
         // }
         data_set($col1, 'year.required', false);
         data_set($col1, 'year.label', 'Year of service');
@@ -124,7 +124,7 @@ class length_of_service
         $companyid     = $config['params']['companyid'];
         // $companyid     = 58;
         // $divid     = $config['params']['dataparams']['divid'];
-        
+
         $divname = isset($config['params']['dataparams']['divname']) ? $config['params']['dataparams']['divname'] : '';
         $year     = $config['params']['dataparams']['year'];
 
@@ -142,7 +142,7 @@ class length_of_service
                 if ($year != '') {
                     $filter .= " and year(hired) = year(curdate()) - $year and timestampdiff(year,hired,curdate()) >= $year ";
                 }
-            
+
                 $query = "
                     select concat(emplast,', ',empfirst,' ',empmiddle) as employee,date(hired) as hired,
                     TIMESTAMPDIFF(YEAR, hired, CURDATE()) as lenservice , di.divname as division,jt.jobtitle 
@@ -152,7 +152,7 @@ class length_of_service
                     where isactive=1 and resigned is null $filter
                     order by hired";
                 break;
-            
+
             default:
                 if ($year != '') {
                     // $filter .= "  and year(now())-year(e.hired) = '$year'";
@@ -175,7 +175,7 @@ class length_of_service
         return $this->coreFunctions->opentable($query);
     }
 
-    
+
     private function Cdohris_display_Header($config)
     {
 
@@ -273,7 +273,7 @@ class length_of_service
         return $str;
     }
 
-    
+
     private function displayHeader($config)
     {
 
@@ -311,9 +311,9 @@ class length_of_service
         $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
         $str .= $this->reporter->startrow();
 
-        $str .= $this->reporter->col('List of Employees within ' . $year.' Years of Employment ', NULL, null, false, $border, '', 'L', $font, '10', '', 'I', '', '');
+        $str .= $this->reporter->col('List of Employees within ' . $year . ' Years of Employment ', NULL, null, false, $border, '', 'L', $font, '10', '', 'I', '', '');
         $str .= $this->reporter->endrow();
-        
+
         $str .= $this->reporter->startrow();
 
         $str .= $this->reporter->col('EMPLOYEE: ' . $employee, NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
@@ -351,7 +351,7 @@ class length_of_service
         $str .= $this->displayHeader($config);
         $chkemp = "";
         $olddocno = "";
-        
+
         $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
         foreach ($result as $key => $data) {
             $str .= $this->reporter->startrow();
@@ -360,11 +360,11 @@ class length_of_service
             $str .= $this->reporter->col($data->name, '300', null, false, $border, 'LB', 'LT', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->position, '200', null, false, $border, 'LB', 'CT', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->age, '150', null, false, $border, 'LBR', 'CT', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col(number_format($data->salary,2), '200', null, false, $border, 'LBR', 'CT', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col(number_format($data->salary, 2), '200', null, false, $border, 'LBR', 'CT', $font, $font_size, '', '', '');
             $str .= $this->reporter->col($data->year, '150', null, false, $border, 'LBR', 'CT', $font, $font_size, '', '', '');
 
-            
-            
+
+
             $str .= $this->reporter->endrow();
 
             // $str .= $this->reporter->endtable();
@@ -373,9 +373,9 @@ class length_of_service
                 $str .= $this->reporter->endtable();
                 $str .= $this->reporter->page_break();
                 $str .= $this->displayHeader($config);
-                
+
                 $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
-                
+
                 $page = $page + $count;
             }
         }
@@ -434,7 +434,7 @@ class length_of_service
     //             ");
     // }
 
-    
+
     // public function reportDefault($config)
     // {
     //     // QUERY

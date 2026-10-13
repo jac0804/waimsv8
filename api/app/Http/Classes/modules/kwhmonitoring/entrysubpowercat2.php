@@ -34,10 +34,10 @@ class entrysubpowercat2
     private $fields = ['name', 'catid', 'subcatid'];
     public $showclosebtn = false;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -110,7 +110,7 @@ class entrysubpowercat2
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                     $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
                 if ($data[$key]['line'] == 0) {
                     $data2['createby'] = $config['params']['user'];
@@ -134,13 +134,13 @@ class entrysubpowercat2
         $row = $config['params']['row'];
         $code = $row['name'];
 
-        
+
         $companyid = $config['params']['companyid'];
         $dateTables = ['subpowercat2'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         foreach ($this->fields as $key => $value) {
-             $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
         if ($row['line'] == 0) {

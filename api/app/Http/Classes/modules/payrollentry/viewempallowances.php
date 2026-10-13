@@ -31,10 +31,10 @@ class viewempallowances
   public $showclosebtn = false;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -58,9 +58,9 @@ class viewempallowances
     // $remarks = 4;
     // $acnoname = 5;
 
-    $cols = ['dateid', 'dateeffect', 'dateend','type', 'allowance', 'remarks', 'acnoname'];
-    
-    $tab = [$this->gridname => ['gridcolumns' => ['dateid', 'dateeffect', 'dateend','type', 'allowance', 'remarks', 'acnoname']]];
+    $cols = ['dateid', 'dateeffect', 'dateend', 'type', 'allowance', 'remarks', 'acnoname'];
+
+    $tab = [$this->gridname => ['gridcolumns' => ['dateid', 'dateeffect', 'dateend', 'type', 'allowance', 'remarks', 'acnoname']]];
 
     $stockbuttons = [];
 

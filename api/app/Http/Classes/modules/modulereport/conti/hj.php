@@ -34,9 +34,9 @@ class hj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -66,7 +66,8 @@ class hj
     );
   }
 
-  public function report_default_query($config){
+  public function report_default_query($config)
+  {
     $trno = $config['params']['dataid'];
     $query = "
     select
@@ -108,19 +109,19 @@ class hj
   } //end fn
 
 
-  public function reportplotting($config,$data)
-  { 
+  public function reportplotting($config, $data)
+  {
     $data = $this->report_default_query($config);
-      if($config['params']['dataparams']['print'] == "default"){
-        $str = $this->rpt_hj_layout($config, $data);
-      }else if($config['params']['dataparams']['print'] == "PDFM") {
-        $str = $this->rpt_hj_PDF($config, $data);
-      }
-      return $str;
+    if ($config['params']['dataparams']['print'] == "default") {
+      $str = $this->rpt_hj_layout($config, $data);
+    } else if ($config['params']['dataparams']['print'] == "PDFM") {
+      $str = $this->rpt_hj_PDF($config, $data);
+    }
+    return $str;
   }
 
   public function rpt_hj_PDF($params, $data)
-  { 
+  {
     $border = '1px solid';
     $font_size = '11';
 
@@ -129,7 +130,7 @@ class hj
 
     $font = "";
     $fontbold = "";
-    
+
     $count = 55;
     $page = 54;
 
@@ -155,27 +156,27 @@ class hj
     PDF::SetMargins(20, 20);
 
     PDF::SetFont($font, '', 9);
-    PDF::MultiCell(0, 0, $username.' - '.date_format(date_create($current_timestamp),'m/d/Y H:i:s').'  '.strtoupper($center). ' ' .'RSSC', '', 'L');
+    PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . strtoupper($center) . ' ' . 'RSSC', '', 'L');
     PDF::SetFont($fontbold, '', 12);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(800, 30, "JOB OFFER", '', 'L', false);
 
     PDF::SetFont($font, '', 11);
-    PDF::MultiCell(100, 20, "Applicant Name : ", '', 'L', false,0);
+    PDF::MultiCell(100, 20, "Applicant Name : ", '', 'L', false, 0);
     PDF::SetFont($fontbold, '', 11);
     PDF::MultiCell(240, 20, '(' . (isset($data[0]['empcode']) ? $data[0]['empcode'] : '') . ')' . ' ' . (isset($data[0]['empname']) ? $data[0]['empname'] : ''), '', 'L', false);
 
     PDF::SetFont($font, '', 11);
-    PDF::MultiCell(100, 20, "Department : ", '', 'L', false,0);
+    PDF::MultiCell(100, 20, "Department : ", '', 'L', false, 0);
     PDF::SetFont($fontbold, '', 11);
     PDF::MultiCell(240, 20, '(' . (isset($data[0]['dept']) ? $data[0]['dept'] : '') . ')' . ' ' . (isset($data[0]['deptname']) ? $data[0]['deptname'] : ''), '', 'L', false);
-    
+
     PDF::SetFont($font, '', 11);
-    PDF::MultiCell(100, 20, "Job Title : ", '', 'L', false,0);
+    PDF::MultiCell(100, 20, "Job Title : ", '', 'L', false, 0);
     PDF::SetFont($fontbold, '', 11);
     PDF::MultiCell(240, 20, '(' . (isset($data[0]['jobcode']) ? $data[0]['jobcode'] : '') . ')' . ' ' . (isset($data[0]['jobtitle']) ? $data[0]['jobtitle'] : ''), '', 'L', false);
 
@@ -192,12 +193,11 @@ class hj
     PDF::MultiCell(266, 0, $params['params']['dataparams']['received'], '', 'L');
 
     return PDF::Output($this->modulename . '.pdf', 'S');
-   
   } //end fn
 
 
   public function rpt_hj_layout($params, $data)
-  { 
+  {
     $border = '1px solid';
     $border_line = '';
     $alignment = '';
@@ -214,7 +214,7 @@ class hj
     $received = $params['params']['dataparams']['received'];
     $approved = $params['params']['dataparams']['approved'];
 
-    
+
     $str = '';
     $count = 55;
     $page = 54;
@@ -225,27 +225,27 @@ class hj
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
     $str .= $this->reporter->begintable('800');
-      $str .= $this->reporter->startrow();
-        $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center .'&nbsp'  .'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
+    $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
 
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
-      $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
+    $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('JOB OFFER ', null, null, false, $border, '', '', $font, '18', 'B', '', '') . '<br />';
     $str .= $this->reporter->endrow();
-   
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('Applicant Name:', '100', null, false, $border, '', 'L', $font, '11', '', '', '1px');

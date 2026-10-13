@@ -34,9 +34,9 @@ class so
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -61,7 +61,7 @@ class so
 
   public function reportparamsdata($config)
   {
-     return $this->coreFunctions->opentable(
+    return $this->coreFunctions->opentable(
       "select 
         'PDFM' as print,
         'newVan' as reporttype,
@@ -270,7 +270,7 @@ class so
 
     PDF::MultiCell(50, 0, 'Model.:', '', 'L', false, 0, '', '');
     PDF::MultiCell(196, 0, $data[0]['truckmodel'], 'B', 'L', false, 0, '', '');
-   
+
     PDF::MultiCell(60, 0, "Plate No.:", '', 'L', false, 0, '', '');
     PDF::MultiCell(166, 0, $data[0]['truckplateno'], 'B', 'L', false, 1, '', '');
 
@@ -514,7 +514,6 @@ class so
                         PDF::MultiCell(500, 0, "         " . ($r == 0 ? $count . ") " . $key : '') . $arr_scope[$r], $brdr, 'L', false, 0, '', '');
                         PDF::MultiCell(220, 0, ($r == 0 ? $pic : ''), $brdr, 'L', false, 1, '', '');
                       }
-                   
                     }
                   }
                 }
@@ -1065,5 +1064,4 @@ class so
     }
     return json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
   }
-
 }

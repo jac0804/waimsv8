@@ -34,9 +34,9 @@ class cr
     private $othersClass;
     private $logger;
     private $reporter;
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -50,9 +50,9 @@ class cr
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'radioprint.options', [
             ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
-            
+
         ]);
-        
+
         return array('col1' => $col1);
     }
 
@@ -205,7 +205,7 @@ class cr
             $totaldb = 0;
             $totalcr = 0;
             for ($i = 0; $i < count($data); $i++) {
-                
+
                 $maxrow = 1;
                 $acno = $data[$i]['acno'];
                 $acnoname = $data[$i]['acnoname'];

@@ -33,9 +33,9 @@ class customer
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -246,7 +246,7 @@ class customer
         left join apledger on apledger.trno = detail.trno and apledger.line = detail.line left join client on client.clientid = apledger.clientid
         where  md5(apledger.clientid)='$clientid'  and date(apledger.dateid)>='$start'  and md5(cntnum.center) = '$center'
         ) as t left join client on client.clientid = t.clientid  order by dateid, docno";
-        
+
         return $query;
     }
 
@@ -1237,7 +1237,7 @@ class customer
     //PDF Layout - not okay pa
     public function reportdefaultAR_PDF($config, $data)
     {
-        
+
 
 
         $center   = $config['params']['center'];

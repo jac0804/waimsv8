@@ -35,12 +35,12 @@ class employee_listing
   // layoutsize: reportWidth
   public $reportParams = ['orientation' => 'l', 'format' => 'letter', 'layoutSize' => '1400'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
     $this->payrollcommon = new payrollcommon;
   }
@@ -139,7 +139,7 @@ class employee_listing
     $center = $config['params']['center'];
     $username = $config['params']['user'];
 
-    switch ($companyid){
+    switch ($companyid) {
       case 66: // metrodragon
         return $this->metrodragon_DefaultLayout($config);
         break;
@@ -231,15 +231,15 @@ class employee_listing
         $filters .= " and e.isactive in (0,1) and (e.resigned is null OR e.resigned is not null)";
         break;
     }
-    
-    if($companyid == 53){
+
+    if ($companyid == 53) {
       $jobtitle = " e.jobtitle ";
-    }else {
+    } else {
       $jobtitle = " jt.jobtitle ";
       $leftjoin .= " left join jobthead as  jt on jt.line = e.jobid ";
     }
 
-    if ($companyid == 66){ // metrodragon
+    if ($companyid == 66) { // metrodragon
       $addfield .= ", e.level as emplevel, division.divname as company, dept.clientname as dept, sect.sectname,
                     ifnull(date(e.resigned), '') as resigned, ifnull(date(e.regular), '') as regular, ts.shftcode as shift,
                     case when e.paymode = 'S' then 'Semi-monthly' 

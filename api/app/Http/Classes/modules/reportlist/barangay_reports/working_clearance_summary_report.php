@@ -20,7 +20,7 @@ use App\Http\Classes\sqlquery;
 use App\Http\Classes\SBCPDF;
 use Illuminate\Support\Facades\URL;
 
-class working_clearance_summary_report 
+class working_clearance_summary_report
 {
   public $modulename = 'Working Clearance Summary Report';
   private $companysetup;
@@ -32,42 +32,42 @@ class working_clearance_summary_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
-      $this->companysetup = new companysetup;
-      $this->coreFunctions = new coreFunctions;
-      $this->othersClass = new othersClass;
-      $this->fieldClass = new txtfieldClass;
-      $this->reporter = new SBCPDF;
+    $this->companysetup = new companysetup;
+    $this->coreFunctions = new coreFunctions;
+    $this->othersClass = new othersClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->reporter = new SBCPDF;
   }
 
-  public function createHeadField($config)// Essentially the input fields from the web 
+  public function createHeadField($config) // Essentially the input fields from the web 
   {
-     $companyid = $config['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
-     $fields = ['start','end','street']; // 'name' =>
+    $fields = ['start', 'end', 'street']; // 'name' =>
 
-        $col1 = $this->fieldClass->create($fields);
-        data_set($col1,'start.type','date');
-        data_set($col1,'end.type','date');
-        // street lookup
-        data_set($col1, 'street.type', 'lookup');
-        data_set($col1, 'street.lookupclass', 'lookupstreet');
-        data_set($col1, 'street.action', 'lookupstreet');
+    $col1 = $this->fieldClass->create($fields);
+    data_set($col1, 'start.type', 'date');
+    data_set($col1, 'end.type', 'date');
+    // street lookup
+    data_set($col1, 'street.type', 'lookup');
+    data_set($col1, 'street.lookupclass', 'lookupstreet');
+    data_set($col1, 'street.action', 'lookupstreet');
 
-        $fields = ['print'];
-        $col2 = $this->fieldClass->create($fields);
+    $fields = ['print'];
+    $col2 = $this->fieldClass->create($fields);
 
-     return array('col1'=>$col1, 'col2'=> $col2);
+    return array('col1' => $col1, 'col2' => $col2);
   }
 
-  public function paramsdata($config)//data parameters; the default values of the input fields
+  public function paramsdata($config) //data parameters; the default values of the input fields
   { // 'names' or 'alias'
 
-     $center = $config['params']['center'];
-     $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
+    $center = $config['params']['center'];
+    $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
 
-      return $this->coreFunctions->opentable( "select 
+    return $this->coreFunctions->opentable("select 
         'default' as print,
         adddate(left(now(),10),-360) as start,
         left(now(),10) as end,
@@ -76,17 +76,17 @@ class working_clearance_summary_report
   }
   public function getloaddata($config)
   {
-      return [];
+    return [];
   }
   public function reportdata($config)
   {
     $str = $this->reportplotting($config);
-    return ['status'=>true, 'msg'=>'Msg works', 'report'=>$str,'params'=>$this->reportParams];
+    return ['status' => true, 'msg' => 'Msg works', 'report' => $str, 'params' => $this->reportParams];
   }
 
-  public function reportplotting($config)// Type of Report (radio option) case connection
+  public function reportplotting($config) // Type of Report (radio option) case connection
   {
-    $data=$this->data_query($config);
+    $data = $this->data_query($config);
     return $this->reportDefaultLayout($config, $data);
   }
 
@@ -118,7 +118,7 @@ class working_clearance_summary_report
     order by day
     ;";
     // var_dump( $query );
-    return $this->coreFunctions->openTable($query);  
+    return $this->coreFunctions->openTable($query);
   }
 
   public function DefaultHeader($config)
@@ -135,20 +135,20 @@ class working_clearance_summary_report
     $border = "1px solid ";
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
-    
+
     $str .= '<br/><br/>';
     $str .= $this->reporter->begintable($layoutsize);
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col(strtoupper($headerdata[0]->name),'500' , null, false, $border, '', '', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Print Date : '.$printDate, '500', null, false, $border, '', 'R', $font, '9', '', '', '');
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->name), '500', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('Print Date : ' . $printDate, '500', null, false, $border, '', 'R', $font, '9', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('WORKING CLEARANCE SUMMARY REPORT','500' , null, false, $border, '', '', $font, '13', 'B', '#8B0000', '');
+    $str .= $this->reporter->col('WORKING CLEARANCE SUMMARY REPORT', '500', null, false, $border, '', '', $font, '13', 'B', '#8B0000', '');
     $str .= $this->reporter->pagenumber('Page', '500', null, false, $border, '', 'R', $font, '9', '', '', '');
 
     $str .= $this->reporter->endrow();
@@ -160,13 +160,13 @@ class working_clearance_summary_report
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    if ($street == ''){
+    if ($street == '') {
       $street = 'ALL';
     }
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('STREET: ' . $street,'250', null, false, $border, 'B', '', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('STREET: ' . $street, '250', null, false, $border, 'B', '', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -179,17 +179,17 @@ class working_clearance_summary_report
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '50',null, null, false, '','C', 'Arial', '14', 'B','','');
+    $str .= $this->reporter->col('', '50', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
     $str .= $this->reporter->col('DATE', '120', null, false, $border, 'B', 'C', $font, '10', 'B', '', '', '');
-    $str .= $this->reporter->col('', '10',null, null, false, '','C', 'Arial', '14', 'B','','');
+    $str .= $this->reporter->col('', '10', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
     $str .= $this->reporter->col('CONTROL #', '180', null, false, $border, 'B', 'C', $font, '10', 'B', '', '', '');
-    $str .= $this->reporter->col('', '10',null, null, false, '','C', 'Arial', '14', 'B','','');
+    $str .= $this->reporter->col('', '10', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
     $str .= $this->reporter->col('BRGY. ID', '180', null, false, $border, 'B', 'C', $font, '10', 'B', '', '', '');
-    $str .= $this->reporter->col('', '10',null, null, false, '','C', 'Arial', '14', 'B','','');
+    $str .= $this->reporter->col('', '10', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
     $str .= $this->reporter->col('FULL NAME', '300', null, false, $border, 'B', 'C', $font, '10', 'B', '', '', '');
-    $str .= $this->reporter->col('', '10',null, null, false, '','C', 'Arial', '14', 'B','','');
-    $str .= $this->reporter->col('AMOUNT', '80', null, false, $border, 'B', 'C', $font, '10', 'B', '', '', ''); 
-    $str .= $this->reporter->col('', '50',null, null, false, '','C', 'Arial', '14', 'B','','');
+    $str .= $this->reporter->col('', '10', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
+    $str .= $this->reporter->col('AMOUNT', '80', null, false, $border, 'B', 'C', $font, '10', 'B', '', '', '');
+    $str .= $this->reporter->col('', '50', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -274,21 +274,21 @@ class working_clearance_summary_report
       $str .= $this->reporter->endrow();
       $str .= $this->reporter->endtable();
     }
-        $str .= '<br/>';
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '40', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
-        $str .= $this->reporter->col('TOTAL CLEARANCE : ', '130', null, null, false, '', 'L', 'Arial', '9', 'B', '', '');
-        $str .= $this->reporter->col('', '5', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
-        $str .= $this->reporter->col($totalClearance, '120', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '', '');
-        $str .= $this->reporter->col('', '160', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
-        $str .= $this->reporter->col('TOTAL AMOUNT : ', '300', null, null, false, '', 'R', 'Arial', '9', 'B', '', '');
-        $str .= $this->reporter->col('', '10', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
-        $str .= $this->reporter->col($totalAmount, '140', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '', '');
-        $str .= $this->reporter->col('', '40', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-        $str .= '<br/><br/>';
+    $str .= '<br/>';
+    $str .= $this->reporter->begintable($layoutsize);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->col('', '40', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
+    $str .= $this->reporter->col('TOTAL CLEARANCE : ', '130', null, null, false, '', 'L', 'Arial', '9', 'B', '', '');
+    $str .= $this->reporter->col('', '5', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
+    $str .= $this->reporter->col($totalClearance, '120', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('', '160', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
+    $str .= $this->reporter->col('TOTAL AMOUNT : ', '300', null, null, false, '', 'R', 'Arial', '9', 'B', '', '');
+    $str .= $this->reporter->col('', '10', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
+    $str .= $this->reporter->col($totalAmount, '140', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('', '40', null, null, false, '', 'C', 'Arial', '14', 'B', '', '');
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+    $str .= '<br/><br/>';
 
 
     $str .= $this->reporter->begintable($layoutsize);
@@ -305,7 +305,4 @@ class working_clearance_summary_report
     $str .= $this->reporter->endreport();
     return $str;
   }
-    
-
-   
 }

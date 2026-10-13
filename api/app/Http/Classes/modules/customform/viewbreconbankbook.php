@@ -33,10 +33,10 @@ class viewbreconbankbook
     public $reporter;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1150'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -121,7 +121,7 @@ class viewbreconbankbook
         $status = $config['params']['dataparams']['status'];
 
         $companyid = $config['params']['companyid'];
-        $dateTables = ['lahead','glhead','ladetail','gldetail'];
+        $dateTables = ['lahead', 'glhead', 'ladetail', 'gldetail'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $start = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['start'], $lookups);
@@ -163,7 +163,7 @@ class viewbreconbankbook
         $gatherby = $config['params']['dataparams']['gatherby'];
 
         $companyid = $config['params']['companyid'];
-        $dateTables = ['lahead','glhead','ladetail','gldetail'];
+        $dateTables = ['lahead', 'glhead', 'ladetail', 'gldetail'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $date1 = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['start'], $lookups);
@@ -321,7 +321,7 @@ class viewbreconbankbook
         $gatherby = $config['params']['dataparams']['gatherby'];
 
         $companyid = $config['params']['companyid'];
-        $dateTables = ['lahead','glhead','ladetail','gldetail'];
+        $dateTables = ['lahead', 'glhead', 'ladetail', 'gldetail'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
         $date1 = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['start'], $lookups);

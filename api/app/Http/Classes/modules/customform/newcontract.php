@@ -22,16 +22,16 @@ class newcontract
     public $gridname = 'accounting';
     private $logger;
 
-    public $tablelogs = 'contracts_log';
+    public $tablelogs = 'client_log';
 
     public $style = 'width:30%;max-width:500px;';
     public $issearchshow = false;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;

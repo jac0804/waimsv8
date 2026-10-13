@@ -16,6 +16,7 @@ use App\Http\Classes\othersClass;
 use App\Http\Classes\Logger;
 use App\Http\Classes\SBCPDF;
 use App\Http\Classes\builder\helpClass;
+use App\Http\Classes\sbcscript\sbcscript;
 
 class pr // class declaration
 {
@@ -59,7 +60,8 @@ class pr // class declaration
         'wh',
         'address',
         'purtype',
-        'requestor'
+        'requestor',
+        'sectid'
     ];
     private $except = ['trno', 'dateid', 'due'];
     public $showfilteroption = true;
@@ -67,6 +69,7 @@ class pr // class declaration
     public $showcreatebtn = true;
     private $reporter;
     private $helpClass;
+    private $scbscript;
 
     public $showfilterlabel = [
         ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary'],
@@ -78,17 +81,18 @@ class pr // class declaration
     /**
      * initializes all helper classes needed for the module
      */
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
         $this->logger = new Logger;
         $this->reporter = new SBCPDF;
         $this->helpClass = new helpClass;
+        $this->scbscript = new sbcscript;
     }
 
     /**
@@ -190,10 +194,13 @@ class pr // class declaration
 
         data_set($col1, 'docno.label', 'Transaction#');
 
-        $fields = ['dateid', 'due'];
+        $fields = [['dateid', 'due'], 'sectioncode', 'sectionname'];
 
         $col2 = $this->fieldClass->create($fields);
         data_set($col2, 'due.label', 'Required Date');
+        data_set($col2, 'sectioncode.action', 'lookupdeptsection');
+        data_set($col2, 'sectioncode.lookupclass', 'lookupdeptsection');
+        data_set($col2, 'sectioncode.addedparams', ['client']);
 
         if ($noeditdate) {
             data_set($col2, 'dateid.class', 'sbccsreadonly');
@@ -576,7 +583,10 @@ class pr // class declaration
         head.lockdate,
         hi.checkdate,
         num.postdate,
-        client.groupid";
+        client.groupid,
+        head.sectid,
+        s.sectcode as sectioncode,
+        s.sectname as sectionname";
 
         $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -585,6 +595,7 @@ class pr // class declaration
         left join client as agent on agent.client = head.agent
         left join client as req on req.clientid = head.requestor
         left join headinfotrans as hi on hi.trno = head.trno
+        left join section as s on s.sectid = head.sectid
         where head.trno = ? and num.center = ?
         union all " . $qryselect . " from $htable as head
         left join $tablenum as num on num.trno = head.trno
@@ -593,7 +604,8 @@ class pr // class declaration
         left join client as agent on agent.client = head.agent
         left join client as req on req.clientid = head.requestor
         left join headinfotrans as hi on hi.trno = head.trno
-          where head.trno = ? and num.center=? ";
+        left join section as s on s.sectid = head.sectid
+        where head.trno = ? and num.center=? ";
 
         $head = $this->coreFunctions->opentable($qry, [$trno, $center, $trno, $center]);
         if (!empty($head)) {
@@ -662,6 +674,9 @@ class pr // class declaration
         $data[0]['due'] = $this->othersClass->getCurrentDate();
         $data[0]['client'] = '';
         $data[0]['clientname'] = '';
+        $data[0]['sectid'] = 0;
+        $data[0]['sectioncode'] = '';
+        $data[0]['sectionname'] = '';
         $data[0]['yourref'] = '';
         $data[0]['shipto'] = '';
         $data[0]['ourref'] = '';
@@ -1801,5 +1816,10 @@ class pr // class declaration
         $data['links'] = $links; // all connections
 
         return ['status' => true, 'msg' => 'Successfully fetched.', 'data' => $data];
+    }
+
+    public function sbcscript($config)
+    {
+        return $this->scbscript->pr($config);
     }
 }

@@ -32,15 +32,15 @@ class entrycounter
     public $style = 'width:100%;';
     public $tablelogs = 'masterfile_log';
     public $tablelogs_del = 'del_masterfile_log';
-    private $fields = ['iscounter', 'code','color','isinactive'];
+    private $fields = ['iscounter', 'code', 'color', 'isinactive'];
     public $showclosebtn = false;
     private $reporter;
     private $logger;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -56,7 +56,7 @@ class entrycounter
 
     public function createTab($config)
     {
-        $columns = ['action', 'code','color','isinactive', 'order'];
+        $columns = ['action', 'code', 'color', 'isinactive', 'order'];
         $tab = [
             $this->gridname => [
                 'gridcolumns' => $columns
@@ -128,11 +128,10 @@ class entrycounter
     {
         $qry = "line,(case when isinactive=0 then 'false' else 'true' end) as isinactive";
         foreach ($this->fields as $key => $value) {
-            if($value == 'isinactive'){
-            }else{
+            if ($value == 'isinactive') {
+            } else {
                 $qry = $qry . ',' . $value;
             }
-            
         }
         return $qry;
     }
@@ -197,13 +196,13 @@ class entrycounter
 
         $dateTables = ['reqcategory'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-        
+
         if ($row['isinactive'] == 'true') {
             $row['isinactive'] = 1;
         } else {
             $row['isinactive'] = 0;
         }
-        
+
         foreach ($this->fields as $key2 => $value) {
             $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
@@ -252,7 +251,7 @@ class entrycounter
 
         $data = $this->loaddataperrecord($row['line']);
         $qry = "select counterline as value from (select counterline from currentservice where counterline=? union all select counterline from hcurrentservice where counterline=?) as a limit 1";
-        $count = $this->coreFunctions->datareader($qry, [$row['line'],$row['line']],'',true);
+        $count = $this->coreFunctions->datareader($qry, [$row['line'], $row['line']], '', true);
 
         if ($count != 0) {
             return ['clientid' => $row['line'], 'status' => false, 'msg' => 'Already have transaction...'];

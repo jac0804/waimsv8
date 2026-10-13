@@ -34,10 +34,10 @@ class ratesetup
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -45,14 +45,16 @@ class ratesetup
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter(){
-    $fields = ['radioprint', 'prepared','approved', 'received','print'];
-    $col1 = $this->fieldClass->create($fields);        
+  public function createreportfilter()
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
 
-    return array('col1'=>$col1);
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable("select 
       'PDFM' as print,
       '' as approved,
@@ -61,7 +63,8 @@ class ratesetup
     ");
   }
 
-  public function report_default_query($filters){
+  public function report_default_query($filters)
+  {
     $trno = $filters['params']['dataid'];
     $query = "select e.empid, cl.client as empcode,
       CONCAT(e.emplast,', ',e.empfirst,' ',e.empmiddle) as empname,
@@ -76,10 +79,11 @@ class ratesetup
     return $result;
   }
 
-  public function reportplotting($params, $data) {
-    if($params['params']['dataparams']['print'] == "default") {
+  public function reportplotting($params, $data)
+  {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->rpt_ratesetup_masterfile_layout($params, $data);
-    } else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_ratesetup_PDF($params, $data);
     }
   }
@@ -242,7 +246,7 @@ class ratesetup
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -256,14 +260,14 @@ class ratesetup
     PDF::MultiCell(100, 0, "Employee Code: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(420, 0, (isset($data[0]['empcode']) ? $data[0]['empcode'] : ''), '', 'L', false, 0, '',  '');
-    
+
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(0, 0, "", '', 'L');
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(100, 0, "Employee Name: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(420, 0, (isset($data[0]['empname']) ? $data[0]['empname'] : ''), '', 'L', false, 0, '',  '');
-    
+
 
 
     PDF::MultiCell(0, 0, "\n\n\n");
@@ -296,20 +300,20 @@ class ratesetup
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
     $this->default_ratesetup_header_PDF($params, $data);
-    
-    
-    
-    
+
+
+
+
     for ($i = 0; $i < count($data); $i++) {
       $maxrow = 1;
-      $arr_dateeffect = $this->reporter->fixcolumn([$data[$i]['dateeffect']],'16',0);
-      $arr_dateend = $this->reporter->fixcolumn([$data[$i]['dateend']],'16',0);
-      $arr_basicrate = $this->reporter->fixcolumn([number_format($data[$i]['basicrate'],$decimalcurr)],',16',0);
-      $arr_type = $this->reporter->fixcolumn([$data[$i]['type']],'16',0);
+      $arr_dateeffect = $this->reporter->fixcolumn([$data[$i]['dateeffect']], '16', 0);
+      $arr_dateend = $this->reporter->fixcolumn([$data[$i]['dateend']], '16', 0);
+      $arr_basicrate = $this->reporter->fixcolumn([number_format($data[$i]['basicrate'], $decimalcurr)], ',16', 0);
+      $arr_type = $this->reporter->fixcolumn([$data[$i]['type']], '16', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_dateeffect, $arr_dateend, $arr_basicrate, $arr_type]);
 
-      for($r = 0; $r < $maxrow; $r++) {
+      for ($r = 0; $r < $maxrow; $r++) {
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(150, 0, (isset($arr_dateeffect[$r]) ? $arr_dateeffect[$r] : ''), '', 'L', 0, 0, '', '');
         PDF::MultiCell(150, 0, (isset($arr_dateend[$r]) ? $arr_dateend[$r] : ''), '', 'L', 0, 0, '', '');
@@ -363,5 +367,4 @@ class ratesetup
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

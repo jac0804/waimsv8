@@ -26,7 +26,7 @@ class canvassapproval {
 	private $fields      = ['terms', 'days'];
 	public $showclosebtn = false;
 
-	public function __construct() {
+	public function __construct($params = null) {
 		$this->fieldClass    = new txtfieldClass;
 		$this->tabClass      = new tabClass;
 		$this->companysetup  = new companysetup;

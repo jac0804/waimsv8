@@ -40,7 +40,7 @@ class sj
   public $htablelogs = 'htable_log';
   public $tablelogs_del = 'del_table_log';
   private $stockselect;
-  
+
   public $defaultContra = 'IS1';
 
   private $fields = ['trno', 'docno', 'dateid', 'client', 'clientname', 'address', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'projectid'];
@@ -53,11 +53,11 @@ class sj
   private $helpClass;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;

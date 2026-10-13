@@ -29,12 +29,12 @@ class purchase_requisition_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -438,7 +438,7 @@ class purchase_requisition_report
       case 1: // unposted
       case 3:
       case 4:
-        $query ="select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",
+        $query = "select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",
         stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext" . $addfield . ",
         client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem,
         dept.clientname as deptname
@@ -454,10 +454,10 @@ class purchase_requisition_report
         " . $addjoin . "
         where head.doc = '$doc'  and $filterdate between '$start' and '$end' $filter $filter1  
         order by head.docno $sorting";
-          break;
-        case 0: // posted
-          $query =
-            "select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext " . $addfield . ",
+        break;
+      case 0: // posted
+        $query =
+          "select head.docno,head.clientname as supplier" . $barcodeitemnamefield . ",stock.uom,stock.rrqty,stock.rrcost,stock.disc,stock.ext " . $addfield . ",
         client.clientname,head.createby,stock.loc,stock.rem,head.dateid,stock.ref,head.rem as hrem,dept.clientname as deptname
         from hprstock as stock
         left join hprhead as head on head.trno=stock.trno

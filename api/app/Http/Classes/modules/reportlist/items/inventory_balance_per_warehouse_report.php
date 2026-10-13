@@ -29,12 +29,12 @@ class inventory_balance_per_warehouse_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -45,7 +45,7 @@ class inventory_balance_per_warehouse_report
         $fields = ['radioprint', 'start', 'ditemname', 'luom', 'divsion', 'brandname', 'brandid', 'model', 'class', 'categoryname', 'subcatname', 'radiolayoutformat'];
 
         if ($companyid == 47) { //kitchenstar
-            array_push($fields,'dwhname');
+            array_push($fields, 'dwhname');
         }
 
         $col1 = $this->fieldClass->create($fields);
@@ -164,7 +164,7 @@ class inventory_balance_per_warehouse_report
         $companyid    = $config['params']['companyid'];
 
         $filteritem = "";
-       
+
 
         if ($uom != "") {
             $filteritem .= " and stock.uom='" . $uom . "'";
@@ -298,7 +298,7 @@ class inventory_balance_per_warehouse_report
         $companyid = $config['params']['companyid'];
         $layoutformat = $config['params']['dataparams']['layoutformat'];
         $limit = "";
-        $filter ="";
+        $filter = "";
         $whid         = $config['params']['dataparams']['whid'];
         $wh         = $config['params']['dataparams']['wh'];
         $whname     = $config['params']['dataparams']['whname'];
@@ -310,9 +310,9 @@ class inventory_balance_per_warehouse_report
         switch ($companyid) {
             case 47: //kitchenstar
                 if ($layoutformat == 2) { //except dummy warehouse PASIG00004
-                    $qry2 = "select client,clientname,clientid from client where iswarehouse=1 and clientid <> 1014 ". $filter ." order by client $limit";
+                    $qry2 = "select client,clientname,clientid from client where iswarehouse=1 and clientid <> 1014 " . $filter . " order by client $limit";
                 } else { //layoutformat 0,1 
-                    $qry2 = "select client,clientname,clientid from client where iswarehouse=1 ". $filter ." order by client $limit";
+                    $qry2 = "select client,clientname,clientid from client where iswarehouse=1 " . $filter . " order by client $limit";
                 }
                 break;
             default: //other company

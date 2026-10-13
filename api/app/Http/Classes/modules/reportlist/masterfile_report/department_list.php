@@ -30,12 +30,12 @@ class department_list
 
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -123,12 +123,12 @@ class department_list
 
     $str = '';
 
-  
-        $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->letterhead($center, $username, $config);
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
+
+    $str .= $this->reporter->begintable($this->reportParams['layoutSize']);
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center, $username, $config);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
 
     $str .= '<br/><br/>';
 

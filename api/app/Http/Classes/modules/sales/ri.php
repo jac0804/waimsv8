@@ -93,11 +93,11 @@ class ri
     ['val' => 'all', 'label' => 'All', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -131,8 +131,8 @@ class ri
 
   public function createdoclisting($config)
   {
-    
-    $getcols = ['action', 'liststatus', 'listdocument','listdate', 'listclientname', 'yourref', 'ourref',  'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
+
+    $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'yourref', 'ourref',  'postdate', 'listpostedby', 'listcreateby', 'listeditby', 'listviewby'];
     foreach ($getcols as $key => $value) {
       $$value = $key;
     }
@@ -145,7 +145,7 @@ class ri
     $cols[$yourref]['align'] = 'text-left';
     $cols[$ourref]['align'] = 'text-left';
     $cols[$postdate]['label'] = 'Post Date';
-    
+
 
     $cols = $this->tabClass->delcollisting($cols);
     return $cols;
@@ -182,13 +182,13 @@ class ri
       case 'draft':
         $condition = ' and num.postdate is null and num.statid = 0';
         break;
-    //   case 'forapproval':
-    //     $condition .= " and num.postdate is null and head.lockdate is null and num.statid=10 
-    //                     and num.appuser='" . $config['params']['user'] . "'";
-    //     break;
-    //   case 'approved':
-    //     $condition = ' and num.postdate is null and head.lockdate is null and num.statid=36 ';
-    //     break;
+      //   case 'forapproval':
+      //     $condition .= " and num.postdate is null and head.lockdate is null and num.statid=10 
+      //                     and num.appuser='" . $config['params']['user'] . "'";
+      //     break;
+      //   case 'approved':
+      //     $condition = ' and num.postdate is null and head.lockdate is null and num.statid=36 ';
+      //     break;
       case 'posted':
         $condition = ' and num.postdate is not null ';
         break;
@@ -244,7 +244,7 @@ class ri
     $search = "";
     if (isset($config['params']['search'])) {
       $searchfield = ['head.docno', 'head.clientname', 'head.yourref', 'head.ourref', 'num.postedby', 'head.createby', 'head.editby', 'head.viewby', 'head.rem'];
-     
+
       $search = $config['params']['search'];
       if ($search != "") {
         $filtersearch = $this->othersClass->multisearch($searchfield, $search);
@@ -323,7 +323,7 @@ class ri
     if ($this->companysetup->getisshowmanual($config['params'])) {
       $buttons['others']['items']['manual'] = ['label' => 'View Manual', 'todo' => ['lookupclass' => 'cm', 'title' => 'CM_MANUAL', 'action' => 'viewpdf',  'access' => 'view', 'type' => 'viewmanual']];
     }
-   
+
     return $buttons;
   } // createHeadbutton
 
@@ -334,7 +334,7 @@ class ri
     $obj = $this->tabClass->createtab($tab, []);
 
     $return['Attachment'] = ['icon' => 'fa fa-envelope', 'tab' => $obj];
-    
+
 
     if ($this->companysetup->getistodo($config['params'])) {
       $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entrycntnumtodo', 'label' => 'To Do', 'access' => 'view']];
@@ -360,9 +360,9 @@ class ri
     $column = ['action', 'itemdescription', 'rrqty', 'uom', 'kgs', 'isamt', 'disc', 'ext', 'cost', 'wh', 'ref', 'loc', 'expiry', 'rem', 'pallet', 'location', 'itemname', 'barcode'];
     $sortcolumn = ['action', 'itemdescription', 'rrqty', 'uom', 'kgs', 'isamt', 'disc', 'ext', 'cost', 'wh', 'ref', 'loc', 'expiry', 'rem', 'pallet', 'location', 'itemname', 'barcode'];
     foreach ($column as $key => $value) {
-          $$value = $key;
-        }
-   
+      $$value = $key;
+    }
+
 
     if ($invonly) {
       $headgridbtns = ['viewref', 'viewdiagram'];
@@ -382,10 +382,10 @@ class ri
       ],
     ];
 
-    $stockbuttons =[];
+    $stockbuttons = [];
     if ($this->companysetup->getserial($config['params'])) {
       $stockbuttons = ['save', 'delete', 'serialin'];
-    } 
+    }
 
 
     if ($this->companysetup->getiseditsortline($config['params'])) {
@@ -459,8 +459,8 @@ class ri
     $invonly = $this->companysetup->isinvonly($config['params']);
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $noeditdate = $this->othersClass->checkAccess($config['params']['user'], 4850);
-    $fields = ['docno', 'client', 'clientname','address'];
-  
+    $fields = ['docno', 'client', 'clientname', 'address'];
+
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'client.label', 'Customer');
     data_set($col1, 'client.lookupclass', 'customer');
@@ -476,13 +476,13 @@ class ri
     data_set($col2, 'dacnoname.label', 'AR Account');
 
     if ($noeditdate) {
-    data_set($col2, 'dateid.class', 'sbccsreadonly');
+      data_set($col2, 'dateid.class', 'sbccsreadonly');
     }
 
     $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dprojectname'];
-  
+
     $col3 = $this->fieldClass->create($fields);
-  
+
     $fields = ['rem'];
 
     if ($this->companysetup->getistodo($config['params'])) {
@@ -490,7 +490,7 @@ class ri
     }
 
     $col4 = $this->fieldClass->create($fields);
-  
+
     return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
   }
 
@@ -633,10 +633,10 @@ class ri
          ifnull(b.client,'') as branchcode ,ifnull(b.clientname,'') as branchname, 
          head.branch,'' as dbranchname, head.billid, head.shipid, head.billcontactid, head.shipcontactid,num.statid ";
 
-    
-       $filterbref = " and left(num.bref,3) <> 'SRS'";
 
-       $qry = $qryselect . " from $table as head
+    $filterbref = " and left(num.bref,3) <> 'SRS'";
+
+    $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
         left join client on head.client = client.client
         left join client as warehouse on warehouse.client = head.wh
@@ -675,7 +675,7 @@ class ri
         $btndonetodo = $this->othersClass->checkdonetodo($config, $tablenum);
         $hideobj = ['donetodo' => !$btndonetodo];
       }
-   
+
       return  [
         'head' => $head,
         'griddata' => ['inventory' => $stock],
@@ -1788,14 +1788,14 @@ class ri
       $config['params']['line'] = $line;
     }
 
-      $dateTables = ['lastock'];
-      $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $dateTables = ['lastock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-      $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
-      $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
-      $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
 
-   
+
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
     $factor = 1;
@@ -1840,10 +1840,10 @@ class ri
     ];
 
 
-  
+
 
     foreach ($data as $key => $value) {
-         $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -2115,7 +2115,7 @@ class ri
           $config['params']['data']['ref'] = $data[$key2]->docno;
           $config['params']['data']['amt'] = $data[$key2]->isamt;
           $config['params']['data']['projectid'] = $data[$key2]->projectid;
-      
+
 
           if (floatval($data[$key2]->cost) == 0) {
             $config['params']['data']['cost'] = $this->othersClass->getlatestcost($data[$key2]->itemid, $dateid, $config);
@@ -2184,7 +2184,7 @@ class ri
           $config['params']['data']['amt'] = $data[$key2]->isamt;
           $config['params']['data']['projectid'] = $data[$key2]->projectid;
 
-        
+
 
           if (floatval($data[$key2]->cost) == 0) {
             $config['params']['data']['cost'] = $this->othersClass->getlatestcost($data[$key2]->itemid, $dateid, $config);
@@ -2225,13 +2225,13 @@ class ri
     $status = true;
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
 
- 
+
     $qry = 'select head.dateid,head.client,head.tax,head.contra,head.cur,head.forex,stock.ext,wh.client as wh,ifnull(item.asset,"") as asset,ifnull(item.salesreturn,"") as revenue,item.expense,
     stock.isamt,stock.cost,stock.amt,stock.disc,stock.rrqty,stock.qty,stock.fcost,head.projectid,item.amt9
           from ' . $this->head . ' as head left join ' . $this->stock . ' as stock on stock.trno=head.trno
           left join client as wh on wh.clientid=stock.whid
           left join item on item.itemid=stock.itemid where head.trno=?';
- 
+
     $stock = $this->coreFunctions->opentable($qry, [$trno]);
     $tax = 0;
     $cost = 0;
@@ -2254,7 +2254,7 @@ class ri
         }
 
         $cost = $stock[$key]->cost;
-        
+
 
         $expense = isset($stock[$key]->expense) ? $stock[$key]->expense : '';
 
@@ -2275,7 +2275,7 @@ class ri
           'fcost' => $stock[$key]->fcost * $stock[$key]->qty,
           'projectid' => $stock[$key]->projectid
         ];
-       
+
 
         $this->distribution($params, $config);
       }
@@ -2334,7 +2334,7 @@ class ri
         $entry['deptid'] = $params['deptid'];
         $entry['projectid'] = 0;
       }
-        $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
+      $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
     }
 
     //INV
@@ -2342,7 +2342,7 @@ class ri
       if (floatval($invamt) != 0) {
         $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['inventory']]);
         $entry = ['acnoid' => $acnoid, 'client' => $params['wh'], 'db' => $invamt, 'cr' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($params['fcost']), 'projectid' => $params['projectid']];
-       
+
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
 
         if ($params['expense'] == '') {
@@ -2351,7 +2351,7 @@ class ri
           $cogs =  $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['expense']]);
         }
         $entry = ['acnoid' => $cogs, 'client' => $params['wh'], 'db' => 0, 'cr' => $invamt, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => floatval($forex) == 1 ? 0 : ($params['fcost']), 'fdb' => 0, 'projectid' => $params['projectid']];
-       
+
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
     }
@@ -2362,25 +2362,22 @@ class ri
       if (floatval($sr) != 0) {
         $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['revenue']]);
         $entry = ['acnoid' => $acnoid, 'client' => $params['client'], 'cr' => 0, 'db' => $sr, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($params['ext'] - $params['tax']), 'projectid' => $params['projectid']];
-      
-          $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
-        
+
+        $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
 
       // ouput tax
       $ouput = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['TX2']);
       $entry = ['acnoid' => $ouput, 'client' => $params['client'], 'cr' => 0, 'db' => ($params['tax'] * $forex), 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($params['tax']), 'projectid' => $params['projectid']];
-        $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
-      
+      $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
     } else {
       //sr
       $sr = ($params['ext'] * $forex);
       if (floatval($sr) != 0) {
         $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['revenue']]);
         $entry = ['acnoid' => $acnoid, 'client' => $params['client'], 'cr' => 0, 'db' => $sr, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($params['ext']), 'projectid' => $params['projectid']];
-        
-          $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
-        
+
+        $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
     }
   } //end function
@@ -2404,7 +2401,7 @@ class ri
     $companyid = $config['params']['companyid'];
     $dataparams = $config['params']['dataparams'];
     $this->logger->sbcviewreportlog($config);
-    
+
     $data = app($this->companysetup->getreportpath($config['params']))->report_default_query($config['params']['dataid']);
     $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
 
@@ -2416,17 +2413,17 @@ class ri
     $data = $this->openstock($head['trno'], $config);
     $data2 = json_decode(json_encode($data), true);
     $exec = true;
-    
+
     $companyid = $config['params']['companyid'];
     $dateTables = ['lastock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    
+
     foreach ($data2 as $key => $value) {
 
       $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
       $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
-    
+
       $computedata = $this->othersClass->computestock(
         $damt * $head['forex'],
         $data[$key]->disc,

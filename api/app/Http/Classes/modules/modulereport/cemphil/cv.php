@@ -35,9 +35,9 @@ class cv
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -57,7 +57,7 @@ class cv
       $col1,
       'radioreporttype.options',
       [
-        
+
         ['label' => 'CPV', 'value' => '6', 'color' => 'blue']
       ]
     );
@@ -68,11 +68,10 @@ class cv
   public function reportplotting($config, $data)
   {
     if ($config['params']['dataparams']['print'] == "default") {
-    
     } else if ($config['params']['dataparams']['print'] == "PDFM") {
-     
+
       switch ($config['params']['dataparams']['reporttype']) {
-         
+
         case '6': // CPV
           $str = $this->PDF_CPV($data, $config);
           break;
@@ -495,7 +494,7 @@ class cv
     $username = $params['params']['user'];
     $count = $page = 35;
     $totalext = 0;
- 
+
     $font = "";
     $fontbold = "";
     $fontitalic = "";
@@ -528,15 +527,15 @@ class cv
 
         $credit = number_format($data[$i]['cr'], $decimalcurr);
         $credit = $credit < 0 ? '-' : $credit;
-      
+
         $arr_costcenter = $this->reporter->fixcolumn([$costcenter], '30', 0);
         $arr_acnonamedescs = $this->reporter->fixcolumn([$acnonamedescs], '40', 0);
         $arr_gl = $this->reporter->fixcolumn([$gl], '10', 0);
         $arr_sl = $this->reporter->fixcolumn([$sl], '10', 0);
-  
+
         $arr_debit = $this->reporter->fixcolumn([$debit], '15', 0);
         $arr_credit = $this->reporter->fixcolumn([$credit], '15', 0);
-      
+
         $maxrow = $this->othersClass->getmaxcolumn([$arr_costcenter, $arr_acnonamedescs, $arr_gl, $arr_sl, $arr_debit, $arr_credit]);
 
         for ($r = 0; $r < $maxrow; $r++) {

@@ -34,16 +34,16 @@ class entrypces
   public $style = 'width:100%;';
   public $tablelogs = 'masterfile_log';
   public $tablelogs_del = 'del_masterfile_log';
-  private $fields = ['category', 'ispexp','sortline','iscomm'];
+  private $fields = ['category', 'ispexp', 'sortline', 'iscomm'];
   public $showclosebtn = false;
   private $reporter;
   private $logger;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -61,7 +61,7 @@ class entrypces
 
   public function createTab($config)
   {
-    $cols =['action', 'category','sortline','iscomm'];
+    $cols = ['action', 'category', 'sortline', 'iscomm'];
     $tab = [
       $this->gridname => [
         'gridcolumns' => $cols
@@ -70,7 +70,7 @@ class entrypces
 
     foreach ($cols as $key => $value) {
       $$value = $key;
-  }
+    }
 
     $stockbuttons = ['save', 'delete'];
 
@@ -119,16 +119,16 @@ class entrypces
     $companyid = $config['params']['companyid'];
     $dateTables = [$this->table];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-    
+
     $data = $config['params']['data'];
     foreach ($data as $key => $value) {
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
 
-        
+
         if ($data[$key]['line'] == 0) {
           $cat_id  = $this->coreFunctions->insertGetId($this->table, $data2);
           $this->logger->sbcmasterlog($cat_id, $config, ' CREATE - ' . $data[$key]['category']);
@@ -151,7 +151,7 @@ class entrypces
     $dateTables = [$this->table];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['line'] == 0) {
       $cat_id = $this->coreFunctions->insertGetId($this->table, $data);
@@ -185,25 +185,25 @@ class entrypces
     //   return ['clientid' => $row['line'], 'status' => false, 'msg' => 'Unable to delete. Already used by ' . $count[0]->clientname];
     // }
 
-    
-    $hasrecords = $this->coreFunctions->datareader("
+
+    $hasrecords = $this->coreFunctions->datareader(
+      "
       select expenseid as value from (
       select expenseid from pxchecking where expenseid = ?
       union all
       select expenseid from hpxchecking  where expenseid = ?
-      ) as g limit 1", 
-    [$row['line'],$row['line']]);
+      ) as g limit 1",
+      [$row['line'], $row['line']]
+    );
 
-    if(!empty($hasrecords)){
+    if (!empty($hasrecords)) {
       return ['status' => false, 'msg' => 'Delete failed. Expense Already used'];
-
-    }else{
+    } else {
       $qry = "delete from " . $this->table . " where line=?";
       $this->coreFunctions->execqry($qry, 'delete', [$row['line']]);
       $this->logger->sbcdelmaster_log($row['line'], $config, 'REMOVE - ' . $row['category'] . ' - ' . $row['reqtype']);
       return ['status' => true, 'msg' => 'Successfully deleted.'];
     }
-    
   }
 
 
@@ -255,10 +255,9 @@ class entrypces
         } else {
           $d->iscomm = 'false';
         }
-
       }
     }
-   
+
 
     return $data;
   }

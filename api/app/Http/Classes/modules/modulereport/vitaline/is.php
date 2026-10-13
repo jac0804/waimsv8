@@ -34,9 +34,9 @@ class is
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -44,17 +44,19 @@ class is
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter(){
-    $fields = ['radioprint', 'prepared','approved', 'received','print'];
-    $col1 = $this->fieldClass->create($fields);        
+  public function createreportfilter()
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
       // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
     ]);
-    return array('col1'=>$col1);
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable("select 
       'PDFM' as print,
       '' as approved,
@@ -63,9 +65,10 @@ class is
     ");
   }
 
-  public function report_default_query($filters){
+  public function report_default_query($filters)
+  {
     $trno = $filters['params']['dataid'];
-    $query="
+    $query = "
     select head.docno,head.trno, head.clientname, head.address, 
     date(head.dateid) as dateid, head.terms, head.rem,
     item.barcode, item.itemname, stock.rrcost as gross, 
@@ -101,45 +104,47 @@ class is
     return $result;
   }
 
-  public function reportplotting($params, $data) {
-    if($params['params']['dataparams']['print'] == "default") {
+  public function reportplotting($params, $data)
+  {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_is_layout($params, $data);
-    } else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_IS_PDF($params, $data);
     }
   }
 
-  public function default_header($params, $data) {
+  public function default_header($params, $data)
+  {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
     $str = "";
 
     $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->letterhead($center,$username);
+    $str .= $this->reporter->letterhead($center, $username);
     $str .= $this->reporter->endtable();
     // $str .= '<br/><br/>';
-    
+
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-    $str .= $this->reporter->col('INVENTORY SETUP','580',null,false,'1px solid ','','L','Century Gothic','18','B','','');
-    $str .= $this->reporter->col('DOCUMENT # :','120',null,false,'1px solid ','','L','Century Gothic','12','B','','');
-    $str .= $this->reporter->col((isset($data[0]['docno'])? $data[0]['docno']:''),'100',null,false,'1px solid ','B','L','Century Gothic','12','','','').'<br />';
+    $str .= $this->reporter->col('INVENTORY SETUP', '580', null, false, '1px solid ', '', 'L', 'Century Gothic', '18', 'B', '', '');
+    $str .= $this->reporter->col('DOCUMENT # :', '120', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+    $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '100', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '12', '', '', '') . '<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('WAREHOUSE : ','100',null,false,'1px solid ','','L','Century Gothic','12','B','30px','4px');
-    $str .= $this->reporter->col((isset($data[0]['whname'])? $data[0]['whname']:''),'500',null,false,'1px solid ','B','L','Century Gothic','12','','30px','4px');
-    $str .= $this->reporter->col('DATE : ','60',null,false,'1px solid ','','R','Century Gothic','12','B','','');
-    $str .= $this->reporter->col((isset($data[0]['dateid'])? $data[0]['dateid']:''),'140',null,false,'1px solid ','B','R','Century Gothic','12','','','');
+    $str .= $this->reporter->col('WAREHOUSE : ', '100', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '30px', '4px');
+    $str .= $this->reporter->col((isset($data[0]['whname']) ? $data[0]['whname'] : ''), '500', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '12', '', '30px', '4px');
+    $str .= $this->reporter->col('DATE : ', '60', null, false, '1px solid ', '', 'R', 'Century Gothic', '12', 'B', '', '');
+    $str .= $this->reporter->col((isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '140', null, false, '1px solid ', 'B', 'R', 'Century Gothic', '12', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->startrow(null,null,false,'1px solid ','','R','Century Gothic','10','','','4px');
+    $str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', 'Century Gothic', '10', '', '', '4px');
     $str .= $this->reporter->pagenumber('Page');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -149,89 +154,90 @@ class is
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-    $str .= $this->reporter->col('CODE','50px',null,false,'1px solid ','B','C','Century Gothic','12','B','30px','8px');
-    $str .= $this->reporter->col('QTY','50px',null,false,'1px solid ','B','C','Century Gothic','12','B','30px','8px');
-    $str .= $this->reporter->col('UNIT','50px',null,false,'1px solid ','B','C','Century Gothic','12','B','30px','8px');
-    $str .= $this->reporter->col('D E S C R P T I O N','500px',null,false,'1px solid ','B','C','Century Gothic','12','B','30px','8px');
-    $str .= $this->reporter->col('COST','125px',null,false,'1px solid ','B','C','Century Gothic','12','B','30px','8px');
-    $str .= $this->reporter->col('TOTAL','125px',null,false,'1px solid ','B','C','Century Gothic','12','B','30px','8px');
+    $str .= $this->reporter->col('CODE', '50px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('QTY', '50px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('UNIT', '50px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('D E S C R P T I O N', '500px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('COST', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('TOTAL', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     return $str;
   }
 
-  public function default_is_layout($params, $data){
+  public function default_is_layout($params, $data)
+  {
     $companyid = $params['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency',$companyid);
+    $decimal = $this->companysetup->getdecimal('currency', $companyid);
 
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
     $str = '';
-    $count=35;
-    $page=35;
+    $count = 35;
+    $page = 35;
     $str .= $this->reporter->beginreport();
     $str .= $this->default_header($params, $data);
 
-    $totalext=0;
-    $totalitem=0;
-    for($i=0;$i<count($data);$i++){
+    $totalext = 0;
+    $totalitem = 0;
+    for ($i = 0; $i < count($data); $i++) {
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      $str .= $this->reporter->col($data[$i]['barcode'],'50px',null,false,'1px solid ','','C','Century Gothic','12','','','2px');
-      $str .= $this->reporter->col(number_format($data[$i]['qty'],$decimal),'50px',null,false,'1px solid ','','C','Century Gothic','12','','','2px');
-      $str .= $this->reporter->col($data[$i]['uom'],'50px',null,false,'1px solid ','','C','Century Gothic','12','','','2px');
-      $str .= $this->reporter->col($data[$i]['itemname'],'500px',null,false,'1px solid ','','L','Century Gothic','12','','','2px');
-      $str .= $this->reporter->col(number_format($data[$i]['gross'],$decimal),'125px',null,false,'1px solid ','','R','Century Gothic','12','','','2px');
-      $str .= $this->reporter->col(number_format($data[$i]['ext'],$decimal),'125px',null,false,'1px solid ','','R','Century Gothic','12','','','2px');
-      $totalext=$totalext+$data[$i]['ext'];
-      $totalitem=$totalitem+$i;    
-            
-      if($this->reporter->linecounter==$page){
+      $str .= $this->reporter->col($data[$i]['barcode'], '50px', null, false, '1px solid ', '', 'C', 'Century Gothic', '12', '', '', '2px');
+      $str .= $this->reporter->col(number_format($data[$i]['qty'], $decimal), '50px', null, false, '1px solid ', '', 'C', 'Century Gothic', '12', '', '', '2px');
+      $str .= $this->reporter->col($data[$i]['uom'], '50px', null, false, '1px solid ', '', 'C', 'Century Gothic', '12', '', '', '2px');
+      $str .= $this->reporter->col($data[$i]['itemname'], '500px', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', '', '', '2px');
+      $str .= $this->reporter->col(number_format($data[$i]['gross'], $decimal), '125px', null, false, '1px solid ', '', 'R', 'Century Gothic', '12', '', '', '2px');
+      $str .= $this->reporter->col(number_format($data[$i]['ext'], $decimal), '125px', null, false, '1px solid ', '', 'R', 'Century Gothic', '12', '', '', '2px');
+      $totalext = $totalext + $data[$i]['ext'];
+      $totalitem = $totalitem + $i;
+
+      if ($this->reporter->linecounter == $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
         $str .= $this->default_header($params, $data);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->printline();
-        $page=$page + $count;
+        $page = $page + $count;
       }
-    }   
+    }
 
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('ITEM(S) : '.$i,'50px',null,false,'1px dotted ','T','L','Century Gothic','10','B','','3');;
-    $str .= $this->reporter->col('','50px',null,false,'1px dotted ','T','L','Century Gothic','11','','','3');
-    $str .= $this->reporter->col('','50px',null,false,'1px dotted ','T','C','Century Gothic','11','B','','8px');
-    $str .= $this->reporter->col('','500px',null,false,'1px dotted ','T','C','Century Gothic','11','B','','8px');
-    $str .= $this->reporter->col('GRAND&nbspTOTAL :','120px',null,false,'1px dotted ','T','R','Century Gothic','10','B','','3');
-    $str .= $this->reporter->col(number_format($totalext,$decimal),'125px',null,false,'1px dotted ','T','R','Century Gothic','11','B','','3');
+    $str .= $this->reporter->col('ITEM(S) : ' . $i, '50px', null, false, '1px dotted ', 'T', 'L', 'Century Gothic', '10', 'B', '', '3');;
+    $str .= $this->reporter->col('', '50px', null, false, '1px dotted ', 'T', 'L', 'Century Gothic', '11', '', '', '3');
+    $str .= $this->reporter->col('', '50px', null, false, '1px dotted ', 'T', 'C', 'Century Gothic', '11', 'B', '', '8px');
+    $str .= $this->reporter->col('', '500px', null, false, '1px dotted ', 'T', 'C', 'Century Gothic', '11', 'B', '', '8px');
+    $str .= $this->reporter->col('GRAND&nbspTOTAL :', '120px', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '10', 'B', '', '3');
+    $str .= $this->reporter->col(number_format($totalext, $decimal), '125px', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '11', 'B', '', '3');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
     // $str .= $this->reporter->printline();
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('NOTE : ','60',null,false,'1px solid ','','L','Century Gothic','12','B','','');
-    $str .= $this->reporter->col($data[0]['rem'],'600',null,false,'1px solid ','','L','Century Gothic','12','','','');
-    $str .= $this->reporter->col('','140',null,false,'1px solid ','','L','Century Gothic','12','B','','');
-        
+    $str .= $this->reporter->col('NOTE : ', '60', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+    $str .= $this->reporter->col($data[0]['rem'], '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', '', '', '');
+    $str .= $this->reporter->col('', '140', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= '<br/><br/>';
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Prepared By : ','350',null,false,'1px solid ','','L','Century Gothic','12','','','');
-    $str .= $this->reporter->col('Approved By :','225',null,false,'1px solid ','','L','Century Gothic','12','','','');
-    $str .= $this->reporter->col('Received By :','225',null,false,'1px solid ','','L','Century Gothic','12','','','');
+    $str .= $this->reporter->col('Prepared By : ', '350', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', '', '', '');
+    $str .= $this->reporter->col('Approved By :', '225', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', '', '', '');
+    $str .= $this->reporter->col('Received By :', '225', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-    
+
     $str .= '<br/>';
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col($params['params']['dataparams']["prepared"],'350',null,false,'1px solid ','','L','Century Gothic','12','B','','');
-    $str .= $this->reporter->col($params['params']['dataparams']["approved"],'225',null,false,'1px solid ','','L','Century Gothic','12','B','','');
-    $str .= $this->reporter->col($params['params']['dataparams']["received"],'225',null,false,'1px solid ','','l','Century Gothic','12','B','','');
+    $str .= $this->reporter->col($params['params']['dataparams']["prepared"], '350', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+    $str .= $this->reporter->col($params['params']['dataparams']["approved"], '225', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+    $str .= $this->reporter->col($params['params']['dataparams']["received"], '225', null, false, '1px solid ', '', 'l', 'Century Gothic', '12', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-        
+
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->endreport();
@@ -271,11 +277,11 @@ class is
     // write2DBarcode(code, type, x, y, width, height, style, align)
 
     PDF::SetFont($font, '', 9);
-    PDF::MultiCell(0, 0, $username.' - '.date_format(date_create($current_timestamp),'m/d/Y H:i:s').'  '.strtoupper($headerdata[0]->name), '', 'L');
+    PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . strtoupper($headerdata[0]->name), '', 'L');
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -315,7 +321,7 @@ class is
     PDF::MultiCell(50, 0, "UNIT", '', 'C', false, 0);
     PDF::MultiCell(250, 0, "DESCRIPTION", '', 'L', false, 0);
     PDF::MultiCell(125, 0, "COST", '', 'R', false, 0);
-   // PDF::MultiCell(100, 0, "", '', 'C', false, 0);
+    // PDF::MultiCell(100, 0, "", '', 'C', false, 0);
     PDF::MultiCell(125, 0, "TOTAL", '', 'R', false);
 
     PDF::MultiCell(700, 0, '', 'B');
@@ -340,7 +346,7 @@ class is
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
     $this->default_IS_header_PDF($params, $data);
-     
+
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', '');
 
@@ -350,21 +356,21 @@ class is
 
         $barcode = $data[$i]['barcode'];
         $itemname = $data[$i]['itemname'];
-        $qty = number_format($data[$i]['qty'],$decimalqty);
+        $qty = number_format($data[$i]['qty'], $decimalqty);
         $uom = $data[$i]['uom'];
-        $gross = number_format($data[$i]['gross'],$decimalprice);
-        $ext = number_format($data[$i]['ext'],$decimalcurr);
+        $gross = number_format($data[$i]['gross'], $decimalprice);
+        $ext = number_format($data[$i]['ext'], $decimalcurr);
 
-        $arr_barcode = $this->reporter->fixcolumn([$barcode],'16',0);
-        $arr_itemname = $this->reporter->fixcolumn([$itemname],'100',0);
-        $arr_qty = $this->reporter->fixcolumn([$qty],'13',0);
-        $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-        $arr_gross = $this->reporter->fixcolumn([$gross],'13',0);
-        $arr_ext = $this->reporter->fixcolumn([$ext],'13',0);
+        $arr_barcode = $this->reporter->fixcolumn([$barcode], '16', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '100', 0);
+        $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+        $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+        $arr_gross = $this->reporter->fixcolumn([$gross], '13', 0);
+        $arr_ext = $this->reporter->fixcolumn([$ext], '13', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_itemname, $arr_qty, $arr_uom, $arr_gross, $arr_ext]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(100, 0, (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '', '', true, 1);
           PDF::MultiCell(50, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '', '', false, 1);
@@ -403,5 +409,4 @@ class is
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

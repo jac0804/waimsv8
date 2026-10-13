@@ -34,10 +34,10 @@ class pendingclearance
     public $showclosebtn = true;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -162,7 +162,7 @@ class pendingclearance
         $companyid = $config['params']['companyid'];
         $dateTables = ['clearance'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-        $row['rem'] = $this->othersClass->sanitizekeyfieldFast("rem", $row['rem'],$lookups);
+        $row['rem'] = $this->othersClass->sanitizekeyfieldFast("rem", $row['rem'], $lookups);
         $this->othersClass->logConsole('incoming row: ' . json_encode($row));
         if ($row['approver'] == 'HEAD') {
             $data['editdate'] = $this->othersClass->getCurrentTimeStamp();

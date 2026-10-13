@@ -29,10 +29,10 @@ class ea
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -40,28 +40,31 @@ class ea
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter(){
-    $fields = ['radioprint','prepared','approved','received','eiassessment','eischedule','print'];
+  public function createreportfilter()
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'eiassessment', 'eischedule', 'print'];
     $col1 = $this->fieldClass->create($fields);
-    return array('col1'=>$col1);
-}
+    return array('col1' => $col1);
+  }
 
-public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable(
-        "select
+      "select
         'default' as print,
         '' as prepared,
         '' as approved,
         '' as received,
         'withassess' as eiassessment,
         'withsched' as eischedule
-    ");
-}
+    "
+    );
+  }
 
   public function report_default_query($config)
   {
     $trno = $config['params']['dataid'];
-    
+
     $query = "select head.trno,client.client,client.clientname,head.docno,head.dateid,head.yr,
                 head.curriculumcode,head.curriculumdocno,course.coursecode,course.coursename,
                 sy.code,period.code,sec.section,head.rem,head.modeofpayment,head.contra,sem.term,
@@ -83,7 +86,7 @@ public function reportparamsdata($config){
             left join en_section as sec on sec.line=head.sectionid 
             left join en_subject as subj on subj.trno=stock.subjectid
             left join client as prof on stock.instructorid= prof.clientid
-            where head.doc='EA' and head.trno= ". $trno ."
+            where head.doc='EA' and head.trno= " . $trno . "
             union all
             select head.trno,client.client,client.clientname,head.docno,head.dateid,head.yr,
                 head.curriculumcode,head.curriculumdocno,course.coursecode,course.coursename,
@@ -106,103 +109,103 @@ public function reportparamsdata($config){
             left join en_section as sec on sec.line=head.sectionid 
             left join en_subject as subj on subj.trno=stock.subjectid
             left join client as prof on stock.instructorid= prof.clientid
-            where head.doc='EA' and head.trno=". $trno ."";
-              
-        $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
-        return $result;
+            where head.doc='EA' and head.trno=" . $trno . "";
+
+    $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
+    return $result;
   } //end fn
 
   public function assessment_query($config)
   {
     $trno = $config['params']['dataid'];
-    
+
     $query = "select grp as feescode,feestype,round(sum(amt),2) as amt
     from (select grp,feestype,amt
           from (select grp,feestype,sum(amt) as amt
                 from (select '3' as grp,'Other Fees' as feestype,isamt as amt
                       from en_sootherfees as a
-                where a.trno=".$trno."
+                where a.trno=" . $trno . "
                 union all
                 select '3' as grp,'Other Fees' as feestype,isamt
                 from en_glotherfees as a
-                where a.trno=".$trno.") as s
+                where a.trno=" . $trno . ") as s
           group by s.feestype,s.grp
           union all
           select s.grp,s.feestype,sum(s.amt) as amt
           from (select '0' as grp,'Books' as feestype,a.amt as amt
                 from en_sohead as h
                 left join en_glbooks as a on h.curriculumtrno=a.trno
-                where h.trno=".$trno."
+                where h.trno=" . $trno . "
                 union all
                 select '0' as grp,'Books' as feestype,a.amt as amt
                 from en_glhead as h
                 left join en_glbooks as a on h.curriculumtrno=a.trno
-                where h.trno=".$trno.") as s
+                where h.trno=" . $trno . ") as s
           group by s.feestype,s.grp
           union all
           select s.grp,s.feestype,sum(s.amt) as amt
           from (select '0' as grp,f.feestype,a.amt as amt
                 from en_sosummary as a
                 left join en_fees as f on f.line=a.feesid
-                where a.trno=".$trno."
+                where a.trno=" . $trno . "
                 union all
                 select '0' as grp,f.feestype,a.amt
                 from en_glsummary as a
                 left join en_fees as f on f.line=a.feesid
-                where a.trno=".$trno.") as s
+                where a.trno=" . $trno . ") as s
           where s.feestype not in ('OTHERS','LAB')
           group by s.feestype,s.grp
           union all
           select s.grp,feestype,sum(s.amt)*-1
           from (select '2' as grp,'Less Credentials' as feestype,camt as amt
                 from en_socredentials as a
-                where a.trno=".$trno."
+                where a.trno=" . $trno . "
                 union all
                 select '2' as grp,'Less Credentials' as feestype,camt
                 from en_glcredentials as a
-                where a.trno=".$trno.") as s
+                where a.trno=" . $trno . ") as s
           group by s.feestype,s.grp
           union all
           select s.grp,feestype,sum(s.amt)*-1
           from (select '3' as grp,'Less Discount' as feestype,disc as amt
                 from en_sohead as a
-                where a.trno=".$trno."
+                where a.trno=" . $trno . "
                 union all
                 select '3' as grp,'Less Discount' as feestype,disc
                 from en_glhead as a
-                where a.trno=".$trno.") as s
+                where a.trno=" . $trno . ") as s
           group by s.feestype,s.grp
           union all
           select 1 as grp,'Add Interest:' as feestype,sum(amt)*(10.00/100)
           from (select s.grp,s.feestype,s.amt
                 from (select 3 as grp,'Total Fees' as feestype,isamt as amt
                       from en_sootherfees as a
-                      where a.trno=".$trno."
+                      where a.trno=" . $trno . "
                       union all
                       select 3 as grp,'Total Fees' as feestype,isamt
                       from en_glotherfees as a
-                      where a.trno=".$trno.") as s
+                      where a.trno=" . $trno . ") as s
                 union all
                 select s.grp,feestype,sum(s.amt)*-1 as amt
                 from (select 2 as grp,'Less Credentials' as feestype,camt as amt
                       from en_socredentials as a
-                      where a.trno=".$trno."
+                      where a.trno=" . $trno . "
                       union all
                       select 2 as grp,'Less Credentials' as feestype,camt
                       from en_glcredentials as a
-                      where a.trno=".$trno.") as s
+                      where a.trno=" . $trno . ") as s
                 group by s.feestype,s.grp
                 union all
                 select s.grp,s.feestype,s.amt
                 from (select 0 as grp,f.feestype,a.amt as amt
                       from en_sosummary as a
                       left join en_fees as f on f.line=a.feesid
-                      where a.trno=".$trno."
+                      where a.trno=" . $trno . "
                       union all
                       select 0 as grp,f.feestype,a.amt
                       from en_glsummary as a
                       left join en_fees as f on f.line=a.feesid
-                      where a.trno=".$trno.") as s
+                      where a.trno=" . $trno . ") as s
                 where s.feestype not in ('OTHERS','LAB')) as x
                 group by x.feestype,x.grp
                 union all
@@ -210,60 +213,60 @@ public function reportparamsdata($config){
                 from (select s.grp,s.feestype,s.amt+(s.amt*(10.00/100)) as amt
                       from (select 3 as grp,'Total Fees' as feestype,isamt as amt
                             from en_sootherfees as a
-                            where a.trno=".$trno."
+                            where a.trno=" . $trno . "
                       union all
                       select 3 as grp,'Total Fees' as feestype,isamt
                       from en_glotherfees as a
-                      where a.trno=".$trno.") as s
+                      where a.trno=" . $trno . ") as s
                 union all
                 select s.grp,feestype,(sum(s.amt)+(sum(s.amt)*(10.00/100)))*-1 as amt
                 from (select 2 as grp,'Less Credentials' as feestype,camt as amt
                       from en_socredentials as a
-                      where a.trno=".$trno."
+                      where a.trno=" . $trno . "
                 union all
                 select 2 as grp,'Less Credentials' as feestype,camt
                 from en_glcredentials as a
-                where a.trno=".$trno.") as s
+                where a.trno=" . $trno . ") as s
           group by s.feestype,s.grp
           union all
           select s.grp,s.feestype,s.amt+((s.amt)*(10.00/100)) as amt
           from (select 0 as grp,f.feestype,a.amt as amt
                 from en_sosummary as a
                 left join en_fees as f on f.line=a.feesid
-                where a.trno=".$trno."
+                where a.trno=" . $trno . "
                 union all
                 select 0 as grp,f.feestype,a.amt
                 from en_glsummary as a
                 left join en_fees as f on f.line=a.feesid
-                where a.trno=".$trno.") as s
+                where a.trno=" . $trno . ") as s
           where s.feestype not in ('OTHERS','LAB')
           union all
           select s.grp,feestype,sum(s.amt)*-1
           from (select '4' as grp,'Total Balance' as feestype,disc as amt
                 from en_sohead as a
-                where a.trno=".$trno."
+                where a.trno=" . $trno . "
                 union all
                 select '4' as grp,'Total Balance' as feestype,disc
-                from en_glhead as a where a.trno=".$trno.") as s
+                from en_glhead as a where a.trno=" . $trno . ") as s
           group by s.feestype,s.grp
           union all
           select s.grp,s.feestype,sum(s.amt) as amt
           from (select '4' as grp,'Total Balance' as feestype,a.amt as amt
           from en_sohead as h
           left join en_glbooks as a on h.curriculumtrno=a.trno
-          where h.trno=".$trno."
+          where h.trno=" . $trno . "
           union all
           select '4' as grp,'Total Balance' as feestype,a.amt as amt
           from en_glhead as h
           left join en_glbooks as a on h.curriculumtrno=a.trno
-          where h.trno=".$trno." ) as s
+          where h.trno=" . $trno . " ) as s
     group by s.feestype,s.grp ) as x
     group by x.feestype,x.grp) as y ) as z
     group by feestype,grp order by grp";
 
-              
-        $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
-        return $result;
+
+    $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
+    return $result;
   } //end fn
 
   public function default_header($params, $data)
@@ -384,29 +387,29 @@ public function reportparamsdata($config){
     $str .= $this->reporter->col('Units', '200', null, false, $border, 'TLRB', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
 
- 
-    for ($i = 0; $i < count($data); $i++) {
-       
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('&nbsp&nbsp&nbsp&nbsp&nbsp'.$data[$i]['subjectcode'], '200', null, false, $border, 'TLR', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('&nbsp&nbsp&nbsp&nbsp&nbsp'.$data[$i]['subjectname'], '200', null, false, $border, 'TR', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data[$i]['hours'], '200', null, false, $border, 'TR', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->endrow();
 
-        
-    
-    $total = $total + $data[$i]['hours']; 
+    for ($i = 0; $i < count($data); $i++) {
+
+      $str .= $this->reporter->startrow();
+      $str .= $this->reporter->col('&nbsp&nbsp&nbsp&nbsp&nbsp' . $data[$i]['subjectcode'], '200', null, false, $border, 'TLR', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('&nbsp&nbsp&nbsp&nbsp&nbsp' . $data[$i]['subjectname'], '200', null, false, $border, 'TR', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data[$i]['hours'], '200', null, false, $border, 'TR', 'C', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->endrow();
+
+
+
+      $total = $total + $data[$i]['hours'];
     }
 
 
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '200', null, false, $border, 'LTB', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('Total Units : &nbsp&nbsp', '200', null, false, $border, 'TRB', 'R', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col(number_format($total,2), '200', null, false, $border, 'TRB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($total, 2), '200', null, false, $border, 'TRB', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
 
     // $str .= $this->assessment_plotting($params, $data);
-    
+
     if ($this->reporter->linecounter == $page) {
       $str .= $this->reporter->endtable();
       $str .= $this->reporter->page_break();
@@ -475,20 +478,19 @@ public function reportparamsdata($config){
     $str .= $this->reporter->col('Period', '100', null, false, $border, 'TLRB', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
 
- 
+
     for ($i = 0; $i < count($data); $i++) {
-       
+
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('&nbsp&nbsp&nbsp'.$data[$i]['subjectcode'], '100', null, false, $border, 'TLRB', 'L', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('&nbsp&nbsp&nbsp'.$data[$i]['subjectname'], '250', null, false, $border, 'TRB', 'L', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('&nbsp&nbsp&nbsp'.$data[$i]['instructorname'], '200', null, false, $border, 'TRB', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col($data[$i]['roomid'].' - '.$data[$i]['bldgid'], '150', null, false, $border, 'TRB', 'C', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('&nbsp&nbsp&nbsp' . $data[$i]['subjectcode'], '100', null, false, $border, 'TLRB', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('&nbsp&nbsp&nbsp' . $data[$i]['subjectname'], '250', null, false, $border, 'TRB', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('&nbsp&nbsp&nbsp' . $data[$i]['instructorname'], '200', null, false, $border, 'TRB', 'C', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data[$i]['roomid'] . ' - ' . $data[$i]['bldgid'], '150', null, false, $border, 'TRB', 'C', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data[$i]['schedday'], '100', null, false, $border, 'TRB', 'C', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data[$i]['code'], '100', null, false, $border, 'TRB', 'C', $font, $fontsize, '', '', '');
       $str .= $this->reporter->endrow();
-    
     }
-    
+
     if ($this->reporter->linecounter == $page) {
       $str .= $this->reporter->endtable();
       $str .= $this->reporter->page_break();
@@ -530,7 +532,7 @@ public function reportparamsdata($config){
 
   public function assessment_report_plotting($params, $data, $assess)
   {
-    
+
     $companyid = $params['params']['companyid'];
     $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
@@ -560,18 +562,17 @@ public function reportparamsdata($config){
     $str .= $this->reporter->col('Period', '100', null, false, $border, 'TLRB', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
 
- 
+
     for ($i = 0; $i < count($data); $i++) {
-       
+
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('&nbsp&nbsp&nbsp'.$data[$i]['subjectcode'], '100', null, false, $border, 'TLRB', 'L', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('&nbsp&nbsp&nbsp'.$data[$i]['subjectname'], '250', null, false, $border, 'TRB', 'L', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('&nbsp&nbsp&nbsp'.$data[$i]['instructorname'], '200', null, false, $border, 'TRB', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col($data[$i]['roomid'].' - '.$data[$i]['bldgid'], '150', null, false, $border, 'TRB', 'C', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('&nbsp&nbsp&nbsp' . $data[$i]['subjectcode'], '100', null, false, $border, 'TLRB', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('&nbsp&nbsp&nbsp' . $data[$i]['subjectname'], '250', null, false, $border, 'TRB', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('&nbsp&nbsp&nbsp' . $data[$i]['instructorname'], '200', null, false, $border, 'TRB', 'C', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col($data[$i]['roomid'] . ' - ' . $data[$i]['bldgid'], '150', null, false, $border, 'TRB', 'C', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data[$i]['schedday'], '100', null, false, $border, 'TRB', 'C', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data[$i]['code'], '100', null, false, $border, 'TRB', 'C', $font, $fontsize, '', '', '');
       $str .= $this->reporter->endrow();
-    
     }
 
 
@@ -583,23 +584,23 @@ public function reportparamsdata($config){
     $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
-    
+
     $str .= $this->reporter->endrow();
 
     for ($i = 0; $i < count($assess); $i++) {
       $str .= $this->reporter->startrow();
-      if ($assess[$i]['feestype'] == 'Total Balance:'){
-        $str .= $this->reporter->col('&nbsp&nbsp'.$assess[$i]['feestype'], '150', null, false, $border, 'TLRB', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col(number_format($assess[$i]['amt'],2).'&nbsp&nbsp', '150', null, false, $border, 'TRB', 'R', $font, $fontsize, 'B', '', '');
-      }else{
-        $str .= $this->reporter->col('&nbsp&nbsp'.$assess[$i]['feestype'], '150', null, false, $border, 'TLRB', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(number_format($assess[$i]['amt'],2).'&nbsp&nbsp', '150', null, false, $border, 'TRB', 'R', $font, $fontsize, '', '', '');
+      if ($assess[$i]['feestype'] == 'Total Balance:') {
+        $str .= $this->reporter->col('&nbsp&nbsp' . $assess[$i]['feestype'], '150', null, false, $border, 'TLRB', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col(number_format($assess[$i]['amt'], 2) . '&nbsp&nbsp', '150', null, false, $border, 'TRB', 'R', $font, $fontsize, 'B', '', '');
+      } else {
+        $str .= $this->reporter->col('&nbsp&nbsp' . $assess[$i]['feestype'], '150', null, false, $border, 'TLRB', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(number_format($assess[$i]['amt'], 2) . '&nbsp&nbsp', '150', null, false, $border, 'TRB', 'R', $font, $fontsize, '', '', '');
       }
       $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->endrow(); 
+      $str .= $this->reporter->endrow();
     }
 
     $str .= $this->reporter->endtable();
@@ -645,7 +646,7 @@ public function reportparamsdata($config){
 
   public function assessment2_report_plotting($params, $data, $assess)
   {
-    
+
     $companyid = $params['params']['companyid'];
     $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
@@ -672,21 +673,21 @@ public function reportparamsdata($config){
     $str .= $this->reporter->col('Units', '200', null, false, $border, 'TLRB', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
 
- 
-    for ($i = 0; $i < count($data); $i++) { 
+
+    for ($i = 0; $i < count($data); $i++) {
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('&nbsp&nbsp&nbsp&nbsp&nbsp'.$data[$i]['subjectcode'], '200', null, false, $border, 'TLR', 'L', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('&nbsp&nbsp&nbsp&nbsp&nbsp'.$data[$i]['subjectname'], '200', null, false, $border, 'TR', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('&nbsp&nbsp&nbsp&nbsp&nbsp' . $data[$i]['subjectcode'], '200', null, false, $border, 'TLR', 'L', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('&nbsp&nbsp&nbsp&nbsp&nbsp' . $data[$i]['subjectname'], '200', null, false, $border, 'TR', 'L', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data[$i]['hours'], '200', null, false, $border, 'TR', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->endrow();    
-      $total = $total + $data[$i]['hours']; 
+      $str .= $this->reporter->endrow();
+      $total = $total + $data[$i]['hours'];
     }
 
 
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '200', null, false, $border, 'LTB', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('Total Units : &nbsp&nbsp', '200', null, false, $border, 'TRB', 'R', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col(number_format($total,2), '200', null, false, $border, 'TRB', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($total, 2), '200', null, false, $border, 'TRB', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->begintable('1000');
@@ -697,23 +698,23 @@ public function reportparamsdata($config){
     $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
-    
+
     $str .= $this->reporter->endrow();
 
     for ($i = 0; $i < count($assess); $i++) {
       $str .= $this->reporter->startrow();
-      if ($assess[$i]['feestype'] == 'Total Balance:'){
-        $str .= $this->reporter->col('&nbsp&nbsp'.$assess[$i]['feestype'], '150', null, false, $border, 'TLRB', 'L', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col(number_format($assess[$i]['amt'],2).'&nbsp&nbsp', '150', null, false, $border, 'TRB', 'R', $font, $fontsize, 'B', '', '');
-      }else{
-        $str .= $this->reporter->col('&nbsp&nbsp'.$assess[$i]['feestype'], '150', null, false, $border, 'TLRB', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(number_format($assess[$i]['amt'],2).'&nbsp&nbsp', '150', null, false, $border, 'TRB', 'R', $font, $fontsize, '', '', '');
+      if ($assess[$i]['feestype'] == 'Total Balance:') {
+        $str .= $this->reporter->col('&nbsp&nbsp' . $assess[$i]['feestype'], '150', null, false, $border, 'TLRB', 'L', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col(number_format($assess[$i]['amt'], 2) . '&nbsp&nbsp', '150', null, false, $border, 'TRB', 'R', $font, $fontsize, 'B', '', '');
+      } else {
+        $str .= $this->reporter->col('&nbsp&nbsp' . $assess[$i]['feestype'], '150', null, false, $border, 'TLRB', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(number_format($assess[$i]['amt'], 2) . '&nbsp&nbsp', '150', null, false, $border, 'TRB', 'R', $font, $fontsize, '', '', '');
       }
       $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '150', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->endrow(); 
+      $str .= $this->reporter->endrow();
     }
 
     $str .= $this->reporter->endtable();
@@ -756,5 +757,4 @@ public function reportparamsdata($config){
 
     return $str;
   }
-
 }

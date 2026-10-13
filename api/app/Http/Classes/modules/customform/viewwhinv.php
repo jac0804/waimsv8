@@ -26,10 +26,10 @@ class viewwhinv
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -48,7 +48,7 @@ class viewwhinv
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
     $obj[0][$this->gridname]['totalfield'] = [];
-    
+
     $obj[0][$this->gridname]['columns'][0]['type'] = 'input';
     $obj[0][$this->gridname]['columns'][0]['label'] = 'Itemname';
     $obj[0][$this->gridname]['columns'][0]['style'] = 'width:350px;whiteSpace: normal;min-width:350px;';

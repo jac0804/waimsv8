@@ -31,12 +31,12 @@ class daily_time_record_late_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => 1000];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
     public function createHeadField($config)
@@ -105,9 +105,9 @@ class daily_time_record_late_report
         $reporttype = $config['params']['dataparams']['reporttype'];
         $data = $this->defualt_query($config);
         if ($reporttype != '0') {
-            if ($companyid == 58){
+            if ($companyid == 58) {
                 return $this->cdo_default_detailed($config, $data);
-            }else{
+            } else {
                 return $this->report_default_detailed($config, $data);
             }
         } else {
@@ -213,7 +213,7 @@ class daily_time_record_late_report
         where dateid between '" . $start . "' and '" . $end . "' and timecard.latehrs <> 0 and emp.level in $emplvl $filter
         order by e.clientname,timecard.dateid) as t 
         $groupby";
-        
+
         return $this->coreFunctions->opentable($query);
     }
 
@@ -430,12 +430,12 @@ class daily_time_record_late_report
             }
 
             $lateoffset = isset($data[$key]->lateoffset) && $data[$key]->lateoffset > 0
-            ? 'Late Offset: ' . (float) $data[$key]->lateoffset . ' min(s)'
-            : '';
+                ? 'Late Offset: ' . (float) $data[$key]->lateoffset . ' min(s)'
+                : '';
 
             $latehrs = isset($data[$key]->latehrs) && $data[$key]->latehrs > 0
-            ? round((float) $data[$key]->latehrs * 60) . ' min(s)'
-            : '-';
+                ? round((float) $data[$key]->latehrs * 60) . ' min(s)'
+                : '-';
 
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();

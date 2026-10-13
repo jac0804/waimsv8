@@ -37,11 +37,11 @@ class payrollprocess
   public $style = 'width:100%;max-width:100%;';
   public $issearchshow = false;
   public $showclosebtn = false;
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -2388,6 +2388,10 @@ class payrollprocess
       unset($val->classrate);
 
       $shift = $this->payrollcommon->getShiftDetails($val->empid);
+      if (empty($shift)) {
+        $msg .=  'Failed to compute timecard of ' . $empName . ' missing shift';
+        continue;
+      }
 
       unset($val->bgcolor);
 

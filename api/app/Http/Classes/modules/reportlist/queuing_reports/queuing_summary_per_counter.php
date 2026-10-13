@@ -19,7 +19,7 @@ use App\Http\Classes\SBCPDF;
 use DateTime;
 
 class queuing_summary_per_counter
-    {
+{
     public $modulename = 'Queuing Summary Per Counter';
     private $companysetup;
     private $coreFunctions;
@@ -29,36 +29,36 @@ class queuing_summary_per_counter
     public $style = 'width:1200px;max-width:1200px;';
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '800'];
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
-    public function createHeadField($config)// Essentially the input fields from the web 
+    public function createHeadField($config) // Essentially the input fields from the web 
     {
-        $fields = ['start','end','counter']; // 'name' =>
+        $fields = ['start', 'end', 'counter']; // 'name' =>
 
-            $col1 = $this->fieldClass->create($fields);
-            data_set($col1,'start.type','date');
-            data_set($col1,'end.type','date');
-            data_set($col1, 'counter.type', 'lookup');
-            data_set($col1, 'counter.lookupclass', 'lookupcounter');  
-            data_set($col1, 'counter.action', 'lookupcounter');
-            data_set($col1, 'counter.label', 'Queuing Counter');
-            
+        $col1 = $this->fieldClass->create($fields);
+        data_set($col1, 'start.type', 'date');
+        data_set($col1, 'end.type', 'date');
+        data_set($col1, 'counter.type', 'lookup');
+        data_set($col1, 'counter.lookupclass', 'lookupcounter');
+        data_set($col1, 'counter.action', 'lookupcounter');
+        data_set($col1, 'counter.label', 'Queuing Counter');
 
-            $fields = ['print'];
-            $col2 = $this->fieldClass->create($fields);
 
-        return array('col1'=>$col1, 'col2'=> $col2);
+        $fields = ['print'];
+        $col2 = $this->fieldClass->create($fields);
+
+        return array('col1' => $col1, 'col2' => $col2);
     }
-    public function paramsdata($config)//data parameters; the default values of the input fields
+    public function paramsdata($config) //data parameters; the default values of the input fields
     { // 'names' or 'alias'
-        return $this->coreFunctions->opentable( "select 
+        return $this->coreFunctions->opentable("select 
             'default' as print,
             adddate(left(now(),10),-360) as start,
             left(now(),10) as end,
@@ -75,12 +75,12 @@ class queuing_summary_per_counter
     public function reportdata($config)
     {
         $str = $this->reportplotting($config);
-        return ['status'=>true, 'msg'=>'Msg works', 'report'=>$str,'params'=>$this->reportParams];
+        return ['status' => true, 'msg' => 'Msg works', 'report' => $str, 'params' => $this->reportParams];
     }
 
-    public function reportplotting($config)// Type of Report (radio option) case connection
+    public function reportplotting($config) // Type of Report (radio option) case connection
     {
-        $data=$this->data_query($config);
+        $data = $this->data_query($config);
         return $this->reportDefaultLayout($config, $data);
     }
 
@@ -88,11 +88,11 @@ class queuing_summary_per_counter
     {
         $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-        $counter= $config['params']['dataparams']['counter'];
+        $counter = $config['params']['dataparams']['counter'];
         $filter = "";
 
-        if ($counter!= ''){
-        $filter .= " and req.code = '$counter' ";
+        if ($counter != '') {
+            $filter .= " and req.code = '$counter' ";
         }
 
 
@@ -114,16 +114,16 @@ class queuing_summary_per_counter
             ) as ctr
             group by `date`, `Counter`, code
             order by `date`;";
-            // var_dump($query);
-        return $this->coreFunctions->openTable($query);  
+        // var_dump($query);
+        return $this->coreFunctions->openTable($query);
     }
 
-    public function DefaultHeader($config,$result)
+    public function DefaultHeader($config, $result)
     {
-        
+
         $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
         $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
-        $counter= $config['params']['dataparams']['counter'];
+        $counter = $config['params']['dataparams']['counter'];
         $str = ''; // required
         $layoutsize = '1000';
         $font = $this->companysetup->getrptfont($config['params']);
@@ -149,13 +149,13 @@ class queuing_summary_per_counter
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('QUEING SUMMARY PER COUNTER ','500' , null, false, $border, '', '', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('QUEING SUMMARY PER COUNTER ', '500', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('From'. $start . ' to ' . $end,'500' , null, false, $border, '', '', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('From' . $start . ' to ' . $end, '500', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -163,32 +163,32 @@ class queuing_summary_per_counter
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('TICKET SUMMARY','500' , null, false, $border, '', '', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('TICKET SUMMARY', '500', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         $str .= '<br/>';
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Total Served: '. ($gtotalps + $gtotalrs),'500' , null, false, $border, '', '', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('Total Regular: '. ($gtotalrs + $gtotalrc),'500' , null, false, $border, '', '', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Total Served: ' . ($gtotalps + $gtotalrs), '500', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Total Regular: ' . ($gtotalrs + $gtotalrc), '500', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('Total Cancelled: '. ($gtotalrc + $gtotalpc),'500' , null, false, $border, '', '', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('Total Priority: ' . ($gtotalps + $gtotalpc) ,'500' , null, false, $border, '', '', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Total Cancelled: ' . ($gtotalrc + $gtotalpc), '500', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('Total Priority: ' . ($gtotalps + $gtotalpc), '500', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= '<br/>';
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('From:', '50', null, false, '', '', 'L', $font, $fontsize,'B');
+        $str .= $this->reporter->col('From:', '50', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col($start . ' to ' . $end, '200', null, false, '', '', 'L', $font, $fontsize);
         $str .= $this->reporter->col('', '250');
-        $str .= $this->reporter->col('User :', '50', null, false, '', '', 'L', $font, $fontsize,'B');
+        $str .= $this->reporter->col('User :', '50', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col($counter == '' ? 'ALL USER' : strtoupper($counter), '200', null, false, '', '', 'L', $font, $fontsize);
         $str .= $this->reporter->pagenumber('Page', '230', null, false, $border, '', 'R', $font, $fontsize, '', '30px', '5px');
         $str .= $this->reporter->endrow();
@@ -202,9 +202,9 @@ class queuing_summary_per_counter
         $str .= $this->reporter->col('Regular', '140', null, false, $border, 'LRTB', 'C', $font, $fontsize, 'B', '', '', '');
         $str .= $this->reporter->col('Priority', '140', null, false, $border, 'LRTB', 'C', $font, $fontsize, 'B', '', '', '');
         $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();    
+        $str .= $this->reporter->endtable();
         $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();     
+        $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('COUNTER', '140', null, false, $border, 'LRB', 'C', $font, $fontsize, 'B', '', '', '');
         $str .= $this->reporter->col('# of Customers', '140', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
         $str .= $this->reporter->col('Served', '70', null, false, $border, 'LRB', 'C', $font, $fontsize, 'B', '', '', '');
@@ -265,8 +265,7 @@ class queuing_summary_per_counter
         $str .= $this->reporter->beginreport($layoutsize);
         $str .= $this->DefaultHeader($config, $result);
 
-        foreach ($result as $data)
-        {
+        foreach ($result as $data) {
             $prevCounter = $counter;
 
             if ($date !== $data->date) {
@@ -364,5 +363,4 @@ class queuing_summary_per_counter
         $str .= $this->reporter->endreport();
         return $str;
     }
-
 }

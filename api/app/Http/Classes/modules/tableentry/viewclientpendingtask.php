@@ -34,10 +34,10 @@ class viewclientpendingtask
     public $showclosebtn = true;
     public $tablelogs_del = 'del_task_log';
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -83,12 +83,12 @@ class viewclientpendingtask
 
         $obj[0][$this->gridname]['columns'][$enddate]['label'] = 'End Date';
         $obj[0][$this->gridname]['columns'][$enddate]['type'] = 'input';
-        $obj[0][$this->gridname]['columns'][$enddate]['readonly'] = true; 
+        $obj[0][$this->gridname]['columns'][$enddate]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$enddate]['style'] = 'width:120px;whiteSpace:normal;min-width:120px;max-width:120px';
 
-        $obj[0][$this->gridname]['columns'][$assignto]['readonly'] = true; 
+        $obj[0][$this->gridname]['columns'][$assignto]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$assignto]['style'] = 'width:200px;whiteSpace:normal;min-width:200px;max-width:200px';
-        
+
         $obj[0][$this->gridname]['columns'][$title]['style'] = 'width:200px;whiteSpace:normal;min-width:200px;max-width:200px';
 
         $obj[0][$this->gridname]['columns'][$empname]['style'] = 'width:200px;whiteSpace:normal;min-width:200px;max-width:200px';
@@ -98,7 +98,7 @@ class viewclientpendingtask
         $obj[0][$this->gridname]['columns'][$clientname]['type'] = 'label';
         $obj[0][$this->gridname]['columns'][$clientname]['style'] = 'width:200px;whiteSpace:normal;min-width:200px;max-width:200px';
 
-        $obj[0][$this->gridname]['columns'][$status]['readonly'] = true; 
+        $obj[0][$this->gridname]['columns'][$status]['readonly'] = true;
 
         $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
@@ -116,11 +116,11 @@ class viewclientpendingtask
         // $fields = ['dateid'];
         // $col1 = $this->fieldClass->create($fields);
         // data_set($col1, 'dateid.readonly', false);
-    
+
         // $fields = ['refresh'];
         // $col2 = $this->fieldClass->create($fields);
         // data_set($col2, 'refresh.action', 'pdc');
-    
+
         // return array('col1' => $col1, 'col2' => $col2);
         return [];
     }
@@ -146,7 +146,7 @@ class viewclientpendingtask
         $adminid = $config['params']['adminid'];
         $clientid = $config['params']['row']['clientid'];
         $item = $config['params']['row']['item'];
-    
+
         $qry = "select
                 head.dateid, ifnull(detail.startdate, '') as startdate,
                 ifnull(detail.enddate, '') as enddate,
@@ -164,9 +164,9 @@ class viewclientpendingtask
                 left join client as u on u.clientid = detail.userid
                 where head.clientid = $clientid and head.status = 1 and head.systype = $item and detail.status in (1, 2, 3, 4)
                 order by detail.line";
-    
+
         $data = $this->coreFunctions->opentable($qry);
-    
+
         // return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data];
         return $data;
     }

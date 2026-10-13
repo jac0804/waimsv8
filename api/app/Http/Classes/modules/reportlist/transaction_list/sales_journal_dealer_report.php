@@ -30,12 +30,12 @@ class sales_journal_dealer_report
 
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1350'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 

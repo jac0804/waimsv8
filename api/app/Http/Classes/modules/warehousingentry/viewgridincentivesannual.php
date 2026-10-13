@@ -29,10 +29,10 @@ class viewgridincentivesannual
   public $issearchshow = true;
   public $showclosebtn = false;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -102,8 +102,8 @@ class viewgridincentivesannual
     foreach ($data as $key => $value) {
       if ($value['added'] == 'true') {
 
-        $agentquota = $this->othersClass->sanitizekeyfieldFast('amt', $value['agentquota'],$lookups);
-        $sales = $this->othersClass->sanitizekeyfieldFast('amt', $value['amt'],$lookups );
+        $agentquota = $this->othersClass->sanitizekeyfieldFast('amt', $value['agentquota'], $lookups);
+        $sales = $this->othersClass->sanitizekeyfieldFast('amt', $value['amt'], $lookups);
 
         if (floatval($sales) >= floatval($agentquota)) {
           $this->coreFunctions->execqry("update incentivesyr set agrelease='" . $releasedate . "', agreleaseby='" . $user . "' where agrelease is null and agentid=? and agtype=?", "UPDATE", [$value['agentid'], $value['agtypecode']]);
@@ -116,21 +116,21 @@ class viewgridincentivesannual
           } else {
             $this->coreFunctions->execqry("update incentives set agreleaseyr='" . $releasedate . "', agreleaseyrby='" . $user . "' where agreleaseyr is null and agentid=? and date(depodate) between ? and ?", "UPDATE", [$value['agentid'], $start, $end]);
           }
-        }else{
+        } else {
           $value['added'] = 'false';
-          $msg .= $value['agentname'].' doesn`t reach the required quota. ';
+          $msg .= $value['agentname'] . ' doesn`t reach the required quota. ';
           array_push($return, $value);
         }
       } else {
         array_push($return, $value);
       }
     }
-    
+
     exithere:
-    if($msg == ''){
+    if ($msg == '') {
       $msg = 'Successfully tagged as released';
-    }else{
-      $msg = 'Failed to release. '.$msg;
+    } else {
+      $msg = 'Failed to release. ' . $msg;
     }
     return ['status' => $status, 'msg' => $msg, 'data' => $return];
   }

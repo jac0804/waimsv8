@@ -34,9 +34,9 @@ class ts
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -44,18 +44,20 @@ class ts
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter($config){
-    $fields = ['radioprint', 'prepared','approved', 'received','print'];
-    $col1 = $this->fieldClass->create($fields);        
+  public function createreportfilter($config)
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
       // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
     ]);
-    
-    return array('col1'=>$col1);
+
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable("select 
       'PDFM' as print,
       '' as approved,
@@ -64,9 +66,10 @@ class ts
     ");
   }
 
-  public function report_default_query($filters){
+  public function report_default_query($filters)
+  {
     $trno = $filters['params']['dataid'];
-    $query="
+    $query = "
     select head.vattype, head.tax, stock.rem as remarks, 
     client.tel, wh.tel as wtel, date(head.dateid) as dateid, 
     head.docno, client.client, client.clientname, head.address, head.terms,
@@ -103,27 +106,29 @@ class ts
     return $result;
   }
 
-  public function reportplotting($params, $data) {
-    if($params['params']['dataparams']['print'] == "default") {
+  public function reportplotting($params, $data)
+  {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_ts_layout($params, $data);
-    } else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_TS_PDF($params, $data);
     }
   }
 
-  public function rpt_default_header($params, $data){
+  public function rpt_default_header($params, $data)
+  {
     $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
     $center = $params['params']['center'];
     $username = $params['params']['user'];
 
     $str = '';
-      $str .= $this->reporter->begintable('800');
-        $str .= $this->reporter->startrow();
-          $str .= $this->reporter->letterhead($center, $username);
-        $str .= $this->reporter->endrow();
-      $str .= $this->reporter->endtable();
-    
+    $str .= $this->reporter->begintable('800');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->letterhead($center, $username);
+    $str .= $this->reporter->endrow();
+    $str .= $this->reporter->endtable();
+
     $str .= '<br><br>';
 
     $str .= $this->reporter->begintable('800');
@@ -171,7 +176,8 @@ class ts
     return $str;
   }
 
-  public function default_ts_layout($params, $data){
+  public function default_ts_layout($params, $data)
+  {
     $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
     $center = $params['params']['center'];
@@ -296,7 +302,7 @@ class ts
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -361,23 +367,23 @@ class ts
       for ($i = 0; $i < count($data); $i++) {
 
         $maxrow = 1;
-        $qty = number_format($data[$i]['qty'],$decimalqty);
+        $qty = number_format($data[$i]['qty'], $decimalqty);
         $uom = $data[$i]['uom'];
         $itemname = $data[$i]['itemname'];
         $swh = $data[$i]['swh'];
         $loc = $data[$i]['loc'];
         $expiry = $data[$i]['expiry'];
 
-        $arr_qty = $this->reporter->fixcolumn([$qty],'13',0);
-        $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-        $arr_itemname = $this->reporter->fixcolumn([$itemname],'35',0);
-        $arr_swh = $this->reporter->fixcolumn([$swh],'16',0);
-        $arr_loc = $this->reporter->fixcolumn([$loc],'16',0);
-        $arr_expiry = $this->reporter->fixcolumn([$expiry],'16',0);
+        $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+        $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '35', 0);
+        $arr_swh = $this->reporter->fixcolumn([$swh], '16', 0);
+        $arr_loc = $this->reporter->fixcolumn([$loc], '16', 0);
+        $arr_expiry = $this->reporter->fixcolumn([$expiry], '16', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_qty, $arr_uom, $arr_itemname, $arr_swh, $arr_loc, $arr_expiry]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(50, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '', '', false, 1);
           PDF::MultiCell(50, 0, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '', '', false, 1);
@@ -387,12 +393,12 @@ class ts
           PDF::MultiCell(125, 0, (isset($arr_expiry[$r]) ? $arr_expiry[$r] : ''), '', 'C', false, 1, '', '', false, 1);
         }
 
-          $totalqty += $data[$i]['qty'];
-      
-          if (intVal($i) + 1 == $page) {
-            $this->default_TS_header_PDF($params, $data);
-            $page += $count;
-          }
+        $totalqty += $data[$i]['qty'];
+
+        if (intVal($i) + 1 == $page) {
+          $this->default_TS_header_PDF($params, $data);
+          $page += $count;
+        }
       }
     }
 
@@ -420,5 +426,4 @@ class ts
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

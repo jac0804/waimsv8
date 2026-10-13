@@ -44,10 +44,51 @@ class en_student
 
   private $fields = ['client', 'clientname', 'isstudent', 'bday', 'accountant', 'email', 'picture'];
   private $fieldsOther = [
-    'studentid', 'lname', 'fname', 'mname', 'courseid', 'branch', 'gender', 'civilstatus', 'bplace', 'nationality', 'extramural',
-    'haddr', 'htel', 'baddr', 'btel', 'guardian', 'gtel',
-    'elementary', 'eyear', 'highschool', 'hyear', 'college', 'cyear', 'postschool', 'pyear', 'company',
-    'isold', 'isnew', 'isforeign', 'isadddrop', 'iscrossenrollee', 'istransferee', 'islateenrollee', 'isregular', 'isirregular', 'curriculumtrno', 'sectionid', 'yr', 'levelup', 'schedtrno', 'assesstrno', 'regtrno', 'chinesename', 'chinesecourseid', 'chineselevelup'
+    'studentid',
+    'lname',
+    'fname',
+    'mname',
+    'courseid',
+    'branch',
+    'gender',
+    'civilstatus',
+    'bplace',
+    'nationality',
+    'extramural',
+    'haddr',
+    'htel',
+    'baddr',
+    'btel',
+    'guardian',
+    'gtel',
+    'elementary',
+    'eyear',
+    'highschool',
+    'hyear',
+    'college',
+    'cyear',
+    'postschool',
+    'pyear',
+    'company',
+    'isold',
+    'isnew',
+    'isforeign',
+    'isadddrop',
+    'iscrossenrollee',
+    'istransferee',
+    'islateenrollee',
+    'isregular',
+    'isirregular',
+    'curriculumtrno',
+    'sectionid',
+    'yr',
+    'levelup',
+    'schedtrno',
+    'assesstrno',
+    'regtrno',
+    'chinesename',
+    'chinesecourseid',
+    'chineselevelup'
   ];
   private $except = ['clientid', 'studentid'];
   private $blnfields = ['isstudent', 'isold', 'isnew', 'isforeign', 'isadddrop', 'iscrossenrollee', 'istransferee', 'islateenrollee', 'isregular', 'isirregular'];
@@ -58,11 +99,11 @@ class en_student
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -420,14 +461,14 @@ class en_student
     $msg = '';
 
     $companyid = $config['params']['companyid'];
-    $dateTables = ['client','en_studentinfo'];
+    $dateTables = ['client', 'en_studentinfo'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key) {
       if (isset($head[$key])) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if 
       }
     }
@@ -499,7 +540,6 @@ class en_student
     }
     exithere:
     return ['status' => $msg == '' ? true : false, 'msg' => $msg, 'clientid' => $clientid];
-    
   } // end function
 
   private function checkstudentid($studentid, $clientid)
@@ -548,17 +588,17 @@ class en_student
     // ) as v";
     // $count = $this->coreFunctions->datareader($qry, [$client, $client, $client, $clientid]);
     $qry = "select value from (
-      select trno as value from en_sohead where client='".$client."' union all
-      select trno as value from en_sjhead where client='".$client."' union all
-      select trno as value from en_glhead where clientid=".$clientid." union all
-      select trno as value from en_gegrades where clientid=".$clientid." union all
-      select trno as value from en_glgrades where clientid=".$clientid." union all
-      select trno as value from en_glstudents where clientid=".$clientid." union all
-      select trno as value from en_atstudents where clientid=".$clientid." union all
-      select trno as value from en_atstudents where clientid=".$clientid." union all
-      select trno as value from en_adhead where client='".$client."' union all
-      select trno as value from en_srcattendance where clientid=".$clientid." union all
-      select line as value from en_studentcredentials where clientid=".$clientid."
+      select trno as value from en_sohead where client='" . $client . "' union all
+      select trno as value from en_sjhead where client='" . $client . "' union all
+      select trno as value from en_glhead where clientid=" . $clientid . " union all
+      select trno as value from en_gegrades where clientid=" . $clientid . " union all
+      select trno as value from en_glgrades where clientid=" . $clientid . " union all
+      select trno as value from en_glstudents where clientid=" . $clientid . " union all
+      select trno as value from en_atstudents where clientid=" . $clientid . " union all
+      select trno as value from en_atstudents where clientid=" . $clientid . " union all
+      select trno as value from en_adhead where client='" . $client . "' union all
+      select trno as value from en_srcattendance where clientid=" . $clientid . " union all
+      select line as value from en_studentcredentials where clientid=" . $clientid . "
     ) as v";
     $count = $this->coreFunctions->datareader($qry);
     if (($count != '')) {
@@ -638,7 +678,7 @@ class en_student
       from client
       left join en_studentinfo as si on si.clientid=client.clientid
       left join en_course as co on co.line=si.courseid
-      where md5(client.clientid)='".$clientid."'";
+      where md5(client.clientid)='" . $clientid . "'";
 
     return $this->coreFunctions->opentable($query);
   }
@@ -646,7 +686,7 @@ class en_student
 
   public function reportdata($config)
   {
-    
+
     if ($config['params']['dataparams']['print'] == "default") {
       $str = $this->reportplotting($config);
     } else if ($config['params']['dataparams']['print'] == "PDFM") {
@@ -732,7 +772,7 @@ class en_student
     $this->PDF_header($filters, $data);
 
     if ($data[0]->picture != null && $data[0]->picture != '') {
-      PDF::Image(public_path().$data[0]->picture, 550, 110, 100, 100);
+      PDF::Image(public_path() . $data[0]->picture, 550, 110, 100, 100);
     } else {
       PDF::Image('images/demo/nouserimg.jpg', '', '', 100, 100);
     }
@@ -751,7 +791,7 @@ class en_student
     PDF::MultiCell(100, 0, 'Name: ', '', 'L', false, 0);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(280, 0, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false);
-    
+
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 0, 'Gender: ', '', 'L', false, 0);
     PDF::SetFont($fontbold, '', $fontsize);

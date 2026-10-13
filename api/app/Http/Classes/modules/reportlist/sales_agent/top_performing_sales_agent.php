@@ -29,12 +29,12 @@ class top_performing_sales_agent
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -184,7 +184,7 @@ class top_performing_sales_agent
     if ($this->companysetup->getsystemtype($config['params']) == 'EAPPLICATION' || $this->companysetup->getsystemtype($config['params']) == 'AMS') {
       return $this->AMS_EAP_Layout($config);
     } else {
-      return $this->reportDefaultLayout($config);  
+      return $this->reportDefaultLayout($config);
     }
   }
 
@@ -235,7 +235,7 @@ class top_performing_sales_agent
     $typeofreport     = $config['params']['dataparams']['typeofreport'];
     $paymenttype = $config['params']['dataparams']['paymenttype'];
 
-    
+
     $center     = $config['params']['center'];
 
     $filter = '';

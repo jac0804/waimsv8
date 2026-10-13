@@ -111,11 +111,11 @@ class sj
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -520,11 +520,11 @@ class sj
       $obj[0]['inventory']['columns'][$disc]['readonly'] = true;
     }
 
-     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
 
-     if (!$islocation) {
-          $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-      } 
+    if (!$islocation) {
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -977,7 +977,7 @@ class sj
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-              $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -2001,7 +2001,7 @@ class sj
 
 
 
-    
+
 
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv,item.foramt from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
@@ -2068,12 +2068,12 @@ class sj
 
 
     foreach ($data as $key => $value) {
-       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     if (!empty($info)) {
       foreach ($info as $key2 => $v) {
-         $info[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $info[$key2], $lookups);
+        $info[$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $info[$key2], $lookups);
       }
     }
 
@@ -3559,8 +3559,8 @@ class sj
       $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
       $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
 
-  
-     
+
+
       $computedata = $this->othersClass->computestock(
         $damt * $head['forex'],
         $data[$key]->disc,
@@ -3570,7 +3570,7 @@ class sj
       );
 
       $computedata['amt']  = number_format($computedata['amt'], $deci, '.', '');
-       $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
+      $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
 
       $exec = $this->coreFunctions->execqry("update lastock set amt = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
     }

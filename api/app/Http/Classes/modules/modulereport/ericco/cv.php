@@ -37,9 +37,9 @@ class cv
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -331,10 +331,10 @@ class cv
     PDF::SetMargins(40, 40);
 
     PDF::SetFont($font, '');
-        $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
-        PDF::SetFont($font, '', 9);
-        PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
-     
+    $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
+    PDF::SetFont($font, '', 9);
+    PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
+
     PDF::MultiCell(0, 0, "\n\n");
     $this->reportheader->getheader($params);
 
@@ -918,7 +918,7 @@ class cv
       PDF::MultiCell(80, $max_height, $key, 'LRB', '', false, 0);
 
       switch ($data['head'][0]['month']) {
-          // case '1': case '2': case '3':
+        // case '1': case '2': case '3':
         case '1':
         case '4':
         case '7':
@@ -928,7 +928,7 @@ class cv
           PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
           $totalwtx1 +=  $data['detail'][$key]['oamt'];
           break;
-          // case '4': case '5': case '6':
+        // case '4': case '5': case '6':
         case '2':
         case '5':
         case '8':
@@ -1209,7 +1209,7 @@ class cv
   {
 
     $companyid = $filters['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency',$filters['params'] );
+    $decimal = $this->companysetup->getdecimal('currency', $filters['params']);
 
     $center = $filters['params']['center'];
     $username = $filters['params']['user'];
@@ -2673,8 +2673,8 @@ class cv
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
     $this->new_erico_pdf_header($params, $data);
-    
-    $data2= $this->ericco_qry($params, $data);
+
+    $data2 = $this->ericco_qry($params, $data);
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', 'LR');
 
@@ -2703,7 +2703,6 @@ class cv
           PDF::MultiCell(110, 15, ' ' . (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(110, 15, ' ' . (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(8, 15, ' ', 'R', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
-        
         }
         $totaldb += $data2[$i]['db'];
         $totalcr += $data2[$i]['cr'];
@@ -2721,14 +2720,14 @@ class cv
     PDF::MultiCell(8, 15, '', 'L', 'L', false, 0);
     PDF::MultiCell(484, 15, 'TOTAL AMOUNT', '', 'L', false, 0);
     PDF::MultiCell(110, 15, number_format($totaldb, $decimal), '', 'R', false, 0);
-    PDF::MultiCell(110, 15, number_format($totalcr, $decimal), '', 'R', false,0);
-     PDF::MultiCell(8, 15, '', 'R', 'R', false);
+    PDF::MultiCell(110, 15, number_format($totalcr, $decimal), '', 'R', false, 0);
+    PDF::MultiCell(8, 15, '', 'R', 'R', false);
 
     PDF::SetFont($font, '', 3);
     PDF::MultiCell(720, 0, '', 'BLR');
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', 'LR');
- 
+
     PDF::SetFont($fontbold, '', 12);
     PDF::MultiCell(10, 0, '', 'L', 'L', false, 0);
     PDF::MultiCell(165, 0, 'Prepared by ', '', 'L', false, 0);
@@ -2737,8 +2736,8 @@ class cv
     PDF::MultiCell(14, 0, '', '', 'L', false, 0);
     PDF::MultiCell(165, 0, 'Approved Payment by', '', 'L', false, 0);
     PDF::MultiCell(13, 0, '', '', 'L', false, 0);
-    PDF::MultiCell(165, 0, 'Posted by', '', 'L',false,0);
-    PDF::MultiCell(10, 0, '', 'R', 'L', false,1);
+    PDF::MultiCell(165, 0, 'Posted by', '', 'L', false, 0);
+    PDF::MultiCell(10, 0, '', 'R', 'L', false, 1);
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', 'LR');
@@ -2752,8 +2751,8 @@ class cv
     PDF::MultiCell(14, 0, '', '', 'L', false, 0);
     PDF::MultiCell(165, 0, $params['params']['dataparams']['approved'], 'B', 'C', false, 0);
     PDF::MultiCell(13, 0, '', '', 'L', false, 0);
-    PDF::MultiCell(165, 0, (isset($data[0]['postedby']) ? $data[0]['postedby'] : ''), 'B', 'C',false,0);
-    PDF::MultiCell(10, 0, '', 'R', 'L', false,1);
+    PDF::MultiCell(165, 0, (isset($data[0]['postedby']) ? $data[0]['postedby'] : ''), 'B', 'C', false, 0);
+    PDF::MultiCell(10, 0, '', 'R', 'L', false, 1);
     PDF::SetCellPaddings(0, 0, 0, 0);
 
     PDF::SetFont($font, '', 5);
@@ -2766,8 +2765,8 @@ class cv
     PDF::MultiCell(165, 0, '', '', 'L', false, 0);
     PDF::MultiCell(14, 0, '', '', 'L', false, 0);
     PDF::MultiCell(178, 0, 'Received the Amount in Pesos', '', 'C', false, 0);
-    PDF::MultiCell(165, 0, '', '', 'L',false,0);
-    PDF::MultiCell(10, 0, '', 'R', 'L', false,1);
+    PDF::MultiCell(165, 0, '', '', 'L', false, 0);
+    PDF::MultiCell(10, 0, '', 'R', 'L', false, 1);
 
 
     PDF::SetFont($fontbold, '', 12);
@@ -2779,15 +2778,15 @@ class cv
     PDF::MultiCell(100, 0, 'Amount', '', 'L', false, 0);
     PDF::MultiCell(14, 0, '', '', 'L', false, 0);
     PDF::MultiCell(178, 0, '', '', 'C', false, 0);
-    PDF::MultiCell(165, 0, '', '', 'L',false,0);
-    PDF::MultiCell(10, 0, '', 'R', 'L', false,1);
+    PDF::MultiCell(165, 0, '', '', 'L', false, 0);
+    PDF::MultiCell(10, 0, '', 'R', 'L', false, 1);
 
     PDF::SetFont($font, '', 8);
     PDF::MultiCell(720, 0, '', 'LR');
- 
 
 
-        $query = "select round(sum(detail.cr), 2) as cr,
+
+    $query = "select round(sum(detail.cr), 2) as cr,
                   DATE_FORMAT(left(detail.postdate,10),'%b %d %Y') as pdate,detail.checkno
             from lahead as head 
             left join ladetail as detail on detail.trno=head.trno
@@ -2802,11 +2801,11 @@ class cv
             left join coa on coa.acnoid=detail.acnoid
             where head.doc='cv' and head.trno ='$trno' and detail.cr<>0
             group by detail.postdate,detail.checkno";
-        //  var_dump($query);
-        $data3 = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
+    //  var_dump($query);
+    $data3 = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
 
-      PDF::SetCellPaddings(0, 3, 0, 3);
-      if (!empty($data3)) {
+    PDF::SetCellPaddings(0, 3, 0, 3);
+    if (!empty($data3)) {
       $totaldb = 0;
       $totalcr = 0;
       for ($i = 0; $i < count($data3); $i++) {
@@ -2825,8 +2824,8 @@ class cv
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_pdate, $arr_checkno, $arr_credit]);
         for ($r = 0; $r < $maxrow; $r++) {
-         // $isLastRowOfItem = true kung ito ang huling row ng kasalukuyang item
-            $isLastRowOfItem = ($r == $maxrow - 1);
+          // $isLastRowOfItem = true kung ito ang huling row ng kasalukuyang item
+          $isLastRowOfItem = ($r == $maxrow - 1);
 
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(10, 15, '', 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
@@ -2835,39 +2834,36 @@ class cv
           PDF::MultiCell(117, 15, ' ' . (isset($arr_checkno[$r]) ? $arr_checkno[$r] : ''), 'B', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(13, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(100, 15, ' ' . (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), 'B', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          
+
           if ($isLastOuter && $isLastRowOfItem) {
-              // huling row ng loop";
-               PDF::SetFont($fontbold, '', $fontsize);
-               PDF::MultiCell(14, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-               PDF::MultiCell(70, 15, 'Received By', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+            // huling row ng loop";
+            PDF::SetFont($fontbold, '', $fontsize);
+            PDF::MultiCell(14, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(70, 15, 'Received By', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
 
-               PDF::MultiCell(15, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-               PDF::MultiCell(258, 15, '', 'B', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-               PDF::MultiCell(10, 15, '', 'R', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
-         
-                PDF::MultiCell(452, 15, '', 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-                PDF::MultiCell(258, 15, 'Signature over Printed Name/Date', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-                PDF::MultiCell(10, 15, '', 'R', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(15, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(258, 15, '', 'B', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(10, 15, '', 'R', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
 
+            PDF::MultiCell(452, 15, '', 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(258, 15, 'Signature over Printed Name/Date', '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(10, 15, '', 'R', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
           } else {
-             PDF::MultiCell(367, 15, '', 'R', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+            PDF::MultiCell(367, 15, '', 'R', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
           }
-          
         }
-        
       }
     }
-      PDF::SetCellPaddings(0, 0, 0, 0);
+    PDF::SetCellPaddings(0, 0, 0, 0);
 
-      PDF::SetFont($font, '', 3);
-     PDF::MultiCell(720, 0, '', 'T');
+    PDF::SetFont($font, '', 3);
+    PDF::MultiCell(720, 0, '', 'T');
 
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   } //end fn
 
-   public function new_erico_pdf_header($params, $data)
+  public function new_erico_pdf_header($params, $data)
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
@@ -2898,94 +2894,94 @@ class cv
     //     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
     //     PDF::SetFont($font, '', 9);
     //     PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
-     
+
     // PDF::MultiCell(0, 0, "\n\n");
     // $this->reportheader->getheader($params);
 
-        PDF::Image($this->companysetup->getlogopath($params['params']) . 'ericco_logo.jpg', '40', '15', 200, 60);//x,y,width,height
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'ericco_logo.jpg', '40', '15', 200, 60); //x,y,width,height
 
-        PDF::SetFont($font, '', 14);
-        PDF::MultiCell(0, 0, '', '', 'L');
-      
-        $faxno='';
-        $fax= (isset($data[0]['fax']) ? $data[0]['fax'] : '');
-        if($fax !=''){
-          $faxno=' . '.strtoupper($fax);
-        }
-        // $y = PDF::getY();
-        // PDF::SetXY(40, 27.50);
-        // $this->reportheader->getheader($params);
-        PDF::SetFont($font, '', 11);
-        PDF::MultiCell(220, 0, '', '', 'C',false,0);
-        PDF::MultiCell(400, 0, $headerdata[0]->address, '', 'L',false,0);
-        PDF::MultiCell(100, 0, '', '', 'R', false, 1);
+    PDF::SetFont($font, '', 14);
+    PDF::MultiCell(0, 0, '', '', 'L');
 
-        PDF::SetFont($font, '', 11);
-        PDF::MultiCell(220, 0, '', '', 'C',false,0);
-        PDF::MultiCell(400, 0, 'Tel./Fax No. '.strtoupper($headerdata[0]->tel). '  '.$faxno, '', 'L',false,0);
-        PDF::MultiCell(100, 0,  '', '', 'R', false, 1);
+    $faxno = '';
+    $fax = (isset($data[0]['fax']) ? $data[0]['fax'] : '');
+    if ($fax != '') {
+      $faxno = ' . ' . strtoupper($fax);
+    }
+    // $y = PDF::getY();
+    // PDF::SetXY(40, 27.50);
+    // $this->reportheader->getheader($params);
+    PDF::SetFont($font, '', 11);
+    PDF::MultiCell(220, 0, '', '', 'C', false, 0);
+    PDF::MultiCell(400, 0, $headerdata[0]->address, '', 'L', false, 0);
+    PDF::MultiCell(100, 0, '', '', 'R', false, 1);
 
-        PDF::SetFont($font, '', 3);
-        PDF::MultiCell(720, 0, '', '');
+    PDF::SetFont($font, '', 11);
+    PDF::MultiCell(220, 0, '', '', 'C', false, 0);
+    PDF::MultiCell(400, 0, 'Tel./Fax No. ' . strtoupper($headerdata[0]->tel) . '  ' . $faxno, '', 'L', false, 0);
+    PDF::MultiCell(100, 0,  '', '', 'R', false, 1);
 
-        PDF::SetFont($fontbold, '', 16);
-        PDF::MultiCell(230, 5, '', '', 'R', false, 0);
-        PDF::MultiCell(250, 5, 'PAYMENT VOUCHER', '', 'L', false, 0);
-        PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(60, 5, "CV NO.: ", '', 'L', false, 0, '',  '');
-        PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(180, 5, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '', 'L', false);
-   
-       PDF::SetFont($font, '', 11);
-       PDF::MultiCell(720, 0, '', '');
+    PDF::SetFont($font, '', 3);
+    PDF::MultiCell(720, 0, '', '');
 
-        $date = $data[0]['dateid'];
-        $datetime = new DateTime($date);
-        $datehere = $datetime->format('F d, Y');
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(70, 5, 'PAID TO ', '', 'L', false, 0);
-        PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(330, 5, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '');
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(85, 5, 'DATE:', '', 'R', false, 0);
-        PDF::MultiCell(55, 5, '', '', 'R', false, 0);
-        PDF::MultiCell(180, 5, $datehere, '', 'L', false);
+    PDF::SetFont($fontbold, '', 16);
+    PDF::MultiCell(230, 5, '', '', 'R', false, 0);
+    PDF::MultiCell(250, 5, 'PAYMENT VOUCHER', '', 'L', false, 0);
+    PDF::SetFont($fontbold, '', 11);
+    PDF::MultiCell(60, 5, "CV NO.: ", '', 'L', false, 0, '',  '');
+    PDF::SetFont($fontbold, '', 11);
+    PDF::MultiCell(180, 5, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '', 'L', false);
 
-        PDF::SetFont($fontbold, '', 3);
-        PDF::MultiCell(70, 5, '', '', 'L', false, 0);
-        PDF::SetFont($font, '', 3);
-        PDF::MultiCell(330, 5,'', 'B', 'L', false, 0, '',  '');
-        PDF::SetFont($fontbold, '', 3);
-        PDF::MultiCell(85, 5, '', '', 'R', false, 0);
-        PDF::MultiCell(55, 5, '', '', 'R', false, 0);
-        PDF::MultiCell(180, 5, '', 'B', 'L', false);
+    PDF::SetFont($font, '', 11);
+    PDF::MultiCell(720, 0, '', '');
 
+    $date = $data[0]['dateid'];
+    $datetime = new DateTime($date);
+    $datehere = $datetime->format('F d, Y');
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(70, 5, 'PAID TO ', '', 'L', false, 0);
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(330, 5, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '');
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(85, 5, 'DATE:', '', 'R', false, 0);
+    PDF::MultiCell(55, 5, '', '', 'R', false, 0);
+    PDF::MultiCell(180, 5, $datehere, '', 'L', false);
 
-
-       PDF::SetFont($font, '', 3);
-       PDF::MultiCell(720, 0, '', '');
+    PDF::SetFont($fontbold, '', 3);
+    PDF::MultiCell(70, 5, '', '', 'L', false, 0);
+    PDF::SetFont($font, '', 3);
+    PDF::MultiCell(330, 5, '', 'B', 'L', false, 0, '',  '');
+    PDF::SetFont($fontbold, '', 3);
+    PDF::MultiCell(85, 5, '', '', 'R', false, 0);
+    PDF::MultiCell(55, 5, '', '', 'R', false, 0);
+    PDF::MultiCell(180, 5, '', 'B', 'L', false);
 
 
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(70, 5, 'TYPE', '', 'L', false, 0);
-        PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(330, 5, '', '', 'L', false, 0, '',  '');
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(85, 5, '', '', 'R', false, 0);
-        PDF::MultiCell(55, 5, '', '', 'R', false, 0);
-        PDF::MultiCell(180, 5, '', '', 'L', false);
 
-        PDF::SetFont($fontbold, '', 3);
-        PDF::MultiCell(70, 5, '', '', 'L', false, 0);
-        PDF::SetFont($font, '', 3);
-        PDF::MultiCell(330, 5,'', 'B', 'L', false, 0, '',  '');
-        PDF::SetFont($fontbold, '', 3);
-        PDF::MultiCell(85, 5, '', '', 'R', false, 0);
-        PDF::MultiCell(55, 5, '', '', 'R', false, 0);
-        PDF::MultiCell(180, 5, '', '', 'L', false);
+    PDF::SetFont($font, '', 3);
+    PDF::MultiCell(720, 0, '', '');
 
-       PDF::SetFont($font, '', 3);
-       PDF::MultiCell(720, 0, '', '');
+
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(70, 5, 'TYPE', '', 'L', false, 0);
+    PDF::SetFont($font, '', $fontsize);
+    PDF::MultiCell(330, 5, '', '', 'L', false, 0, '',  '');
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(85, 5, '', '', 'R', false, 0);
+    PDF::MultiCell(55, 5, '', '', 'R', false, 0);
+    PDF::MultiCell(180, 5, '', '', 'L', false);
+
+    PDF::SetFont($fontbold, '', 3);
+    PDF::MultiCell(70, 5, '', '', 'L', false, 0);
+    PDF::SetFont($font, '', 3);
+    PDF::MultiCell(330, 5, '', 'B', 'L', false, 0, '',  '');
+    PDF::SetFont($fontbold, '', 3);
+    PDF::MultiCell(85, 5, '', '', 'R', false, 0);
+    PDF::MultiCell(55, 5, '', '', 'R', false, 0);
+    PDF::MultiCell(180, 5, '', '', 'L', false);
+
+    PDF::SetFont($font, '', 3);
+    PDF::MultiCell(720, 0, '', '');
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', 'TLR');
@@ -3003,7 +2999,7 @@ class cv
     PDF::MultiCell(720, 0, '', 'LR');
 
     PDF::SetFont($fontbold, '', 11);
-      PDF::MultiCell(8, 0, '', 'L', 'L', false, 0);
+    PDF::MultiCell(8, 0, '', 'L', 'L', false, 0);
     PDF::MultiCell(712, 0, 'In Payment For:', 'R', 'L', false);
 
     // PDF::SetFont($font, '', 5);
@@ -3011,10 +3007,10 @@ class cv
   }
 
 
-   public function ericco_qry($params, $data)
+  public function ericco_qry($params, $data)
   {
-        $trno = $params['params']['dataid'];
-        $query = "select coa.acnoname,round(sum(detail.db), 2) as db,round(sum(detail.cr), 2) as cr
+    $trno = $params['params']['dataid'];
+    $query = "select coa.acnoname,round(sum(detail.db), 2) as db,round(sum(detail.cr), 2) as cr
         from lahead as head 
         left join ladetail as detail on detail.trno=head.trno
         left join coa on coa.acnoid=detail.acnoid
@@ -3027,9 +3023,8 @@ class cv
         left join coa on coa.acnoid=detail.acnoid
         where head.doc='cv' and head.trno ='$trno'
         group by coa.acnoname";
-        $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
+    $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
 
     return $result;
   }
-
 }

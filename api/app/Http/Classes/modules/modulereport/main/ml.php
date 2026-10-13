@@ -34,9 +34,9 @@ class ml
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -69,8 +69,8 @@ class ml
     }
     public function report_default_query($config)
     {
-        $mechid=$config['params']['dataid'];
-        $query="select mech.clientname as mechname,ifnull(mech.addr, '') as addr,ifnull(mech.tin, '') as tin,
+        $mechid = $config['params']['dataid'];
+        $query = "select mech.clientname as mechname,ifnull(mech.addr, '') as addr,ifnull(mech.tin, '') as tin,
                   ifnull(mech.fax, '') as fax,ifnull(mech.mobile, '') as mobile,
                   ifnull(mech.email, '') as email,ifnull(mech.contact, '') as contact,
                   date(mech.start) as start, mech.area, mech.province, mech.region,mech.rate,mech.tel,mech.status,
@@ -114,8 +114,7 @@ class ml
 
     public function reportplotting($params, $data)
     {
-         return $this->default_mech_PDF($params, $data);
-            
+        return $this->default_mech_PDF($params, $data);
     }
 
 
@@ -179,16 +178,16 @@ class ml
         PDF::MultiCell(90, 20, "Mechanic Name : ", '', 'R', false, 0, '', '', true, 0, false, true, 0, 'B', true);
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(630, 20, (isset($data[0]['mechname']) ? $data[0]['mechname'] : ''), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
-        
+
 
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(80, 20, "Address", '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
         PDF::MultiCell(10, 20, " : ", '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(630, 20, (isset($data[0]['addr']) ? $data[0]['addr'] : ''), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
-      
-      
-       
+
+
+
 
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(80, 20, "Tin", '', 'L', false, 0, '', '', true, 0, false, true, 0, 'B', true);
@@ -263,7 +262,7 @@ class ml
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(630, 20, (isset($data[0]['region']) ? $data[0]['region'] : ''), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
-       
+
 
 
         PDF::MultiCell(0, 0, "\n\n");
@@ -276,9 +275,9 @@ class ml
         PDF::MultiCell(70, 0, "Job Code", '', 'L', false, 0);
         PDF::MultiCell(95, 0, "Job Desc", '', 'L', false, 0);
         PDF::MultiCell(70, 0, "Task Code", '', 'L', false, 0);
-        PDF::MultiCell(95, 0, "Task Desc", '', 'L', false,0);
-        PDF::MultiCell(80, 0, "Notes", '', 'L', false,0);  
-        PDF::MultiCell(70, 0, "Vehicle", '', 'L', false,0);
+        PDF::MultiCell(95, 0, "Task Desc", '', 'L', false, 0);
+        PDF::MultiCell(80, 0, "Notes", '', 'L', false, 0);
+        PDF::MultiCell(70, 0, "Vehicle", '', 'L', false, 0);
         PDF::MultiCell(70, 0, "Mileage", '', 'L', false, 0);
         PDF::MultiCell(70, 0, "Labor", '', 'R', false);
 
@@ -325,7 +324,7 @@ class ml
                 $vehicle = $data[$i]['vehicle'];
                 $mileage = $data[$i]['mileage'];
                 $labor = number_format($data[$i]['labor'], 2);
-    
+
 
                 $arr_docno = $this->reporter->fixcolumn([$docno], '15', 0);
                 $arr_jobcode = $this->reporter->fixcolumn([$jobcode], '20', 0);
@@ -336,7 +335,7 @@ class ml
                 $arr_vehicle = $this->reporter->fixcolumn([$vehicle], '20', 0);
                 $arr_mileage = $this->reporter->fixcolumn([$mileage], '20', 0);
                 $arr_labor = $this->reporter->fixcolumn([$labor], '13', 0);
-     
+
 
                 $maxrow = $this->othersClass->getmaxcolumn([$arr_docno, $arr_jobcode, $arr_description, $arr_code, $arr_task, $arr_rem, $arr_vehicle, $arr_mileage, $arr_labor]);
                 for ($r = 0; $r < $maxrow; $r++) {
@@ -393,6 +392,4 @@ class ml
 
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
-
-  
 }

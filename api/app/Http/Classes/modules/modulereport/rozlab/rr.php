@@ -32,9 +32,9 @@ class rr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -144,7 +144,7 @@ class rr
 
   public function reportplotting($params, $data)
   {
-    
+
     if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_RR_layout($params, $data);
     } else {
@@ -208,7 +208,7 @@ class rr
       'padding' => 0,
     );
 
-    
+
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, 'A/P Invoice', '', 'L', false, 0);
     PDF::SetFont($fontbold, '', $fontsize);
@@ -316,7 +316,7 @@ class rr
 
   public function AP_Invoice_PDF($params, $data)
   {
-     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
+    $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
     $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
     $center = $params['params']['center'];
@@ -389,7 +389,7 @@ class rr
         $this->AP_Invoice_header_PDF($params, $data);
       }
     }
-   
+
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', 'B');
@@ -520,7 +520,7 @@ class rr
     );
 
     PDF::SetFont($fontbold, '', 18);
-   
+
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 0, "", '', 'L', false, 0, '',  '');

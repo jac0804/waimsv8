@@ -127,11 +127,11 @@ class customer
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -176,11 +176,19 @@ class customer
     if ($companyid == 10 || $companyid == 12) { //afti & afti usd
       $this->prefix = "C";
     }
-    if ($companyid == 64) {
-      $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'tin', 'tel', 'mobile', 'buildingname', 'listarea', 'listprovince', 'agentname', 'listcategory', 'terms', 'notes', 'shipto', 'fax', 'contact', 'listbrgy',  'listareacode', 'listregion'];
-    } else {
-      $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'shipto', 'tin', 'listcategory', 'notes', 'tel', 'fax', 'contact', 'listbrgy', 'agentname', 'listareacode', 'listarea', 'listprovince', 'listregion'];
-    };
+    switch ($companyid) {
+      case 64:
+        $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'tin', 'tel', 'mobile', 'buildingname', 'listarea', 'listprovince', 'agentname', 'listcategory', 'terms', 'notes', 'shipto', 'fax', 'contact', 'listbrgy',  'listareacode', 'listregion'];
+        break;
+
+      case 29:
+        $getcols = ['action', 'listclient', 'listclientname',  'listaddr', 'listgroup', 'shipto', 'tin', 'listcategory', 'notes', 'tel', 'fax', 'contact', 'listbrgy', 'agentname', 'listareacode', 'listarea', 'listprovince', 'listregion'];
+        break;
+
+      default:
+        $getcols = ['action', 'listclient', 'listclientname', 'listgroup', 'listaddr', 'shipto', 'tin', 'listcategory', 'notes', 'tel', 'fax', 'contact', 'listbrgy', 'agentname', 'listareacode', 'listarea', 'listprovince', 'listregion'];
+        break;
+    }
     foreach ($getcols as $key => $value) {
       $$value = $key;
     }
@@ -278,6 +286,18 @@ class customer
         $cols[$listarea]['style'] =  'width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;text-align:left;';
         $cols[$listprovince]['style'] =  'width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;text-align:left;';
         $cols[$terms]['style'] =  'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px;text-align:left;';
+        break;
+      case 29:
+        $cols[$tin]['type'] = 'coldel';
+        $cols[$tel]['type'] = 'coldel';
+        $cols[$fax]['type'] = 'coldel';
+        $cols[$contact]['type'] = 'coldel';
+        $cols[$listarea]['type'] = 'coldel';
+        $cols[$listprovince]['type'] = 'coldel';
+        $cols[$listregion]['type'] = 'coldel';
+        $cols[$listareacode]['type'] = 'coldel';
+        $cols[$listbrgy]['type'] = 'coldel';
+        $cols[$agentname]['type'] = 'coldel';
         break;
       default:
         $cols[$listgroup]['type'] = 'coldel';
@@ -401,7 +421,7 @@ class customer
         if ($search != "") {
           $limit = "";
         }
-        break;  
+        break;
       default:
         $address = "client.addr";
         $leftjoin = "";
@@ -793,7 +813,7 @@ class customer
             break;
           case 72: //hahsy
             $return['TRUCKING ADDRESS'] = ['icon' => 'fa fa-address-book', 'tab' => $billship];
-            break;  
+            break;
           default:
             if ($defaultaddresstab_access != 0) {
               $return['DEFAULT SHIPPING/BILLING ADDRESS'] = ['icon' => 'fa fa-map-marker-alt', 'customform' => $billshipdefault];
@@ -1106,7 +1126,7 @@ class customer
                 break;
               case 72: //hahsy
                 array_push($fields,  'contact', 'tin', 'industry');
-                break;  
+                break;
               default:
                 array_push($fields, 'tin');
                 if ($companyid == 37) { //mega crystal
@@ -1182,6 +1202,19 @@ class customer
         break;
       default:
         switch ($companyid) {
+            case 10://afti
+            case 12: //afti usd
+              if (floatval($editlimit) == 0) {
+                data_set($col2, 'bal.readonly', true);
+                data_set($col2, 'bal.class', 'sbccsreadonly');
+                data_set($col2, 'terms.type', 'input');
+                data_set($col2, 'terms.class', 'csterms sbccsreadonly');
+                data_set($col2, 'dvattype.type', 'input');
+                data_set($col2, 'dvattype.class', 'csdvattype sbccsreadonly');
+                data_set($col2, 'dewt.type', 'input');
+                data_set($col2, 'dewt.class', 'csdewt sbccsreadonly');
+              }
+              break;
           case 15: //nathina
             data_set($col2, 'acct.label', 'FB Name');
             break;
@@ -1191,12 +1224,6 @@ class customer
           case 22: //eipi
             data_set($col2, 'contact.label', 'Contact Person');
             data_set($col2, 'bstyle.label', 'Business Type');
-            break;
-          case 10: //afti
-            if (floatval($editlimit) == 0) {
-              data_set($col2, 'bal.readonly', true);
-              data_set($col2, 'bal.class', 'sbccsreadonly');
-            }
             break;
           case 63: //ericco 
             data_set($col2, 'fax.type', 'cinput');
@@ -1311,12 +1338,18 @@ class customer
       case 64: //excilin
         array_push($fields, 'rem');
         break;
+      case 67: //yulick
+        array_push($fields, 'isparentname');
+        break;
       case 59: //roosevelt
         array_push($fields, 'type', 'dparentcode', 'ar');
         break;
+      case 67: //yulick
+        array_push($fields, 'clientpref', 'vendorname');
+        break;
       case 72: //hahsy
         array_push($fields, 'rem');
-        break;  
+        break;
     }
 
     $col3 = $this->fieldClass->create($fields);
@@ -1352,7 +1385,9 @@ class customer
       case 63: //ericco
         data_set($col3, 'tel2.type', 'cinput');
         break;
-
+      case 67: //yulick
+        data_set($col3, 'clientpref.label', 'Requestor');
+        break;
       default:
         data_set($col3, 'disc.label', 'Mark Up');
         break;
@@ -1389,7 +1424,7 @@ class customer
         break;
       case 72: //hahsy
         array_push($fields, 'isdefinvoice');
-        break; 
+        break;
     }
 
     $col4 = $this->fieldClass->create($fields);
@@ -1525,6 +1560,7 @@ class customer
     $data[0]['ar'] = '0.00';
     $data[0]['contactno'] = '';
     $data[0]['isdefinvoice'] = '0';
+    $data[0]['isparentname'] = '0';
 
     switch ($config['params']['companyid']) {
       case 60: //transpower
@@ -1598,6 +1634,10 @@ class customer
         $data[0]['vattype'] = 'VATABLE';
         $data[0]['tax'] = '12';
         break;
+      case 67: //yulick
+        $data[0]['clientpref'] = '';
+        $data[0]['vendorname'] = '';
+        break;
       default:
         $data[0]['isnocrlimit'] = '0';
         $data[0]['terms'] = '';
@@ -1661,6 +1701,10 @@ class customer
         break;
       case 59: //roosevelt
         array_push($this->fields, 'rem', 'ishold');
+        break;
+      case 67: //yulick
+        array_push($this->blnfields, 'isparentname');
+        array_push($this->fields, 'isparentname', 'clientpref', 'vendorname');
         break;
     }
 
@@ -1823,6 +1867,9 @@ class customer
       case 59: //roosevelt
         array_push($this->fields, 'rem', 'ishold');
         break;
+      case 67: //yulick
+        array_push($this->fields, 'isparentname', 'clientpref', 'vendorname');
+        break;
     }
 
     foreach ($this->fields as $key) {
@@ -1847,7 +1894,6 @@ class customer
     $data['dlock'] = $this->othersClass->getCurrentTimeStamp();
     $data['ismirror'] = 0;
 
-    if ($isupdate) {
       if ($companyid == 55) { //AFLI Lending
         $fullName = trim($head['lname'] . ', ' . $head['fname'] . ' ' . $head['mname']);
         $data['clientname'] = $fullName;

@@ -21,23 +21,63 @@ class viewqtdetails
   public $modulename = 'Details';
   public $gridname = 'tableentry';
   private $fields = [
-    'outdimlen', 'outdimwd', 'outdimht',
-    'indimlen', 'indimwd', 'indimht',
-    'chassiswd', 'underchassis',
-    'secchassisqty', 'secchassissz', 'secchassistk', 'secchassismat',
-    'flrjoistqty', 'flrjoistqtysz', 'flrjoistqtytk', 'flrjoistqtymat',
-    'flrtypework', 'flrtypeworktk', 'flrtypeworkty', 'flrtypeworkmat',
-    'exttypework', 'exttypeworkqty', 'exttypeworkty',
-    'inwalltypework', 'inwalltypeworkqty', 'inwalltypeworktk', 'inwalltypeworkty',
-    'inceiltypework', 'inceiltypeworkqty', 'inceiltypeworktk', 'inceiltypeworkty',
-    'insultk', 'insulty',
-    'reardrstype', 'reardrslock', 'reardrshinger', 'reardrsseals', 'reardrsrem',
-    'sidedrstype', 'sidedrslock', 'sidedrshinger', 'sidedrsseals', 'sidedrsrem',
-    'normlights', 'lightsrepair',
-    'upclrlights', 'lowclrlights', 'clrlightsrepair',
-    'paintcover', 'bodycolor', 'flrcolor', 'unchassiscolor',
-    'paintroof', 'exterior', 'interior',
-    'sideguards', 'reseal'
+    'outdimlen',
+    'outdimwd',
+    'outdimht',
+    'indimlen',
+    'indimwd',
+    'indimht',
+    'chassiswd',
+    'underchassis',
+    'secchassisqty',
+    'secchassissz',
+    'secchassistk',
+    'secchassismat',
+    'flrjoistqty',
+    'flrjoistqtysz',
+    'flrjoistqtytk',
+    'flrjoistqtymat',
+    'flrtypework',
+    'flrtypeworktk',
+    'flrtypeworkty',
+    'flrtypeworkmat',
+    'exttypework',
+    'exttypeworkqty',
+    'exttypeworkty',
+    'inwalltypework',
+    'inwalltypeworkqty',
+    'inwalltypeworktk',
+    'inwalltypeworkty',
+    'inceiltypework',
+    'inceiltypeworkqty',
+    'inceiltypeworktk',
+    'inceiltypeworkty',
+    'insultk',
+    'insulty',
+    'reardrstype',
+    'reardrslock',
+    'reardrshinger',
+    'reardrsseals',
+    'reardrsrem',
+    'sidedrstype',
+    'sidedrslock',
+    'sidedrshinger',
+    'sidedrsseals',
+    'sidedrsrem',
+    'normlights',
+    'lightsrepair',
+    'upclrlights',
+    'lowclrlights',
+    'clrlightsrepair',
+    'paintcover',
+    'bodycolor',
+    'flrcolor',
+    'unchassiscolor',
+    'paintroof',
+    'exterior',
+    'interior',
+    'sideguards',
+    'reseal'
   ];
   private $table = 'qtinfo';
   private $htable = 'hqtinfo';
@@ -51,10 +91,10 @@ class viewqtdetails
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -359,7 +399,7 @@ class viewqtdetails
 
 
     foreach ($this->fields as $key => $value) {
-         $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $c = $this->coreFunctions->opentable("select trno from qtinfo where trno=?", [$config['params']['dataparams']['trno']]);
     if (!empty($c)) {

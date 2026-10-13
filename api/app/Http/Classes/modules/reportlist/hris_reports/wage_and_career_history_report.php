@@ -34,12 +34,12 @@ class wage_and_career_history_report
 
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -127,9 +127,10 @@ class wage_and_career_history_report
         //     $filter .= " and emp.sectid = $sectid";
         // }
         if ($sectname != '') {
-                if ($sectid != 0) {
-                    $filter .= " and emp.sectid = $sectid";
-        }}
+            if ($sectid != 0) {
+                $filter .= " and emp.sectid = $sectid";
+            }
+        }
 
         if ($type != '') {
             $filter2 = " where emptype = '" . $type . "'";

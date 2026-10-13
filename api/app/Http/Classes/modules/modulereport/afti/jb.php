@@ -33,9 +33,9 @@ class jb
   private $reporter;
   private $logger;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -183,9 +183,9 @@ class jb
           // $str = app($this->companysetup->getreportpath($config['params']))->reportorderplotting($config, $data);
           $str = $this->reportorderplottingpdf($config, $data);
           break;
-          // case 'TC':
-          //     $str = $this->terms_condition_report($config, $data);
-          // break;
+        // case 'TC':
+        //     $str = $this->terms_condition_report($config, $data);
+        // break;
         default:
           $str = $this->reportgenplottingpdf($config, $data);
           break;
@@ -461,7 +461,7 @@ class jb
   public function default_jb_layout($params, $data)
   {
     $companyid = $params['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency', $params['params'] );
+    $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
     $center = $params['params']['center'];
     $username = $params['params']['user'];

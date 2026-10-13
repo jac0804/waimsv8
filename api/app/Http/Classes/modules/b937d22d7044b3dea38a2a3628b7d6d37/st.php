@@ -47,7 +47,7 @@ class st
   public $hamt = 'amt';
   public $defaultContra = 'IS1';
 
-  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'wh','pdtrno'];
+  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'wh', 'pdtrno'];
   private $except = ['trno', 'dateid'];
   private $acctg = [];
   public $showfilteroption = true;
@@ -57,11 +57,11 @@ class st
   private $helpClass;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -253,7 +253,7 @@ class st
     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
 
     if (!$islocation) {
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel'; 
+      $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
     }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -291,7 +291,7 @@ class st
     data_set($col1, 'barcode.class', 'sbccsreadonly');
     data_set($col1, 'barcode.type', 'input');
 
-    $fields = [['qty', 'uom'],'dateid', 'client', 'fname'];
+    $fields = [['qty', 'uom'], 'dateid', 'client', 'fname'];
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'client.label', 'Destination Code');
     data_set($col2, 'client.lookupclass', 'whonly');
@@ -323,7 +323,7 @@ class st
 
     $data[0]['fname'] = '';
     $data[0]['client'] = '';
- 
+
     $data[0]['yourref'] = '';
     $data[0]['ourref'] = '';
     $data[0]['rem'] = '';
@@ -450,7 +450,7 @@ class st
     $data['editby'] = $config['params']['user'];
 
     if ($isupdate) {
-      
+
       $stock = $this->coreFunctions->opentable("select trno from " . $this->stock . " where trno=?", [$head['trno']]);
       // if (!empty($stock)) {
       //   return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Can\'t proceed. This transaction already has items.'];
@@ -461,8 +461,8 @@ class st
           return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Can\'t change source. This transaction already has items.'];
         }
       }
-      
-    
+
+
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
       $this->recomputecost($head, $config);
     } else {
@@ -686,7 +686,7 @@ class st
 
   public function addallitem($config)
   {
-  
+
     $msg = '';
     foreach ($config['params']['row'] as $key => $value) {
       $config['params']['data'] = $value;
@@ -892,7 +892,7 @@ class st
           $msg = '(' . $item[0]->barcode . ') Out of Stock.';
         }
 
-        return ['row' => $row, 'status' => true, 'msg' => $msg,'haserror' => $haserror];
+        return ['row' => $row, 'status' => true, 'msg' => $msg, 'haserror' => $haserror];
       } else {
         return ['status' => false, 'msg' => 'Add item Failed'];
       }
@@ -934,7 +934,7 @@ class st
         $this->setserveditems($data[$key]->refx, $data[$key]->linex);
       }
     }
-   
+
     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'DELETED ALL ITEMS');
     return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => []];
   }
@@ -968,11 +968,11 @@ class st
     $data = $this->openstockline($config);
     $trno = $config['params']['trno'];
     $line = $config['params']['line'];
-   
+
     $qry = "delete from " . $this->stock . " where trno=? and line=?";
     $this->coreFunctions->execqry($qry, 'delete', [$trno, $line]);
     $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-    if ($data[0]->refx != 0) { 
+    if ($data[0]->refx != 0) {
       $this->setserveditems($data[0]->refx, $data[0]->linex);
     }
     $data = json_decode(json_encode($data), true);
@@ -990,10 +990,10 @@ class st
     return $this->othersClass->getlatestcostTS($config, $barcode, $client, $center, $trno);
   } // end function
 
- 
+
   public function getjodetails($config)
   {
-  
+
     $trno = $config['params']['trno'];
     $wh = $config['params']['wh'];
     $rows = [];
@@ -1007,7 +1007,7 @@ class st
         FROM hpdhead as head left join hpdstock as stock on stock.trno=head.trno left join item on item.itemid=
         stock.itemid left join uom on uom.itemid=item.itemid and 
         uom.uom=stock.uom where stock.trno = ? and stock.line=? and stock.qty>stock.qa and stock.void=0 ";
- 
+
       $data = $this->coreFunctions->opentable($qry, [$config['params']['rows'][$key]['trno'], $config['params']['rows'][$key]['line']]);
       if (!empty($data)) {
         foreach ($data as $key2 => $value) {

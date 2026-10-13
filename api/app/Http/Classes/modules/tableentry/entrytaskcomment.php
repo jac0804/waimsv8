@@ -34,10 +34,10 @@ class entrytaskcomment
   public $showsearch = false;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -200,7 +200,7 @@ class entrytaskcomment
 
   public function saveallentry($config)
   {
-    $companyid = $config['params']['companyid'];    
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['tableid'];
     $isposted = $this->othersClass->isposted2($trno, "cntnum");
     if ($isposted) {

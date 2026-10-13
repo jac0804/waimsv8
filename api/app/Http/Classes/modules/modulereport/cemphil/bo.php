@@ -33,10 +33,10 @@ class bo
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -46,7 +46,7 @@ class bo
 
   public function createreportfilter()
   {
-    $fields = ['radioprint','radioreporttype', 'prepared', 'approved', 'received', 'print'];
+    $fields = ['radioprint', 'radioreporttype', 'prepared', 'approved', 'received', 'print'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red']
@@ -103,7 +103,7 @@ class bo
     return $result;
   } //end fn  
 
- 
+
 
   public function reportplotting($params, $data)
   {
@@ -113,7 +113,6 @@ class bo
         return $this->default_BO_PDF($params, $data);
         break;
     }
-      
   }
 
   public function default_BO_header_PDF($params, $data)
@@ -177,8 +176,8 @@ class bo
     PDF::MultiCell(0, 20, (isset($data[0]['area']) ? $data[0]['area'] : ''), '', 'L', false, 0, '50',  '215', true, 0, false, true, 0, 'T', true);
 
     PDF::MultiCell(0, 20, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '', 'L', false, 0, '640',  '120', true, 0, false, true, 0, 'T', true);
-    PDF::MultiCell(0, 20, (isset($data[0]['dateid']) ? date_format(date_create($data[0]['dateid']),"m/d/Y") : ''), '', 'L', false, 0, '640',  '170', true, 0, false, true, 0, 'T', true);
-    PDF::MultiCell(0, 20, (isset($data[0]['due']) ? date_format(date_create($data[0]['due']),"m/d/Y") : ''), '', 'L', false, 0, '640',  '215', true, 0, false, true, 0, 'T', true);
+    PDF::MultiCell(0, 20, (isset($data[0]['dateid']) ? date_format(date_create($data[0]['dateid']), "m/d/Y") : ''), '', 'L', false, 0, '640',  '170', true, 0, false, true, 0, 'T', true);
+    PDF::MultiCell(0, 20, (isset($data[0]['due']) ? date_format(date_create($data[0]['due']), "m/d/Y") : ''), '', 'L', false, 0, '640',  '215', true, 0, false, true, 0, 'T', true);
 
     // VERTICAL LINE
     PDF::MultiCell(0, 148, '', 'L', 'C', 0, 1, '600', '100', true, 0, false, true, 0, 'M', true);
@@ -190,7 +189,6 @@ class bo
     PDF::MultiCell(120, 25, "QUANTITY", 'TBLR', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
     PDF::MultiCell(120, 25, "UNIT PRICE", 'TBLR', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
     PDF::MultiCell(160, 25, "AMOUNT", 'TBLR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
-
   }
 
   public function default_BO_PDF($params, $data)
@@ -220,24 +218,24 @@ class bo
       $maxrow = 1;
 
       $itemname = $data[$i]['itemname'];
-      $qty = number_format($data[$i]['qty'],2);
-      $amt = number_format($data[$i]['netamt'],2);
-      $ext = number_format($data[$i]['ext'],2);
+      $qty = number_format($data[$i]['qty'], 2);
+      $amt = number_format($data[$i]['netamt'], 2);
+      $ext = number_format($data[$i]['ext'], 2);
 
-      $arr_itemname = $this->reporter->fixcolumn([$itemname],'40',0);
-      $arr_qty = $this->reporter->fixcolumn([$qty],'15',0);
-      $arr_amt = $this->reporter->fixcolumn([$amt],'15',0);
-      $arr_ext = $this->reporter->fixcolumn([$ext],'20',0);
+      $arr_itemname = $this->reporter->fixcolumn([$itemname], '40', 0);
+      $arr_qty = $this->reporter->fixcolumn([$qty], '15', 0);
+      $arr_amt = $this->reporter->fixcolumn([$amt], '15', 0);
+      $arr_ext = $this->reporter->fixcolumn([$ext], '20', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_qty, $arr_amt, $arr_ext]);
 
-      for($r = 0; $r < $maxrow; $r++) {
+      for ($r = 0; $r < $maxrow; $r++) {
 
         PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(320, 20, ' '. (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), 'TLRB', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(120, 20, ' '. (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), 'TLRB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(120, 20, ' '. (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), 'TLRB', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(160, 20, ' '. (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), 'TLRB', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(320, 20, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), 'TLRB', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(120, 20, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), 'TLRB', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(120, 20, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), 'TLRB', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(160, 20, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), 'TLRB', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
       }
 
       $totalext += $data[$i]['ext'];
@@ -257,7 +255,9 @@ class bo
     PDF::MultiCell(720, 20, 'The total amount of this SALES ORDER is:', 'TLR', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
     PDF::MultiCell(720, 20, $this->reporter->ftNumberToWordsConverter($totalext,  false), 'LRB', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
 
-    PDF::MultiCell(720, 50, 
+    PDF::MultiCell(
+      720,
+      50,
       '<b>Terms & Condition:</b><br>
       1.&nbsp;&nbsp;&nbsp;The withdraw of products will be by installments executed in the form of CEMENT WITHDRAWAL AUTHORIZATION (CWA) confirmed by<br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DISTRIBUTOR and CEMENT WITHDRAWAL ORDER RECEIPT (CWOR) received by their representative (Hauler) shall automatically<br>
@@ -265,18 +265,32 @@ class bo
       2.&nbsp;&nbsp;&nbsp;The payment should be made upon confirmation of the SALES ORDER by a dated check<br>
       3.&nbsp;&nbsp;&nbsp;The products are to be picked up by the assigned hauler of the DISTRIBUTOR.<br>
       4.&nbsp;&nbsp;&nbsp;This SALES ORDER is non-transferable and shall not to be used for other transactions.<br>
-      ', 'TLRB', 'L', 0, 1, '', '', true, 0, true, true, 1, 'T', true);
+      ',
+      'TLRB',
+      'L',
+      0,
+      1,
+      '',
+      '',
+      true,
+      0,
+      true,
+      true,
+      1,
+      'T',
+      true
+    );
 
     PDF::SetCellPaddings(4, 4, 4, 4);
 
     PDF::startTransaction();
-    PDF::MultiCell(240, 50,'PREPARED BY ', 'TL', 'L', 0, 0, '', '', true, 0, true, true, 0, 'T', true);
-    PDF::MultiCell(240, 50,'NOTED BY', 'T', 'L', 0, 0, '', '', true, 0, true, true, 0, 'T', true);
-    PDF::MultiCell(240, 50,'APPROVED BY', 'TR', 'L', 0, 1, '', '', true, 0, true, true, 0, 'T', true);
+    PDF::MultiCell(240, 50, 'PREPARED BY ', 'TL', 'L', 0, 0, '', '', true, 0, true, true, 0, 'T', true);
+    PDF::MultiCell(240, 50, 'NOTED BY', 'T', 'L', 0, 0, '', '', true, 0, true, true, 0, 'T', true);
+    PDF::MultiCell(240, 50, 'APPROVED BY', 'TR', 'L', 0, 1, '', '', true, 0, true, true, 0, 'T', true);
 
-    PDF::MultiCell(240, 20,"MARKETING DEP\'T", 'LB', 'L', 0, 0, '', '', true, 0, true, true, 0, 'T', true);
-    PDF::MultiCell(240, 20,"FINANCE DEP\'T", 'B', 'L', 0, 0, '', '', true, 0, true, true, 0, 'T', true);
-    PDF::MultiCell(240, 20,"S.V.P./PRESIDENT", 'RB', 'L', 0, 1, '', '', true, 0, true, true, 0, 'T', true);
+    PDF::MultiCell(240, 20, "MARKETING DEP\'T", 'LB', 'L', 0, 0, '', '', true, 0, true, true, 0, 'T', true);
+    PDF::MultiCell(240, 20, "FINANCE DEP\'T", 'B', 'L', 0, 0, '', '', true, 0, true, true, 0, 'T', true);
+    PDF::MultiCell(240, 20, "S.V.P./PRESIDENT", 'RB', 'L', 0, 1, '', '', true, 0, true, true, 0, 'T', true);
 
     PDF::SetCellPaddings(0, 4, 0, 0);
     PDF::SetFont($font, '', 9);
@@ -284,7 +298,7 @@ class bo
     PDF::MultiCell(100, 20, '0813-ELTRD-CAS-00211', 'B', 'L', false, 0, '',  '', true, 0, true, true, 0, 'M', true);
     PDF::MultiCell(10, 20, '', '', 'L', false, 0, '',  '', true, 0, true, true, 0, 'M', true);
     PDF::MultiCell(55, 20, 'Date Issued:', '', 'L', false, 0, '',  '', true, 0, true, true, 0, 'M', true);
-    PDF::MultiCell(80, 20, (isset($data[0]['dateid']) ? date_format(date_create($data[0]['dateid']),'F j, Y') : ''), 'B', 'L', false, 1, '',  '', true, 0, true, true, 0, 'M', true);
+    PDF::MultiCell(80, 20, (isset($data[0]['dateid']) ? date_format(date_create($data[0]['dateid']), 'F j, Y') : ''), 'B', 'L', false, 1, '',  '', true, 0, true, true, 0, 'M', true);
 
     PDF::MultiCell(65, 20, 'Series No.:', '', 'L', false, 0, '',  '', true, 0, true, true, 0, 'M', true);
     PDF::MultiCell(245, 20, 'SO4000001-SO4000049', 'B', 'L', false, 1, '',  '', true, 0, true, true, 0, 'M', true);

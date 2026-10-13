@@ -29,12 +29,12 @@ class pending_purchase_orders
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -154,10 +154,10 @@ class pending_purchase_orders
 
   public function reportplotting($config)
   {
-    $companyid=$config['params']['companyid'];
+    $companyid = $config['params']['companyid'];
 
     switch ($companyid) {
-      case 56://homework
+      case 56: //homework
         $result = $this->report_homework($config);
         break;
       case 60: //transpower

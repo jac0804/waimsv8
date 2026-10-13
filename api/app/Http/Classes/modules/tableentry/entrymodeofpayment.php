@@ -35,17 +35,17 @@ class entrymodeofpayment
     public $style = 'width:100%;';
     public $tablelogs = 'masterfile_log';
     public $tablelogs_del = 'del_masterfile_log';
-    private $fields = ['category',  'inactive','ispaymode'];
+    private $fields = ['category',  'inactive', 'ispaymode'];
     public $showclosebtn = false;
     private $reporter;
     public $logger;
     private $reportheader;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -67,7 +67,7 @@ class entrymodeofpayment
         $columns = ['action', 'category',  'inactive'];
         foreach ($columns as $key => $value) {
             $$value = $key;
-          }
+        }
 
         $tab = [
             $this->gridname => [
@@ -125,7 +125,7 @@ class entrymodeofpayment
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
 
                 $data2['isloantype'] = 0;
@@ -137,7 +137,7 @@ class entrymodeofpayment
                     $resultdata =  json_decode(json_encode($opendata), true);
                     if (!empty($resultdata[0]['category'])) {
                         if (trim($resultdata[0]['category']) == trim($data[$key]['category'])) {
-                            return ['status' => false, 'msg' => $resultdata[0]['category'] .'  already exist', 'data' => [$resultdata]];
+                            return ['status' => false, 'msg' => $resultdata[0]['category'] . '  already exist', 'data' => [$resultdata]];
                         }
                     }
                 }
@@ -152,18 +152,18 @@ class entrymodeofpayment
                     $this->logger->sbcmasterlog($line, $config, ' CREATE - ' . $data[$key]['category']);
                 } else {
                     if ($data[$key]['category'] != '') {
-                        $qry = "select category,line from reqcategory where category = '" . $data[$key]['category'] . "' and line <>".$data[$key]['line']."  and ispaymode =1 limit 1";
+                        $qry = "select category,line from reqcategory where category = '" . $data[$key]['category'] . "' and line <>" . $data[$key]['line'] . "  and ispaymode =1 limit 1";
                         $opendata = $this->coreFunctions->opentable($qry);
                         $resultdata =  json_decode(json_encode($opendata), true);
                         if (!empty($resultdata)) {
                             return ['status' => false, 'msg' => $resultdata[0]['category'] .  ' is already exist', 'data' => [$resultdata], 'rowid' => [$data[$key]['line']  . ' -- ' . $resultdata[0]['line']]];
                         } else {
                             update:
-                                $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
-                                $data2['editby'] = $config['params']['user'];
+                            $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
+                            $data2['editby'] = $config['params']['user'];
 
-                                $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
-                                $this->logger->sbcmasterlog($data[$key]['line'], $config, ' UPDATE - ' . $data[$key]['category']);
+                            $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line']]);
+                            $this->logger->sbcmasterlog($data[$key]['line'], $config, ' UPDATE - ' . $data[$key]['category']);
                         }
                     } //end if
                 }
@@ -181,10 +181,10 @@ class entrymodeofpayment
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         $row = $config['params']['row'];
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
-        $data['inactive'] = $this->othersClass->sanitizekeyfieldFast('inactive', $row['inactive'],$lookups);
+        $data['inactive'] = $this->othersClass->sanitizekeyfieldFast('inactive', $row['inactive'], $lookups);
 
         if ($row['line'] == 0 && $row['category'] != '') {
             $qry = "select category from reqcategory where category = '" . $row['category'] . "'  and ispaymode =1 limit 1";
@@ -213,23 +213,23 @@ class entrymodeofpayment
             }
         } else {
             if ($row['category'] != '') {
-                $qry = "select line,category,reqtype,case when inactive=0 then 'false' else 'true' end as inactive from  reqcategory where category = '" . $row['category'] . "' and line = ".$row['line']."  and ispaymode =1 limit 1";
+                $qry = "select line,category,reqtype,case when inactive=0 then 'false' else 'true' end as inactive from  reqcategory where category = '" . $row['category'] . "' and line = " . $row['line'] . "  and ispaymode =1 limit 1";
                 $opendata = $this->coreFunctions->opentable($qry);
                 $resultdata =  json_decode(json_encode($opendata), true);
                 if (!empty($resultdata)) {
                     return ['status' => false, 'msg' =>  $resultdata[0]['category'] . ' already exist', 'data' => [$resultdata], 'rowid' => [$row['line']  . ' -- ' . $resultdata[0]['line']]];
                 } else {
                     update:
-                        $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-                        $data['editby'] = $config['params']['user'];
+                    $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+                    $data['editby'] = $config['params']['user'];
 
-                        if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
-                            $returnrow = $this->loaddataperrecord($row['line']);
-                            $this->logger->sbcmasterlog($row['line'], $config, ' UPDATE - ' . $data['category']);
-                            return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
-                        } else {
-                            return ['status' => false, 'msg' => 'Saving failed.'];
-                        }
+                    if ($this->coreFunctions->sbcupdate($this->table, $data, ['line' => $row['line']]) == 1) {
+                        $returnrow = $this->loaddataperrecord($row['line']);
+                        $this->logger->sbcmasterlog($row['line'], $config, ' UPDATE - ' . $data['category']);
+                        return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
+                    } else {
+                        return ['status' => false, 'msg' => 'Saving failed.'];
+                    }
                 }
             }
         }

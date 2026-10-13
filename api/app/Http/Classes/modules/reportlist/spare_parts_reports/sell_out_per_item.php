@@ -29,12 +29,12 @@ class sell_out_per_item
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -52,7 +52,7 @@ class sell_out_per_item
             ['label' => 'PDF', 'value' => 'default', 'color' => 'red'],
         ]);
 
-        
+
         $fields = ['radioposttype'];
         $col2 = $this->fieldClass->create($fields);
 
@@ -65,7 +65,7 @@ class sell_out_per_item
         $fields = ['print'];
         $col3 = $this->fieldClass->create($fields);
 
-        return ['col1' => $col1,'col2' => $col2,'col3' => $col3];
+        return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3];
     }
 
     public function paramsdata($config)
@@ -139,7 +139,7 @@ class sell_out_per_item
                     
                 ) as x 
                 group by  barcode,partno,partname,catname,body";
-            break;
+                break;
             case 'unposted': // unposted
                 $query = "
                 select barcode,partno,partname,catname,body, sum(sold) as sold ,sum(amount) as  amount 
@@ -157,7 +157,7 @@ class sell_out_per_item
                     group by item.barcode,item.partno,part.part_name,cat.name,item.body 
                 ) as x 
                 group by  barcode,partno,partname,catname,body";
-            break;
+                break;
             case 'all': // all
                 $query = "
                 select barcode,partno,partname,catname,body, sum(sold) as sold ,sum(amount) as  amount 
@@ -187,7 +187,7 @@ class sell_out_per_item
                     group by item.barcode,item.partno,part.part_name,cat.name,item.body 
                 ) as x 
                 group by  barcode,partno,partname,catname,body";
-            break;
+                break;
         }
 
         return $query;
@@ -258,7 +258,7 @@ class sell_out_per_item
         $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $whname     = $config['params']['dataparams']['whname'];
         $posttype  = $config['params']['dataparams']['posttype'];
-        
+
         switch ($posttype) {
             case 'posted':
                 $posttype = "POSTED";

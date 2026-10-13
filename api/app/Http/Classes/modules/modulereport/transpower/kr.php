@@ -37,9 +37,9 @@ class kr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -50,7 +50,7 @@ class kr
 
   public function createreportfilter($config)
   {
-    $fields = ['radioprint', 'radioreporttype', 'prepared','approved', 'received', 'print'];
+    $fields = ['radioprint', 'radioreporttype', 'prepared', 'approved', 'received', 'print'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
@@ -59,7 +59,7 @@ class kr
     data_set($col1, 'radioreporttype.options', [
       ['label' => 'Half Page', 'value' => '0', 'color' => 'red'],
       ['label' => 'Whole Page', 'value' => '1', 'color' => 'red'],
-      
+
     ]);
     return array('col1' => $col1);
   }
@@ -67,7 +67,7 @@ class kr
   public function reportparamsdata($config)
   {
     $username = $this->coreFunctions->datareader("select name as value from useraccess where username =? ", [$config['params']['user']]);
-    
+
     return $this->coreFunctions->opentable(
       "select 
       'PDFM' as print,
@@ -379,8 +379,8 @@ class kr
     PDF::MultiCell(700, 0, '', '');
 
     $countarr = 0;
-    $tlamount=0;
-    $tlcr=0;
+    $tlamount = 0;
+    $tlcr = 0;
     $totall = 0;
     $totalr = 0;
 
@@ -389,10 +389,10 @@ class kr
       $totalcr = 0;
 
       // $rowsPerColumn = 14; //left group and right group
-      $rowsPerColumn = $reporttype == 0 ? 14 : 50; 
+      $rowsPerColumn = $reporttype == 0 ? 14 : 50;
       $rowsPerPage = $rowsPerColumn * 2; //28 or 100
 
-        for ($p = 0; $p < count($data); $p += $rowsPerPage) {
+      for ($p = 0; $p < count($data); $p += $rowsPerPage) {
 
         $startY = PDF::GetY();
         // left group
@@ -426,7 +426,7 @@ class kr
             PDF::MultiCell(6, 0, '', '', 'L', false, 0, '', '', false, 1);
             PDF::MultiCell(75, 0, $data[$i]['db'] > 0 ? (isset($arr_debit[$r]) ? $arr_debit[$r] : '') : (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', false, 1, '', '', false, 1);
           }
-         
+
           $totall += $data[$i]['db'] - $data[$i]['cr'];
         }
         //TOTAL - Left
@@ -434,7 +434,7 @@ class kr
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(102, 0, '', '', 'L', false, 0);
         PDF::MultiCell(170, 0, 'Total: ', '', 'R', false, 0);
-        PDF::MultiCell(78, 0, number_format($totall, $decimalcurr).'  ', 'T', 'R', false);
+        PDF::MultiCell(78, 0, number_format($totall, $decimalcurr) . '  ', 'T', 'R', false);
 
         $leftEndY = PDF::GetY();
 
@@ -468,16 +468,15 @@ class kr
             PDF::MultiCell(60, 0, (isset($arr_postdate[$r]) ? $arr_postdate[$r] : ''), '', 'L', false, 0, '', '', false, 1);
             PDF::MultiCell(6, 0, '', '', 'L', false, 0, '', '', false, 1);
             PDF::MultiCell(75, 0, $data[$i]['db'] > 0 ? (isset($arr_debit[$r]) ? $arr_debit[$r] : '') : (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', false, 1, '', '', false, 1);
-
           }
           $totalr += $data[$i]['db'] - $data[$i]['cr'];
         }
         //TOTAL - Right
-        PDF::SetXY(410,($leftEndY- 13));
+        PDF::SetXY(410, ($leftEndY - 13));
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(102, 0, '', '', 'L', false, 0);
         PDF::MultiCell(170, 0, 'Total: ', '', 'R', false, 0);
-        PDF::MultiCell(78, 0, number_format($totalr, $decimalcurr).' ', 'T', 'R', false);
+        PDF::MultiCell(78, 0, number_format($totalr, $decimalcurr) . ' ', 'T', 'R', false);
         $rightEndY = PDF::GetY();
 
         if ($p + $rowsPerPage < count($data)) {
@@ -485,7 +484,7 @@ class kr
         }
       }
     }
-    
+
 
     PDF::SetY(max($leftEndY, $rightEndY));
     PDF::SetFont($font, '', 5);
@@ -494,23 +493,23 @@ class kr
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', '');
 
-     $totaldb = number_format($totaldb, $decimalcurr);
-     $totalcr = number_format($totalcr, $decimalcurr);
-     $tlamount = ($totall + $totalr) == 0 ? '-' : number_format(($totall + $totalr), $decimalcurr);
+    $totaldb = number_format($totaldb, $decimalcurr);
+    $totalcr = number_format($totalcr, $decimalcurr);
+    $tlamount = ($totall + $totalr) == 0 ? '-' : number_format(($totall + $totalr), $decimalcurr);
     //  $tlcr = $totalcr <= 0 ? '-' : $totalcr;
 
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(100, 0, '('.count($data). ' invoice/s )', '', 'L', false, 0);
+    PDF::MultiCell(100, 0, '(' . count($data) . ' invoice/s )', '', 'L', false, 0);
     PDF::MultiCell(100, 0, 'GRAND TOTAL: ', '', 'R', false, 0);
     PDF::MultiCell(120, 0, $tlamount, '', 'R', false, 0);
     PDF::MultiCell(390, 0, '', '', 'R', false);
 
-   
+
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', '');
 
-    
+
     $style_solid = array(
       'width' => 2,
       'cap' => 'butt',
@@ -524,7 +523,7 @@ class kr
     PDF::SetFont($font, '', 10);
     PDF::MultiCell(720, 0, '', 'B');
 
-        
+
     $style_solid = array(
       'width' => 0.3,
       'cap' => 'butt',
@@ -560,7 +559,7 @@ class kr
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 
-   public function kr_new_header($params, $data)
+  public function kr_new_header($params, $data)
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
@@ -689,7 +688,7 @@ class kr
     PDF::MultiCell(80, 0, "DATE", '', 'C', false, 0);
     PDF::MultiCell(75, 0, "AMOUNT", '', 'C', false);
 
-   $dotted_style = array(
+    $dotted_style = array(
       'width' => 0.3,
       'cap' => 'butt',
       'join' => 'miter',

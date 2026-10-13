@@ -35,10 +35,10 @@ class obapplication
     public $fields = ['status', 'status2', 'approverem', 'disapproved_remarks2', 'approvedby', 'approvedate', 'disapprovedby', 'disapprovedate', 'approvedby2', 'approvedate2', 'disapprovedby2', 'disapprovedate2'];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -332,7 +332,7 @@ class obapplication
                             $params['type'] = $type;
                             $params['location'] = $location;
                             $params['companyid'] = $companyid;
-                            
+
                             $params['approvedstatus'] = 'Application ' . $label;
 
                             $data = $this->coreFunctions->opentable("select app.clientname as appname, app2.clientname as dappname
@@ -345,13 +345,13 @@ class obapplication
                             } else {
                                 $appname = $data[0]->dappname;
                             }
-                            
+
                             $params['approver'] = $appname;
                             $params['email'] = $email;
                             $result = $this->linkemail->createOBEmail($params);
                             if (!$result['status']) {
                                 return ['status' => false, 'msg' => '' . $result['msg']];
-                            } 
+                            }
                         }
 
 

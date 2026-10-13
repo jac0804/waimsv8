@@ -50,11 +50,11 @@ class dd
     private $helpClass;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -372,7 +372,7 @@ class dd
         $head = $config['params']['head'];
         $data = [];
         if ($isupdate) {
-            unset($this->fields[1]); // removes 'docno'
+            unset($this->fields[1]);
             unset($head['docno']);
         }
 
@@ -421,7 +421,7 @@ class dd
 
 
 
-        $column = ['action', 'client', 'acnoname',  'clientname', 'barcode', 'rate', 'itemname'];
+        $column = ['action', 'client', 'acnoname', 'clientname', 'barcode', 'rate', 'tempname', 'schedtime', 'itemname'];
         foreach ($column as $key => $value) {
             $$value = $key;
         }
@@ -446,22 +446,24 @@ class dd
         $obj[0]['inventory']['columns'][$rate]['label'] = 'Rate';
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
+        $obj[0]['inventory']['columns'][$tempname]['label'] = '';
+        $obj[0]['inventory']['columns'][$tempname]['type'] = 'hidden';
         $obj[0]['inventory']['columns'][$clientname]['readonly'] = true;
         $obj[0]['inventory']['columns'][$client]['readonly'] = true;
         $obj[0]['inventory']['columns'][$client]['type'] = 'input';
+        $obj[0]['inventory']['columns'][$schedtime]['label'] = 'Time of Shift';
 
         //style
         $obj[0]['inventory']['columns'][$clientname]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
         $obj[0]['inventory']['columns'][$client]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
         $obj[0]['inventory']['columns'][$rate]['style'] = 'width: 80px;whiteSpace: normal;min-width:80px;max-width:80px';
         $obj[0]['inventory']['columns'][$acnoname]['style'] = 'width: 30px;whiteSpace: normal;min-width:30px;max-width:30px';
+        $obj[0]['inventory']['columns'][$tempname]['style'] = 'width: 30px;whiteSpace: normal;min-width:30px;max-width:30px';
         $obj[0]['inventory']['columns'][$barcode]['style'] = 'width: 30px;whiteSpace: normal;min-width:30px;max-width:30px; text-align:right;';
+        $obj[0]['inventory']['columns'][$schedtime]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px';
         // $obj[0]['inventory']['columns'][$itemname]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px text-align:right';
 
-        // remove the header per row of every employee on grid 
         $obj[0]['inventory']['descriptionrow'] = [];
-
-
 
         $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
@@ -477,7 +479,6 @@ class dd
 
         $obj = $this->tabClass->createtabbutton($tbuttons);
 
-        // Configure the button for employee lookup
         $obj[$addempgrid]['label'] = "ADD EMPLOYEE";
         $obj[$saveitem]['label'] = "SAVE ALL EMPLOYEE";
         $obj[$deleteallitem]['label'] = "DELETE ALL EMPLOYEE";
@@ -529,12 +530,12 @@ class dd
 
     public function openstock($trno, $config)
     {
-        $qry = "select detail.trno, detail.line, detail.empid, client.client as client, client.clientname, detail.rate, '' as bgcolor
+        $qry = "select detail.trno, detail.line, detail.empid, client.client as client, client.clientname, detail.rate, '' as bgcolor, detail.tmshifts as schedtime
     from " . $this->detail . " as detail
     left join client on client.clientid = detail.empid
     where detail.trno = ?
     union all
-    select detail.trno, detail.line, detail.empid, client.client as client, client.clientname, detail.rate, '' as bgcolor
+    select detail.trno, detail.line, detail.empid, client.client as client, client.clientname, detail.rate, '' as bgcolor, detail.tmshifts as schedtime
     from " . $this->hdetail . " as detail
     left join client on client.clientid = detail.empid
     where detail.trno = ?
@@ -548,7 +549,7 @@ class dd
     {
         $trno = $config['params']['trno'];
 
-        $qry = "select detail.trno, detail.line, detail.empid, client.client as client, client.clientname, detail.rate, '' as bgcolor
+        $qry = "select detail.trno, detail.line, detail.empid, client.client as client, client.clientname, detail.rate, '' as bgcolor, detail.tmshifts as schedtime
         from " . $this->detail . " as detail
         left join client on client.clientid = detail.empid
         where detail.trno = ?";
@@ -593,8 +594,8 @@ class dd
 
             $exists = $this->coreFunctions->datareader("select trno as value from " . $this->detail . " where trno=? and empid=? limit 1", [$trno, $empid]);
             if ($exists != '') {
-                $duplicates[] = $empname; // track skipped employees
-                continue; // skip employees already added
+                $duplicates[] = $empname;
+                continue;
             }
 
             $line = $this->coreFunctions->datareader("select line as value from " . $this->detail . " where trno=? order by line desc limit 1", [$trno]);
@@ -617,7 +618,6 @@ class dd
             }
         }
 
-        // All selected employees were duplicates — nothing added at all
         if (empty($addedLines) && !empty($duplicates)) {
             return [
                 'status' => false,
@@ -625,14 +625,14 @@ class dd
             ];
         }
 
-        // Nothing added and no duplicates either (insert genuinely failed)
+
         if (empty($addedLines)) {
             return ['status' => false, 'msg' => 'No employees were added.'];
         }
 
         $row = $this->openstockline($config, $addedLines);
 
-        // Some added, some duplicates — partial success with a warning
+
         if (!empty($duplicates)) {
             return [
                 'row' => $row,
@@ -655,25 +655,45 @@ class dd
             return ['status' => false, 'msg' => 'No items to save.'];
         }
 
+
+        $current = [];
+        $currentRows = $this->coreFunctions->opentable(
+            "select line, rate, tmshifts from " . $this->detail . " where trno = ?",
+            [$trno]
+        );
+        foreach ($currentRows as $cr) {
+            $current[$cr->line] = $cr;
+        }
+
         $saved = 0;
 
         foreach ($rows as $key => $value) {
-            // only push rows the grid actually marked as edited
-            if (!isset($value['bgcolor']) || $value['bgcolor'] == '') {
-                continue;
-            }
-
             $line = $value['line'];
             $rate = $value['rate'];
 
+
+            $schedtime = isset($value['schedtime']) && $value['schedtime'] !== null ? $value['schedtime'] : '';
+            $schedtime = substr(trim((string)$schedtime), 0, 100);
+
+
+            if (!isset($current[$line])) {
+                continue;
+            }
+            $oldrate = (float)$current[$line]->rate;
+            $oldshift = (string)$current[$line]->tmshifts;
+            if ($oldrate == (float)$rate && $oldshift === $schedtime) {
+                continue;
+            }
+
             $data = [
                 'rate' => $rate,
+                'tmshifts' => $schedtime,
                 'editdate' => $this->othersClass->getCurrentTimeStamp(),
                 'editby' => $config['params']['user']
             ];
 
             $this->coreFunctions->sbcupdate($this->detail, $data, ['trno' => $trno, 'line' => $line]);
-            $this->logger->sbcwritelog($trno, $config, 'STOCK', 'UPDATE - Line:' . $line . ' Rate:' . $rate);
+            $this->logger->sbcwritelog($trno, $config, 'STOCK', 'UPDATE - Line:' . $line . ' Rate:' . $rate . ' Shift:' . $schedtime);
             $saved++;
         }
 
@@ -693,8 +713,13 @@ class dd
         $line = $row['line'];
         $rate = $row['rate'];
 
+
+        $schedtime = isset($row['schedtime']) && $row['schedtime'] !== null ? $row['schedtime'] : '';
+        $schedtime = substr(trim((string)$schedtime), 0, 100);
+
         $data = [
             'rate' => $rate,
+            'tmshifts' => $schedtime,
             'editdate' => $this->othersClass->getCurrentTimeStamp(),
             'editby' => $config['params']['user']
         ];
@@ -702,7 +727,7 @@ class dd
         $update = $this->coreFunctions->sbcupdate($this->detail, $data, ['trno' => $trno, 'line' => $line]);
 
         if ($update) {
-            $this->logger->sbcwritelog($trno, $config, 'STOCK', 'UPDATE - Line:' . $line . ' empid:' . $row['empid'] . ' Rate:' . $rate);
+            $this->logger->sbcwritelog($trno, $config, 'STOCK', 'UPDATE - Line:' . $line . ' empid:' . $row['empid'] . ' Rate:' . $rate . ' Shift:' . $schedtime);
             $returnrow = $this->openstockline($config, [$line]);
             return ['row' => $returnrow, 'status' => true, 'msg' => 'Successfully saved.'];
         } else {
@@ -747,59 +772,116 @@ class dd
     {
         $trno = $config['params']['trno'];
         $user = $config['params']['user'];
+        $center = $config['params']['center'];
 
         $currentQry = "select divid, paydate as dateid3 from " . $this->head . " where trno = ?
-    union all
-    select divid, paydate as dateid3 from " . $this->hhead . " where trno = ?";
+        union all
+        select divid, paydate as dateid3 from " . $this->hhead . " where trno = ?";
         $current = $this->coreFunctions->opentable($currentQry, [$trno, $trno]);
         $current = isset($current[0]) ? $current[0] : null;
 
         if (empty($current) || empty($current->divid) || empty($current->dateid3)) {
-            return ['status' => false, 'msg' => 'Please select a detachment and payroll month date first.'];
+            return [
+                'status' => false,
+                'msg' => 'Please select a detachment and payroll month date first (and save). DB values -> divid: '
+                    . (isset($current->divid) ? $current->divid : 'none')
+                    . ', paydate: ' . (isset($current->dateid3) ? $current->dateid3 : 'none')
+            ];
         }
 
         $divid = $current->divid;
         $dateid3 = $current->dateid3;
 
+
         $prevQry = "select trno, paydate from (
-        select trno, paydate from " . $this->head . " where divid = ? and paydate < ? and trno != ?
+        select h.trno, h.paydate from " . $this->head . " as h
+            left join " . $this->tablenum . " as num on num.trno = h.trno
+            where h.divid = ? and h.paydate < ? and h.trno != ? and num.center = ?
+            and exists (select 1 from " . $this->detail . " d where d.trno = h.trno)
         union all
-        select trno, paydate from " . $this->hhead . " where divid = ? and paydate < ? and trno != ?
-    ) as t order by paydate desc, trno desc limit 1";
-        $prev = $this->coreFunctions->opentable($prevQry, [$divid, $dateid3, $trno, $divid, $dateid3, $trno]);
+        select h.trno, h.paydate from " . $this->hhead . " as h
+            left join " . $this->tablenum . " as num on num.trno = h.trno
+            where h.divid = ? and h.paydate < ? and h.trno != ? and num.center = ?
+            and exists (select 1 from " . $this->hdetail . " d where d.trno = h.trno)
+        ) as t order by paydate desc, trno desc limit 1";
+        $prev = $this->coreFunctions->opentable($prevQry, [$divid, $dateid3, $trno, $center, $divid, $dateid3, $trno, $center]);
         $prev = isset($prev[0]) ? $prev[0] : null;
 
         if (empty($prev) || empty($prev->trno)) {
-            return ['status' => false, 'msg' => 'No previous DDO found for this detachment before the selected payroll month.'];
+            return [
+                'status' => false,
+                'msg' => 'No previous DDO with employees found for this detachment before the selected payroll month. Searched divid: '
+                    . $divid . ', center: ' . $center . ', paydate earlier than: ' . $dateid3
+            ];
         }
 
         $prevtrno = $prev->trno;
+        $prevdocno = $this->coreFunctions->datareader(
+            "select docno as value from " . $this->tablenum . " where trno = ?",
+            [$prevtrno]
+        );
         $now = $this->othersClass->getCurrentTimeStamp();
 
-        // Copy employees
+
         $prevDetails = $this->coreFunctions->opentable(
-            "select empid, rate from " . $this->detail . " where trno = ?
+            "select empid, rate, tmshifts from " . $this->detail . " where trno = ?
          union all
-         select empid, rate from " . $this->hdetail . " where trno = ?",
+         select empid, rate, tmshifts from " . $this->hdetail . " where trno = ?",
             [$prevtrno, $prevtrno]
         );
+
+
+        $prevFirearms = $this->coreFunctions->opentable(
+            "select fireid, rate from ddfirearms where trno = ?
+         union all
+         select fireid, rate from hddfirearms where trno = ?",
+            [$prevtrno, $prevtrno]
+        );
+
+
+        $haveEmp = [];
+        foreach ($this->coreFunctions->opentable("select empid from " . $this->detail . " where trno = ?", [$trno]) as $r) {
+            $haveEmp[$r->empid] = true;
+        }
+        $haveFire = [];
+        foreach ($this->coreFunctions->opentable("select fireid from ddfirearms where trno = ?", [$trno]) as $r) {
+            $haveFire[$r->fireid] = true;
+        }
+
+
+        $empToCopy = [];
+        foreach ($prevDetails as $row) {
+            if (!isset($haveEmp[$row->empid])) {
+                $empToCopy[] = $row;
+            }
+        }
+        $fireToCopy = [];
+        foreach ($prevFirearms as $row) {
+            if (!isset($haveFire[$row->fireid])) {
+                $fireToCopy[] = $row;
+            }
+        }
+
+
+        if (empty($empToCopy) && empty($fireToCopy)) {
+            return [
+                'status' => false,
+                'msg' => ' The previous DDO (' . $prevdocno . ') was already copied to this document. Nothing to copy.'
+            ];
+        }
 
         $line = $this->coreFunctions->datareader("select line as value from " . $this->detail . " where trno=? order by line desc limit 1", [$trno]);
         $line = ($line == '') ? 0 : $line;
 
         $empCopied = 0;
-        foreach ($prevDetails as $row) {
-            $exists = $this->coreFunctions->datareader("select trno as value from " . $this->detail . " where trno=? and empid=? limit 1", [$trno, $row->empid]);
-            if ($exists != '') {
-                continue;
-            }
-
+        foreach ($empToCopy as $row) {
             $line++;
             $data = [
                 'trno' => $trno,
                 'line' => $line,
                 'empid' => $row->empid,
                 'rate' => $row->rate,
+                'tmshifts' => isset($row->tmshifts) && $row->tmshifts !== null ? $row->tmshifts : '',
                 'createdate' => $now,
                 'createby' => $user,
                 'editdate' => $now,
@@ -810,19 +892,8 @@ class dd
             }
         }
 
-        // Copy firearms
-        $prevFirearms = $this->coreFunctions->opentable(
-            "select fireid, rate from ddfirearms where trno = ?",
-            [$prevtrno]
-        );
-
         $fireCopied = 0;
-        foreach ($prevFirearms as $row) {
-            $exists = $this->coreFunctions->datareader("select trno as value from ddfirearms where trno=? and fireid=? limit 1", [$trno, $row->fireid]);
-            if ($exists != '') {
-                continue;
-            }
-
+        foreach ($fireToCopy as $row) {
             $data = [
                 'trno' => $trno,
                 'fireid' => $row->fireid,
@@ -837,13 +908,17 @@ class dd
             }
         }
 
+        $empSkipped = count($prevDetails) - count($empToCopy);
+        $fireSkipped = count($prevFirearms) - count($fireToCopy);
+
         $this->logger->sbcwritelog($trno, $config, 'HEAD', 'COPY PREVIOUS DDO - from trno:' . $prevtrno . ' Employees copied:' . $empCopied . ' Firearms copied:' . $fireCopied);
 
         $stock = $this->openstock($trno, $config);
 
         return [
             'status' => true,
-            'msg' => 'Copied ' . $empCopied . ' employee(s) and ' . $fireCopied . ' firearm(s) from the previous DDO.',
+            'msg' => 'Copied from ' . $prevdocno . ': ' . $empCopied . ' employee(s) (' . $empSkipped . ' already existed) and '
+                . $fireCopied . ' firearm(s) (' . $fireSkipped . ' already existed).',
             'inventory' => $stock,
             'reloadhead' => true
         ];
@@ -861,19 +936,18 @@ class dd
         }
 
 
-        // move head to history
         $qry = "insert into " . $this->hhead . " (trno,docno,divid,dateid,dateid2,paydate,paydate2,createdate,createby,editdate,editby,viewdate,viewby)
     select trno,docno,divid,dateid,dateid2,paydate,paydate2,createdate,createby,editdate,editby,viewdate,viewby
     from " . $this->head . " where trno=? limit 1";
         $this->coreFunctions->execqry($qry, 'insert', [$trno]);
 
-        // move employee detail to history
-        $qry2 = "insert into " . $this->hdetail . " (trno,line,empid,rate,createdate,createby,editdate,editby)
-    select trno,line,empid,rate,createdate,createby,editdate,editby
+
+        $qry2 = "insert into " . $this->hdetail . " (trno,line,empid,rate,tmshifts,createdate,createby,editdate,editby)
+    select trno,line,empid,rate,tmshifts,createdate,createby,editdate,editby
     from " . $this->detail . " where trno=?";
         $this->coreFunctions->execqry($qry2, 'insert', [$trno]);
 
-        // move firearms to history
+
         $this->coreFunctions->execqry(
             "insert into hddfirearms (trno,fireid,rate,createdate,createby,editdate,editby)
         select trno,fireid,rate,createdate,createby,editdate,editby from ddfirearms where trno=?",
@@ -905,19 +979,19 @@ class dd
             return ['status' => false, 'msg' => 'Unposting failed. Transaction is not posted.'];
         }
 
-        // move head back to live
+
         $qry = "insert into " . $this->head . " (trno,docno,divid,dateid,dateid2,paydate,paydate2,createdate,createby,editdate,editby,viewdate,viewby)
     select trno,docno,divid,dateid,dateid2,paydate,paydate2,createdate,createby,editdate,editby,viewdate,viewby
     from " . $this->hhead . " where trno=? limit 1";
         $this->coreFunctions->execqry($qry, 'insert', [$trno]);
 
-        // move employee detail back to live
-        $qry2 = "insert into " . $this->detail . " (trno,line,empid,rate,createdate,createby,editdate,editby)
-    select trno,line,empid,rate,createdate,createby,editdate,editby
+
+        $qry2 = "insert into " . $this->detail . " (trno,line,empid,rate,tmshifts,createdate,createby,editdate,editby)
+    select trno,line,empid,rate,tmshifts,createdate,createby,editdate,editby
     from " . $this->hdetail . " where trno=?";
         $this->coreFunctions->execqry($qry2, 'insert', [$trno]);
 
-        // move firearms back to live
+
         $this->coreFunctions->execqry(
             "insert into ddfirearms (trno,fireid,rate,createdate,createby,editdate,editby)
         select trno,fireid,rate,createdate,createby,editdate,editby from hddfirearms where trno=?",
@@ -935,5 +1009,25 @@ class dd
         $this->logger->sbcwritelog($trno, $config, 'UNPOSTED', $docno);
 
         return ['trno' => $trno, 'status' => true, 'msg' => 'Successfully unposted.'];
+    }
+
+    public function reportsetup($config)
+    {
+        $txtfield = app($this->companysetup->getreportpath($config['params']))->createreportfilter($config);
+        $txtdata = app($this->companysetup->getreportpath($config['params']))->reportparamsdata($config);
+
+        $modulename = $this->modulename;
+        $data = [];
+        $style = 'width:500px;max-width:500px;';
+
+        return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => $modulename, 'data' => $data, 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style, 'directprint' => false];
+    }
+
+    public function reportdata($config)
+    {
+        $data = app($this->companysetup->getreportpath($config['params']))->report_default_query($config);
+        $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
+
+        return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
     }
 } //end class

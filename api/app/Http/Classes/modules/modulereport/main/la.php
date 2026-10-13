@@ -43,9 +43,9 @@ class la
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -187,7 +187,7 @@ class la
         left join $info as info on head.trno = info.trno
         left join reqcategory as r on r.line=head.planid
         where cp.trno = ? and num.doc=? and num.center=? ";
-        
+
         return $this->coreFunctions->opentable($qry, [$trno, $doc, $center, $trno, $doc, $center]);
     } //end fn
 

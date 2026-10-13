@@ -29,12 +29,12 @@ class comparison_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1480'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -230,7 +230,7 @@ class comparison_report
         if ($wh != '') {
             $filter .= " and wh.client = '$wh'";
         }
-        
+
         $condition = "";
         $condition1 = "";
 

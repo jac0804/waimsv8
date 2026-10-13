@@ -42,10 +42,10 @@ class billingsetup
     public $tablelogs_del = 'del_masterfile_log';
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -178,7 +178,7 @@ class billingsetup
                     $data['clientid'],
                     $config,
                     'CREATE BILLING' . ' - BLINE: ' . $data['bline'] . ' - AMT: ' . $data['amt'] . ' - START DATE: ' . $data['startdate'] . ' - END DATE: ' . $data['enddate']
-                    . ' - ISVAT: ' . $data['isvat'] . ' - ISINACTIVE: ' . $data['isinactive'],
+                        . ' - ISVAT: ' . $data['isvat'] . ' - ISINACTIVE: ' . $data['isinactive'],
                     0,
                     1
                 );
@@ -197,7 +197,7 @@ class billingsetup
                     $data['clientid'],
                     $config,
                     'UPDATE BILLING' . ' - BLINE: ' . $data['bline'] . ' - AMT: ' . $data['amt'] . ' - START DATE: ' . $data['startdate'] .
-                    ' - END DATE: ' . $data['enddate'] . ' - ISVAT: ' . $data['isvat'] . ' - ISINACTIVE: ' . $data['isinactive'],
+                        ' - END DATE: ' . $data['enddate'] . ' - ISVAT: ' . $data['isvat'] . ' - ISINACTIVE: ' . $data['isinactive'],
                     1,
                     1
                 );
@@ -248,7 +248,7 @@ class billingsetup
                         $data2['clientid'],
                         $config,
                         'INSERT BILLING' . ' - BLINE: ' . $data2['bline'] . ' - AMT: ' . $data2['amt'] . ' - START DATE: ' . $data2['startdate'] . ' - END DATE: ' . $data2['enddate']
-                        . ' - ISVAT: ' . $data2['isvat'] . ' - ISINACTIVE: ' . $data2['isinactive'],
+                            . ' - ISVAT: ' . $data2['isvat'] . ' - ISINACTIVE: ' . $data2['isinactive'],
                         0,
                         1
                     );
@@ -261,7 +261,7 @@ class billingsetup
                         $data2['clientid'],
                         $config,
                         'UPDATE BILLING' . ' - BLINE: ' . $data2['bline'] . ' - AMT: ' . $data2['amt'] . ' - START DATE: ' . $data2['startdate'] . ' - END DATE: ' . $data2['enddate']
-                        . ' - ISVAT: ' . $data2['isvat'] . ' - ISINACTIVE: ' . $data2['isinactive'],
+                            . ' - ISVAT: ' . $data2['isvat'] . ' - ISINACTIVE: ' . $data2['isinactive'],
                         1,
                         1
                     );
@@ -284,12 +284,13 @@ class billingsetup
             $clientid,
             $config,
             'REMOVE - Billing Type : ' . $row['billtype'] .
-            ' - Schedule : ' . $row['scheddate'] .
-            ' - Amount : ' . $row['amt'] .
-            ' - Start Date : ' . $row['startdate'] .
-            ' - End Date : ' . $row['enddate'] .
-            ' - Is VAT : ' . $row['isvat'] .
-            ' - Is Inactive : ' . $row['isinactive'], 1
+                ' - Schedule : ' . $row['scheddate'] .
+                ' - Amount : ' . $row['amt'] .
+                ' - Start Date : ' . $row['startdate'] .
+                ' - End Date : ' . $row['enddate'] .
+                ' - Is VAT : ' . $row['isvat'] .
+                ' - Is Inactive : ' . $row['isinactive'],
+            1
         );
 
         return ['status' => true, 'msg' => 'Successfully deleted.'];

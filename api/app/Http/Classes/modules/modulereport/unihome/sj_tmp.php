@@ -33,9 +33,9 @@ class sj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -129,7 +129,7 @@ class sj
     left join client as wh on wh.clientid=head.whid
     left join client as whs on whs.clientid=stock.whid
     where head.doc='sj' and head.trno='$trno' order by line";
-    
+
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn
@@ -259,31 +259,31 @@ class sj
         $itemname = $this->reporter->fixcolumn([$data[$i]['itemname']], '100', 0);
         $ext = $this->reporter->fixcolumn([$data[$i]['ext']], '18', 0);
         $maxrow = 1;
-        $countarr = max(count($ext),count($itemname));
+        $countarr = max(count($ext), count($itemname));
         $maxrow = $countarr;
 
-          for ($r = 0; $r < $maxrow; $r++) {
-            if ($r == 0) {
-              $qty = round($data[$i]['qty']);
-              $uom = $data[$i]['uom'];
-              $amt = number_format($data[$i]['amt'], 2);
-              //  $disc = $data[$i]['disc'];
-              $ext = number_format($data[$i]['ext'], 2);
-            } else {
-              $qty = '';
-              $uom = '';
-              $amt = '';
-              //  $disc = '';
-              $ext = '';
-            }
-            PDF::SetFont($font, '', $fontsize);
-            PDF::MultiCell(80, 15, $qty, '', 'R', false, 0, '2', '', true, 1);
-            PDF::MultiCell(100, 15, $uom, '', 'C', false, 0, '65', '', false, 1);
-            PDF::MultiCell(300, 15, isset($itemname[$r]) ? $itemname[$r] : '', '', 'L', false, 0, '160', '', false, 1);
-            PDF::MultiCell(100, 15, $amt, '', 'R', false, 0, '560', '', false, 1);
-            PDF::MultiCell(170, 15, $ext, '', 'R', false, 1, '600', '', false, 0);
+        for ($r = 0; $r < $maxrow; $r++) {
+          if ($r == 0) {
+            $qty = round($data[$i]['qty']);
+            $uom = $data[$i]['uom'];
+            $amt = number_format($data[$i]['amt'], 2);
+            //  $disc = $data[$i]['disc'];
+            $ext = number_format($data[$i]['ext'], 2);
+          } else {
+            $qty = '';
+            $uom = '';
+            $amt = '';
+            //  $disc = '';
+            $ext = '';
           }
-        
+          PDF::SetFont($font, '', $fontsize);
+          PDF::MultiCell(80, 15, $qty, '', 'R', false, 0, '2', '', true, 1);
+          PDF::MultiCell(100, 15, $uom, '', 'C', false, 0, '65', '', false, 1);
+          PDF::MultiCell(300, 15, isset($itemname[$r]) ? $itemname[$r] : '', '', 'L', false, 0, '160', '', false, 1);
+          PDF::MultiCell(100, 15, $amt, '', 'R', false, 0, '560', '', false, 1);
+          PDF::MultiCell(170, 15, $ext, '', 'R', false, 1, '600', '', false, 0);
+        }
+
         $totalext += $data[$i]['ext'];
         if (intVal($i) + 1 == $page) {
           $this->SI_header_PDF($params, $data);
@@ -417,7 +417,7 @@ class sj
     PDF::MultiCell(700, 0, '', '');
 
     $countarr = 0;
-    
+
     if (!empty($data)) {
       for ($i = 0; $i < count($data); $i++) {
         $itemname = $this->reporter->fixcolumn([$data[$i]['itemname']], '150', 0);
@@ -436,8 +436,8 @@ class sj
           for ($r = 0; $r < $maxrow; $r++) {
             if ($r == 0) {
               $qty = round($data[$i]['qty']);
-              $amt = number_format($data[$i]['amt'],2);
-              $ext = number_format($data[$i]['ext'],2);
+              $amt = number_format($data[$i]['amt'], 2);
+              $ext = number_format($data[$i]['ext'], 2);
               $uom = $data[$i]['uom'];
             } else {
               $qty = '';
@@ -468,7 +468,7 @@ class sj
     }
     PDF::MultiCell(0, 0, "");
     PDF::MultiCell(100, 0, 'Total: ', '', 'R', false, 0, '550', '');
-    PDF::MultiCell(100, 0, number_format($totalext,2), 'T', 'R', false, 1, '650', '');
+    PDF::MultiCell(100, 0, number_format($totalext, 2), 'T', 'R', false, 1, '650', '');
 
     PDF::MultiCell(0, 0, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 
@@ -659,26 +659,26 @@ class sj
         $countarr = count($itemname);
         $maxrow = $countarr;
 
-          for ($r = 0; $r < $maxrow; $r++) {
-            if ($r == 0) {
-              $qty = round($data[$i]['qty']);
-              $uom = $data[$i]['uom'];
-              $amt = number_format($data[$i]['amt'], 2);
-              $ext = number_format($data[$i]['ext'], 2);
-            } else {
-              $qty = '';
-              $uom = '';
-              $amt = '';
-              $ext = '';
-            }
-
-            PDF::SetFont($font, '', $fontsize);
-            PDF::MultiCell(80, 17, $qty, '', 'R', false, 0, '2', '', true, 1);
-            PDF::MultiCell(100, 17, $uom, '', 'C', false, 0, '65', '', false, 1);
-            PDF::MultiCell(300, 17, isset($itemname[$r]) ? $itemname[$r] : '', '', 'L', false, 0, '160', '', false, 1);
-            PDF::MultiCell(100, 17, $amt, '', 'R', false, 0, '500', '', false, 1);
-            PDF::MultiCell(170, 17, $ext, '', 'R', false, 1, '520', '', false, 0);
+        for ($r = 0; $r < $maxrow; $r++) {
+          if ($r == 0) {
+            $qty = round($data[$i]['qty']);
+            $uom = $data[$i]['uom'];
+            $amt = number_format($data[$i]['amt'], 2);
+            $ext = number_format($data[$i]['ext'], 2);
+          } else {
+            $qty = '';
+            $uom = '';
+            $amt = '';
+            $ext = '';
           }
+
+          PDF::SetFont($font, '', $fontsize);
+          PDF::MultiCell(80, 17, $qty, '', 'R', false, 0, '2', '', true, 1);
+          PDF::MultiCell(100, 17, $uom, '', 'C', false, 0, '65', '', false, 1);
+          PDF::MultiCell(300, 17, isset($itemname[$r]) ? $itemname[$r] : '', '', 'L', false, 0, '160', '', false, 1);
+          PDF::MultiCell(100, 17, $amt, '', 'R', false, 0, '500', '', false, 1);
+          PDF::MultiCell(170, 17, $ext, '', 'R', false, 1, '520', '', false, 0);
+        }
         $totalext += $data[$i]['ext'];
         if (intVal($i) + 1 == $page) {
           $this->CSI_header_PDF($params, $data);
@@ -709,14 +709,12 @@ class sj
       PDF::MultiCell(100, 0, number_format($amtdue, 2), '', 'R', false, 1, '590',  '485');
       PDF::MultiCell(100, 0, number_format($totalext, 2), '', 'R', false, 1, '590',  '500');
 
-      
-      
+
+
       PDF::MultiCell(100, 0, number_format($nvat, 2), '', 'R', false, 0, '110',  '435');
       // PDF::MultiCell(100, 0, number_format($vatex, 2), '', 'R', false, 0, '110',  '450');
       PDF::MultiCell(100, 0, number_format($vatamt, 2), '', 'R', false, 0, '110',  '480');
-
-    } 
-    else {
+    } else {
       PDF::MultiCell(0, 0, "\n");
       PDF::MultiCell(350, 0, '', '', 'R', false, 0, '110',  '');
       PDF::MultiCell(0, 0, "\n");
@@ -732,7 +730,6 @@ class sj
       PDF::MultiCell(350, 0, '', '', 'R', false, 0, '110',  '');
       PDF::MultiCell(0, 0, "\n");
       PDF::MultiCell(350, 0, number_format($totalext, 2), '', 'R', false, 1, '340',  '435');
-
     }
     PDF::MultiCell(0, 0, "\n\n\n\n\n\n");
     PDF::SetFont($font, '', $fontsize);
@@ -889,7 +886,12 @@ class sj
 
 
         $maxrow = $this->othersClass->getmaxcolumn([
-          $arr_itemname, $arr_qty, $arr_uom, $arr_amt, $arr_disc, $arr_ext
+          $arr_itemname,
+          $arr_qty,
+          $arr_uom,
+          $arr_amt,
+          $arr_disc,
+          $arr_ext
         ]);
         for ($r = 0; $r < $maxrow; $r++) {
 

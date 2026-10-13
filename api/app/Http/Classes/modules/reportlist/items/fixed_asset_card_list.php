@@ -29,12 +29,12 @@ class fixed_asset_card_list
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '800'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -151,11 +151,11 @@ class fixed_asset_card_list
         }
         if ($categoryname != "") {
             $category = $config['params']['dataparams']['category'];
-            $filter .= " and item.category='" . $category."'";
+            $filter .= " and item.category='" . $category . "'";
         }
         if ($subcatname != "") {
             $subcat = $config['params']['dataparams']['subcat'];
-            $filter .= " and item.subcat='" . $subcat."'";
+            $filter .= " and item.subcat='" . $subcat . "'";
         }
 
         $order = " order by ifnull(parts.part_name,''),brand,itemname";

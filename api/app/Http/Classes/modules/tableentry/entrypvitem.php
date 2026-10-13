@@ -37,10 +37,10 @@ class entrypvitem
   public $tablelogs = 'table_log';
   public $tablelogs_del = 'del_table_log';
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -58,7 +58,13 @@ class entrypvitem
   public function createTab($config)
   {
     $column = [
-      'action', 'itemdescription', 'amt', 'poref', 'ref', 'stock_projectname', 'itemname'
+      'action',
+      'itemdescription',
+      'amt',
+      'poref',
+      'ref',
+      'stock_projectname',
+      'itemname'
     ];
 
     $tab = [$this->gridname => ['gridcolumns' => $column]];
@@ -138,7 +144,7 @@ class entrypvitem
           array_push($this->fields, 'createby');
           array_push($this->fields, 'createdate');
           foreach ($this->fields as $key2 => $value2) {
-            $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+            $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
           }
           $insert = $this->coreFunctions->sbcinsert($this->table, $data2);
           if ($insert) {
@@ -155,7 +161,7 @@ class entrypvitem
           array_push($this->fields, 'editby');
           array_push($this->fields, 'editdate');
           foreach ($this->fields as $key2 => $value2) {
-            $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+            $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
           }
           $this->coreFunctions->sbcupdate($this->table, $data2, ['line' => $data[$key]['line'], 'trno' => $data[$key]['trno']]);
         }
@@ -174,7 +180,7 @@ class entrypvitem
     $data = [];
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['line'] == 0) {
       $qry = "select line as value from " . $this->table . " where trno=? order by line desc limit 1";

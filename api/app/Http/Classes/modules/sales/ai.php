@@ -47,7 +47,7 @@ class ai
   public $hamt = 'amt';
   public $defaultContra = 'AR1';
   private $stockselect;
-  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'projectid', 'creditinfo', 'billid', 'shipid', 'branch', 'deptid', 'sotrno', 'shipcontactid', 'billcontactid', 'ewt', 'ewtrate','taxdef'];
+  private $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'forex', 'cur', 'wh', 'address', 'contra', 'tax', 'vattype', 'agent', 'projectid', 'creditinfo', 'billid', 'shipid', 'branch', 'deptid', 'sotrno', 'shipcontactid', 'billcontactid', 'ewt', 'ewtrate', 'taxdef'];
   private $except = ['trno', 'dateid', 'due', 'creditinfo'];
   private $acctg = [];
   public $showfilteroption = true;
@@ -56,11 +56,11 @@ class ai
   private $reporter;
   private $helpClass;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -513,7 +513,7 @@ class ai
 
     if (!$islocation) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-    } 
+    }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
 
@@ -571,7 +571,7 @@ class ai
     data_set($col1, 'docno.label', 'Transaction#');
 
     if ($config['params']['companyid'] == 10) { //afti
-      $fields = [['dateid', 'due'],'terms', ['dvattype','taxdef'], 'dewt', 'dacnoname', 'dwhname'];
+      $fields = [['dateid', 'due'], 'terms', ['dvattype', 'taxdef'], 'dewt', 'dacnoname', 'dwhname'];
     } else {
       $fields = [['dateid', 'terms'], ['due', 'dvattype'], 'dacnoname', 'dwhname'];
     }
@@ -1465,7 +1465,7 @@ class ai
       }
     }
 
-      $hamt = $this->othersClass->sanitizekeyfieldFast('amt', $hamt, $lookups);
+    $hamt = $this->othersClass->sanitizekeyfieldFast('amt', $hamt, $lookups);
 
     $data = [
       'trno' => $trno,
@@ -1497,7 +1497,7 @@ class ai
     }
 
     foreach ($data as $key => $value) {
-     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
@@ -2647,8 +2647,8 @@ class ai
     $dateTables = ['lastock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($data2 as $key => $value) {
-      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt],$lookups);
-       $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
+      $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
+      $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
       if ($companyid == 10) { //afti
         if ($data[$key]->disc != "") {
           $computedata = $this->othersClass->computestock(

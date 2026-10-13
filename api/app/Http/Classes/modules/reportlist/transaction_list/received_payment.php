@@ -29,12 +29,12 @@ class received_payment
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -89,7 +89,7 @@ class received_payment
         data_set($col1, 'dclientname.lookupclass', 'lookupclient');
         data_set($col1, 'dclientname.label', 'Customer');
         break;
-      case 34://elsi
+      case 34: //elsi
         $fields = ['radioprint', 'start', 'end', 'dcentername', 'reportusers', 'dclientname', 'dagentname', 'approved'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'approved.label', 'Prefix');

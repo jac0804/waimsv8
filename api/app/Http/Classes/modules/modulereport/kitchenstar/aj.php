@@ -37,9 +37,9 @@ class aj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -188,14 +188,14 @@ class aj
     $str .= $this->reporter->col('QTY', '50px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('UNIT', '50px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('D E S C R P T I O N', '500px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
-    if($viewcost == '1'){
-        $str .= $this->reporter->col('COST', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
-        $str .= $this->reporter->col('TOTAL', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
-    }else{
-        $str .= $this->reporter->col('', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
-        $str .= $this->reporter->col('', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+    if ($viewcost == '1') {
+      $str .= $this->reporter->col('COST', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+      $str .= $this->reporter->col('TOTAL', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+    } else {
+      $str .= $this->reporter->col('', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+      $str .= $this->reporter->col('', '125px', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     }
-    
+
     return $str;
   }
 
@@ -222,14 +222,14 @@ class aj
       $str .= $this->reporter->col(number_format($data[$i]['qty'], $decimal), '50px', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '2px');
       $str .= $this->reporter->col($data[$i]['uom'], '50px', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '2px');
       $str .= $this->reporter->col($data[$i]['itemname'], '500px', null, false, '1px solid ', '', 'L', 'Century Gothic', '11', '', '', '2px');
-      if($viewcost == 1){
+      if ($viewcost == 1) {
         $str .= $this->reporter->col(number_format($data[$i]['netamt'], $decimal), '125px', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '2px');
         $str .= $this->reporter->col(number_format($data[$i]['ext'], $decimal), '125px', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '2px');
-      }else{
+      } else {
         $str .= $this->reporter->col('', '125px', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '2px');
         $str .= $this->reporter->col('', '125px', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '2px');
       }
-      
+
       $totalext = $totalext + $data[$i]['ext'];
 
 
@@ -249,14 +249,14 @@ class aj
     $str .= $this->reporter->col('', '50px', null, false, '1px dotted ', 'T', 'C', 'Century Gothic', '12', 'B', '', '');
     $str .= $this->reporter->col('', '50px', null, false, '1px dotted ', 'T', 'C', 'Century Gothic', '12', 'B', '', '');
     $str .= $this->reporter->col('', '500px', null, false, '1px dotted ', 'T', 'C', 'Century Gothic', '12', 'B', '', '');
-    if($viewcost == 1){
-        $str .= $this->reporter->col('GRAND TOTAL :', '120px', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '12', 'B', '', '');
-        $str .= $this->reporter->col(number_format($totalext, $decimal), '125px', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '12', 'B', '', '');    
-    }else{
-        $str .= $this->reporter->col('', '120px', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '12', 'B', '', '');
-        $str .= $this->reporter->col('', '125px', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '12', 'B', '', '');
+    if ($viewcost == 1) {
+      $str .= $this->reporter->col('GRAND TOTAL :', '120px', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '12', 'B', '', '');
+      $str .= $this->reporter->col(number_format($totalext, $decimal), '125px', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '12', 'B', '', '');
+    } else {
+      $str .= $this->reporter->col('', '120px', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '12', 'B', '', '');
+      $str .= $this->reporter->col('', '125px', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '12', 'B', '', '');
     }
-    
+
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
@@ -372,14 +372,14 @@ class aj
     PDF::MultiCell(80, 0, "QTY", '', 'C', false, 0);
     PDF::MultiCell(80, 0, "UNIT", '', 'C', false, 0);
     PDF::MultiCell(250, 0, "D E S C R P T I O N", '', 'L', false, 0);
-    if($viewcost =='1'){
-        PDF::MultiCell(80, 0, "COST", '', 'R', false, 0);
-        PDF::MultiCell(100, 0, "TOTAL", '', 'R', false);
-    }else{
-        PDF::MultiCell(80, 0, "", '', 'R', false, 0);
-        PDF::MultiCell(100, 0, "", '', 'R', false);
+    if ($viewcost == '1') {
+      PDF::MultiCell(80, 0, "COST", '', 'R', false, 0);
+      PDF::MultiCell(100, 0, "TOTAL", '', 'R', false);
+    } else {
+      PDF::MultiCell(80, 0, "", '', 'R', false, 0);
+      PDF::MultiCell(100, 0, "", '', 'R', false);
     }
-        
+
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', 'B');
@@ -450,14 +450,13 @@ class aj
         PDF::MultiCell(80, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
         PDF::MultiCell(80, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
         PDF::MultiCell(250, 15, (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        if($viewcost =='1'){
-            PDF::MultiCell(80, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(100, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
-        }else{
-            PDF::MultiCell(80, 15, ' ' , '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(100, 15, ' ' , '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+        if ($viewcost == '1') {
+          PDF::MultiCell(80, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(100, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+        } else {
+          PDF::MultiCell(80, 15, ' ', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(100, 15, ' ', '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
         }
-        
       }
 
       $totalext += $data[$i]['ext'];
@@ -474,14 +473,14 @@ class aj
     PDF::MultiCell(700, 0, '', '');
 
     PDF::SetFont($fontbold, '', $fontsize);
-    if($viewcost =='1'){
-        PDF::MultiCell(600, 0, 'GRAND TOTAL: ', '', 'R', false, 0);    
-        PDF::MultiCell(100, 0, number_format($totalext, $decimalcurr), '', 'R');
-    }else{
-        PDF::MultiCell(600, 0, '', '', 'R', false, 0);    
-        PDF::MultiCell(100, 0, '', '', 'R');
+    if ($viewcost == '1') {
+      PDF::MultiCell(600, 0, 'GRAND TOTAL: ', '', 'R', false, 0);
+      PDF::MultiCell(100, 0, number_format($totalext, $decimalcurr), '', 'R');
+    } else {
+      PDF::MultiCell(600, 0, '', '', 'R', false, 0);
+      PDF::MultiCell(100, 0, '', '', 'R');
     }
-    
+
 
     PDF::MultiCell(0, 0, "\n");
 

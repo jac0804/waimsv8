@@ -37,10 +37,10 @@ class entrytimesetup
     private $reporter;
     private $logger;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -185,7 +185,7 @@ class entrytimesetup
 
                             $data2[$field] = $this->othersClass->sanitizekeyfieldFast($field, $timeValue, $lookups);
                         } else {
-                            $data2[$field] = $this->othersClass->sanitizekeyfieldFast($field, $data[$key][$field],$lookups);
+                            $data2[$field] = $this->othersClass->sanitizekeyfieldFast($field, $data[$key][$field], $lookups);
                         }
                     }
                 }
@@ -218,7 +218,7 @@ class entrytimesetup
         $companyid = $config['params']['companyid'];
         $dateTables = [$this->table];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-        
+
         $row = $config['params']['row'];
         $data = [];
 
@@ -235,9 +235,9 @@ class entrytimesetup
                         $timeValue = $currentDate . ' ' . $timeValue . ':00';
                     }
 
-                    $data[$field] = $this->othersClass->sanitizekeyfieldFast($field, $timeValue,$lookups);
+                    $data[$field] = $this->othersClass->sanitizekeyfieldFast($field, $timeValue, $lookups);
                 } else {
-                    $data[$field] = $this->othersClass->sanitizekeyfieldFast($field, $row[$field],$lookups);
+                    $data[$field] = $this->othersClass->sanitizekeyfieldFast($field, $row[$field], $lookups);
                 }
             }
         }

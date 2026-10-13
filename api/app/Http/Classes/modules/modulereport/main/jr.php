@@ -34,10 +34,10 @@ class jr
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -48,7 +48,7 @@ class jr
   public function createreportfilter($config)
   {
     $companyid = $config['params']['companyid'];
-    $fields = ['radioprint','prepared','approved', 'received','print'];
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
     $col1 = $this->fieldClass->create($fields);
     // data_set($col1, 'radioprint.options', [
     //   ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
@@ -98,7 +98,8 @@ class jr
     return $result;
   } //end fn
 
-  private function reportheader($params, $data){
+  private function reportheader($params, $data)
+  {
 
     $companyid = $params['params']['companyid'];
     $decimal = $this->companysetup->getdecimal('currency', $params['params']);
@@ -160,7 +161,7 @@ class jr
     $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('', '75', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('TOTAL', '100', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
-    
+
     return $str;
   }
 
@@ -202,7 +203,7 @@ class jr
       if ($this->reporter->linecounter == $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
-            $str .= $this->reportheader($params, $data);
+        $str .= $this->reportheader($params, $data);
         $str .= $this->reporter->endrow();
         $page = $page + $count;
       }
@@ -251,5 +252,4 @@ class jr
 
     return $str;
   }
-
 }

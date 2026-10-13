@@ -39,10 +39,10 @@ class pendingreassignment
     public $hdetail = '';
     public $tablelogs_del = 'del_hrisnum_log';
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -169,7 +169,7 @@ class pendingreassignment
                 'supervisorid' => $row['supid']
             ];
             foreach ($data as $key => $v) {
-                $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+                $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
             }
             $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data['editby'] = $config['params']['user'];

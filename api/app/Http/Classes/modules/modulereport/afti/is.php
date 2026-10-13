@@ -34,9 +34,9 @@ class is
   private $reporter;
   private $logger;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -176,7 +176,7 @@ class is
   public function default_is_layout($params, $data)
   {
     $companyid = $params['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency', $params['params'] );
+    $decimal = $this->companysetup->getdecimal('currency', $params['params']);
 
     $center = $params['params']['center'];
     $username = $params['params']['user'];

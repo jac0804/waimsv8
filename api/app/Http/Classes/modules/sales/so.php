@@ -107,11 +107,11 @@ class so
     ['val' => 'all', 'label' => 'All', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -866,6 +866,13 @@ class so
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
         $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 300px;whiteSpace: normal;min-width:300px;max-width:450px;';
         break;
+      case 67: //yulick
+        $obj[0]['inventory']['columns'][$rem]['type'] = 'lookup';
+        $obj[0]['inventory']['columns'][$rem]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$rem]['lookupclass'] = 'lookupitemdesc';
+        $obj[0]['inventory']['columns'][$rem]['action'] = 'lookupitemdesc';
+
+        break;
       default:
         $obj[0]['inventory']['columns'][$weight]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$roqa]['type'] = 'coldel';
@@ -1130,7 +1137,11 @@ class so
       data_set($col3, 'ourref.label', 'Charge SI #');
     }
 
-    if ($companyid == 47 || $companyid == 64 ) { //kitchenstar
+    if ($companyid == 67) { //yulick
+      data_set($col3, 'yourref.label', 'PO No');
+    }
+
+    if ($companyid == 47 || $companyid == 64) { //kitchenstar
       data_set($col3, 'yourref.label', 'PO #');
     }
 
@@ -1138,7 +1149,7 @@ class so
       data_set($col3, 'received.label', 'Receiving Time');
     }
 
-   
+
     // col 4
     $fields = ['rem'];
 
@@ -1204,7 +1215,7 @@ class so
 
     if ($companyid == 72) { //hahsy
       data_set($col4, 'copypreviousstock.label', 'Copy Previous SO Items');
-      data_set($col4, 'copypreviousstock.confirmlabel', 'Do you want to copy previous SO Items?');
+      data_set($col4, 'copypreviousstock.lookupclass', 'copyprev_item');
       data_set($col4, 'copypreviousstock.style', 'width: 100%;');
     }
 
@@ -3128,6 +3139,7 @@ class so
         $this->setserveditems($data[$key]->refx, $data[$key]->linex);
       }
     }
+    $this->logger->sbcwritelog($trno, $config, 'STOCK', 'DELETED ALL ITEMS');
     return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => []];
   }
 

@@ -32,12 +32,12 @@ class warranty_receiving_report
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -103,7 +103,7 @@ class warranty_receiving_report
 
   public function reportplotting($config)
   {
-   $reporttype = $config['params']['dataparams']['reporttype'];
+    $reporttype = $config['params']['dataparams']['reporttype'];
     switch ($reporttype) {
       case '0': // SUMMARIZED
         $result = $this->reportDefaultLayout_SUMMARIZED($config);
@@ -380,12 +380,12 @@ class warranty_receiving_report
     $str .= $this->reporter->col('Receiving Report (' . $reporttype . ')', null, null, false, $border, '', '', $font, '18', 'B', '', '') . '<br />';
     $str .= $this->reporter->endrow();
 
-    $str .= $this->reporter->startrow(NULL, null, false, $border, '',  $font, $fontsize, '','', '', '');
+    $str .= $this->reporter->startrow(NULL, null, false, $border, '',  $font, $fontsize, '', '', '', '');
     $str .= $this->reporter->col('Date Range: ' . $start . ' to ' . $end, '500', null, false, $border, '', '', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('User: ' . $user, null, null, false, $border, '', '', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col('Prefix: ' . $prefix, null, null, false, $border, '', 'L', $font, $fontsize, 'B', '', '','8px');
-    $str .= $this->reporter->col('Transaction Type: ' . $posttype, null, null, false, $border, '', 'L', $font, $fontsize, 'B', '','', '8px');
-    $str .= $this->reporter->col('Sorting By: ' . $sorting, null, null, false, $border, '', 'L', $font, $fontsize, 'B', '','', '8px');
+    $str .= $this->reporter->col('Prefix: ' . $prefix, null, null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '8px');
+    $str .= $this->reporter->col('Transaction Type: ' . $posttype, null, null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '8px');
+    $str .= $this->reporter->col('Sorting By: ' . $sorting, null, null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '8px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -415,11 +415,11 @@ class warranty_receiving_report
         if ($docno != "" && $docno != $data->docno) {
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('Total: ' . number_format($total, 2), '900', null, false, $border, '', 'R', $font, $fontsize, 'B', '','', '');
+          $str .= $this->reporter->col('Total: ' . number_format($total, 2), '900', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->endrow();
 
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('', '900', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B','', '', '');
+          $str .= $this->reporter->col('', '900', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->endrow();
 
           $str .= $this->reporter->endtable();
@@ -431,48 +431,48 @@ class warranty_receiving_report
 
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('Doc#: ' . $data->docno, '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '','', '8px');
-          $str .= $this->reporter->col('Date: ' . $data->dateid, '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '','8px');
+          $str .= $this->reporter->col('Doc#: ' . $data->docno, '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '8px');
+          $str .= $this->reporter->col('Date: ' . $data->dateid, '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '8px');
           $str .= $this->reporter->endrow();
 
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('Supplier: ' . $data->supplier, '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '','8px');
-          $str .= $this->reporter->col('Warehouse: ' . $data->clientname, '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '','', '8px');
+          $str .= $this->reporter->col('Supplier: ' . $data->supplier, '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '8px');
+          $str .= $this->reporter->col('Warehouse: ' . $data->clientname, '125', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '', '8px');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
 
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('Quantity', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B','', '', '');
-          $str .= $this->reporter->col('UOM', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B','', '', '');
-          $str .= $this->reporter->col('SKU', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B','', '', '');
-          $str .= $this->reporter->col('Item Description', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B','', '', '');
+          $str .= $this->reporter->col('Quantity', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col('UOM', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col('SKU', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col('Item Description', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
 
-          $str .= $this->reporter->col('Price', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B','', '', '');
-          $str .= $this->reporter->col('Discount', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '','', '');
-          $str .= $this->reporter->col('Total Price', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B','', '', '');
-          $str .= $this->reporter->col('Location', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B','', '', '');
-          $str .= $this->reporter->col('Expiry', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '','', '');
-          $str .= $this->reporter->col('Reference', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '','', '');
-          $str .= $this->reporter->col('Notes', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B','', '', '');
+          $str .= $this->reporter->col('Price', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col('Discount', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col('Total Price', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col('Location', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col('Expiry', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col('Reference', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col('Notes', '65', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
         }
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(number_format($data->rrqty, 2), '65', null, false, $border, '', 'R', $font, $fontsize, '','', '', '');
-        $str .= $this->reporter->col($data->uom, '65', null, false, $border, '', 'C', $font, $fontsize, '','', '', '');
-        $str .= $this->reporter->col($data->barcode, '65', null, false, $border, '', 'C', $font, $fontsize, '','', '', '');
-        $str .= $this->reporter->col($data->itemname, '150', null, false, $border, '', 'L', $font, $fontsize, '','', '', '');
+        $str .= $this->reporter->col(number_format($data->rrqty, 2), '65', null, false, $border, '', 'R', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data->uom, '65', null, false, $border, '', 'C', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data->barcode, '65', null, false, $border, '', 'C', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data->itemname, '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '', '');
 
-        $str .= $this->reporter->col(number_format($data->rrcost, 2), '65', null, false, $border, '', 'R', $font, $fontsize, '','', '', '');
-        $str .= $this->reporter->col($data->disc, '65', null, false, $border, '', 'C', $font, $fontsize, '','', '', '');
-        $str .= $this->reporter->col(number_format($data->ext, 2), '65', null, false, $border, '', 'R', $font, $fontsize, '','', '', '');
-        $str .= $this->reporter->col($data->loc, '65', null, false, $border, '', 'C', $font, $fontsize, '','', '', '');
-        $str .= $this->reporter->col($data->expiry, '65', null, false, $border, '', 'C', $font, $fontsize, '','', '', '');
-        $str .= $this->reporter->col($data->ref, '65', null, false, $border, '', 'R', $font, $fontsize, '','', '', '');
-        $str .= $this->reporter->col($data->rem, '65', null, false, $border, '', 'C', $font, $fontsize, '','', '', '');
+        $str .= $this->reporter->col(number_format($data->rrcost, 2), '65', null, false, $border, '', 'R', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data->disc, '65', null, false, $border, '', 'C', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col(number_format($data->ext, 2), '65', null, false, $border, '', 'R', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data->loc, '65', null, false, $border, '', 'C', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data->expiry, '65', null, false, $border, '', 'C', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data->ref, '65', null, false, $border, '', 'R', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data->rem, '65', null, false, $border, '', 'C', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->addline();
         if ($docno == $data->docno) {
@@ -484,11 +484,11 @@ class warranty_receiving_report
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Total: ' . number_format($total, 2), '900', null, false, $border, '', 'R', $font, $fontsize, 'B', '','', '');
+    $str .= $this->reporter->col('Total: ' . number_format($total, 2), '900', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '600', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B','', '', '');
+    $str .= $this->reporter->col('', '600', null, false, '1px dotted', 'T', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();
@@ -524,12 +524,12 @@ class warranty_receiving_report
       foreach ($result as $key => $data) {
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($data->docno, '150', null, false, $border, 'B', 'C', $font, $fontsize, '','', '', '');
-        $str .= $this->reporter->col($data->dateid, '100', null, false, $border, 'B', 'C', $font, $fontsize, '', '','', '');
-        $str .= $this->reporter->col($data->supplier, '150', null, false, $border, 'B', 'C', $font, $fontsize, '','', '', '');
-        $str .= $this->reporter->col($data->whname, '150', null, false, $border, 'B', 'C', $font, $fontsize, '','', '', '');
-        $str .= $this->reporter->col(number_format($data->amount, 2), '150', null, false, $border, 'B', 'R', $font, $fontsize, '','', '', '');
-        $str .= $this->reporter->col($data->hrem, '100', null, false, $border, 'B', 'C', $font, $fontsize, '','', '', '');
+        $str .= $this->reporter->col($data->docno, '150', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data->dateid, '100', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data->supplier, '150', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data->whname, '150', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col(number_format($data->amount, 2), '150', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '', '');
+        $str .= $this->reporter->col($data->hrem, '100', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->addline();
         $total = $total + $data->amount;
@@ -546,10 +546,10 @@ class warranty_receiving_report
         if ($i == (count((array)$result) - 1)) {
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('', '400', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '','', '');
-          $str .= $this->reporter->col('Grand Total', '150', null, false, $border, 'T', 'C', $font, $fontsize, 'B','', '', '');
-          $str .= $this->reporter->col(number_format($total, 2), '150', null, false, $border, 'TB', 'R', $font, $fontsize, 'B','', '', '');
-          $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B','', '', '');
+          $str .= $this->reporter->col('', '400', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col('Grand Total', '150', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col(number_format($total, 2), '150', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
         }
@@ -570,12 +570,12 @@ class warranty_receiving_report
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Document No.', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B','', '', '');
-    $str .= $this->reporter->col('Date', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B','', '', '');
-    $str .= $this->reporter->col('Name', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '','', '');
-    $str .= $this->reporter->col('Warehouse', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '','', '');
-    $str .= $this->reporter->col('Amount', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B','', '', '');
-    $str .= $this->reporter->col('Remarks', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B','', '', '');
+    $str .= $this->reporter->col('Document No.', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('Date', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('Name', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('Warehouse', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('Amount', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
+    $str .= $this->reporter->col('Remarks', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 

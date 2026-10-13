@@ -35,17 +35,17 @@ class entrytransactiontype
     public $style = 'width:100%;';
     public $tablelogs = 'masterfile_log';
     public $tablelogs_del = 'del_masterfile_log';
-    private $fields = ['category', 'inactive','isttype'];
+    private $fields = ['category', 'inactive', 'isttype'];
     public $showclosebtn = false;
     private $reporter;
     public $logger;
     private $reportheader;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -124,7 +124,7 @@ class entrytransactiontype
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
 
                 $data2['isloantype'] = 0;
@@ -149,7 +149,7 @@ class entrytransactiontype
                     $this->logger->sbcmasterlog($line, $config, ' CREATE - ' . $data[$key]['category']);
                 } else {
                     if ($data[$key]['line'] != 0 && $data[$key]['category'] != '') {
-                        $qry = "select category,line from reqcategory where category = '" . $data[$key]['category'] . "'  and isttype=1 and line <> ".$data[$key]['line']." limit 1";
+                        $qry = "select category,line from reqcategory where category = '" . $data[$key]['category'] . "'  and isttype=1 and line <> " . $data[$key]['line'] . " limit 1";
                         $opendata = $this->coreFunctions->opentable($qry);
                         $resultdata =  json_decode(json_encode($opendata), true);
                         if (!empty($resultdata)) {
@@ -178,9 +178,9 @@ class entrytransactiontype
         $dateTables = [$this->table];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
-        $data['inactive'] = $this->othersClass->sanitizekeyfieldFast('inactive', $row['inactive'],$lookups);
+        $data['inactive'] = $this->othersClass->sanitizekeyfieldFast('inactive', $row['inactive'], $lookups);
 
         if ($row['line'] == 0 && $row['category'] != '') {
             $qry = "select category from reqcategory where category = '" . $row['category'] . "'  and isttype=1 limit 1";
@@ -209,7 +209,7 @@ class entrytransactiontype
             }
         } else {
             if ($row['category'] != '') {
-                $qry = "select line,category,reqtype,case when inactive=0 then 'false' else 'true' end as inactive from  reqcategory where category = '" . $row['category'] . "' and line <> ".$row['line']. " and isttype=1 limit 1";
+                $qry = "select line,category,reqtype,case when inactive=0 then 'false' else 'true' end as inactive from  reqcategory where category = '" . $row['category'] . "' and line <> " . $row['line'] . " and isttype=1 limit 1";
                 $opendata = $this->coreFunctions->opentable($qry);
                 $resultdata =  json_decode(json_encode($opendata), true);
                 if (!empty($resultdata)) {

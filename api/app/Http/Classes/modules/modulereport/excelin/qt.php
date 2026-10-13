@@ -33,10 +33,10 @@ class qt
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -44,30 +44,33 @@ class qt
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter($config){
-   
-       $fields = ['radioprint','prepared','approved','received','print'];
-       $col1 = $this->fieldClass->create($fields);
-        data_set($col1, 'radioprint.options', [
-        ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-        // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
-        ]);
-       return array('col1'=>$col1);
+  public function createreportfilter($config)
+  {
+
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
+    data_set($col1, 'radioprint.options', [
+      ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
+      // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
+    ]);
+    return array('col1' => $col1);
   }
-  
-  public function reportparamsdata($config){
-   
-      return $this->coreFunctions->opentable(
-        "select 
+
+  public function reportparamsdata($config)
+  {
+
+    return $this->coreFunctions->opentable(
+      "select 
         'PDFM' as print,
         '' as prepared,
         '' as approved,
         '' as received
-        ");
-      
+        "
+    );
   }
 
-    public function report_default_query($trno){
+  public function report_default_query($trno)
+  {
 
     $query = "select cust.tel2,cust.email,head.docno,head.trno, head.clientname, head.address, 
     date(head.dateid) as dateid,head.terms, head.rem,head.agent,head.wh,
@@ -93,12 +96,12 @@ class qt
     left join client on client.client=head.wh
     left join client as cust on cust.client = head.client
     where head.doc='QT' and head.trno=$trno order by line";
-        
+
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
-    }//end fn 
+  } //end fn 
 
- public function reportplotting($params, $data)
+  public function reportplotting($params, $data)
   {
     if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_so_PDF($params, $data);
@@ -107,7 +110,7 @@ class qt
     }
   }
 
-   public function default_so_header_PDF($params, $data)
+  public function default_so_header_PDF($params, $data)
   {
     // var_dump($data);
     // break;
@@ -207,15 +210,15 @@ class qt
 
     PDF::SetFont($font, 'B', 12);
 
-   
-        PDF::MultiCell(100, 0, "BARCODE", '', 'C', false, 0);
-        PDF::MultiCell(50, 0, "QTY", '', 'C', false, 0);
-        PDF::MultiCell(50, 0, "UNIT", '', 'C', false, 0);
-        PDF::MultiCell(200, 0, "DESCRIPTION", '', 'L', false, 0);
-        PDF::MultiCell(100, 0, "UNIT PRICE", '', 'R', false, 0);
-        PDF::MultiCell(100, 0, "(+/-) %", '', 'R', false, 0);
-        PDF::MultiCell(100, 0, "TOTAL", '', 'R', false);
-       
+
+    PDF::MultiCell(100, 0, "BARCODE", '', 'C', false, 0);
+    PDF::MultiCell(50, 0, "QTY", '', 'C', false, 0);
+    PDF::MultiCell(50, 0, "UNIT", '', 'C', false, 0);
+    PDF::MultiCell(200, 0, "DESCRIPTION", '', 'L', false, 0);
+    PDF::MultiCell(100, 0, "UNIT PRICE", '', 'R', false, 0);
+    PDF::MultiCell(100, 0, "(+/-) %", '', 'R', false, 0);
+    PDF::MultiCell(100, 0, "TOTAL", '', 'R', false);
+
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', 'B');
@@ -273,21 +276,20 @@ class qt
         $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_itemname, $arr_qty, $arr_uom, $arr_amt, $arr_disc, $arr_ext]);
         for ($r = 0; $r < $maxrow; $r++) {
 
-              PDF::SetFont($font, '', $fontsize);
-              PDF::MultiCell(100, 15, ' ' . (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-              PDF::MultiCell(50, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-              PDF::MultiCell(50, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-              PDF::MultiCell(200, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-              PDF::MultiCell(100, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-              PDF::MultiCell(100, 15, ' ' . (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-              PDF::MultiCell(100, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
-    
+          PDF::SetFont($font, '', $fontsize);
+          PDF::MultiCell(100, 15, ' ' . (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(50, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(50, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(200, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(100, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(100, 15, ' ' . (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(100, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
         }
 
         $totalext += $data[$i]['ext'];
-         if (PDF::getY() > 900) {
-            $this->default_so_header_PDF($params, $data);
-          }
+        if (PDF::getY() > 900) {
+          $this->default_so_header_PDF($params, $data);
+        }
       }
 
       PDF::SetFont($font, '', 5);
@@ -300,7 +302,7 @@ class qt
       PDF::MultiCell(600, 0, 'GRAND TOTAL: ', '', 'R', false, 0);
       PDF::MultiCell(100, 0, number_format($totalext, $decimalcurr), '', 'R');
 
-     
+
 
       PDF::MultiCell(0, 0, "\n");
 
@@ -325,16 +327,4 @@ class qt
       return PDF::Output($this->modulename . '.pdf', 'S');
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
 }

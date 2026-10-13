@@ -41,11 +41,11 @@ class endofday
   public $tablelogs = 'table_log';
   public $tablelogs_del = 'del_table_log';
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -267,7 +267,7 @@ class endofday
         }
 
         if ($this->coreFunctions->sbcinsert('eod', $ins) == 1) {
-          $this->logger->sbcmasterlog2(0, $config, 'EOD- '.$d['dateid'] . ' :  Branch - ' . $config['params']['center'],'masterfile_log');
+          $this->logger->sbcmasterlog2(0, $config, 'EOD- ' . $d['dateid'] . ' :  Branch - ' . $config['params']['center'], 'masterfile_log');
           $dateid = date('Y-m-d', strtotime($d['dateid']));
           $status = $this->coreFunctions->sbcupdate("profile", ["pvalue" => $dateid], ['doc' => 'SYSL']);
           if ($status) {
@@ -399,7 +399,7 @@ class endofday
   {
     $line = $config['params']['line'];
     $center = $config['params']['center'];
-    $latestdate = $this->coreFunctions->datareader("select date(dateid) as value from eod where center = '".$center."' order by dateid desc limit 1");
+    $latestdate = $this->coreFunctions->datareader("select date(dateid) as value from eod where center = '" . $center . "' order by dateid desc limit 1");
 
     if ($latestdate != null) {
       $rowdate = $config['params']['row']['dateid'];
@@ -407,7 +407,7 @@ class endofday
       if ($rowdate == $latestdate) {
         $qry = "delete from eod where line=?";
         $this->coreFunctions->execqry($qry, 'delete', [$line]);
-        $this->logger->sbcmasterlog2(0, $config, 'DELETE EOD -'. $rowdate . ' :  Branch - ' . $config['params']['center'],'masterfile_log');
+        $this->logger->sbcmasterlog2(0, $config, 'DELETE EOD -' . $rowdate . ' :  Branch - ' . $config['params']['center'], 'masterfile_log');
         return ['status' => true, 'msg' => 'Item was successfully deleted.'];
       } else {
         return ['status' => false, 'msg' => 'You can only delete the latest record.'];

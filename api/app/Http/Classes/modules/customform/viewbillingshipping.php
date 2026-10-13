@@ -32,10 +32,10 @@ class viewbillingshipping
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -128,7 +128,7 @@ class viewbillingshipping
     if ($companyid = 10 || $companyid == 12) {
       switch ($doc) {
         case 'QS':
-          $fields = ['lblgrossprofit','ispaymentnotif', 'conaddr', ['contactname', 'contactno'], 'rem2'];
+          $fields = ['lblgrossprofit', 'ispaymentnotif', 'conaddr', ['contactname', 'contactno'], 'rem2'];
           break;
       }
     }
@@ -383,8 +383,7 @@ class viewbillingshipping
       $data['cperson'] = $config['params']['dataparams']['contactname'];
       $data['contactno'] = $config['params']['dataparams']['contactno'];
       $data['rem2'] = $config['params']['dataparams']['rem2'];
-      $data['ispaymentnotif'] =$config['params']['dataparams']['ispaymentnotif'];
-
+      $data['ispaymentnotif'] = $config['params']['dataparams']['ispaymentnotif'];
     }
 
 

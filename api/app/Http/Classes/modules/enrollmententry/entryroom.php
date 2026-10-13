@@ -36,10 +36,10 @@ class entryroom
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -104,7 +104,7 @@ class entryroom
   {
     $data = $config['params']['data'];
 
-    
+
     $companyid = $config['params']['companyid'];
     $dateTables = ['en_rooms'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -120,7 +120,7 @@ class entryroom
         if ($data[$key]['line'] == 0) {
           $check = $this->checkRoom($data2, 'new');
           if ($check) {
-            $msg .= "\n Duplicate Room entry for ".$data2['roomcode'].' - '.$data2['roomname'];
+            $msg .= "\n Duplicate Room entry for " . $data2['roomcode'] . ' - ' . $data2['roomname'];
           } else {
             $line = $this->coreFunctions->insertGetId($this->table, $data2);
             $this->logger->sbcmasterlog($data2['bldgid'], $config, ' CREATE ROOM - ' . $data[$key]['roomname']);
@@ -128,7 +128,7 @@ class entryroom
         } else {
           $check = $this->checkRoom($data2);
           if ($check) {
-            $msg .= "\n Duplicate Room entry for ".$data2['roomcode'].' - '.$data2['roomname'];
+            $msg .= "\n Duplicate Room entry for " . $data2['roomcode'] . ' - ' . $data2['roomname'];
           } else {
             $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data2['editby'] = $config['params']['user'];
@@ -138,7 +138,7 @@ class entryroom
       } // end if
     } // foreach
     $returndata = $this->loaddata($config);
-    return ['status' => true, 'msg' => 'All saved successfully.'.$msg, 'data' => $returndata];
+    return ['status' => true, 'msg' => 'All saved successfully.' . $msg, 'data' => $returndata];
   } // end function 
 
   public function save($config)
@@ -158,7 +158,7 @@ class entryroom
     if ($row['line'] == 0) {
       $check = $this->checkRoom($data, 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate Room entry for '.$data['roomcode'].' - '.$data['roomname'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate Room entry for ' . $data['roomcode'] . ' - ' . $data['roomname'], 'row' => []];
       } else {
         $line = $this->coreFunctions->insertGetId($this->table, $data);
         if ($line != 0) {
@@ -172,7 +172,7 @@ class entryroom
     } else {
       $check = $this->checkRoom($data);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate Room entry for '.$data['roomcode'].' - '.$data['roomname'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate Room entry for ' . $data['roomcode'] . ' - ' . $data['roomname'], 'row' => []];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
@@ -188,9 +188,9 @@ class entryroom
 
   public function checkRoom($data, $type = 'update')
   {
-    $qry = "select line as value from en_rooms where roomcode='".$data['roomcode']."' and roomname='".$data['roomname']."'";
+    $qry = "select line as value from en_rooms where roomcode='" . $data['roomcode'] . "' and roomname='" . $data['roomname'] . "'";
     if ($type == 'update') {
-      $qry = "select line as value from en_rooms where roomcode='".$data['roomcode']."' and roomname='".$data['roomname']."' and line<>".$data['line'];
+      $qry = "select line as value from en_rooms where roomcode='" . $data['roomcode'] . "' and roomname='" . $data['roomname'] . "' and line<>" . $data['line'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check != '') return true;

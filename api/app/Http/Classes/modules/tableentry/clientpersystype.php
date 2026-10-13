@@ -34,10 +34,10 @@ class clientpersystype
     public $showclosebtn = true;
     public $tablelogs_del = 'del_task_log';
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -117,7 +117,7 @@ class clientpersystype
     {
         $adminid = $config['params']['adminid'];
         $itemid = $config['params']['row']['item'];
-    
+
         $qry = "select t.clientid,
         c.clientname, i.itemid as item,
         sum(t.completed) as completed,
@@ -137,9 +137,9 @@ class clientpersystype
         group by t.clientid, c.clientname, i.itemid
         order by c.clientname";
         // var_dump($qry);
-    
+
         $data = $this->coreFunctions->opentable($qry);
-    
+
         // return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data];
         return $data;
     }

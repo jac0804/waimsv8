@@ -31,16 +31,16 @@ class payroll_receiving_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1200'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
-    public function createHeadField($config) 
+    public function createHeadField($config)
     {
         $fields = ['radioprint', 'divrep', 'deptrep', 'sectrep'];
         $col1 = $this->fieldClass->create($fields);
@@ -220,7 +220,7 @@ class payroll_receiving_report
         $end = isset($batchdate->end) ? $batchdate->end : '';
         $endformat = $end ? date('d-M-Y', strtotime($end)) : '';
 
-        $str .='</br></br>';
+        $str .= '</br></br>';
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('PAYROLL RECEIVING SUMMARY', null, null, false, $border, '', 'C', $font, '14', 'B', '', '') . '<br />';
@@ -229,7 +229,7 @@ class payroll_receiving_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('WE HEREBY ACKNOWLEDGE to have received from '. strtoupper($headerdata[0]->name).' '. strtoupper($headerdata[0]->address). '  the sum specified opposite our respective names as full compensation for services rendered for the period '. $startformat . ' to ' . $endformat , null, null, false, $border, '', 'L', $font, '8', 'B', '', '') . '<br />';
+        $str .= $this->reporter->col('WE HEREBY ACKNOWLEDGE to have received from ' . strtoupper($headerdata[0]->name) . ' ' . strtoupper($headerdata[0]->address) . '  the sum specified opposite our respective names as full compensation for services rendered for the period ' . $startformat . ' to ' . $endformat, null, null, false, $border, '', 'L', $font, '8', 'B', '', '') . '<br />';
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -242,19 +242,19 @@ class payroll_receiving_report
         $pageNum = strip_tags($this->reporter->pagenumber());
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col( 'Print Date :' . $current_timestamp , null, null, false, $border, '', 'L', $font, $fontsize_header, '', '', '');
-        $str .= $this->reporter->col( 'Page  ' . $pageNum, null, null, false, $border, '', 'R', $font, $fontsize_header, '', '', '');
+        $str .= $this->reporter->col('Print Date :' . $current_timestamp, null, null, false, $border, '', 'L', $font, $fontsize_header, '', '', '');
+        $str .= $this->reporter->col('Page  ' . $pageNum, null, null, false, $border, '', 'R', $font, $fontsize_header, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('' ,470, null, false, $border, '', 'L', $font, $fontsize_header, '', '', '');
+        $str .= $this->reporter->col('', 470, null, false, $border, '', 'L', $font, $fontsize_header, '', '', '');
         $str .= $this->reporter->col('Deduction', 315, null, false, $border, '', 'C', $font, $fontsize_header, 'B', '', '');
         $str .= $this->reporter->col('', 95, null, false, $border, '', 'L', $font, $fontsize_header, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-        
+
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('#', '20', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
@@ -308,62 +308,62 @@ class payroll_receiving_report
         if (empty($result)) {
             return $this->othersClass->emptydata($config);
         }
-        
+
         $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '10px;margin-top:10px;margin-left:25px;');
         $str .= $this->header_md($config, $layoutsize, $batchdate);
         foreach ($result as $key => $data) {
 
-        if ($rowCount > 0 && $rowCount  > $maxRows) {
-            $str .= $this->reporter->page_break();
-            $str .= $this->header_md($config, $layoutsize, $batchdate);
-            $rowCount = 0;
-        }
-        $totalAmt = $data->BasicPay;
-        //+ $data->OT + $data->OtherPay
-        $NetPay = $totalAmt - ($data->WHT + $data->SSS + $data->Phic + $data->HDMF);
-        //$totalAmt - $data->Deduction 
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($count, '20', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col($data->employee, '180', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(number_format($data->days, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('***', '40', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(number_format($data->BasicPay, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('0.00', '40', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('0.00', '40', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(number_format($totalAmt, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(number_format($data->WHT, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(number_format($data->SSS, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(number_format($data->Phic, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(number_format($data->HDMF, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(number_format($NetPay, 2), '70', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col('', '90', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
+            if ($rowCount > 0 && $rowCount  > $maxRows) {
+                $str .= $this->reporter->page_break();
+                $str .= $this->header_md($config, $layoutsize, $batchdate);
+                $rowCount = 0;
+            }
+            $totalAmt = $data->BasicPay;
+            //+ $data->OT + $data->OtherPay
+            $NetPay = $totalAmt - ($data->WHT + $data->SSS + $data->Phic + $data->HDMF);
+            //$totalAmt - $data->Deduction 
+            $str .= $this->reporter->begintable($layoutsize);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($count, '20', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($data->employee, '180', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(number_format($data->days, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('***', '40', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(number_format($data->BasicPay, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('0.00', '40', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('0.00', '40', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(number_format($totalAmt, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(number_format($data->WHT, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(number_format($data->SSS, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(number_format($data->Phic, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(number_format($data->HDMF, 2), '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(number_format($NetPay, 2), '70', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '5', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col('', '90', null, false, $border, 'B', 'C', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
             $totalNetPay += $NetPay;
             $count++;
             $rowCount++;
             $totalAmt = 0;
             $NetPay = 0;
-        
-        $str .= $this->reporter->begintable($layoutsize);//small space in-between
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', null, 15, false, $border, '', 'L', $font, 9, 'B', '', '');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
+
+            $str .= $this->reporter->begintable($layoutsize); //small space in-between
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col('', null, 15, false, $border, '', 'L', $font, 9, 'B', '', '');
+            $str .= $this->reporter->endrow();
+            $str .= $this->reporter->endtable();
         }
         //Grand Total
         $rowCount += 12;
@@ -374,7 +374,7 @@ class payroll_receiving_report
         }
         $str .= '</br>';
         $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow(); 
+        $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('GRAND TOTAL', 200, null, false, $border, 'T', 'L', $font, 9, 'B', '', '');
         $str .= $this->reporter->col(number_format($totalNetPay, 2), 610, null, false, $border, 'T', 'R', $font, 9, 'B', '', '');
         $str .= $this->reporter->col(' ', 85, null, false, $border, 'T', 'L', $font, $fontsize, '', '', '');
@@ -382,7 +382,7 @@ class payroll_receiving_report
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow(); 
+        $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', null, null, false, $border2, 'T', 'L', $font, $fontsize, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
@@ -390,7 +390,7 @@ class payroll_receiving_report
         //Footer
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('I HEREBY CERTIFY that I have paid in cash to each employee whose name appears in the above payroll the amount opposite his name . The amount paid in this pay roll is  <b>'. number_format($totalNetPay, 2). '</b>  including their overtime pay.', null, null, false, $border2, 'B', 'L', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col('I HEREBY CERTIFY that I have paid in cash to each employee whose name appears in the above payroll the amount opposite his name . The amount paid in this pay roll is  <b>' . number_format($totalNetPay, 2) . '</b>  including their overtime pay.', null, null, false, $border2, 'B', 'L', $font, $fontsize, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         $str .= '</br>';
@@ -414,5 +414,4 @@ class payroll_receiving_report
         $str .= $this->reporter->endreport();
         return $str;
     }
-
 }

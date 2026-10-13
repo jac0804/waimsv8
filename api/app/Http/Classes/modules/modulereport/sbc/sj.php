@@ -38,9 +38,9 @@ class sj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -918,12 +918,12 @@ class sj
 
           // head remarks sa ilalim ng item
           if ($r == $maxrow - 1 && $reporttype != 1 && !empty($hrem)) {
-              PDF::SetFont($font, 'I', $fontsize);
-              PDF::MultiCell(580, 10, '           ' . $hrem, 'L', 'L', false, 0);
-              PDF::MultiCell(20, 10, '', 'L', 'L', false, 0);
-              PDF::MultiCell(100, 10, '', 'R', 'R', false, 1);
-      
-              $rowCount++;
+            PDF::SetFont($font, 'I', $fontsize);
+            PDF::MultiCell(580, 10, '           ' . $hrem, 'L', 'L', false, 0);
+            PDF::MultiCell(20, 10, '', 'L', 'L', false, 0);
+            PDF::MultiCell(100, 10, '', 'R', 'R', false, 1);
+
+            $rowCount++;
           }
         }
 
@@ -1088,9 +1088,9 @@ class sj
         $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_stocknotes, $arr_ext]);
 
         for ($r = 0; $r < $maxrow; $r++) {
-          if ($stocknotes != ''){
+          if ($stocknotes != '') {
             $name = isset($arr_stocknotes[$r]) ? $arr_stocknotes[$r] : '';
-          }else {
+          } else {
             $name = isset($arr_itemname[$r]) ? $arr_itemname[$r] : '';
           }
 
@@ -1120,8 +1120,8 @@ class sj
           $rowCount = 0; // reset counter
         }
       }
-        // head remarks sa ilalim ng item
-        if(!empty($hrem)) {
+      // head remarks sa ilalim ng item
+      if (!empty($hrem)) {
         PDF::SetFont($font, 'I', 10);
         PDF::MultiCell(580, null, '', 'L', 'L', false, 0);
         PDF::SetCellPaddings(4, 2, 0, 4); // restore original padding
@@ -1138,7 +1138,7 @@ class sj
         PDF::SetCellPaddings(4, 2, 0, 4); // restore original padding
         PDF::MultiCell(20, 10, '', 'L', 'L', false, 0);
         PDF::MultiCell(100, 10, '', 'R', 'R', false, 1);
-        }
+      }
     }
 
     $emptyRows = $pageLimit - $rowCount;

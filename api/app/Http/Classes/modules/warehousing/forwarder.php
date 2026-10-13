@@ -37,17 +37,57 @@ class forwarder
   private $stockselect;
 
   private $fields = [
-    'client', 'picture', 'clientname', 'addr', 'start', 'tel2',
-    'contact', 'rem', 'type', 'deliverytype', 'plateno',
-    'iscustomer', 'issupplier', 'isagent', 'iswareHouse', 'isinactive', 'istrucking', 'classification'
+    'client',
+    'picture',
+    'clientname',
+    'addr',
+    'start',
+    'tel2',
+    'contact',
+    'rem',
+    'type',
+    'deliverytype',
+    'plateno',
+    'iscustomer',
+    'issupplier',
+    'isagent',
+    'iswareHouse',
+    'isinactive',
+    'istrucking',
+    'classification'
   ];
 
   private $daysched = ['ismon', 'ismon_am', 'ismon_pm', 'istue', 'istue_am', 'istue_pm', 'iswed', 'iswed_am', 'iswed_pm', 'isthu', 'isthu_am', 'isthu_pm', 'isfri', 'isfri_am', 'isfri_pm', 'issat', 'issat_am', 'issat_pm', 'issun', 'issun_am', 'issun_pm'];
   private $clientinfo = ['capacity'];
   private $except = ['clientid'];
   private $blnfields = [
-    'iscustomer', 'issupplier', 'isagent', 'iswareHouse', 'isinactive', 'istrucking',
-    'ismon', 'ismon_am', 'ismon_pm', 'istue', 'istue_am', 'istue_pm', 'iswed', 'iswed_am', 'iswed_pm', 'isthu', 'isthu_am', 'isthu_pm', 'isfri', 'isfri_am', 'isfri_pm', 'issat', 'issat_am', 'issat_pm', 'issun', 'issun_am', 'issun_pm'
+    'iscustomer',
+    'issupplier',
+    'isagent',
+    'iswareHouse',
+    'isinactive',
+    'istrucking',
+    'ismon',
+    'ismon_am',
+    'ismon_pm',
+    'istue',
+    'istue_am',
+    'istue_pm',
+    'iswed',
+    'iswed_am',
+    'iswed_pm',
+    'isthu',
+    'isthu_am',
+    'isthu_pm',
+    'isfri',
+    'isfri_am',
+    'isfri_pm',
+    'issat',
+    'issat_am',
+    'issat_pm',
+    'issun',
+    'issun_am',
+    'issun_pm'
   ];
   private $acctg = [];
   public $showfilteroption = false;
@@ -56,11 +96,11 @@ class forwarder
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -400,7 +440,7 @@ class forwarder
       if (array_key_exists($key, $head)) {
         $datasched[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $datasched[$key] = $this->othersClass->sanitizekeyfieldFast($key, $datasched[$key],$lookups);
+          $datasched[$key] = $this->othersClass->sanitizekeyfieldFast($key, $datasched[$key], $lookups);
         } //end if    
       }
     }
@@ -408,7 +448,7 @@ class forwarder
       if (array_key_exists($key, $head)) {
         $dataclientinfo[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataclientinfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataclientinfo[$key],$lookups);
+          $dataclientinfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataclientinfo[$key], $lookups);
         } //end if    
       }
     }

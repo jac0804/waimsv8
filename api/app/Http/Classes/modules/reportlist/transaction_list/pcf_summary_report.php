@@ -29,12 +29,12 @@ class pcf_summary_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'l', 'format' => 'legal', 'layoutSize' => '1500'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -81,7 +81,7 @@ class pcf_summary_report
     return $this->reportDefaultLayout($config);
   }
 
-  private function getExpensesList($date1,$date2)
+  private function getExpensesList($date1, $date2)
   {
     // $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     // $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
@@ -100,7 +100,7 @@ class pcf_summary_report
   private function checkProdHeadAccess($userid)
   {
     $qry = "select count(line) as value from projectmasterfile where agentid = $userid";
-    
+
     return $this->coreFunctions->datareader($qry);
   }
 
@@ -113,13 +113,13 @@ class pcf_summary_report
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
-    
+
     $admin = $config['params']['adminid'];
 
-    if($admin==0){
+    if ($admin == 0) {
       $user = $config['params']['user'];
       $userid = $config['params']['dataparams']['userid'];
-    }else{
+    } else {
       $user = $config['params']['user'];
       $userid = $admin;
     }
@@ -133,16 +133,16 @@ class pcf_summary_report
     // var_dump($prodHeadAccess);
     $salesHeadAccess = $this->othersClass->checkAccess($user, 5554);
     // var_dump($salesHeadAccess);
-    
+
     $addedJoins = "";
     $haddedJoins = "";
     $accessFilter = "";
-    $extcol="";
-    $pxcjoin="";
-    $hpxcjoin="";
+    $extcol = "";
+    $pxcjoin = "";
+    $hpxcjoin = "";
     // $pxcheckinjoin="left join pxchecking as chk on chk.trno=head.trno";
     // $pxcheckinhjoin="left join hpxchecking as chk on chk.trno=head.trno";
-    if($pcfAdminAccess){//if admin, access all
+    if ($pcfAdminAccess) { //if admin, access all
       // $str = $this->pcf_admin_pdf($config, $data);
       $addedJoins = " left join (select  req.category,chk.trno,sum(chk.actual) as actual,sum(chk.budget) as budget,sum(sjexp.amount) as sjamount
            from pxchecking chk
@@ -161,11 +161,10 @@ class pcf_summary_report
            left join ( select trno,sum(totaltp) as totaltp, sum(totalsrp) as totalsrp,sum(ext) as ext
            from hpxstock
            group by trno) s on s.trno = head.trno";
-    //  $extcol=",sum(s.ext) as ext,sum(totaltp) as totaltp, sum(totalsrp) as totalsrp,sum(d.budget) as budget,sum(d.sjamount) as sjamount";
-     $extcol=", ifnull(s.ext, 0) as ext, ifnull(s.totaltp, 0) as totaltp, ifnull(s.totalsrp, 0) as totalsrp, sum(d.budget) as budget, sum(d.sjamount) as sjamount";
-
-    }else{
-      if($prodHeadAccess>0)//if may access, all PCF with items under item group of user
+      //  $extcol=",sum(s.ext) as ext,sum(totaltp) as totaltp, sum(totalsrp) as totalsrp,sum(d.budget) as budget,sum(d.sjamount) as sjamount";
+      $extcol = ", ifnull(s.ext, 0) as ext, ifnull(s.totaltp, 0) as totaltp, ifnull(s.totalsrp, 0) as totalsrp, sum(d.budget) as budget, sum(d.sjamount) as sjamount";
+    } else {
+      if ($prodHeadAccess > 0) //if may access, all PCF with items under item group of user
       {
 
         $groupid = $this->coreFunctions->datareader('select line as value from projectmasterfile where agentid=?', [$userid]); //kinuha ang itemgroup group ng user
@@ -199,9 +198,9 @@ class pcf_summary_report
 
         $accessFilter = " and p.line = '$groupid'";
         // $extcol=",sum(s.ext) as ext,sum(totaltp) as totaltp, sum(totalsrp) as totalsrp,sum(d.budget) as budget,sum(d.sjamount) as sjamount";
-         $extcol=", ifnull(s.ext, 0) as ext, ifnull(s.totaltp, 0) as totaltp, ifnull(s.totalsrp, 0) as totalsrp, sum(d.budget) as budget, sum(d.sjamount) as sjamount";
-      }elseif($salesHeadAccess>0){ //sales head access, lalabas lahat ng transactions ng mga user under ng Sales Group nya
-         
+        $extcol = ", ifnull(s.ext, 0) as ext, ifnull(s.totaltp, 0) as totaltp, ifnull(s.totalsrp, 0) as totalsrp, sum(d.budget) as budget, sum(d.sjamount) as sjamount";
+      } elseif ($salesHeadAccess > 0) { //sales head access, lalabas lahat ng transactions ng mga user under ng Sales Group nya
+
         $salesgid = $this->coreFunctions->datareader('select salesgroupid as value from client where clientid=?', [$userid]); //kinuha ang sales group ng user
 
         $addedJoins = "
@@ -232,9 +231,8 @@ class pcf_summary_report
           left join client as agn on agn.clientid=head.agentid";
 
         $accessFilter = " and (cl.salesgroupid='$salesgid' or agn.salesgroupid='$salesgid')";
-         $extcol=", ifnull(s.ext, 0) as ext, ifnull(s.totaltp, 0) as totaltp, ifnull(s.totalsrp, 0) as totalsrp, sum(d.budget) as budget, sum(d.sjamount) as sjamount";
-
-      }else{//no access to product head, can only view transactions made by user
+        $extcol = ", ifnull(s.ext, 0) as ext, ifnull(s.totaltp, 0) as totaltp, ifnull(s.totalsrp, 0) as totalsrp, sum(d.budget) as budget, sum(d.sjamount) as sjamount";
+      } else { //no access to product head, can only view transactions made by user
         $addedJoins = "
          left join ( select  req.category,chk.trno,sum(chk.actual) as actual,sum(chk.budget) as budget,sum(sjexp.amount) as sjamount
            from pxchecking chk 
@@ -266,38 +264,38 @@ class pcf_summary_report
     }
 
     // 5413
-    $expenses = $this->getExpensesList($start,$end);
+    $expenses = $this->getExpensesList($start, $end);
     $expensesField = '';
-    
-    if(!empty($expenses)){
+
+    if (!empty($expenses)) {
       foreach ($expenses as $key => $uniq) {
-        $expensesField .= "sum(case when d.category = '".$uniq->exp."' then (case ifnull(d.sjamount,0) when 0 then d.actual end) else 0 end) as '$uniq->exp',";
-          if($prodHeadAccess<=0 && $salesHeadAccess<=0  && $pcfAdminAccess <=0){
-          $expensesField .= "sum(case when req.category = '".$uniq->exp."' then (case ifnull(d.sjamount,0) when 0 then d.actual end) else 0 end) as '$uniq->exp',";
-          }
+        $expensesField .= "sum(case when d.category = '" . $uniq->exp . "' then (case ifnull(d.sjamount,0) when 0 then d.actual end) else 0 end) as '$uniq->exp',";
+        if ($prodHeadAccess <= 0 && $salesHeadAccess <= 0  && $pcfAdminAccess <= 0) {
+          $expensesField .= "sum(case when req.category = '" . $uniq->exp . "' then (case ifnull(d.sjamount,0) when 0 then d.actual end) else 0 end) as '$uniq->exp',";
+        }
       }
     }
 
-   
-    
+
+
     $selectFields = "
       select ag.clientname as salesperson,head.clientname as company,head.poref as pono,head.potrno,head.trno,
       $expensesField
       head.dtcno as refno,head.oandausdphp,so.docno  as sodocno,head.pcfno";
-      $grp="";
-      if($prodHeadAccess<=0 && $salesHeadAccess<=0 && $pcfAdminAccess <=0){
+    $grp = "";
+    if ($prodHeadAccess <= 0 && $salesHeadAccess <= 0 && $pcfAdminAccess <= 0) {
       $leftJoins = "left join client as ag on ag.clientid=head.agentid
        left join reqcategory as req on req.line=chk.expenseid ";
-      $pxcjoin="left join pxchecking as chk on chk.trno=head.trno 
+      $pxcjoin = "left join pxchecking as chk on chk.trno=head.trno 
                 left join sjexp as sj on sj.pxtrno=chk.trno and sj.pxline=chk.line";
-      $hpxcjoin="left join hpxchecking as chk on chk.trno=head.trno 
+      $hpxcjoin = "left join hpxchecking as chk on chk.trno=head.trno 
                  left join sjexp as sj on sj.pxtrno=chk.trno and sj.pxline=chk.expenseid";
-      $grp="";
-     }else{
+      $grp = "";
+    } else {
       $leftJoins = "left join client as ag on ag.clientid=head.agentid";
-      $grp=", s.ext, s.totaltp,s.totalsrp";
-     }
-     
+      $grp = ", s.ext, s.totaltp,s.totalsrp";
+    }
+
     $grouping = "group by ag.clientname,head.clientname,head.poref,head.dtcno,head.potrno,head.oandausdphp,head.trno,so.docno,head.pcfno ";
     $main_qry = "
       $selectFields $extcol ,'U' as stat
@@ -330,7 +328,7 @@ class pcf_summary_report
     return $this->coreFunctions->opentable($main_qry);
   }
 
-  private function displayHeader($config,$validExpenses)
+  private function displayHeader($config, $validExpenses)
   {
     $center     = $config['params']['center'];
     $username   = $config['params']['user'];
@@ -340,7 +338,7 @@ class pcf_summary_report
     //  $expenses = $this->getExpensesList();
     // $exp= $this->count_exp($config, $validExpenses);
     // $layoutsize = 1500 + ($exp * 100);
-     $layoutsize = 1600 + (count($validExpenses) * 100);
+    $layoutsize = 1600 + (count($validExpenses) * 100);
 
 
     $font = $this->companysetup->getrptfont($config['params']);
@@ -352,7 +350,7 @@ class pcf_summary_report
     $str .= $this->reporter->endtable();
     $str .= '<br/><br/>';
 
-    
+
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('PCF Summary Report', null, null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
@@ -366,11 +364,11 @@ class pcf_summary_report
     $userid = $config['params']['dataparams']['userid'];
 
     $pcfAdminAccess = $this->othersClass->checkAccess($user, 5389);
-    
-     $salesHeadAccess = $this->othersClass->checkAccess($user, 5554);
-    
+
+    $salesHeadAccess = $this->othersClass->checkAccess($user, 5554);
+
     $prodHeadAccess = $this->othersClass->checkAccess($user, 5413);
-    
+
     $str .= $this->reporter->begintable($layoutsize);
 
     $str .= $this->reporter->startrow();
@@ -382,35 +380,35 @@ class pcf_summary_report
     // $str .= $this->reporter->col('PO Amount', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     // $str .= $this->reporter->col('Sales Person', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     // $str .= $this->reporter->col('Company', '250', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    
-    
+
+
     // foreach ($expenses as $key => $uniq) {
     //   $str .= $this->reporter->col(strtoupper($uniq->exp), '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
     // }
     // $str .= $this->reporter->col('Duty 2%', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    if($pcfAdminAccess){
-       $str .= $this->reporter->col('PCF#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-       $str .= $this->reporter->col('DTC#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-       $str .= $this->reporter->col('SO#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-       $str .= $this->reporter->col('PO#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');       
-       $str .= $this->reporter->col('Sales Person', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-       $str .= $this->reporter->col('Company', '250', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-       $str .= $this->reporter->col('PO Amount', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-       $str .= $this->reporter->col('TP', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-       $str .= $this->reporter->col('Duty 2%', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    
-      foreach ($validExpenses as $uniq){
+    if ($pcfAdminAccess) {
+      $str .= $this->reporter->col('PCF#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('DTC#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('SO#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('PO#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Sales Person', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Company', '250', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('PO Amount', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('TP', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('Duty 2%', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+
+      foreach ($validExpenses as $uniq) {
         $str .= $this->reporter->col(strtoupper($uniq->exp), '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       }
       $str .= $this->reporter->col('Total Actual Expense', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    
+
       $str .= $this->reporter->col('Balance', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Initial Margin', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Actual Margin', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Delta', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('SI#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('DR#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-    }elseif($prodHeadAccess>0 && $salesHeadAccess >0 ){
+    } elseif ($prodHeadAccess > 0 && $salesHeadAccess > 0) {
 
       $str .= $this->reporter->col('PCF#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('DTC#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
@@ -419,19 +417,19 @@ class pcf_summary_report
       $str .= $this->reporter->col('PO Amount', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Sales Person', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Company', '250', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-      
-       $str .= $this->reporter->col('Duty 2%', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-     foreach ($validExpenses as $uniq){
+
+      $str .= $this->reporter->col('Duty 2%', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+      foreach ($validExpenses as $uniq) {
         $str .= $this->reporter->col(strtoupper($uniq->exp), '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       }
-    
+
       $str .= $this->reporter->col('Total Actual Expense', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Balance', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('SI#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('DR#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
-    }else{
+    } else {
 
       $str .= $this->reporter->col('PCF#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('DTC#', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
@@ -440,9 +438,9 @@ class pcf_summary_report
       $str .= $this->reporter->col('PO Amount', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Sales Person', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('Company', '250', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-      
-       $str .= $this->reporter->col('Duty 2%', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
-     foreach ($validExpenses as $uniq){
+
+      $str .= $this->reporter->col('Duty 2%', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
+      foreach ($validExpenses as $uniq) {
         $str .= $this->reporter->col(strtoupper($uniq->exp), '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
       }
       $str .= $this->reporter->col('Total Actual Expense', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '');
@@ -475,36 +473,36 @@ class pcf_summary_report
     $fontsize = "10";
     $border = "1px solid ";
     $str = '';
-    $totaltps=0;
-    $totalsrps =0;
+    $totaltps = 0;
+    $totalsrps = 0;
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     if (empty($result)) {
       return $this->othersClass->emptydata($config);
     }
-    
 
-    $expenses = $this->getExpensesList($start,$end);
-    $exp= $this->count_exp($config, $expenses);
+
+    $expenses = $this->getExpensesList($start, $end);
+    $exp = $this->count_exp($config, $expenses);
     $layoutsize = 1500 + ($exp * 100);
     $str .= $this->reporter->beginreport($layoutsize);
-    
 
-    $str .= $this->displayHeader($config,$expenses);
+
+    $str .= $this->displayHeader($config, $expenses);
 
     $user = $config['params']['user'];
     $userid = $config['params']['dataparams']['userid'];
-    
+
     $pcfAdminAccess = $this->othersClass->checkAccess($user, 5389);
-    
+
     $salesHeadAccess = $this->othersClass->checkAccess($user, 5554);
-    
+
     $prodHeadAccess = $this->othersClass->checkAccess($user, 5413);
 
     if (!empty($result)) {
       foreach ($result as $key => $data) {
-        if(isset($data->potrno)){
-          
+        if (isset($data->potrno)) {
+
           $poamt = $this->coreFunctions->datareader("select sum(g.amt) as value from (
             select qss.trno,sum(qss.ext) as amt 
             from qsstock as qss 
@@ -522,128 +520,122 @@ class pcf_summary_report
             from hqtstock as qts 
             group by qts.trno
           ) as g where g.trno = $data->potrno");
-        }else{
+        } else {
           $poamt = 0;
         }
 
         $str .= $this->reporter->addline();
-          
+
         $totalexp = 0;
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col(isset($data->refno) ? $data->refno : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->sodocno) ? $data->sodocno : '', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->pono) ? $data->pono : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(isset($poamt) ? number_format($poamt,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(isset($poamt) ? number_format($poamt, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->salesperson) ? $data->salesperson : '', '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->company) ? $data->company : '', '250', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        
 
-        if(!empty($expenses)){
+
+        if (!empty($expenses)) {
           foreach ($expenses as $key => $uniq) {
             $expstring = $uniq->exp;
-            $str .= $this->reporter->col(isset($data->$expstring) ? number_format($data->$expstring,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col(isset($data->$expstring) ? number_format($data->$expstring, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
             $totalexp += $data->$expstring;
           }
         }
 
         $duty = $this->coreFunctions->datareader("select sum(actual) as value from (select actual from pxchecking where trno = ? and expenseid = 94
         union all
-        select actual from hpxchecking where trno = ? and expenseid = 94) as a",[$data->trno,$data->trno],'',true);
+        select actual from hpxchecking where trno = ? and expenseid = 94) as a", [$data->trno, $data->trno], '', true);
         $totalexp += $duty;
-        $str .= $this->reporter->col(number_format($duty,2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(number_format($duty, 2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
 
-        $drdocno="";
-          if($data->potrno !=0){
-            $drdocno = $this->coreFunctions->datareader("select ifnull(concat('DR',c.seq),'') as value from cntnum as c left join lastock on lastock.trno = c.trno where lastock.refx = ?
+        $drdocno = "";
+        if ($data->potrno != 0) {
+          $drdocno = $this->coreFunctions->datareader("select ifnull(concat('DR',c.seq),'') as value from cntnum as c left join lastock on lastock.trno = c.trno where lastock.refx = ?
             union all
            select ifnull(concat('DR',c.seq),'') as value from cntnum as c left join glstock on glstock.trno = c.trno where glstock.refx = ?
-            limit 1", [$data->potrno,$data->potrno]);
-          }
+            limit 1", [$data->potrno, $data->potrno]);
+        }
 
-        $sidocno="";
-          if($data->potrno !=0){
-            $sidocno = $this->coreFunctions->datareader("select ifnull(concat('SI',c.seq),'') as value from cntnum as c left join lastock on lastock.trno = c.trno where lastock.refx = ?
+        $sidocno = "";
+        if ($data->potrno != 0) {
+          $sidocno = $this->coreFunctions->datareader("select ifnull(concat('SI',c.seq),'') as value from cntnum as c left join lastock on lastock.trno = c.trno where lastock.refx = ?
             union all
            select ifnull(concat('SI',c.seq),'') as value from cntnum as c left join glstock on glstock.trno = c.trno where glstock.refx = ?
-            limit 1", [$data->potrno,$data->potrno]);
-          }
+            limit 1", [$data->potrno, $data->potrno]);
+        }
 
 
-        if($pcfAdminAccess){
-          $str .= $this->reporter->col(isset($totalexp) ? number_format($totalexp,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+        if ($pcfAdminAccess) {
+          $str .= $this->reporter->col(isset($totalexp) ? number_format($totalexp, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
           // $totaltps +=$data->totaltp;
           //  $totalsrps +=$data->totalsrp;
 
-          if(isset($totalexp) && isset($poamt)){
+          if (isset($totalexp) && isset($poamt)) {
             // $actualMargin = $this->othersClass->calculatePercentage($totalexp, $poamt);
-            $tltp= $data->totaltp * $data->oandausdphp;
-            $tlbudget= $tltp+$data->budget;
-            $aftimargin = $data->totalsrp - $tlbudget; 
+            $tltp = $data->totaltp * $data->oandausdphp;
+            $tlbudget = $tltp + $data->budget;
+            $aftimargin = $data->totalsrp - $tlbudget;
             $actualMargin = $this->othersClass->calculatePercentage($aftimargin, $data->totalsrp);
-          }else{
+          } else {
             $actualMargin = 0;
           }
-          
+
           //if($data->stat =='P'){
-          $str .= $this->reporter->col(number_format($actualMargin,2).'%', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col(number_format($actualMargin, 2) . '%', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
           //}else{
           //$str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', ''); 
           //}
 
           //Balance PO amount - total expenses  
-          $balance=$poamt-$totalexp;
-          $str .= $this->reporter->col(isset($balance) ? number_format($balance,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+          $balance = $poamt - $totalexp;
+          $str .= $this->reporter->col(isset($balance) ? number_format($balance, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
 
           //actual margin = balance/ po amount
-          $margin =0;
-          if($poamt !=0){
-            $margin=($balance/$poamt)*100;
+          $margin = 0;
+          if ($poamt != 0) {
+            $margin = ($balance / $poamt) * 100;
           }
-         
-          $str .= $this->reporter->col((isset($margin) ? number_format($margin,2) : 0).'%', '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-          
+
+          $str .= $this->reporter->col((isset($margin) ? number_format($margin, 2) : 0) . '%', '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+
+          //sales invoice ready col    
+          $str .= $this->reporter->col($sidocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+
+          //DR DOCNO
+          $str .= $this->reporter->col($drdocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+        } elseif ($prodHeadAccess > 0 && $salesHeadAccess > 0) {
+
+          $str .= $this->reporter->col(isset($totalexp) ? number_format($totalexp, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+
+          //Balance PO amount - total expenses  
+          $balance = $poamt - $totalexp;
+          $str .= $this->reporter->col(isset($balance) ? number_format($balance, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+
+
           //sales invoice ready col    
           $str .= $this->reporter->col($sidocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
 
           //DR DOCNO
           $str .= $this->reporter->col($drdocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
 
+          //EMPTY
+          $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+          $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+        } else {
+          $str .= $this->reporter->col(isset($totalexp) ? number_format($totalexp, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+          //Balance PO amount - total expenses  
+          $balance = $poamt - $totalexp;
+          $str .= $this->reporter->col(isset($balance) ? number_format($balance, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
 
-         }elseif($prodHeadAccess>0 && $salesHeadAccess > 0){
-           
-           $str .= $this->reporter->col(isset($totalexp) ? number_format($totalexp,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-         
-           //Balance PO amount - total expenses  
-          $balance=$poamt-$totalexp;
-          $str .= $this->reporter->col(isset($balance) ? number_format($balance,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-
-        
-          //sales invoice ready col    
-          $str .= $this->reporter->col($sidocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-
-            //DR DOCNO
+          //DR DOCNO
           $str .= $this->reporter->col($drdocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
 
           //EMPTY
           $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
           $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-
-
-
-        }else{
-          $str .= $this->reporter->col(isset($totalexp) ? number_format($totalexp,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-            //Balance PO amount - total expenses  
-          $balance=$poamt-$totalexp;
-          $str .= $this->reporter->col(isset($balance) ? number_format($balance,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-        
-            //DR DOCNO
-          $str .= $this->reporter->col($drdocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-
-           //EMPTY
           $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-          $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-          $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-
         }
 
 
@@ -654,14 +646,14 @@ class pcf_summary_report
         if ($this->reporter->linecounter == $page) {
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->page_break();
-          $str .= $this->displayHeader($config,$expenses);
+          $str .= $this->displayHeader($config, $expenses);
 
           $page = $page + $count;
         }
       }
     }
 
-    
+
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
@@ -671,34 +663,33 @@ class pcf_summary_report
     $str .= $this->reporter->col('', '250', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
 
     $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-    
+
     foreach ($expenses as $key => $uniq) {
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
     }
-     if($pcfAdminAccess){
+    if ($pcfAdminAccess) {
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-     }elseif($prodHeadAccess>0 && $salesHeadAccess > 0){
+    } elseif ($prodHeadAccess > 0 && $salesHeadAccess > 0) {
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+    } else {
+      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+    }
 
-     }else{
-      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
-     }
-    
 
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endtable();
@@ -709,33 +700,33 @@ class pcf_summary_report
   }
 
 
-   public function reportDefaultLayout($config){
-   
+  public function reportDefaultLayout($config)
+  {
+
     $user = $config['params']['user'];
     $str = '';
     $pcfAdminAccess = $this->othersClass->checkAccess($user, 5389);
 
-    if($pcfAdminAccess){
-     return $this->pcf_admin($config);
-    }else{
-     return $this->others($config);
+    if ($pcfAdminAccess) {
+      return $this->pcf_admin($config);
+    } else {
+      return $this->others($config);
     }
+  }
 
-   }
 
-
-   public function count_exp($config, $expenses)
-    {
-        $count = 0;
-        foreach ($expenses as $i => $value) {
-            $count++;
-        }
-        return $count;
+  public function count_exp($config, $expenses)
+  {
+    $count = 0;
+    foreach ($expenses as $i => $value) {
+      $count++;
     }
+    return $count;
+  }
 
 
-    ///////2.11.2026
-    public function pcf_admin($config)
+  ///////2.11.2026
+  public function pcf_admin($config)
   {
     $result = $this->reportDefault($config);
     // var_dump($result);
@@ -746,42 +737,42 @@ class pcf_summary_report
     $fontsize = "10";
     $border = "1px solid ";
     $str = '';
-    $totaltps=0;
-    $totalsrps =0;
+    $totaltps = 0;
+    $totalsrps = 0;
     $date1      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $date2        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     if (empty($result)) {
       return $this->othersClass->emptydata($config);
     }
-    
+
 
     // $expenses = $this->getExpensesList($start,$end);
     // $exp= $this->count_exp($config, $expenses);
     // $layoutsize = 1500 + ($exp * 100);
 
-     $expenses = $this->getExpensesList($date1,$date2);
+    $expenses = $this->getExpensesList($date1, $date2);
 
     $validExpenses = [];
 
     foreach ($expenses as $uniq) {
-        $field = $uniq->exp;
+      $field = $uniq->exp;
 
-        foreach ($result as $row) {
-            if (isset($row->$field) && (float)$row->$field != 0) {
-                $validExpenses[] = $uniq;
-                break;
-            }
+      foreach ($result as $row) {
+        if (isset($row->$field) && (float)$row->$field != 0) {
+          $validExpenses[] = $uniq;
+          break;
         }
+      }
     }
 
     $layoutsize = 1600 + (count($validExpenses) * 100);
 
     $str .= $this->reporter->beginreport($layoutsize);
-  
+
     $str .= $this->displayHeader($config, $validExpenses);
     if (!empty($result)) {
       foreach ($result as $key => $data) {
-        if(isset($data->potrno)){          
+        if (isset($data->potrno)) {
           $poamt = $this->coreFunctions->datareader("select sum(g.amt) as value from (
             select qss.trno,sum(qss.ext) as amt 
             from qsstock as qss 
@@ -799,19 +790,19 @@ class pcf_summary_report
             from hqtstock as qts 
             group by qts.trno
           ) as g where g.trno = $data->potrno");
-        }else{
+        } else {
           $poamt = 0;
         }
 
         $str .= $this->reporter->addline();
-          
+
         $totalexp = 0;
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col(isset($data->pcfno) ? $data->pcfno : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->refno) ? $data->refno : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->sodocno) ? $data->sodocno : '', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->pono) ? $data->pono : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        
+
         // if(!empty($expenses)){
         //   foreach ($expenses as $key => $uniq) {
         //     $expstring = $uniq->exp;
@@ -820,34 +811,34 @@ class pcf_summary_report
         //   }
         // }
         //margin
-        $tltp= $data->totaltp * $data->oandausdphp;
-        if(isset($totalexp) && isset($poamt)){
-            // $actualMargin = $this->othersClass->calculatePercentage($totalexp, $poamt);
-            //$tltp= $data->totaltp * $data->oandausdphp;
-            $tlbudget= $tltp+$data->budget;
-            $aftimargin = $data->totalsrp - $tlbudget; 
-            $actualMargin = $this->othersClass->calculatePercentage($aftimargin, $data->totalsrp);
-          }else{
-            $actualMargin = 0;
-          }
-          
-          //if($data->stat =='P'){
-          
-          //}else{
-          //$str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', ''); 
-          //}
+        $tltp = $data->totaltp * $data->oandausdphp;
+        if (isset($totalexp) && isset($poamt)) {
+          // $actualMargin = $this->othersClass->calculatePercentage($totalexp, $poamt);
+          //$tltp= $data->totaltp * $data->oandausdphp;
+          $tlbudget = $tltp + $data->budget;
+          $aftimargin = $data->totalsrp - $tlbudget;
+          $actualMargin = $this->othersClass->calculatePercentage($aftimargin, $data->totalsrp);
+        } else {
+          $actualMargin = 0;
+        }
+
+        //if($data->stat =='P'){
+
+        //}else{
+        //$str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', ''); 
+        //}
 
         $str .= $this->reporter->col(isset($data->salesperson) ? $data->salesperson : '', '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->company) ? $data->company : '', '250', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(isset($poamt) ? number_format($poamt,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(isset($tltp) ? number_format($tltp,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');//tp
+        $str .= $this->reporter->col(isset($poamt) ? number_format($poamt, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(isset($tltp) ? number_format($tltp, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', ''); //tp
         //duty
         $duty = $this->coreFunctions->datareader("select sum(actual) as value from (select actual from pxchecking where trno = ? and expenseid = 94
         union all
-        select actual from hpxchecking where trno = ? and expenseid = 94) as a",[$data->trno,$data->trno],'',true);
+        select actual from hpxchecking where trno = ? and expenseid = 94) as a", [$data->trno, $data->trno], '', true);
         $totalexp += (float)$duty;
-        $str .= $this->reporter->col(number_format($duty,2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-       
+        $str .= $this->reporter->col(number_format($duty, 2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+
         // if(!empty($expenses)){
         //   foreach ($expenses as $key => $uniq) {
         //     $expstring = $uniq->exp;
@@ -857,66 +848,66 @@ class pcf_summary_report
         // }
 
         foreach ($validExpenses as $uniq) {
-            $field = $uniq->exp;
-            $amount = isset($data->$field) ? (float)$data->$field : 0;
+          $field = $uniq->exp;
+          $amount = isset($data->$field) ? (float)$data->$field : 0;
 
-            $str .= $this->reporter->col(number_format($amount,2), '100', null, false, $border, '', 'R', $font, $fontsize);
+          $str .= $this->reporter->col(number_format($amount, 2), '100', null, false, $border, '', 'R', $font, $fontsize);
 
-            $totalexp += $amount;
+          $totalexp += $amount;
         }
 
-      
-        $drdocno="";
-          if($data->potrno !=0){
-            $drdocno = $this->coreFunctions->datareader("select ifnull(concat('DR',c.seq),'') as value from cntnum as c left join lastock on lastock.trno = c.trno where lastock.refx = ?
+
+        $drdocno = "";
+        if ($data->potrno != 0) {
+          $drdocno = $this->coreFunctions->datareader("select ifnull(concat('DR',c.seq),'') as value from cntnum as c left join lastock on lastock.trno = c.trno where lastock.refx = ?
             union all
            select ifnull(concat('DR',c.seq),'') as value from cntnum as c left join glstock on glstock.trno = c.trno where glstock.refx = ?
-            limit 1", [$data->potrno,$data->potrno]);
-          }
+            limit 1", [$data->potrno, $data->potrno]);
+        }
 
-        $sidocno="";
-          if($data->potrno !=0){
-            $sidocno = $this->coreFunctions->datareader("select ifnull(concat('SI',c.seq),'') as value from cntnum as c left join lastock on lastock.trno = c.trno where lastock.refx = ?
+        $sidocno = "";
+        if ($data->potrno != 0) {
+          $sidocno = $this->coreFunctions->datareader("select ifnull(concat('SI',c.seq),'') as value from cntnum as c left join lastock on lastock.trno = c.trno where lastock.refx = ?
             union all
            select ifnull(concat('SI',c.seq),'') as value from cntnum as c left join glstock on glstock.trno = c.trno where glstock.refx = ?
-            limit 1", [$data->potrno,$data->potrno]);
-          }
+            limit 1", [$data->potrno, $data->potrno]);
+        }
 
-          $totalexp = $totalexp + $tltp;
-          $str .= $this->reporter->col(isset($totalexp) ? number_format($totalexp,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-         
-
-          //Balance PO amount - total expenses  
-          $balance=$poamt-$totalexp;
-          $str .= $this->reporter->col(isset($balance) ? number_format($balance,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-
-          //actual margin = balance/ po amount
-          $margin =0;
-          if($poamt != 0){
-            $margin=($balance/$poamt)*100;
-          }
-
-          $delta = $margin-$actualMargin;
-
-          $str .= $this->reporter->col(number_format($actualMargin,2).'%', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-          $str .= $this->reporter->col((isset($margin) ? number_format($margin,2) : 0).'%', '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-
-          if ($delta <=0){
-            $str .= $this->reporter->col(number_format($delta,2).'%', '100', null, false, $border, '', 'C', $font, $fontsize, '', 'red', '');
-          }else{
-            $str .= $this->reporter->col(number_format($delta,2).'%', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-          }
-          
-          //sales invoice ready col    
-          $str .= $this->reporter->col($sidocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-
-          //DR DOCNO
-          $str .= $this->reporter->col($drdocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-
-          $str .= $this->reporter->endrow();
+        $totalexp = $totalexp + $tltp;
+        $str .= $this->reporter->col(isset($totalexp) ? number_format($totalexp, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
 
 
-         if ($this->reporter->linecounter == $page) {
+        //Balance PO amount - total expenses  
+        $balance = $poamt - $totalexp;
+        $str .= $this->reporter->col(isset($balance) ? number_format($balance, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+
+        //actual margin = balance/ po amount
+        $margin = 0;
+        if ($poamt != 0) {
+          $margin = ($balance / $poamt) * 100;
+        }
+
+        $delta = $margin - $actualMargin;
+
+        $str .= $this->reporter->col(number_format($actualMargin, 2) . '%', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col((isset($margin) ? number_format($margin, 2) : 0) . '%', '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+
+        if ($delta <= 0) {
+          $str .= $this->reporter->col(number_format($delta, 2) . '%', '100', null, false, $border, '', 'C', $font, $fontsize, '', 'red', '');
+        } else {
+          $str .= $this->reporter->col(number_format($delta, 2) . '%', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+        }
+
+        //sales invoice ready col    
+        $str .= $this->reporter->col($sidocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+
+        //DR DOCNO
+        $str .= $this->reporter->col($drdocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+
+        $str .= $this->reporter->endrow();
+
+
+        if ($this->reporter->linecounter == $page) {
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->page_break();
           $str .= $this->displayHeader($config, $validExpenses);
@@ -926,7 +917,7 @@ class pcf_summary_report
       }
     }
 
-    
+
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
@@ -936,18 +927,18 @@ class pcf_summary_report
     $str .= $this->reporter->col('', '250', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
 
     $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-    
-     foreach ($validExpenses as $uniq){
-        $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-      }
+
+    foreach ($validExpenses as $uniq) {
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-    
-    
+    }
+    $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+
+
 
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endtable();
@@ -955,11 +946,10 @@ class pcf_summary_report
     $str .= $this->reporter->endreport();
 
     return $str;
-   
   }
 
 
-   public function others($config)
+  public function others($config)
   {
     $result = $this->reportDefault($config);
 
@@ -970,54 +960,54 @@ class pcf_summary_report
     $fontsize = "10";
     $border = "1px solid ";
     $str = '';
-    $totaltps=0;
-    $totalsrps =0;
+    $totaltps = 0;
+    $totalsrps = 0;
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     if (empty($result)) {
       return $this->othersClass->emptydata($config);
     }
-    
+
 
     // $expenses = $this->getExpensesList($start,$end);
     // $exp= $this->count_exp($config, $expenses);
     // $layoutsize = 1500 + ($exp * 100);
-    $expenses = $this->getExpensesList($start,$end);
+    $expenses = $this->getExpensesList($start, $end);
 
     $validExpenses = [];
 
     foreach ($expenses as $uniq) {
-        $field = $uniq->exp;
+      $field = $uniq->exp;
 
-        foreach ($result as $row) {
-            if (isset($row->$field) && (float)$row->$field != 0) {
-                $validExpenses[] = $uniq;
-                break;
-            }
+      foreach ($result as $row) {
+        if (isset($row->$field) && (float)$row->$field != 0) {
+          $validExpenses[] = $uniq;
+          break;
         }
+      }
     }
 
     $layoutsize = 1600 + (count($validExpenses) * 100);
 
 
-    
+
     $str .= $this->reporter->beginreport($layoutsize);
-    
+
 
     $str .= $this->displayHeader($config, $validExpenses);
 
     $user = $config['params']['user'];
     $userid = $config['params']['dataparams']['userid'];
-    
-    
+
+
     $salesHeadAccess = $this->othersClass->checkAccess($user, 5554);
-    
+
     $prodHeadAccess = $this->othersClass->checkAccess($user, 5413);
 
     if (!empty($result)) {
       foreach ($result as $key => $data) {
-        if(isset($data->potrno)){
-          
+        if (isset($data->potrno)) {
+
           $poamt = $this->coreFunctions->datareader("select sum(g.amt) as value from (
             select qss.trno,sum(qss.ext) as amt 
             from qsstock as qss 
@@ -1035,28 +1025,28 @@ class pcf_summary_report
             from hqtstock as qts 
             group by qts.trno
           ) as g where g.trno = $data->potrno");
-        }else{
+        } else {
           $poamt = 0;
         }
 
         $str .= $this->reporter->addline();
-          
+
         $totalexp = 0;
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col(isset($data->pcfno) ? $data->pcfno : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->refno) ? $data->refno : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->sodocno) ? $data->sodocno : '', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->pono) ? $data->pono : '', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-        $str .= $this->reporter->col(isset($poamt) ? number_format($poamt,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+        $str .= $this->reporter->col(isset($poamt) ? number_format($poamt, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->salesperson) ? $data->salesperson : '', '150', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(isset($data->company) ? $data->company : '', '250', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-        
+
         $duty = $this->coreFunctions->datareader("select sum(actual) as value from (select actual from pxchecking where trno = ? and expenseid = 94
         union all
-        select actual from hpxchecking where trno = ? and expenseid = 94) as a",[$data->trno,$data->trno],'',true);
+        select actual from hpxchecking where trno = ? and expenseid = 94) as a", [$data->trno, $data->trno], '', true);
         $totalexp += $duty;
-        $str .= $this->reporter->col(number_format($duty,2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-        
+        $str .= $this->reporter->col(number_format($duty, 2), '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+
         // if(!empty($expenses)){
         //   foreach ($expenses as $key => $uniq) {
         //     $expstring = $uniq->exp;
@@ -1065,82 +1055,80 @@ class pcf_summary_report
         //   }
         // }
 
-        
+
         foreach ($validExpenses as $uniq) {
-            $field = $uniq->exp;
-            $amount = isset($data->$field) ? (float)$data->$field : 0;
+          $field = $uniq->exp;
+          $amount = isset($data->$field) ? (float)$data->$field : 0;
 
-            $str .= $this->reporter->col(number_format($amount,2), '100', null, false, $border, '', 'R', $font, $fontsize);
+          $str .= $this->reporter->col(number_format($amount, 2), '100', null, false, $border, '', 'R', $font, $fontsize);
 
-            $totalexp += $amount;
+          $totalexp += $amount;
         }
 
 
 
-        $drdocno="";
-          if($data->potrno !=0){
-            $drdocno = $this->coreFunctions->datareader("select ifnull(concat('DR',c.seq),'') as value from cntnum as c left join lastock on lastock.trno = c.trno where lastock.refx = ?
+        $drdocno = "";
+        if ($data->potrno != 0) {
+          $drdocno = $this->coreFunctions->datareader("select ifnull(concat('DR',c.seq),'') as value from cntnum as c left join lastock on lastock.trno = c.trno where lastock.refx = ?
             union all
            select ifnull(concat('DR',c.seq),'') as value from cntnum as c left join glstock on glstock.trno = c.trno where glstock.refx = ?
-            limit 1", [$data->potrno,$data->potrno]);
-          }
+            limit 1", [$data->potrno, $data->potrno]);
+        }
 
-        $sidocno="";
-          if($data->potrno !=0){
-            $sidocno = $this->coreFunctions->datareader("select ifnull(concat('SI',c.seq),'') as value from cntnum as c left join lastock on lastock.trno = c.trno where lastock.refx = ?
+        $sidocno = "";
+        if ($data->potrno != 0) {
+          $sidocno = $this->coreFunctions->datareader("select ifnull(concat('SI',c.seq),'') as value from cntnum as c left join lastock on lastock.trno = c.trno where lastock.refx = ?
             union all
            select ifnull(concat('SI',c.seq),'') as value from cntnum as c left join glstock on glstock.trno = c.trno where glstock.refx = ?
-            limit 1", [$data->potrno,$data->potrno]);
-          }
+            limit 1", [$data->potrno, $data->potrno]);
+        }
 
 
-       if($prodHeadAccess>0 && $salesHeadAccess > 0){
-           
-           $str .= $this->reporter->col(isset($totalexp) ? number_format($totalexp,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-         
-           //Balance PO amount - total expenses  
-          $balance=$poamt-$totalexp;
-          $str .= $this->reporter->col(isset($balance) ? number_format($balance,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+        if ($prodHeadAccess > 0 && $salesHeadAccess > 0) {
 
-        
+          $str .= $this->reporter->col(isset($totalexp) ? number_format($totalexp, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+
+          //Balance PO amount - total expenses  
+          $balance = $poamt - $totalexp;
+          $str .= $this->reporter->col(isset($balance) ? number_format($balance, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+
+
           //sales invoice ready col    
           $str .= $this->reporter->col($sidocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
 
-            //DR DOCNO
+          //DR DOCNO
           $str .= $this->reporter->col($drdocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
 
           //EMPTY
           $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
           $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+        } else {
+          $str .= $this->reporter->col(isset($totalexp) ? number_format($totalexp, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
+          //Balance PO amount - total expenses  
+          $balance = $poamt - $totalexp;
+          $str .= $this->reporter->col(isset($balance) ? number_format($balance, 2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
 
-        }else{
-          $str .= $this->reporter->col(isset($totalexp) ? number_format($totalexp,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-            //Balance PO amount - total expenses  
-          $balance=$poamt-$totalexp;
-          $str .= $this->reporter->col(isset($balance) ? number_format($balance,2) : 0, '100', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-        
-            //DR DOCNO
+          //DR DOCNO
           $str .= $this->reporter->col($drdocno, '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
 
-           //EMPTY
+          //EMPTY
           $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
           $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
           $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-
         }
 
         $str .= $this->reporter->endrow();
         if ($this->reporter->linecounter == $page) {
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->page_break();
-          $str .= $this->displayHeader($config,$validExpenses);
+          $str .= $this->displayHeader($config, $validExpenses);
 
           $page = $page + $count;
         }
       }
     }
 
-    
+
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
@@ -1150,27 +1138,26 @@ class pcf_summary_report
     $str .= $this->reporter->col('', '250', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
 
     $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-    
-     foreach ($validExpenses as $uniq){
+
+    foreach ($validExpenses as $uniq) {
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
     }
-   if($prodHeadAccess>0 && $salesHeadAccess > 0){
+    if ($prodHeadAccess > 0 && $salesHeadAccess > 0) {
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+    } else {
+      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+      $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+    }
 
-     }else{
-      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
-     }
-    
 
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endtable();
@@ -1179,10 +1166,4 @@ class pcf_summary_report
 
     return $str;
   }
-
-   
-
-
-
-
 }//end class

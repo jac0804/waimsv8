@@ -45,10 +45,10 @@ class  tabupdatestockdetails
     private $warehousinglookup;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -106,29 +106,17 @@ class  tabupdatestockdetails
     }
 
 
-    public function lookupsetup($config)
-    {
-    }
+    public function lookupsetup($config) {}
 
-    public function lookupcallback($config)
-    {
-    }
+    public function lookupcallback($config) {}
 
-    public function lookupduration($config)
-    {
-    } // end function
+    public function lookupduration($config) {} // end function
 
-    public function lookupitemstat($config)
-    {
-    } // end function
+    public function lookupitemstat($config) {} // end function
 
-    public function lookupemployeepo($config)
-    {
-    } // end function
+    public function lookupemployeepo($config) {} // end function
 
-    public function lookupisasset($config)
-    {
-    } // end function
+    public function lookupisasset($config) {} // end function
 
     public function saveallentry($config)
     {
@@ -141,7 +129,7 @@ class  tabupdatestockdetails
             $data2 = [];
             if ($data[$key]['bgcolor'] != '') {
                 foreach ($this->fields as $key2 => $value2) {
-                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2],$lookups);
+                    $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
                 }
 
                 $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();

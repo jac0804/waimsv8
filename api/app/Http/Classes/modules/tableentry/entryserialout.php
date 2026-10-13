@@ -36,10 +36,10 @@ class entryserialout
 
   private $counter = 1;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -228,9 +228,9 @@ class entryserialout
     $serial = $config['params']['loc'];
     $companyid = $config['params']['companyid'];
     $doc = $config['params']['doc'];
-    $trno = $this->othersClass->sanitizekeyfieldFast('trno', $trno,$lookups);
-    $line = $this->othersClass->sanitizekeyfieldFast('line', $line,$lookups);
-    $serial = $this->othersClass->sanitizekeyfieldFast('serial', $serial,$lookups);
+    $trno = $this->othersClass->sanitizekeyfieldFast('trno', $trno, $lookups);
+    $line = $this->othersClass->sanitizekeyfieldFast('line', $line, $lookups);
+    $serial = $this->othersClass->sanitizekeyfieldFast('serial', $serial, $lookups);
     $qry = "select itemid,whid,loc,ifnull(expiry,'') as expiry from lastock where trno=? and line=?";
     $item = $this->coreFunctions->opentable($qry, [$trno, $line]);
     $msg = 'Successfully updated.';
@@ -273,7 +273,8 @@ class entryserialout
     $path = '';
 
     switch ($doc) {
-      case 'SJ': case 'SU':
+      case 'SJ':
+      case 'SU':
         $path = 'App\Http\Classes\modules\sales\\' . strtolower($doc);
         break;
       case 'AJ':
@@ -330,7 +331,8 @@ class entryserialout
     $path = '';
 
     switch ($doc) {
-      case 'SJ': case 'SU':
+      case 'SJ':
+      case 'SU':
         $path = 'App\Http\Classes\modules\sales\\' . strtolower($doc);
         break;
       case 'AJ':
@@ -376,7 +378,7 @@ class entryserialout
     $data = [];
     $row = $config['params']['row'];
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['sline'] == 0) {
       $stockgrp_id = $this->coreFunctions->insertGetId($this->table, $data);

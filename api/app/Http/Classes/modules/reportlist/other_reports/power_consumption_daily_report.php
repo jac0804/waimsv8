@@ -30,12 +30,12 @@ class power_consumption_daily_report
 
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => 1200];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -104,8 +104,6 @@ class power_consumption_daily_report
         return $this->default_Detailed_Layout($config);
         break;
     }
-
-    
   }
 
   public function reportDefault($config)
@@ -240,7 +238,7 @@ class power_consumption_daily_report
 
 
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Power Consumption Daily Report(' . $report . ')', 1200, null, false, $border, '', '', $font, '18', 'B', '','');
+    $str .= $this->reporter->col('Power Consumption Daily Report(' . $report . ')', 1200, null, false, $border, '', '', $font, '18', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 

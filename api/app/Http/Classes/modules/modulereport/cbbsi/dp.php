@@ -33,10 +33,10 @@ class dp
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -77,23 +77,24 @@ class dp
     return $this->coreFunctions->opentable(
       "select 
       'PDFM' as print,
-      '". $prepared."' as prepared,
-      '". $approved."' as approved,
-      '". $received."' as received"
+      '" . $prepared . "' as prepared,
+      '" . $approved . "' as approved,
+      '" . $received . "' as received"
     );
   }
 
   public function report_default_query($config)
   {
     $trno = $config['params']['dataid'];
-    $qry = "select docno, date(dateid) as dateid, trnxtype, date(deldate) as deldate, truckno, driver, rem from dphead where trno=".$trno."
+    $qry = "select docno, date(dateid) as dateid, trnxtype, date(deldate) as deldate, truckno, driver, rem from dphead where trno=" . $trno . "
       union all
-    select docno, date(dateid) as dateid, trnxtype, date(deldate) as deldate, truckno, driver, rem from hdphead where trno=".$trno;
+    select docno, date(dateid) as dateid, trnxtype, date(deldate) as deldate, truckno, driver, rem from hdphead where trno=" . $trno;
     $result = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
     return $result;
   } //end fn  
 
-  public function getData($config) {
+  public function getData($config)
+  {
     $trno = $config['params']['dataid'];
     $qry = "select head.docno, date(head.dateid) as dateid, c.client, c.clientname, head.rem, 
     sum(stock.ext) as ext,
@@ -129,24 +130,25 @@ class dp
     return $this->default_dp_pdf($params, $data);
   }
 
-  public function default_dp_pdf($params, $data2) {
+  public function default_dp_pdf($params, $data2)
+  {
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
     $count = $page = 35;
     $totalext = 0;
-    $extdecimal=$this->companysetup->getdecimal('price', $params['params']);
+    $extdecimal = $this->companysetup->getdecimal('price', $params['params']);
 
     $font = '';
     $fontbold = '';
     $border = '1px solid';
     $fontsize = '11';
-    if(Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
-      $font = TCPDF_FONTS::addTTFfont(database_path().'/images/fonts/GOTHIC.TTF');
-      $fontbold = TCPDF_FONTS::addTTFfont(database_path().'/images/fonts/GOTHICB.TTF');
+    if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
     $this->default_dp_header_pdf($params, $data2);
     $data = $this->getData($params);
 
-    if(!empty($data)) {
+    if (!empty($data)) {
       for ($i = 0; $i < count($data); $i++) {
         $maxrow = 1;
         $drtsno = $data[$i]['docno'];
@@ -161,19 +163,19 @@ class dp
         $arr_invoiceno = $this->reporter->fixcolumn([$invoiceno], '15', 0);
         $arr_agent = $this->reporter->fixcolumn([$agent], '25', 0);
         $arr_cust = $this->reporter->fixcolumn([$cust], '18', 0);
-        $arr_ext = $this->reporter->fixcolumn([number_format($ext,$extdecimal)], '15', 0);
+        $arr_ext = $this->reporter->fixcolumn([number_format($ext, $extdecimal)], '15', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_drtsno, $arr_drtsdate, $arr_invoiceno, $arr_agent, $arr_cust, $arr_ext]);
         for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', '9');
-          PDF::MultiCell(85, 0, ' '.(isset($arr_drtsno[$r]) ? $arr_drtsno[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(70, 0, ' '.(isset($arr_drtsdate[$r]) ? $arr_drtsdate[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(80, 0, ' '.(isset($arr_invoiceno[$r]) ? $arr_invoiceno[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(100, 0, ' '.(isset($arr_agent[$r]) ? $arr_agent[$r] : ''), '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(100, 0, ' '.(isset($arr_cust[$r]) ? $arr_cust[$r] : ''), '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(65, 0, ' '.(isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
-          
-          if(PDF::getY() > 900) {
+          PDF::MultiCell(85, 0, ' ' . (isset($arr_drtsno[$r]) ? $arr_drtsno[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(70, 0, ' ' . (isset($arr_drtsdate[$r]) ? $arr_drtsdate[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(80, 0, ' ' . (isset($arr_invoiceno[$r]) ? $arr_invoiceno[$r] : ''), '', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(100, 0, ' ' . (isset($arr_agent[$r]) ? $arr_agent[$r] : ''), '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(100, 0, ' ' . (isset($arr_cust[$r]) ? $arr_cust[$r] : ''), '', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(65, 0, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+
+          if (PDF::getY() > 900) {
             $this->default_dp_header_pdf($params, $data2);
           }
         }
@@ -188,9 +190,9 @@ class dp
     PDF::MultiCell(720, 0, '', '');
 
     PDF::SetFont($fontbold, '', '10');
-    PDF::MultiCell(85, 0, 'No. of Trnx: '.count($data), '', 'L', false, 0);
+    PDF::MultiCell(85, 0, 'No. of Trnx: ' . count($data), '', 'L', false, 0);
     PDF::MultiCell(350, 0, 'GRAND TOTAL:', '', 'R', false, 0);
-    PDF::MultiCell(65, 0, number_format($totalext, $decimalcurr).' ', '', 'R');
+    PDF::MultiCell(65, 0, number_format($totalext, $decimalcurr) . ' ', '', 'R');
 
     PDF::MultiCell(0, 0, "\n");
 
@@ -230,24 +232,25 @@ class dp
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 
-  public function default_dp_header_pdf($params, $data) {
+  public function default_dp_header_pdf($params, $data)
+  {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    $qry = "select code, name, address, tel from center where code='".$center."'";
+    $qry = "select code, name, address, tel from center where code='" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $font = '';
     $fontbold = '';
     $fontsize = '11';
-    if(Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
-      $font = TCPDF_FONTS::addTTFfont(database_path().'/images/fonts/GOTHIC.TTF');
-      $fontbold = TCPDF_FONTS::addTTFfont(database_path().'/images/fonts/GOTHICB.TTF');
+    if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
-    PDF::SetSubject($this->modulename.' Module Report');
+    PDF::SetSubject($this->modulename . ' Module Report');
     PDF::setPageUnit('px');
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
@@ -260,7 +263,7 @@ class dp
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
-    
+
     PDF::SetFont($font, '', 10);
     PDF::MultiCell(540, 0, '', '', 'L', false, 0, '', '');
     PDF::SetFont($fontbold, '', $fontsize);

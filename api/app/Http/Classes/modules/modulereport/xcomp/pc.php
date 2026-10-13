@@ -34,9 +34,9 @@ class pc
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -101,7 +101,7 @@ class pc
 
   public function reportplotting($params, $data)
   {
-    if($params['params']['dataparams']['print'] == 'PDFM') {
+    if ($params['params']['dataparams']['print'] == 'PDFM') {
       if ($params['params']['dataparams']['format'] == "PC") {
         return $this->PC_PDF($params, $data);
       } else {
@@ -163,7 +163,7 @@ class pc
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
 
-    $str .= $this->reporter->col('BARCODE', '75', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px',' 8px');
+    $str .= $this->reporter->col('BARCODE', '75', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px', ' 8px');
     $str .= $this->reporter->col('QTY', '50', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('UNIT', '50', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('DESCRIPTION', '475', null, false, '1px solid', 'B', 'L', 'Century Gothic', '12', 'B', '30px', '8px');
@@ -214,7 +214,7 @@ class pc
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('BARCODE', '75', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px',' 8px');
+        $str .= $this->reporter->col('BARCODE', '75', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px', ' 8px');
         $str .= $this->reporter->col('QTY', '50', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
         $str .= $this->reporter->col('UNIT', '50', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
         $str .= $this->reporter->col('DESCRIPTION', '475', null, false, '1px solid', 'B', 'L', 'Century Gothic', '12', 'B', '30px', '8px');
@@ -275,7 +275,8 @@ class pc
     return $str;
   }
 
-  public function default_ir_layout($config, $result) {
+  public function default_ir_layout($config, $result)
+  {
     $companyid = $config['params']['companyid'];
     $decimal   = $this->companysetup->getdecimal('currency', $config['params']);
     $decimalprice = $this->companysetup->getdecimal('price', $config['params']);
@@ -327,7 +328,7 @@ class pc
     $str .= $this->reporter->printline();
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('BARCODE', '100', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px',' 8px');
+    $str .= $this->reporter->col('BARCODE', '100', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px', ' 8px');
     $str .= $this->reporter->col('UNIT', '85', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('DESCRIPTION', '240', null, false, '1px solid', 'B', 'L', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('ON HAND', '85', null, false, '1px solid', 'B', 'R', 'Century Gothic', '12', 'B', '30px', '8px');
@@ -380,7 +381,7 @@ class pc
         $str .= $this->reporter->printline();
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('BARCODE', '100', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px',' 8px');
+        $str .= $this->reporter->col('BARCODE', '100', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px', ' 8px');
         $str .= $this->reporter->col('UNIT', '85', null, false, '1px solid', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
         $str .= $this->reporter->col('DESCRIPTION', '240', null, false, '1px solid', 'B', 'L', 'Century Gothic', '12', 'B', '30px', '8px');
         $str .= $this->reporter->col('ON HAND', '85', null, false, '1px solid', 'B', 'R', 'Century Gothic', '12', 'B', '30px', '8px');
@@ -393,7 +394,7 @@ class pc
       }
     }
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '100', null, false, '1px dotted', 'T', 'C', 'Century Gothic', '12', 'B', '',' ');
+    $str .= $this->reporter->col('', '100', null, false, '1px dotted', 'T', 'C', 'Century Gothic', '12', 'B', '', ' ');
     $str .= $this->reporter->col('', '85', null, false, '1px dotted', 'T', 'C', 'Century Gothic', '12', 'B', '', '');
     $str .= $this->reporter->col('GRAND TOTAL:', '240', null, false, '1px dotted', 'T', 'R', 'Century Gothic', '12', 'B', '', '');
     $str .= $this->reporter->col(number_format($totalonhand, $decimalqty), '85', null, false, '1px dotted', 'T', 'R', 'Century Gothic', '12', 'B', '', '');

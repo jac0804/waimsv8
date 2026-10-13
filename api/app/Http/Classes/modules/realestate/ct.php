@@ -44,8 +44,17 @@ class ct
     public $hqty = 'qty';
 
     private $fields = [
-        'trno', 'docno', 'dateid', 'rem', 'yourref', 'ourref', 'ourref', 'itemid', 'housemodel',
-        'uom', 'qty'
+        'trno',
+        'docno',
+        'dateid',
+        'rem',
+        'yourref',
+        'ourref',
+        'ourref',
+        'itemid',
+        'housemodel',
+        'uom',
+        'qty'
     ];
 
     private $except = ['trno', 'dateid'];
@@ -62,11 +71,11 @@ class ct
         ['val' => 'all', 'label' => 'All', 'color' => 'primary']
     ];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -254,16 +263,23 @@ class ct
         $rem = 3;
 
         $column = [
-            'action',  'rrqty', 'uom', 'rem'
+            'action',
+            'rrqty',
+            'uom',
+            'rem'
         ];
 
         $sortcolumn = [
-            'action', 'rrqty', 'uom',  'rem'
+            'action',
+            'rrqty',
+            'uom',
+            'rem'
         ];
 
         $tab = [
             $this->gridname => [
-                'gridcolumns' => $column, 'sortcolumns' => $sortcolumn
+                'gridcolumns' => $column,
+                'sortcolumns' => $sortcolumn
             ]
         ];
 
@@ -391,8 +407,16 @@ class ct
                 $hideobj = ['donetodo' => !$btndonetodo];
             }
             return  [
-                'head' => $head, 'griddata' => ['inventory' => $stock], 'islocked' => $islocked, 'isposted' => $isposted, 'isnew' => false, 'status' => true, 'msg' => $msg,
-                'clickobj' => $clickobj, 'hidetabbtn' => $hidetabbtn, 'hideobj' => $hideobj
+                'head' => $head,
+                'griddata' => ['inventory' => $stock],
+                'islocked' => $islocked,
+                'isposted' => $isposted,
+                'isnew' => false,
+                'status' => true,
+                'msg' => $msg,
+                'clickobj' => $clickobj,
+                'hidetabbtn' => $hidetabbtn,
+                'hideobj' => $hideobj
             ];
         } else {
             $head[0]['trno'] = 0;
@@ -421,7 +445,6 @@ class ct
                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
-
         }
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];

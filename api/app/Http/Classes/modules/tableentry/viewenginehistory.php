@@ -27,10 +27,10 @@ class viewenginehistory
     public $showclosebtn = true;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -131,7 +131,7 @@ class viewenginehistory
                 left join client on client.clientid = head.clientid
                 left join client as wh on wh.clientid=head.whid
                 left join mode_masterfile as mode on mode.line = head.modeofsales and mode.ismc =1
-                where item.isserial = 1 and item.itemid = ".$itemid." 
+                where item.isserial = 1 and item.itemid = " . $itemid . " 
                 union all
                 select item.model,item.itemid,head.trno,head.doc,head.dateid,head.docno,case head.doc when 'ST' then sout.rem else head.rem end  as remarks,brand.brand_desc as brand,stock.line,
                 concat(upper(head.createby),' ',date_format(head.createdate,'%Y %b %d - %h : %i %p')) as createby,  
@@ -153,7 +153,7 @@ class viewenginehistory
                 left join client on client.client = head.client
                 left join client as wh on wh.client=head.wh
                 left join mode_masterfile as mode on mode.line = head.modeofsales and mode.ismc =1
-                where item.isserial = 1  and item.itemid = ".$itemid."  order by dateid";
+                where item.isserial = 1  and item.itemid = " . $itemid . "  order by dateid";
 
 
         $data = $this->coreFunctions->opentable($qry);

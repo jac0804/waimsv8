@@ -27,10 +27,10 @@ class inventoryhistory_supplier_tab
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -52,8 +52,18 @@ class inventoryhistory_supplier_tab
     $location = 11;
 
     $columns = [
-      'dateacquired', 'invoiceno', 'invoicedate', 'pono', 'podate', 'barcode', 'itemname',
-      'serialno', 'amt', 'warranty', 'buyer', 'location'
+      'dateacquired',
+      'invoiceno',
+      'invoicedate',
+      'pono',
+      'podate',
+      'barcode',
+      'itemname',
+      'serialno',
+      'amt',
+      'warranty',
+      'buyer',
+      'location'
     ];
     $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
@@ -147,8 +157,6 @@ class inventoryhistory_supplier_tab
   public function getbal($config, $itemid, $wh, $uom)
   {
     $qry = "";
-
-
   } //end function
 
 

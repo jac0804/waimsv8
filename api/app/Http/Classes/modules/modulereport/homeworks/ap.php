@@ -37,9 +37,9 @@ class ap
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -478,7 +478,7 @@ class ap
         PDF::MultiCell(30, 0, '', '', 'L', false, 0);
         PDF::MultiCell(200, 0, $params['params']['dataparams']['approved'], 'B', 'C', false, 0);
         PDF::MultiCell(30, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(200, 0, $params['params']['dataparams']['received'], 'B', 'C',false,0);
+        PDF::MultiCell(200, 0, $params['params']['dataparams']['received'], 'B', 'C', false, 0);
         PDF::MultiCell(30, 0, '', '', 'L', false);
 
 

@@ -56,11 +56,11 @@ class sb
     ['val' => 'posted', 'label' => 'Posted', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -588,7 +588,7 @@ class sb
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -983,11 +983,11 @@ class sb
       $config['params']['line'] = $line;
     }
 
-     $dateTables = ['sbstock'];
-     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $dateTables = ['sbstock'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
-     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
 
 
@@ -1000,7 +1000,7 @@ class sb
       if ($item[0]->factor !== 0) $factor = $item[0]->factor;
 
       if ($action == 'insert') {
-         $amt1 = $this->othersClass->sanitizekeyfieldFast('amt', $item[0]->amt, $lookups);
+        $amt1 = $this->othersClass->sanitizekeyfieldFast('amt', $item[0]->amt, $lookups);
         $amt2 = $item[0]->amt2;
         $amt3 = $item[0]->famt;
         $amt4 = $item[0]->amt4;

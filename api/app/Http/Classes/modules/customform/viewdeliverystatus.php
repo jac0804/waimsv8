@@ -31,10 +31,10 @@ class viewdeliverystatus
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -151,7 +151,7 @@ class viewdeliverystatus
 
     ];
 
-    $due ='';
+    $due = '';
 
     if ($config['params']['dataparams']['receivedate'] != '') {
       $data['receivedate'] = $config['params']['dataparams']['receivedate'];
@@ -169,10 +169,9 @@ class viewdeliverystatus
 
     if ($count != '') {
       $this->coreFunctions->sbcupdate("delstatus", $data, ['trno' => $trno]);
-      if($due != ''){
+      if ($due != '') {
         $this->coreFunctions->sbcupdate($tbl, ['due' => $due], ['trno' => $trno]);
       }
-      
     } else {
       $this->coreFunctions->insertGetId("delstatus", $data);
       $receivedate_log = "";

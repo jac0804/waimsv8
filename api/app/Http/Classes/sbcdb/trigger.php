@@ -213,6 +213,7 @@ class trigger
       'Ship/Delivered to' => ['shipto' => []],
       'Drop-off WH' => ['dropoffwh' => [true, "concat(client, '~', clientname)", 'client', 'clientid']],
       $deptcode => ['deptcode' => []],
+      'Is Print Parent Name' => ['isparentname' => []],
 
       'Make' => ['make' => []],
       'Motor No.' => ['motorno' => []],
@@ -451,6 +452,7 @@ class trigger
       'DPR Cost' => ['defcost' => []],
       'Employee Box/Pcs' => ['payqty' => []],
       'Default SO Warehouse' => ['wh' => []],
+      'Is Catch Weight' => ['iscatchwt' => []],
     ];
 
     $customtrigger = "if OLD.dlock<>NEW.dlock and New.ispositem = 1 then  delete from itemdlock where itemid = Old.itemid; insert into itemdlock(itemid,dlock)values(Old.itemid,New.dlock); end if;                       
@@ -850,6 +852,7 @@ class trigger
     $fields = [
       'department' => ['client' => []],
       'department name' => ['clientname' => []],
+      'section' => ['sectid' => [true, 'concat(sectcode,"~",sectname)', 'section', 'sectid']],
       'address' => ['address' => []],
       'date' => ['dateid' => []],
       'required Date' => ['due' => []],
@@ -2822,13 +2825,11 @@ class trigger
       'Warehouse' => ['whid' => [true, "clientname", "client", "clientid"]],
       'amount' => ['amount' => []],
       'Pcs Work' => ['pcswork' => []],
-      'Total Boxes' => ['tlbox' => []],
-      'Gross Rate' => ['grossrate' => []],
       'Add Restday' => ['restday' => []],
       'Add Holiday' => ['holiday' => []],
       'Add Night' => ['night' => []],
       'Add Adjustment' => ['adjustmnt' => []],
-      'Add 13th Mons' => ['13mos' => []],
+      'Add 13th Mons' => ['thirteenmos' => []],
       'Add Admin' => ['admin' => []],
       'Less Canteen' => ['canteen' => []],
       'Less CA Canteen' => ['cacanteen' => []],
@@ -4431,6 +4432,7 @@ class trigger
       'issue date' => ['issuedate' => []],
       'Volume' => ['volume' => []],
       'Weight' => ['weight' => []],
+      'Item Weight' => ['wt' => []],
       'Chassis No' => ['chassisno' => []],
       'Location' => ['locid' =>  [true, 'clientname', 'client', 'clientid']],
     ];

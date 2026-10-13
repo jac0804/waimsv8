@@ -32,10 +32,10 @@ class bom
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -49,7 +49,7 @@ class bom
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
     return array('col1' => $col1);
   }
@@ -97,7 +97,7 @@ class bom
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
     $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);
-    
+
 
     $qry = "select name, code, address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -123,13 +123,13 @@ class bom
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
-    
+
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(650, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
 
     PDF::SetFont($fontbold, '', $fontsize);
     $style = array(
@@ -147,7 +147,7 @@ class bom
 
     PDF::MultiCell(0, 0, "\n");
 
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(100, 20, "Customer : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
@@ -157,7 +157,7 @@ class bom
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(150, 20, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
-    
+
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(100, 20, "Product Name : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
@@ -184,7 +184,7 @@ class bom
     $arr_note = $this->reporter->fixcolumn([$data[0]['rem']], '30', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_note]);
     $remh = 10 * $maxrow;
-    
+
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(100, $remh, "Notes : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', false);
@@ -211,7 +211,6 @@ class bom
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', 'B');
-    
   }
 
   public function default_BOM_PDF($params, $data)

@@ -33,12 +33,12 @@ class sales_summary_per_item
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -311,7 +311,7 @@ class sales_summary_per_item
       $agent = $config['params']['dataparams']['agent'];
       $clientid = $config['params']['dataparams']['clientid'];
       $agentid = $config['params']['dataparams']['agentid'];
-      
+
       if ($clientname != "") {
         $filteru .= " and head.client='$client'";
         $filterp .= " and head.clientid=" . $clientid;

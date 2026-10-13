@@ -33,9 +33,9 @@ class bd
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -333,25 +333,25 @@ class bd
         //temp logos
         $logo1 = public_path('images/barangay/1.jpg');
         $logo2 = public_path('images/barangay/2.jpg');
-        
+
 
         $font = "";
         $fontbold = "";
         $fontsize = 12;
         $fontbody = 9;
         if (Storage::disk('sbcpath')->exists('/fonts/GOTHICB.TTF')) {
-        $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
-        $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
-        $isTimes = file_exists(database_path() . '/images/fonts/times.TTF');
-        $isTimesBold = file_exists(database_path() . '/images/fonts/timesbd.TTF');
-        if ($isTimes && $isTimesBold) {
+            $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
+            $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
+            $isTimes = file_exists(database_path() . '/images/fonts/times.TTF');
+            $isTimesBold = file_exists(database_path() . '/images/fonts/timesbd.TTF');
+            if ($isTimes && $isTimesBold) {
                 $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/times.TTF');
                 $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/timesbd.TTF');
                 $fontsize = 12;
                 $fontbody = 9;
-            } 
+            }
         }
-    
+
         PDF::SetTitle($this->modulename);
         PDF::SetAuthor('Solutionbase Corp.');
         PDF::SetCreator('Solutionbase Corp.');
@@ -369,12 +369,12 @@ class bd
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), 'LR', 'C');
         PDF::SetFont($font, '', $fontbody);
         PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address), 'LR', 'C');
-        PDF::MultiCell(0, 20,'TeleFax: ' . strtoupper($headerdata[0]->tel), 'LR', 'C');
+        PDF::MultiCell(0, 20, 'TeleFax: ' . strtoupper($headerdata[0]->tel), 'LR', 'C');
         if (file_exists($logo1)) { //temp logo
-            PDF::Image($logo1, 100, 30, 50,50);
+            PDF::Image($logo1, 100, 30, 50, 50);
         }
         if (file_exists($logo2)) { //temp logo
-            PDF::Image($logo2, 470, 30, 50,50);
+            PDF::Image($logo2, 470, 30, 50, 50);
         }
 
         PDF::SetFont($font, '', $fontsize);
@@ -385,7 +385,7 @@ class bd
         PDF::MultiCell(0, 0, "\n", 'LR', '');
 
 
-        PDF::MultiCell(0, 0, "\n\n" , 'LR', '');
+        PDF::MultiCell(0, 0, "\n\n", 'LR', '');
         PDF::SetFont($font, '', 5);
     }
     public function default_default_PDF($params, $data, $members)
@@ -417,15 +417,15 @@ class bd
             $isTimes = file_exists(database_path() . '/images/fonts/times.TTF');
             $isTimesBold = file_exists(database_path() . '/images/fonts/timesbd.TTF');
             if ($isTimes && $isTimesBold) {
-                    $fonttimes = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/times.TTF');
-                    $fonttimesbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/timesbd.TTF');
-                    $fontbody = 8;
-                    $fontsize = 9;
-                    $fontsize2 = 7;
+                $fonttimes = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/times.TTF');
+                $fonttimesbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/timesbd.TTF');
+                $fontbody = 8;
+                $fontsize = 9;
+                $fontsize2 = 7;
             } else {
-                $fonttimes = $font; 
-                $fonttimesbold = $fontbold; 
-                $fontbody = 8   ;
+                $fonttimes = $font;
+                $fonttimesbold = $fontbold;
+                $fontbody = 8;
                 $fontsize = 9;
                 $fontsize2 = 7;
             }
@@ -441,17 +441,17 @@ class bd
 
         //client info
         $header = !empty($data) ? (object)$data[0] : null;
-        $docno = isset($header->docno) ? $header->docno: '';
+        $docno = isset($header->docno) ? $header->docno : '';
         $clientname = isset($header->clientname) ? $header->clientname : '';
         $address = isset($header->addr) ? $header->addr : '';
-        $bday = isset($header->bday) ? $header->bday: '';
-        $bdayFormatted = (!empty($bday) && $bday != '0000-00-00')? date('F j, Y', strtotime($bday)) : '';
-        $dateIssued = (isset($header->dateid) && !empty($header->dateid) && $header->dateid != '0000-00-00')? date('F j, Y', strtotime($header->dateid)): '';
-        $bplace = isset($header->province) ? $header->province: '';
+        $bday = isset($header->bday) ? $header->bday : '';
+        $bdayFormatted = (!empty($bday) && $bday != '0000-00-00') ? date('F j, Y', strtotime($bday)) : '';
+        $dateIssued = (isset($header->dateid) && !empty($header->dateid) && $header->dateid != '0000-00-00') ? date('F j, Y', strtotime($header->dateid)) : '';
+        $bplace = isset($header->province) ? $header->province : '';
         $rem = isset($header->rem) ? $header->rem : '';
-        $rcno = isset($header->rcno)? $header->rcno: '';
-        $sidecarno = isset($header->sidecarno)? $header->sidecarno : '';
-        $plaissue = isset($header->plaissue)? $header->plaissue : '';
+        $rcno = isset($header->rcno) ? $header->rcno : '';
+        $sidecarno = isset($header->sidecarno) ? $header->sidecarno : '';
+        $plaissue = isset($header->plaissue) ? $header->plaissue : '';
 
         //brgy members
         $punongBarangay = '';
@@ -473,27 +473,27 @@ class bd
         //fixcolumn
         $arr_docno = $this->reporter->fixcolumn([$docno], '45', 0);
         $arr_clientname = $this->reporter->fixcolumn([$clientname], '45', 0);
-        $arr_address = $this->reporter->fixcolumn([$address],'45', 0);
-        $arr_bday = $this->reporter->fixcolumn([$bdayFormatted],'45', 0);
-        $arr_bplace = $this->reporter->fixcolumn([$bplace],'45', 0);
-        $arr_rem = $this->reporter->fixcolumn([$rem],'45', 0);
-        $arr_rcno = $this->reporter->fixcolumn([$rcno],'20', 0);
-        $arr_punongBarangay = $this->reporter->fixcolumn([$punongBarangay],'30', 0);
-        $arr_secretary  = $this->reporter->fixcolumn([$secretary],'30', 0);
-        $arr_treasurer = $this->reporter->fixcolumn([$treasurer],'30', 0);
+        $arr_address = $this->reporter->fixcolumn([$address], '45', 0);
+        $arr_bday = $this->reporter->fixcolumn([$bdayFormatted], '45', 0);
+        $arr_bplace = $this->reporter->fixcolumn([$bplace], '45', 0);
+        $arr_rem = $this->reporter->fixcolumn([$rem], '45', 0);
+        $arr_rcno = $this->reporter->fixcolumn([$rcno], '20', 0);
+        $arr_punongBarangay = $this->reporter->fixcolumn([$punongBarangay], '30', 0);
+        $arr_secretary  = $this->reporter->fixcolumn([$secretary], '30', 0);
+        $arr_treasurer = $this->reporter->fixcolumn([$treasurer], '30', 0);
         for ($k = 0; $k < 7; $k++) {
             $name = isset($kagawadList[$k]) ? $kagawadList[$k] : '';
             ${'arr_kagawad' . $k} = $this->reporter->fixcolumn([$name], '30', 0);
-        } 
-                
+        }
+
         PDF::SetFillColor($setfillB[0], $setfillB[1], $setfillB[2]);
-        PDF::SetDrawColor(25, 119, 181);    
+        PDF::SetDrawColor(25, 119, 181);
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(140, 0, '', 'TLR', 'C', true, 0);
         PDF::MultiCell(5, 0, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 0, '', 'TL', '', true, 0);
-        PDF::MultiCell(377, 0, '', 'TR', '', true,0);
+        PDF::MultiCell(377, 0, '', 'TR', '', true, 0);
         PDF::MultiCell(5, 0, '', 'R', '', false);
 
         PDF::SetFillColor($setfillB[0], $setfillB[1], $setfillB[2]);
@@ -504,10 +504,10 @@ class bd
         PDF::MultiCell(5, 0, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 0, '', 'L', '', true, 0);
-        PDF::MultiCell(377, 0, '', 'R', '', true,0);
+        PDF::MultiCell(377, 0, '', 'R', '', true, 0);
         PDF::MultiCell(5, 0, '', 'R', '', false);
 
-        
+
         PDF::SetFillColor($setfillB[0], $setfillB[1], $setfillB[2]);
         PDF::SetFont($fontbitalic, '', $fontsize);
         PDF::SetTextColor(255, 255, 255);
@@ -530,26 +530,26 @@ class bd
         PDF::SetFont($font, '', $fontsize2);
         PDF::MultiCell(140, 0, '', 'LR', 'C', true, 0);
         PDF::SetFont($fontitalic, '', $fontsize2);
-        PDF::MultiCell(5, 0, '', '', '', false, 0); 
+        PDF::MultiCell(5, 0, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 0, '', 'L', '', true, 0);
         PDF::MultiCell(252, 0, 'This is to Certify that the person whose name right thumb mark and', '', '', true, 0);
         PDF::SetFont($fontbold, '', $fontsize2);
         PDF::MultiCell(60, 0, 'Date of Issue: ', '', 'R', true, 0);
         PDF::MultiCell(60, 0, $dateIssued, '', 'R', true, 0);
-        PDF::MultiCell(5, 0, '', 'R', '', true,0);
+        PDF::MultiCell(5, 0, '', 'R', '', true, 0);
         PDF::MultiCell(5, 0, '', 'R', '', false);
 
         PDF::SetFillColor($setfillB[0], $setfillB[1], $setfillB[2]);
         PDF::SetFont($font, '', $fontsize2);
-        PDF::MultiCell(140, 0, '', 'LR', 'C', true, 0); 
+        PDF::MultiCell(140, 0, '', 'LR', 'C', true, 0);
         PDF::SetFont($fontitalic, '', $fontsize2);
         PDF::MultiCell(5, 0, '', '', '', false, 0); // space
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 0, '', 'L', '', true, 0);
         PDF::MultiCell(257, 0, 'picture appear hereon has requested a Record and Barangay Clearance', '', '', true, 0);
         PDF::MultiCell(60, 0, '', '', '', true, 0);
-        PDF::MultiCell(60, 0, '', 'R', '', true,0);
+        PDF::MultiCell(60, 0, '', 'R', '', true, 0);
         PDF::MultiCell(5, 0, '', 'R', '', false);
 
         PDF::SetFillColor($setfillB[0], $setfillB[1], $setfillB[2]);
@@ -558,7 +558,7 @@ class bd
         PDF::MultiCell(140, 0, 'MGA KAGAWAD', 'LR', 'C', true, 0);
         PDF::SetTextColor(0, 0, 0);
         PDF::SetFont($fontitalic, '', $fontsize2);
-        PDF::MultiCell(5, 0, '', '', '',false, 0); // space
+        PDF::MultiCell(5, 0, '', '', '', false, 0); // space
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 0, '', 'L', '', true, 0);
         PDF::MultiCell(227, 0, 'from this office and result/s is/are listed below:', '', '', true, 0);
@@ -575,7 +575,7 @@ class bd
         PDF::SetFont($fontbold, '', $fontsize2);
         PDF::MultiCell(140, 20, '', 'LR', 'C', true, 0);
         PDF::SetFont($fontitalic, '', $fontsize2);
-        PDF::MultiCell(5, 20, '', '', '', false, 0); 
+        PDF::MultiCell(5, 20, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(227, 20, '', '', '', true, 0);
@@ -590,21 +590,21 @@ class bd
 
         PDF::SetFillColor($setfillB[0], $setfillB[1], $setfillB[2]);
         PDF::SetFont($fontbold, '', $fontsize);
-        PDF::SetTextColor(255, 255, 255);   
+        PDF::SetTextColor(255, 255, 255);
         PDF::MultiCell(140, 20, (isset($arr_kagawad0[0]) ? $arr_kagawad0[0] : ''), 'LR', 'C', true, 0);
         PDF::SetTextColor(0, 0, 0);
         PDF::SetFont($fonttimesbold, '', $fontbody);
-        PDF::MultiCell(5, 20, '', '', '', false, 0); 
+        PDF::MultiCell(5, 20, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(60, 20, 'Name:', '', '', true, 0);
-        PDF::MultiCell(222, 20, ': '. (isset($arr_clientname[0]) ? $arr_clientname[0] : ''), '', '', true, 0); //inserted
+        PDF::MultiCell(222, 20, ': ' . (isset($arr_clientname[0]) ? $arr_clientname[0] : ''), '', '', true, 0); //inserted
         PDF::MultiCell(5, 20, '', '', '', true, 0);
         PDF::SetDrawColor(0, 0, 0); //line color
         PDF::MultiCell(80, 20, '', 'LR', '', true, 0);
-        PDF::MultiCell(5, 20, '', 'L', '', true,0);
+        PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::SetDrawColor(25, 119, 181); //line color
-        PDF::MultiCell(5, 20, '', 'R', '', true,0);
+        PDF::MultiCell(5, 20, '', 'R', '', true, 0);
         PDF::MultiCell(5, 20, '', 'R', '', false);
 
 
@@ -612,17 +612,17 @@ class bd
         PDF::SetFont($fontbold, '', $fontsize2);
         PDF::MultiCell(140, 20, '', 'LR', 'C', true, 0);
         PDF::SetFont($fonttimesbold, '', $fontbody);
-        PDF::MultiCell(5, 20, '', '', '', false, 0); 
+        PDF::MultiCell(5, 20, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(60, 20, 'Address', '', '', true, 0);
-        PDF::MultiCell(222, 20, ': '. (isset($arr_address[0]) ? $arr_address[0] : ''), '', '', true, 0); //inserted
+        PDF::MultiCell(222, 20, ': ' . (isset($arr_address[0]) ? $arr_address[0] : ''), '', '', true, 0); //inserted
         PDF::MultiCell(5, 20, '', '', '', true, 0);
         PDF::SetDrawColor(0, 0, 0); //line color
         PDF::MultiCell(80, 20, '', 'LR', '', true, 0);
-         PDF::MultiCell(5, 20, '', 'L', '', true,0);
+        PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::SetDrawColor(25, 119, 181); //line color
-        PDF::MultiCell(5, 20, '', 'R', '', true,0);
+        PDF::MultiCell(5, 20, '', 'R', '', true, 0);
         PDF::MultiCell(5, 20, '', 'R', '', false);
 
 
@@ -632,16 +632,16 @@ class bd
         PDF::MultiCell(140, 20, (isset($arr_kagawad1[0]) ? $arr_kagawad1[0] : ''), 'LR', 'C', true, 0);
         PDF::SetTextColor(0, 0, 0);
         PDF::SetFont($fontitalic, '', $fontsize2);
-        PDF::MultiCell(5, 20, '', '', '', false, 0); 
+        PDF::MultiCell(5, 20, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(222, 20, '', '', '', true, 0);
         PDF::MultiCell(65, 20, '', '', '', true, 0);
         PDF::SetDrawColor(0, 0, 0); //line color
         PDF::MultiCell(80, 20, '', 'BLR', '', true, 0);
-        PDF::MultiCell(5, 20, '', 'L', '', true,0);
+        PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::SetDrawColor(25, 119, 181); //line color
-        PDF::MultiCell(5, 20, '', 'R', '', true,0);
+        PDF::MultiCell(5, 20, '', 'R', '', true, 0);
         PDF::MultiCell(5, 20, '', 'R', '', false);
 
 
@@ -653,12 +653,12 @@ class bd
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(60, 20, 'Date of Birth', '', '', true, 0);
-        PDF::MultiCell(222, 20, ': '. (isset($arr_bday[0]) ? $arr_bday[0] : ''), '', '', true, 0); //inserted
+        PDF::MultiCell(222, 20, ': ' . (isset($arr_bday[0]) ? $arr_bday[0] : ''), '', '', true, 0); //inserted
         PDF::MultiCell(5, 20, '', '', '', true, 0);
         PDF::SetDrawColor(0, 0, 0); //line color
         PDF::MultiCell(80, 20, '', 'T', 'C', true, 0);
         PDF::SetDrawColor(25, 119, 181); //line color
-        PDF::MultiCell(10, 20, '', 'R', '', true,0);
+        PDF::MultiCell(10, 20, '', 'R', '', true, 0);
         PDF::MultiCell(5, 20, '', 'R', '', false);
 
 
@@ -668,7 +668,7 @@ class bd
         PDF::MultiCell(140, 20, (isset($arr_kagawad2[0]) ? $arr_kagawad2[0] : ''), 'LR', 'C', true, 0);
         PDF::SetTextColor(0, 0, 0);
         PDF::SetFont($fonttimesbold, '', $fontbody);
-        PDF::MultiCell(5, 20, '', '', '', false, 0); 
+        PDF::MultiCell(5, 20, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(60, 20, 'Place of Birth', '', '', true, 0);
@@ -676,7 +676,7 @@ class bd
         PDF::SetFont($fonttimesbold, '', $fontsize);
         PDF::MultiCell(5, 20, '', '', '', true, 0);
         PDF::MultiCell(80, 20, (isset($arr_rcno[0]) ? $arr_rcno[0] : ''), '', 'C', true, 0);
-        PDF::MultiCell(10, 20, '', 'R', '', true,0);
+        PDF::MultiCell(10, 20, '', 'R', '', true, 0);
         PDF::MultiCell(5, 20, '', 'R', '', false);
 
 
@@ -684,12 +684,12 @@ class bd
         PDF::SetFont($fontbold, '', $fontsize2);
         PDF::MultiCell(140, 20, '', 'LR', 'C', true, 0);
         PDF::SetFont($font, '', $fontsize2);
-        PDF::MultiCell(5, 20, '', '', '', false, 0); 
+        PDF::MultiCell(5, 20, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(282, 20, '', '', '', true, 0);
         PDF::SetFont($fontbold, '', $fontsize2);
-        PDF::MultiCell(95, 20, '', 'R', '', true,0);
+        PDF::MultiCell(95, 20, '', 'R', '', true, 0);
         PDF::MultiCell(5, 20, '', 'R', '', false);
 
 
@@ -699,15 +699,15 @@ class bd
         PDF::MultiCell(140, 20, (isset($arr_kagawad3[0]) ? $arr_kagawad3[0] : ''), 'LR', 'C', true, 0);
         PDF::SetTextColor(0, 0, 0);
         PDF::SetFont($fonttimesbold, '', $fontbody);
-        PDF::MultiCell(5, 20, '', '', '', false, 0); 
+        PDF::MultiCell(5, 20, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(60, 20, 'Purpose', '', '', true, 0);
-        PDF::MultiCell(222, 20, ': '.(isset($arr_rem[0]) ? $arr_rem[0] : ''), '', '', true, 0); //inserted
+        PDF::MultiCell(222, 20, ': ' . (isset($arr_rem[0]) ? $arr_rem[0] : ''), '', '', true, 0); //inserted
         PDF::SetDrawColor(0, 0, 0); //line color
         PDF::MultiCell(85, 20, '', 'B', '', true, 0);
         PDF::SetDrawColor(25, 119, 181); //line color
-        PDF::MultiCell(10, 20, '', 'R', '', true,0);
+        PDF::MultiCell(10, 20, '', 'R', '', true, 0);
         PDF::MultiCell(5, 20, '', 'R', '', false);
 
 
@@ -715,17 +715,17 @@ class bd
         PDF::SetFont($fontbold, '', $fontsize2);
         PDF::MultiCell(140, 20, '', 'LR', 'C', true, 0);
         PDF::SetFont($fonttimesbold, '', $fontbody);
-        PDF::MultiCell(5, 20, '', '', '', false, 0); 
+        PDF::MultiCell(5, 20, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(60, 20, 'Remarks', '', '', true, 0);
-         PDF::MultiCell(222, 20, ': Remarks : No derogatory record on file as of date ', '', '', true, 0); //inserted
+        PDF::MultiCell(222, 20, ': Remarks : No derogatory record on file as of date ', '', '', true, 0); //inserted
         PDF::SetFont($fontbitalic, '', $fontsize3);
         PDF::SetDrawColor(0, 0, 0); //line color
-        PDF::MultiCell(90, 20, "Applicant's Signature", 'T', 'C', true,0);
+        PDF::MultiCell(90, 20, "Applicant's Signature", 'T', 'C', true, 0);
         PDF::SetDrawColor(25, 119, 181); //line color
-        PDF::MultiCell(5, 20, '', 'R', 'C', true,0);
-        PDF::MultiCell(5, 20, '', 'R', '', false); 
+        PDF::MultiCell(5, 20, '', 'R', 'C', true, 0);
+        PDF::MultiCell(5, 20, '', 'R', '', false);
 
 
 
@@ -735,7 +735,7 @@ class bd
         PDF::MultiCell(140, 20, (isset($arr_kagawad4[0]) ? $arr_kagawad4[0] : ''), 'LR', 'C', true, 0);
         PDF::SetTextColor(0, 0, 0);
         PDF::SetFont($font, '', $fontsize2);
-        PDF::MultiCell(5, 20, '', '', '', false, 0); 
+        PDF::MultiCell(5, 20, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(282, 20, '', '', '', true, 0);
@@ -746,17 +746,17 @@ class bd
         PDF::SetFillColor($setfillB[0], $setfillB[1], $setfillB[2]);
         PDF::SetFont($fontbold, '', $fontsize2);
         PDF::MultiCell(140, 20, '', 'LR', 'C', true, 0);
-        PDF::SetFont($fonttimesbold, '', $fontbody); 
-        PDF::MultiCell(5, 20, '', '', '', false, 0); 
+        PDF::SetFont($fonttimesbold, '', $fontbody);
+        PDF::MultiCell(5, 20, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(60, 20, 'CTC No.#', '', '', true, 0);
         PDF::MultiCell(227, 20, ': ', '', '', true, 0); //inserted
         PDF::SetDrawColor(0, 0, 0); //line color
         PDF::MultiCell(80, 20, '', 'LTR', 'C', true, 0);
-        PDF::MultiCell(5, 20, '', 'L', '', true,0);
+        PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::SetDrawColor(25, 119, 181); //line color
-        PDF::MultiCell(5, 20, '', 'R', '', true,0);
+        PDF::MultiCell(5, 20, '', 'R', '', true, 0);
         PDF::MultiCell(5, 20, '', 'R', '', false);
 
 
@@ -766,11 +766,11 @@ class bd
         PDF::MultiCell(140, 20, (isset($arr_kagawad5[0]) ? $arr_kagawad5[0] : ''), 'LR', 'C', true, 0);
         PDF::SetTextColor(0, 0, 0);
         PDF::SetFont($fonttimesbold, '', $fontbody);
-        PDF::MultiCell(5, 20, '', '', '', false, 0); 
+        PDF::MultiCell(5, 20, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(60, 20, 'Issued At', '', '', true, 0);
-        PDF::MultiCell(227, 20, ': ' , '', '', true, 0); //inserted
+        PDF::MultiCell(227, 20, ': ', '', '', true, 0); //inserted
         PDF::SetDrawColor(0, 0, 0); //line color
         PDF::MultiCell(80, 20, '', 'LR', '', true, 0);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
@@ -783,7 +783,7 @@ class bd
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(140, 20, '', 'LR', 'C', true, 0);
         PDF::SetFont($fonttimesbold, '', $fontbody);
-        PDF::MultiCell(5, 20, '', '', '', false, 0); 
+        PDF::MultiCell(5, 20, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(60, 20, 'Issued On', '', '', true, 0);
@@ -818,7 +818,7 @@ class bd
         PDF::MultiCell(140, 20, '', 'LR', 'C', true, 0);
         PDF::SetTextColor(0, 0, 0);
         PDF::SetFont($font, '', $fontsize2);
-        PDF::MultiCell(5, 20, '', '', '', false, 0); 
+        PDF::MultiCell(5, 20, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 20, '', 'L', '', true, 0);
         PDF::MultiCell(20, 20, '', '', '', true, 0);
@@ -827,7 +827,7 @@ class bd
         PDF::SetDrawColor(0, 0, 0); //line color
         PDF::MultiCell(80, 20, 'Right Thumb Mark', 'T', 'C', true, 0);
         PDF::SetDrawColor(25, 119, 181); //line color
-        PDF::MultiCell(10, 20, '', 'R', '', true,0);
+        PDF::MultiCell(10, 20, '', 'R', '', true, 0);
         PDF::SetFont($fontbold, '', $fontsize2, 0);
         PDF::MultiCell(5, 20, '', 'R', '', false);
 
@@ -838,7 +838,7 @@ class bd
         PDF::MultiCell(140, 0, (isset($arr_secretary[0]) ? $arr_secretary[0] : ''), 'LR', 'C', true, 0);
         PDF::SetTextColor(0, 0, 0);
         PDF::SetFont($font, '', $fontsize2);
-        PDF::MultiCell(5, 0, '', '', '', false, 0); 
+        PDF::MultiCell(5, 0, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 0, '', 'L', '', true, 0);
         PDF::SetFont($fontitalic, '', $fontsize2);
@@ -857,7 +857,7 @@ class bd
         PDF::MultiCell(140, 0, 'Barangay Secretary', 'LR', 'C', true, 0);
         PDF::SetTextColor(0, 0, 0);
         PDF::SetFont($font, '', $fontsize2);
-        PDF::MultiCell(5, 0, '', '', '', false, 0); 
+        PDF::MultiCell(5, 0, '', '', '', false, 0);
         PDF::SetFillColor($setfill[0], $setfill[1], $setfill[2]);
         PDF::MultiCell(5, 0, '', 'LB', '', true, 0);
         PDF::SetFont($fontitalic, '', $fontsize2);
@@ -878,7 +878,7 @@ class bd
         PDF::MultiCell(60, 0, '', '', '', false, 0);
         PDF::MultiCell(60, 0, '', '', '', false, 0);
         PDF::MultiCell(5, 0, '', 'R', false);
-        
+
         PDF::SetFillColor($setfillB[0], $setfillB[1], $setfillB[2]);
         PDF::SetFont($fontbold, '', $fontsize2);
         PDF::SetTextColor(255, 255, 255);

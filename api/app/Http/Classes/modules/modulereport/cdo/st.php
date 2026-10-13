@@ -34,9 +34,9 @@ class st
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -194,13 +194,13 @@ class st
 
     $totalext = 0;
     for ($i = 0; $i < count($data); $i++) {
-      if($data[$i]['isserial'] == 0){
+      if ($data[$i]['isserial'] == 0) {
         $ext = number_format($data[$i]['ext'], $decimal);
-      }else{
+      } else {
         $ext = $data[$i]['netamt'];
         $ext = number_format($ext, $decimal);
       }
-      
+
       $ext = $ext < 0 ? '-' : $ext;
       $netamt = number_format($data[$i]['netamt'], $decimal);
       $netamt = $netamt < 0 ? '-' : $netamt;
@@ -405,16 +405,16 @@ class st
         $netamt = number_format($data[$i]['netamt'], $decimalcurr);
         $disc = $data[$i]['disc'];
 
-        if($data[$i]['isserial'] == 0){
+        if ($data[$i]['isserial'] == 0) {
           $ext = number_format($data[$i]['ext'], $decimalcurr);
           $extamt = $data[$i]['ext'];
-        }else{
+        } else {
           $ext = $data[$i]['netamt'];
           $ext = number_format($ext, $decimalcurr);
           $extamt = $data[$i]['netamt'];
         }
 
-        
+
         // $partno = $data[$i]['partno'];
         $engine = $data[$i]['engine'];
         $chassis = $data[$i]['chassis'];

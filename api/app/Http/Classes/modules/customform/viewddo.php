@@ -8,6 +8,7 @@ use App\Http\Classes\companysetup;
 use App\Http\Classes\coreFunctions;
 use App\Http\Classes\othersClass;
 use App\Http\Classes\sbcscript\sbcscript;
+
 class viewddo
 {
     private $fieldClass;
@@ -22,10 +23,10 @@ class viewddo
     public $showclosebtn = true;
     private $sbcscript;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -41,7 +42,7 @@ class viewddo
     public function createTab($config)
     {
         $this->modulename = 'DDO HISTORY - ' . $this->coreFunctions->getfieldvalue("client", "clientname", "clientid=?", [$config['params']['clientid']]);
-        $cols = ['divname','dateid', 'dateid2', 'docno'];
+        $cols = ['divname', 'dateid', 'dateid2', 'docno'];
         $tab = [$this->gridname => ['gridcolumns' => $cols]];
         $stockbuttons = [];
         foreach ($cols as $key => $value) {
@@ -49,7 +50,7 @@ class viewddo
         }
 
         $obj = $this->tabClass->createtab($tab, $stockbuttons);
-        $obj[0][$this->gridname]['totalfield'] = [];   
+        $obj[0][$this->gridname]['totalfield'] = [];
 
         $obj[0][$this->gridname]['columns'][$divname]['type'] = "label";
         $obj[0][$this->gridname]['columns'][$divname]['label'] = "Post History";
@@ -73,7 +74,7 @@ class viewddo
         $obj = $this->tabClass->createtabbutton($tbuttons);
         return $obj;
     }
-    
+
     public function createHeadField($config)
     {
         $fields = ['refresh'];
@@ -110,13 +111,4 @@ class viewddo
     {
         return $this->sbcscript->skcustomform($config);
     }
-
-
-
-
-
-
-
-
-
 }

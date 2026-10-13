@@ -21,38 +21,38 @@ use Illuminate\Support\Facades\URL;
 
 class queuing_summary_per_user_report
 {
-  public $modulename = 'Queuing Summary Per User Report';
-  private $companysetup;
-  private $coreFunctions;
-  private $fieldClass;
-  private $othersClass;
-  private $reporter;
-  public $batch;
-  public $style = 'width:1200px;max-width:1200px;';
-  public $directprint = false;
+    public $modulename = 'Queuing Summary Per User Report';
+    private $companysetup;
+    private $coreFunctions;
+    private $fieldClass;
+    private $othersClass;
+    private $reporter;
+    public $batch;
+    public $style = 'width:1200px;max-width:1200px;';
+    public $directprint = false;
 
-  // orientations: portrait=p, landscape=l
-  // formats: letter, a4, legal
-  // layoutsize: reportWidth
-  public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
+    // orientations: portrait=p, landscape=l
+    // formats: letter, a4, legal
+    // layoutsize: reportWidth
+    public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
     public function createHeadField($config)
     {
         $companyid = $config['params']['companyid'];
-        $fields = ['radioprint', 'username','start', 'end'];
+        $fields = ['radioprint', 'username', 'start', 'end'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'start.type', 'date');
         data_set($col1, 'end.type', 'date');
-        data_set($col1, 'username.lookupclass','lookupusers2');
+        data_set($col1, 'username.lookupclass', 'lookupusers2');
 
 
         $fields = ['print'];
@@ -82,7 +82,7 @@ class queuing_summary_per_user_report
     {
         return [];
     }
-    
+
     public function reportplotting($config)
     {
         $data = $this->data_query($config);
@@ -98,8 +98,8 @@ class queuing_summary_per_user_report
 
         $filter = '';
         $query = '';
-        
-        if($username != ''){
+
+        if ($username != '') {
             $filter .= "and cur.users = '$username'";
         }
 
@@ -148,7 +148,7 @@ class queuing_summary_per_user_report
         $start = date("m-d-Y", strtotime($config['params']['dataparams']['start']));
         $end = date("m-d-Y", strtotime($config['params']['dataparams']['end']));
         $user = $config['params']['dataparams']['username'];
-      
+
         $str = '';
         $layoutsize = '1000';
         $font = 'Tahoma';
@@ -163,7 +163,7 @@ class queuing_summary_per_user_report
 
         $str .= '<br/><br/>';
 
-      
+
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('Queuing Summary Per User ', '700', null, false, '10px solid ', '', 'C', $font, '14', 'B', '', '');
@@ -174,10 +174,10 @@ class queuing_summary_per_user_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('From:', '50', null, false, '', '', 'L', $font, $fontsize,'B');
+        $str .= $this->reporter->col('From:', '50', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col($start . ' to ' . $end, '200', null, false, '', '', 'L', $font, $fontsize);
         $str .= $this->reporter->col('', '250');
-        $str .= $this->reporter->col('User :', '50', null, false, '', '', 'L', $font, $fontsize,'B');
+        $str .= $this->reporter->col('User :', '50', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col($user == '' ? 'ALL USER' : strtoupper($user), '200', null, false, '', '', 'L', $font, $fontsize);
         $str .= $this->reporter->pagenumber('Page', '230', null, false, $border, '', 'R', $font, $fontsize, '', '30px', '5px');
         $str .= $this->reporter->endrow();
@@ -203,7 +203,6 @@ class queuing_summary_per_user_report
         $str .= $this->reporter->endtable();
 
         return $str;
-
     }
 
     public function reportDefaultLayout($config, $result)
@@ -233,96 +232,95 @@ class queuing_summary_per_user_report
             $grouped[$row->date][$row->users][] = $row;
 
             if (!isset($summary_per_user[$row->users])) {
-            $summary_per_user[$row->users] = [
-                'serve' => 0,
-                'cancel' => 0,
-                'waittime' => 0,
+                $summary_per_user[$row->users] = [
+                    'serve' => 0,
+                    'cancel' => 0,
+                    'waittime' => 0,
                 ];
             }
             $summary_per_user[$row->users]['serve'] += $row->Regular_Serve + $row->Priority_Serve;
             $summary_per_user[$row->users]['cancel'] += $row->Regular_Cancel + $row->Priority_Cancel;
             $summary_per_user[$row->users]['waittime'] += $row->waittime;
-
         }
 
         foreach ($grouped as $date => $users) {
 
-        // Date
-        $str .= $this->reporter->begintable($layoutsize);
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($date, '1000', null, false, $border, '', 'L', $font, $fontsize, 'B');
-        $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-
-        // User
-        foreach ($users as $user => $rows) {
-
-            // Header
+            // Date
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col('   ' . $user, '1000', null, false, $border, '', 'L', $font, $fontsize, 'B');
+            $str .= $this->reporter->col($date, '1000', null, false, $border, '', 'L', $font, $fontsize, 'B');
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
 
-            // Subtotal (PER USER)
-            $total_customer = 0;
-            $total_reg_served = 0;
-            $total_reg_cancel = 0;
-            $total_pri_served = 0;
-            $total_pri_cancel = 0;
+            // User
+            foreach ($users as $user => $rows) {
 
-            foreach ($rows as $data) {
-
+                // Header
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
-                $str .= $this->reporter->col('', '50', null, false, $border,'', '', $font, $fontsize);
-                $str .= $this->reporter->col('' . $data->service, '200', null, false, $border,'', '', $font, $fontsize);
-                $str .= $this->reporter->col($data->customer_count, '150', null, false, $border,'', 'C', $font, $fontsize);
-                $str .= $this->reporter->col($data->Regular_Serve, '150', null, false, $border,'', 'C', $font, $fontsize);
-                $str .= $this->reporter->col($data->Regular_Cancel, '150', null, false, $border,'', 'C', $font, $fontsize);
-                $str .= $this->reporter->col($data->Priority_Serve, '150', null, false, $border,'', 'C', $font, $fontsize);
-                $str .= $this->reporter->col($data->Priority_Cancel, '150', null, false, $border,'', 'C', $font, $fontsize);
+                $str .= $this->reporter->col('   ' . $user, '1000', null, false, $border, '', 'L', $font, $fontsize, 'B');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
 
-                // Totals
-                $total_customer += $data->customer_count;
-                $total_reg_served += $data->Regular_Serve;
-                $total_reg_cancel += $data->Regular_Cancel;
-                $total_pri_served += $data->Priority_Serve;
-                $total_pri_cancel += $data->Priority_Cancel;
-            }
+                // Subtotal (PER USER)
+                $total_customer = 0;
+                $total_reg_served = 0;
+                $total_reg_cancel = 0;
+                $total_pri_served = 0;
+                $total_pri_cancel = 0;
 
-            // Subtotal
-            $str .= $this->reporter->begintable($layoutsize);
-            $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col('', '250', null, false, $border,'', 'R', $font, $fontsize, 'B');
-            $str .= $this->reporter->col($total_customer, '150', null, false, $border,'TB', 'C', $font, $fontsize, 'B');
-            $str .= $this->reporter->col($total_reg_served, '150', null, false, $border,'TB', 'C', $font, $fontsize, 'B');
-            $str .= $this->reporter->col($total_reg_cancel, '150', null, false, $border,'TB', 'C', $font, $fontsize, 'B');
-            $str .= $this->reporter->col($total_pri_served, '150', null, false, $border,'TB', 'C', $font, $fontsize, 'B');
-            $str .= $this->reporter->col($total_pri_cancel, '150', null, false, $border,'TB', 'C', $font, $fontsize, 'B');
-            $str .= $this->reporter->endrow();
-            $str .= $this->reporter->endtable();
+                foreach ($rows as $data) {
 
-            // Add to grand totals
-            $grand_total_customer += $total_customer;
-            $grand_total_reg_served += $total_reg_served;
-            $grand_total_reg_cancel += $total_reg_cancel;
-            $grand_total_pri_served += $total_pri_served;
-            $grand_total_pri_cancel += $total_pri_cancel;
+                    $str .= $this->reporter->begintable($layoutsize);
+                    $str .= $this->reporter->startrow();
+                    $str .= $this->reporter->col('', '50', null, false, $border, '', '', $font, $fontsize);
+                    $str .= $this->reporter->col('' . $data->service, '200', null, false, $border, '', '', $font, $fontsize);
+                    $str .= $this->reporter->col($data->customer_count, '150', null, false, $border, '', 'C', $font, $fontsize);
+                    $str .= $this->reporter->col($data->Regular_Serve, '150', null, false, $border, '', 'C', $font, $fontsize);
+                    $str .= $this->reporter->col($data->Regular_Cancel, '150', null, false, $border, '', 'C', $font, $fontsize);
+                    $str .= $this->reporter->col($data->Priority_Serve, '150', null, false, $border, '', 'C', $font, $fontsize);
+                    $str .= $this->reporter->col($data->Priority_Cancel, '150', null, false, $border, '', 'C', $font, $fontsize);
+                    $str .= $this->reporter->endrow();
+                    $str .= $this->reporter->endtable();
+
+                    // Totals
+                    $total_customer += $data->customer_count;
+                    $total_reg_served += $data->Regular_Serve;
+                    $total_reg_cancel += $data->Regular_Cancel;
+                    $total_pri_served += $data->Priority_Serve;
+                    $total_pri_cancel += $data->Priority_Cancel;
+                }
+
+                // Subtotal
+                $str .= $this->reporter->begintable($layoutsize);
+                $str .= $this->reporter->startrow();
+                $str .= $this->reporter->col('', '250', null, false, $border, '', 'R', $font, $fontsize, 'B');
+                $str .= $this->reporter->col($total_customer, '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B');
+                $str .= $this->reporter->col($total_reg_served, '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B');
+                $str .= $this->reporter->col($total_reg_cancel, '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B');
+                $str .= $this->reporter->col($total_pri_served, '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B');
+                $str .= $this->reporter->col($total_pri_cancel, '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B');
+                $str .= $this->reporter->endrow();
+                $str .= $this->reporter->endtable();
+
+                // Add to grand totals
+                $grand_total_customer += $total_customer;
+                $grand_total_reg_served += $total_reg_served;
+                $grand_total_reg_cancel += $total_reg_cancel;
+                $grand_total_pri_served += $total_pri_served;
+                $grand_total_pri_cancel += $total_pri_cancel;
             }
         }
 
         // GRAND TOTAL
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('GRAND TOTAL', '250', null, false, $border,'T', 'L', $font, $fontsize, 'B');
-        $str .= $this->reporter->col($grand_total_customer, '150', null, false, $border,'', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col($grand_total_reg_served, '150', null, false, $border,'', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col($grand_total_reg_cancel, '150', null, false, $border,'', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col($grand_total_pri_served, '150', null, false, $border,'', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col($grand_total_pri_cancel, '150', null, false, $border,'', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('GRAND TOTAL', '250', null, false, $border, 'T', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($grand_total_customer, '150', null, false, $border, '', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($grand_total_reg_served, '150', null, false, $border, '', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($grand_total_reg_cancel, '150', null, false, $border, '', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($grand_total_pri_served, '150', null, false, $border, '', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($grand_total_pri_cancel, '150', null, false, $border, '', 'C', $font, $fontsize, 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -332,32 +330,29 @@ class queuing_summary_per_user_report
         // SUMMARY PER USER
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('SUMMARY PER USER', '150', null, false, $border,'TB', 'L', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('Total Serve', '150', null, false, $border,'TB', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('Total Cancel', '150', null, false, $border,'TB', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('Avg Service Time(mins)', '100', null, false, $border,'TB', 'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('', '400', null, false, $border,'', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('SUMMARY PER USER', '150', null, false, $border, 'TB', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('Total Serve', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('Total Cancel', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('Avg Service Time(mins)', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('', '400', null, false, $border, '', 'C', $font, $fontsize, 'B');
         $str .= $this->reporter->endrow();
 
         foreach ($summary_per_user as $user => $totals) {
             $wait = 0;
-            if($totals['waittime']!=0){
-                $wait = round($totals['waittime']/$totals['serve'],0);
+            if ($totals['waittime'] != 0) {
+                $wait = round($totals['waittime'] / $totals['serve'], 0);
             }
 
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col($user, '150', null, false, $border,'', 'L', $font, $fontsize);
-            $str .= $this->reporter->col($totals['serve'], '150', null, false, $border,'', 'C', $font, $fontsize);
-            $str .= $this->reporter->col($totals['cancel'], '150', null, false, $border,'', 'C', $font, $fontsize);
-            $str .= $this->reporter->col($wait, '100', null, false, $border,'', 'C', $font, $fontsize);
-            $str .= $this->reporter->col('', '400', null, false, $border,'', 'C', $font, $fontsize, 'B');
+            $str .= $this->reporter->col($user, '150', null, false, $border, '', 'L', $font, $fontsize);
+            $str .= $this->reporter->col($totals['serve'], '150', null, false, $border, '', 'C', $font, $fontsize);
+            $str .= $this->reporter->col($totals['cancel'], '150', null, false, $border, '', 'C', $font, $fontsize);
+            $str .= $this->reporter->col($wait, '100', null, false, $border, '', 'C', $font, $fontsize);
+            $str .= $this->reporter->col('', '400', null, false, $border, '', 'C', $font, $fontsize, 'B');
             $str .= $this->reporter->endrow();
         }
-       
+
         $str .= $this->reporter->endreport();
         return $str;
     }
-
-    
-
 }//end class

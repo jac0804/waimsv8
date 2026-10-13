@@ -60,11 +60,11 @@ class cm
   private $helpClass;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -384,13 +384,13 @@ class cm
     $obj[0]['inventory']['columns'][$ref]['readonly'] = true;
     $obj[0]['inventory']['columns'][$wh]['readonly'] = true;
 
-      $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
-      $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-      $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
+    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+    $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
+    $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
 
     if (!$islocation) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-    } 
+    }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -604,7 +604,7 @@ class cm
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
           // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
-          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
@@ -1471,8 +1471,8 @@ class cm
     // $amt = $this->othersClass->sanitizekeyfield('amt', $amt);
     // $qty = $this->othersClass->sanitizekeyfield('qty', $qty);
 
-    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt,$lookups);
-    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty,$lookups);
+    $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
+    $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
@@ -1520,9 +1520,9 @@ class cm
 
     foreach ($data as $key => $value) {
       // $data[$key] = $this->othersClass->sanitizekeyfield($key, $data[$key]);
-      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
-   
+
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
     $data['editdate'] = $current_timestamp;
     $data['editby'] = $config['params']['user'];
@@ -1891,7 +1891,7 @@ class cm
       foreach ($this->acctg as $key => $value) {
         foreach ($value as $key2 => $value2) {
           // $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
-          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
+          $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key]['editdate'] = $current_timestamp;
         $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -2145,7 +2145,7 @@ class cm
       foreach ($this->acctg as $key3 => $value) {
         foreach ($value as $key2 => $value2) {
           // $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfield($key2, $value2);
-          $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2,$lookups);
+          $this->acctg[$key3][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
         }
         $this->acctg[$key3]['line'] = $line;
         $this->acctg[$key3]['editdate'] = $current_timestamp;

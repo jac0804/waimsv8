@@ -37,9 +37,9 @@ class entrybudget
     private $reporter;
     private $reportheader;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -82,7 +82,7 @@ class entrybudget
         $reporttype = $filters['params']['dataparams']['reporttype'];
         if ($reporttype == '1') {
             return $this->annual_query($filters);
-        }else{
+        } else {
             return $this->default_query($filters);
         }
     }
@@ -138,7 +138,7 @@ class entrybudget
     public function reportplotting($params, $data)
     {
         $reporttype = $params['params']['dataparams']['reporttype'];
-        switch($reporttype){
+        switch ($reporttype) {
             case '0':
                 return $this->budget_setup_PDF($params, $data);
                 break;

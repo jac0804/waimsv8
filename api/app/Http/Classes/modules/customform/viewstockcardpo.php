@@ -29,10 +29,10 @@ class viewstockcardpo
   private $othersClass;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -41,11 +41,11 @@ class viewstockcardpo
 
   public function createTab($config)
   {
-     //po pohistory button in po module -transpower
+    //po pohistory button in po module -transpower
     if ($config['params']['companyid'] == 60 && ($config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' || $config['params']['moduletype'] == 'INQUIRY')) {
-      $row=$config['params']['row'];
-      $itemid=$row['itemid'];
-    }else{
+      $row = $config['params']['row'];
+      $itemid = $row['itemid'];
+    } else {
       $itemid = $config['params']['clientid'];
     }
 
@@ -131,9 +131,9 @@ class viewstockcardpo
     data_set($col1, 'dateid.readonly', false);
     data_set($col1, 'luom.lookupclass', 'uomledger');
 
-   if($config['params']['companyid'] == 60 && ( $config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' || $config['params']['moduletype'] == 'INQUIRY')) {
-        data_set($col1, 'luom.addedparams', ['itemid']);
-        }
+    if ($config['params']['companyid'] == 60 && ($config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' || $config['params']['moduletype'] == 'INQUIRY')) {
+      data_set($col1, 'luom.addedparams', ['itemid']);
+    }
 
     $fields = ['wh'];
     $col2 = $this->fieldClass->create($fields);
@@ -148,29 +148,29 @@ class viewstockcardpo
 
   public function paramsdata($config)
   {
-   if($config['params']['companyid'] == 60 && ( $config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' || $config['params']['moduletype'] == 'INQUIRY')) {
-       $itemid = $config['params']['row']['itemid'];
-    }else{
-       $itemid = $config['params']['clientid'];
+    if ($config['params']['companyid'] == 60 && ($config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' || $config['params']['moduletype'] == 'INQUIRY')) {
+      $itemid = $config['params']['row']['itemid'];
+    } else {
+      $itemid = $config['params']['clientid'];
     }
-    
+
     $uom = $this->coreFunctions->getfieldvalue('item', 'uom', 'itemid=?', [$itemid]);
-  
+
     if ($config['params']['companyid'] == 17 || $config['params']['companyid'] == 28 || $config['params']['companyid'] ==  60) { //unihome & xcomp & transpower
       $wh = '';
     } else {
       $wh = $this->companysetup->getwh($config['params']);
     }
 
-     $addf="";
+    $addf = "";
     if ($config['params']['companyid'] == 60 && ($config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' || $config['params']['moduletype'] == 'INQUIRY')) {
-       $row = $config['params']['row']['itemid'];
-      $addf= ", " . $row . "   as itemid" ;
+      $row = $config['params']['row']['itemid'];
+      $addf = ", " . $row . "   as itemid";
     }
 
     $data = $this->getbal($config, $itemid, $wh, $uom);
     if (!empty($data)) {
-         return $this->coreFunctions->opentable("
+      return $this->coreFunctions->opentable("
       	select adddate(left(now(),10),-360) as dateid,
       	'$wh' as wh,
       	'$uom' as uom $addf
@@ -190,15 +190,15 @@ class viewstockcardpo
     $companyid = $config['params']['companyid'];
     $sort = " order by dateid";
     if ($companyid == 60 && ($config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' || $config['params']['moduletype'] == 'INQUIRY')) {
-       $itemid = $config['params']['dataparams']['itemid'];       
-    }else{
-       $itemid = $config['params']['itemid'];
+      $itemid = $config['params']['dataparams']['itemid'];
+    } else {
+      $itemid = $config['params']['itemid'];
     }
 
-    if($companyid  == 60){//transpower
+    if ($companyid  == 60) { //transpower
       $sort = " order by dateid desc";
     }
-  
+
     $center = $config['params']['center'];
     $date = date("Y-m-d", strtotime($config['params']['dataparams']['dateid']));
     $uom = $config['params']['dataparams']['uom'];
@@ -270,12 +270,12 @@ class viewstockcardpo
     $qry = "";
   } //end function
 
-  public function sbcscript($config){
+  public function sbcscript($config)
+  {
     if ($config['params']['companyid'] == 60) { //transpower
       return $this->sbcscript->skcustomform($config);
     } else {
       return true;
-    }   
+    }
   }
-
 } //end class

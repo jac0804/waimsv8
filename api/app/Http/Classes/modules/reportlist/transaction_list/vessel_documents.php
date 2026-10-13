@@ -30,12 +30,12 @@ class vessel_documents
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -247,7 +247,7 @@ class vessel_documents
   public function reportDefaultLayout($config)
   {
     $result = $this->reportDefault($config);
-    
+
     $border = '1px solid';
     $border_line = '';
     $alignment = '';

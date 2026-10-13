@@ -112,11 +112,11 @@ class po
     ['val' => 'draft', 'label' => 'Draft', 'color' => 'primary']
   ];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -1282,7 +1282,7 @@ class po
           $fields = $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dewt', 'isfa'];
           break;
         case 67: // yulick
-          $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'deldate'];
+          $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype', 'deldate'];
           break;
         default:
           $fields = [['yourref', 'ourref'], ['cur', 'forex']];
@@ -3505,7 +3505,7 @@ class po
             break;
         }
 
-        $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' Barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' WH:' . $wh . ' Ext:' . $computedata['ext'] . ' Uom ' . $uom);
+        $this->logger->sbcwritelog($trno, $config, 'STOCK', 'ADD - Line:' . $line . ' Barcode:' . $item[0]->barcode . ' Amt:' . $amt . ' Disc:' . $disc . ' WH:' . $wh . ' Ext:' . $computedata['ext'] . ' Uom ' . $uom.' Ref:'.$ref);
         if ($isproject) {
           $this->updateprojmngmt($config, $stageid);
         }
@@ -4179,7 +4179,7 @@ class po
 
       default:
         $qry = "select docno,left(dateid,10) as dateid,round(amt," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,disc,uom from(select head.docno,head.dateid,
-            format(stock.rrcost" . $this->companysetup->getdecimal('price', $config['params']) ." as amt,stock.uom,stock.disc
+            format(stock.rrcost" . $this->companysetup->getdecimal('price', $config['params']) . " as amt,stock.uom,stock.disc
             from lahead as head
             left join lastock as stock on stock.trno = head.trno
             left join cntnum on cntnum.trno=head.trno
@@ -4189,7 +4189,7 @@ class po
             and stock.rrcost <> 0
             UNION ALL
             select head.docno,head.dateid,
-            format(stock.rrcost" . $this->companysetup->getdecimal('price', $config['params']) ." as computeramt,
+            format(stock.rrcost" . $this->companysetup->getdecimal('price', $config['params']) . " as computeramt,
             stock.uom,stock.disc from glhead as head
             left join glstock as stock on stock.trno = head.trno
             left join item on item.itemid = stock.itemid

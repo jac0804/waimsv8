@@ -119,11 +119,11 @@ class rr
 
   private $barcode;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -694,7 +694,7 @@ class rr
 
     if (!$islocation) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-    } 
+    }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
@@ -2056,13 +2056,13 @@ class rr
 
     $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
     $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
-   
+
     $dateTables = ['lastock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
-   
+
 
     $freight = $this->coreFunctions->getfieldvalue($this->head, "freight", "trno=?", [$trno]);
     $agentsfee = $this->coreFunctions->getfieldvalue($this->head, "agentfee", "trno=?", [$trno]);
@@ -2874,7 +2874,7 @@ class rr
     select s.trno,s.line,s.rrcost,s.cost,s.rrqty,s.qty,uom.factor as uomfactor,s.kgs,s.disc from " . $this->hstock . " as s left join uom on uom.itemid = s.itemid and uom.uom = s.uom where s.trno = " . $head['trno']);
     $data2 = json_decode(json_encode($data), true);
     $exec = true;
-    
+
     $companyid = $config['params']['companyid'];
     $dateTables = ['lastock'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);

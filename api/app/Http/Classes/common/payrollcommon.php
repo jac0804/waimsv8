@@ -4954,7 +4954,7 @@ class payrollcommon
                     $data['trno'] = $value->trno;
                     $data['batchid'] = $batchid;
                     $data['empid'] = $empid;
-                    $data['dateid'] = $startdate;
+                    $data['dateid'] = $batchdate;
                     $data['acnoid'] = $value->acnoid;
                     $data['db'] = $value->amt;
                     $data['cr'] = 0;
@@ -4991,7 +4991,7 @@ class payrollcommon
                 $data['trno'] = $value->trno;
                 $data['batchid'] = $batchid;
                 $data['empid'] = $empid;
-                $data['dateid'] = $startdate;
+                $data['dateid'] = $batchdate;
                 $data['acnoid'] = $value->acnoid;
                 $data['db'] = 0;
                 if ($value->camt != 0) {

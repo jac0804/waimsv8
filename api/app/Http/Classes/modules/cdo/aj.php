@@ -76,11 +76,11 @@ class aj
   private $helpClass;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -407,7 +407,7 @@ class aj
 
 
     if (!$isexpiry) {
-    //   $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+      //   $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
       $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
       $obj[0][$this->gridname]['columns'][$pallet]['action'] = 'lookuppalletbalance';
     } else {
@@ -454,7 +454,7 @@ class aj
     $obj[0]['inventory']['columns'][$loc]['type'] = 'editlookup';
     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
 
-    if(!$islocation) {
+    if (!$islocation) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
     }
 
@@ -1393,7 +1393,7 @@ class aj
         $isserial = $item[0]->isserial;
       }
     }
-    
+
     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
     $rrqty = $this->othersClass->sanitizekeyfieldFast('rrqty', $rrqty, $lookups);
     $iss = $this->othersClass->sanitizekeyfieldFast('iss', $iss, $lookups);

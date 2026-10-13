@@ -31,33 +31,38 @@ class retirement_report
   public $directprint = false;
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '700'];
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
   public function createHeadField($config)
   {
     $companyid = $config['params']['companyid'];
-    $fields = ['radioprint', 'dclientname', 'divrep', 'deptrep','start', 'end','tpaygroup','radioreporttypepcv','radioreporttype'];
+    $fields = ['radioprint', 'dclientname', 'divrep', 'deptrep', 'start', 'end', 'tpaygroup', 'radioreporttypepcv', 'radioreporttype'];
     $col1 = $this->fieldClass->create($fields);
-      data_set($col1, 'dclientname.lookupclass', 'lookupemployee');
-      data_set($col1, 'dclientname.label', 'Employee');
-      data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
-      data_set($col1, 'divrep.label', 'Company');
-      data_set($col1, 'deptrep.lookupclass', 'lookupddeptname');
-      data_set($col1, 'deptrep.label', 'Department');
-      data_set($col1, 'start.required', true);
-      data_set($col1, 'end.required', true);
-      data_set($col1, 'radioreporttypepcv.label', 'Option');
-      data_set($col1, 'radioreporttypepcv.options', 
-      [['label' => 'Resigned', 'value' => '0', 'color' => 'red'],
-       ['label' => '13th Month Basis', 'value' => '1', 'color' => 'red']]);
+    data_set($col1, 'dclientname.lookupclass', 'lookupemployee');
+    data_set($col1, 'dclientname.label', 'Employee');
+    data_set($col1, 'divrep.lookupclass', 'lookupempdivision');
+    data_set($col1, 'divrep.label', 'Company');
+    data_set($col1, 'deptrep.lookupclass', 'lookupddeptname');
+    data_set($col1, 'deptrep.label', 'Department');
+    data_set($col1, 'start.required', true);
+    data_set($col1, 'end.required', true);
+    data_set($col1, 'radioreporttypepcv.label', 'Option');
+    data_set(
+      $col1,
+      'radioreporttypepcv.options',
+      [
+        ['label' => 'Resigned', 'value' => '0', 'color' => 'red'],
+        ['label' => '13th Month Basis', 'value' => '1', 'color' => 'red']
+      ]
+    );
     $fields = ['print'];
     $col2 = $this->fieldClass->create($fields);
     return array('col1' => $col1, 'col2' => $col2);
@@ -98,15 +103,15 @@ class retirement_report
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str, 'params' => $this->reportParams];
   }
 
-    public function reportplotting($config)
+  public function reportplotting($config)
   {
     $reporttype = $config['params']['dataparams']['reporttype'];
     switch ($reporttype) {
-        case '0': // SUMMARY
+      case '0': // SUMMARY
         return $this->JDA_SUMMARY_Layout($config);
         break;
 
-        case '1': // DETAIL
+      case '1': // DETAIL
         return $this->JDA_DETAIL_Layout($config);
         break;
     }
@@ -146,9 +151,9 @@ class retirement_report
       $filter .= " and paygroup.line = $payid";
     }
 
-    if( $reportbasis == 0){
+    if ($reportbasis == 0) {
       $basis = "'' as amt";
-    }else if( $reportbasis == 1){ //13th month option
+    } else if ($reportbasis == 1) { //13th month option
       $basis = "((select ifnull(sum(vtran.db),0) - ifnull(sum(vtran.cr),0)
       from paytrancurrent as vtran
       left join paccount on paccount.line = vtran.acnoid
@@ -252,7 +257,7 @@ class retirement_report
     }
     $str .= $this->reporter->endrow();
 
-    
+
     $str .= $this->reporter->startrow();
     if ($payid == 0 || $payid == '') {
       $str .= $this->reporter->col('PAY GROUP : ALL GROUPS', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
@@ -261,7 +266,7 @@ class retirement_report
     }
 
     $str .= $this->reporter->col('', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
-  
+
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
@@ -312,19 +317,19 @@ class retirement_report
 
     foreach ($result as $key => $data) {
 
-      $regdays = ($data->reghrs - $data->abshrs)/8;
-      if($reportbasis == 0){
-        $retirement = ((($data->basicrate * 22.5)/12)/30) * $regdays;
-      }else if($reportbasis == 1){
-        $retirement = $data->amt/12;
+      $regdays = ($data->reghrs - $data->abshrs) / 8;
+      if ($reportbasis == 0) {
+        $retirement = ((($data->basicrate * 22.5) / 12) / 30) * $regdays;
+      } else if ($reportbasis == 1) {
+        $retirement = $data->amt / 12;
       }
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
       $str .= $this->reporter->col($data->client, '100', null, false, $border, '', '', $font, $font_size, '', '', '');
       $str .= $this->reporter->col($data->clientname, '210', null, false, $border, '', '', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col(number_format($regdays,2), '60', null, false, $border, '', 'R', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col( number_format($retirement, 2), '60', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col(number_format($regdays, 2), '60', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col(number_format($retirement, 2), '60', null, false, $border, '', 'R', $font, $font_size, '', '', '');
       $str .= $this->reporter->endrow();
 
       $Grandtot = $Grandtot + $retirement;
@@ -374,20 +379,20 @@ class retirement_report
     $str .= $this->reporter->beginreport($layoutsize);
     $str .= $this->display_JDA_Header($config);
     foreach ($result as $key => $data) {
-      
-      $regdays = ($data->reghrs - $data->abshrs)/8;
-      if($reportbasis == 0){
-        $retirement = ((($data->basicrate * 22.5)/12)/30) * $regdays; 
-      }else if($reportbasis == 1){
-        $retirement = $data->amt/12;
+
+      $regdays = ($data->reghrs - $data->abshrs) / 8;
+      if ($reportbasis == 0) {
+        $retirement = ((($data->basicrate * 22.5) / 12) / 30) * $regdays;
+      } else if ($reportbasis == 1) {
+        $retirement = $data->amt / 12;
       }
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      $str .= $this->reporter->col($data->client.' ' .$data->clientname, '300', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col($data->client . ' ' . $data->clientname, '300', null, false, $border, '', 'L', $font, $font_size, '', '', '');
       $str .= $this->reporter->col($data->hired, '80', null, false, $border, '', 'C', $font, $font_size, '', '', '');
       $str .= $this->reporter->col($data->resigned, '80', null, false, $border, '', 'C', $font, $font_size, '', '', '');
-      $str .= $this->reporter->col(number_format($regdays,2), '60', null, false, $border, '', 'R', $font, $font_size, '', '', '');
+      $str .= $this->reporter->col(number_format($regdays, 2), '60', null, false, $border, '', 'R', $font, $font_size, '', '', '');
       $str .= $this->reporter->col(number_format($retirement, 2), '60', null, false, $border, '', 'R', $font, $font_size, '', '', '');
 
       $str .= $this->reporter->endrow();

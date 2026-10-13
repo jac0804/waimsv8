@@ -30,12 +30,12 @@ class slow_moving_items
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -970,7 +970,7 @@ class slow_moving_items
     item.barcode,stock.uom,cat.name , subcat.name ) as FM
     group by size,model,tr,groupid,brand,class,whcode,whname,itemname,barcode,uom,part,body,qty,category,subcatname
     order by qty asc" . $top;
-    
+
     return $query;
   }
 
@@ -1177,7 +1177,6 @@ class slow_moving_items
       $str .= $this->reporter->col(number_format($data->qty, 2), '100', null, false, $border, '', 'R', 'Verdana', $font_size, '', '', '');
       $str .= $this->reporter->col($data->uom, '50', null, false, $border, '', 'C', 'Verdana', $font_size, '', '', '');
       $str .= $this->reporter->endrow();
-
     }
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endtable();

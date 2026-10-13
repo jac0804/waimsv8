@@ -29,10 +29,10 @@ class viewgridsgroupcomm
   public $issearchshow = true;
   public $showclosebtn = false;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -55,7 +55,7 @@ class viewgridsgroupcomm
     $agentcomamt = 4;
 
 
-    $cols = ['isselected','headagentname','stock_itemgroup',  'agentname', 'agentcomamt'];
+    $cols = ['isselected', 'headagentname', 'stock_itemgroup',  'agentname', 'agentcomamt'];
 
     $tab = [$this->gridname => ['gridcolumns' => $cols]];
     $stockbuttons = [];

@@ -30,10 +30,10 @@ class sj
     public $showclosebtn = true;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -122,7 +122,7 @@ class sj
         $date = date('Y-m-d', strtotime($config['params']['dataparams']['dateid']));
         $classid = $config['params']['dataparams']['classid'];
         $filter = " and date(head.dateid) >='$date'";
-        if ($companyid == 47){//kstar        
+        if ($companyid == 47) { //kstar        
             $filter = " and date(head.dateid) ='$date' ";
         }
         switch ($classid) {

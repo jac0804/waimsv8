@@ -29,12 +29,12 @@ class income_statement
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -2199,8 +2199,8 @@ class income_statement
       $center = "ALL";
     }
 
-    $count = 50;//68
-    $page = 49;//67
+    $count = 50; //68
+    $page = 49; //67
     $this->reporter->linecounter = 0;
     $str = '';
     if (empty($data)) {
@@ -2411,8 +2411,8 @@ class income_statement
     $companyid = $filters['params']['companyid'];
     $decimal_currency = $this->companysetup->getdecimal('currency', $filters['params']);
 
-    $count = 50; 
-    $page = 49; 
+    $count = 50;
+    $page = 49;
     $this->reporter->linecounter = 0;
     $str = '';
 
@@ -2480,8 +2480,8 @@ class income_statement
       $center = "ALL";
     }
 
-    $count = 50; 
-    $page = 49; 
+    $count = 50;
+    $page = 49;
     $this->reporter->linecounter = 0;
     $str = '';
 
@@ -2632,7 +2632,7 @@ class income_statement
           }
         }
       } else {
-        $isCategoryHeader = ($data[$i]['levelid'] == 1 && $data[$i]['detail'] == 0 && $data[$i]['total'] != 0 );
+        $isCategoryHeader = ($data[$i]['levelid'] == 1 && $data[$i]['detail'] == 0 && $data[$i]['total'] != 0);
 
         $str .= $this->reporter->startrow();
         $indent = '5' * ($data[$i]['levelid'] * 3);
@@ -2641,20 +2641,20 @@ class income_statement
         $amt = $data[$i]['amt'];
 
         $totalLine = ($amt == 0 && $data[$i]['total'] != 0 && (!$isCategoryHeader || $data[$i]['cat'] == 'E' || $data[$i]['cat'] == 'O'))  ? 'B' : ''; //used by both Net Expense/Net Others
-        
+
         $str .= $this->reporter->col($amt == 0 ? '' : number_format($amt, $decimal_currency), '100', null, false, '1px solid ', $totalLine, 'r', $font, $fontsize,  '', '', '');
-        
-        if ($isCategoryHeader && ($data[$i]['cat'] == 'R' || $data[$i]['cat'] == 'X')){ //categ final total  will create the 4th column
-          $tborder = '4px double';    
+
+        if ($isCategoryHeader && ($data[$i]['cat'] == 'R' || $data[$i]['cat'] == 'X')) { //categ final total  will create the 4th column
+          $tborder = '4px double';
           $str .= $this->reporter->col('', '100', null, false, $border, 'T', 'R', $font, $fontsize, '', '', '');
           $str .= $this->reporter->col($data[$i]['total'] == 0 ? '' : ($amt == 0 ? number_format($data[$i]['total'], 2) : ''), '120', null, false, $tborder, 'B', 'R', $font, $fontsize, 'B', '', '');
-        }else{
+        } else {
           $str .= $this->reporter->col($data[$i]['total'] == 0 ? '' : ($amt == 0 ? number_format($data[$i]['total'], 2) : ''), '100', null, false, '1px solid ', '', 'R', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('', '120', null, false, $border, '', 'R', $font, $fontsize, '', '', ''); //empty 4th column
         }
         $str .= $this->reporter->endrow();
 
-        if ($isCategoryHeader){
+        if ($isCategoryHeader) {
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('', 'null', '20', false, $border,  '', 'r', $font, $fontsize, '', '', '');
           $str .= $this->reporter->endrow();

@@ -29,12 +29,12 @@ class online_encashment_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -324,20 +324,20 @@ class online_encashment_report
     if ($checkno != '') {
       $filter .= "and detail.checkno = '" . $checkno . "'";
     }
-  //   $query = "select supp.client,head.docno,date_format(head.dateid,'%m/%d/%Y') as dateid,supp.clientname,detail.cr as amt,detail.checkno,head.rem, head.trno
-  // from lahead as head
-  // left join ladetail as detail on detail.trno=head.trno
-  // left join client as supp on supp.client=head.client
-  // where head.doc='CV' and head.isonlineencashment = 1 and detail.checkno<>'' $filter
-  // union all
-  // select supp.client,head.docno,date_format(head.dateid,'%m/%d/%Y') as dateid,supp.clientname,detail.cr as amt,detail.checkno,head.rem, head.trno
-  // from glhead as head
-  // left join gldetail as detail on detail.trno=head.trno
-  // left join client as supp on supp.clientid=head.clientid
-  // where head.doc='CV' and head.isonlineencashment = 1 and detail.checkno<>'' $filter
-  // order by clientname";
+    //   $query = "select supp.client,head.docno,date_format(head.dateid,'%m/%d/%Y') as dateid,supp.clientname,detail.cr as amt,detail.checkno,head.rem, head.trno
+    // from lahead as head
+    // left join ladetail as detail on detail.trno=head.trno
+    // left join client as supp on supp.client=head.client
+    // where head.doc='CV' and head.isonlineencashment = 1 and detail.checkno<>'' $filter
+    // union all
+    // select supp.client,head.docno,date_format(head.dateid,'%m/%d/%Y') as dateid,supp.clientname,detail.cr as amt,detail.checkno,head.rem, head.trno
+    // from glhead as head
+    // left join gldetail as detail on detail.trno=head.trno
+    // left join client as supp on supp.clientid=head.clientid
+    // where head.doc='CV' and head.isonlineencashment = 1 and detail.checkno<>'' $filter
+    // order by clientname";
 
-  $query = "select supp.client,head.docno,date_format(head.dateid,'%m/%d/%Y') as dateid,supp.clientname,detail.cr as amt,detail.checkno,head.rem, head.trno
+    $query = "select supp.client,head.docno,date_format(head.dateid,'%m/%d/%Y') as dateid,supp.clientname,detail.cr as amt,detail.checkno,head.rem, head.trno
   from glhead as head
   left join gldetail as detail on detail.trno=head.trno
   left join client as supp on supp.clientid=head.clientid

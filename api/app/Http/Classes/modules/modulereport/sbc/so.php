@@ -38,9 +38,9 @@ class so
     private $reporter;
     private $sbcscript;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -54,10 +54,10 @@ class so
     {
         $companyid = $config['params']['companyid'];
 
-   
-        $fields = ['radioprint', 'radioreporttype', 'clientname','prepared', 'approved', 'received', 'checked', 'requested', 'itime','htime', 'print'];
+
+        $fields = ['radioprint', 'radioreporttype', 'clientname', 'prepared', 'approved', 'received', 'checked', 'requested', 'itime', 'htime', 'print'];
         $col1 = $this->fieldClass->create($fields);
-    
+
         data_set($col1, 'radioprint.options', [
             ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
             // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
@@ -95,7 +95,7 @@ class so
           '' as itime,
           '' as htime,
           '' as clientname";
-    
+
         return $this->coreFunctions->opentable($paramstr);
     }
 
@@ -508,10 +508,11 @@ class so
             return PDF::Output($this->modulename . '.pdf', 'S');
         }
     }
-    public function job_order_header($config,$data){
+    public function job_order_header($config, $data)
+    {
         $center = $config['params']['center'];
         $username =  $config['params']['user'];
-        
+
 
         $qry = "select name, address, tel, code from center where code = '" . $center . "'";
         $headerdata = $this->coreFunctions->opentable($qry);
@@ -559,9 +560,9 @@ class so
 
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(80, 15, "Company Name: ", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(320, 15, "". (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), 'B', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(320, 15, "" . (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), 'B', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(40, 15, "Date: ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(110, 15, "". (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(110, 15, "" . (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(70, 15, "JO NO.", '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::SetFont($font, '', $fontsize);
@@ -572,19 +573,19 @@ class so
 
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(80, 15, "Representative: ", '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(330, 15, "". $config['params']['dataparams']['clientname'], 'B', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(330, 15, "" . $config['params']['dataparams']['clientname'], 'B', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(50, 15, "Time In: ", '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(90, 15, "". $config['params']['dataparams']['itime'], 'B', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(90, 15, "" . $config['params']['dataparams']['itime'], 'B', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(70, 15, "Time Out: ", '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
-        PDF::MultiCell(100, 15, "". $config['params']['dataparams']['htime'], 'B', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
+        PDF::MultiCell(100, 15, "" . $config['params']['dataparams']['htime'], 'B', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
 
         PDF::MultiCell(0, 0, "\n");
 
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(720, 0, "JOB DESCRIPTION", '', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
-
     }
-    public function Job_Order($config,$data) {
+    public function Job_Order($config, $data)
+    {
 
         $username = $config['params']['user'];
         $count = $page = 35;
@@ -616,11 +617,10 @@ class so
         $line = $maxrow;
         PDF::SetFont($font, '', $fontsize);
         for ($r = 0; $r < $maxrow; $r++) {
-            
+
             PDF::MultiCell(20, 20, "", 'L', '', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
             PDF::MultiCell(680, 20, '' . (isset($array[$r]) ? $array[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
             PDF::MultiCell(20, 20, "", 'R', '', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
-
         }
         $this->addsideline($line);
 
@@ -634,11 +634,11 @@ class so
         }
         $service = $totalext;
         $vat = 0;
-        if($tax != 0){
-           $service = ($service / 1.12);
-           $vat = ($service * .12);
+        if ($tax != 0) {
+            $service = ($service / 1.12);
+            $vat = ($service * .12);
         }
-        $vat = number_format($vat,2);
+        $vat = number_format($vat, 2);
 
         PDF::MultiCell(0, 0, "\n");
 
@@ -648,8 +648,8 @@ class so
         PDF::MultiCell(10, 10, "", 'RL', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(210, 10, "", 'T', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(10, 10, "", 'TR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
-        
-        
+
+
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(10, 15, "", 'L', 'C', false, 0, '',  '', true, 0, false, true, 20, 'M', true);
         PDF::MultiCell(50, 15, "Note: ", '', 'C', false, 0, '',  '', true, 0, false, true, 20, 'M', true);
@@ -691,7 +691,7 @@ class so
         PDF::MultiCell(70, 15, "Check by: ", '', 'L', false, 0, '',  '', true, 0, false, true, 25, 'M', true);
         PDF::MultiCell(135, 15, $config['params']['dataparams']['checked'] != "" ? $config['params']['dataparams']['checked'] : '', 'B', '', false, 0, '',  '', true, 0, false, true, 25, 'M', true);
 
-        
+
         PDF::MultiCell(10, 15, "", '', 'C', false, 0, '',  '', true, 0, false, true, 25, 'M', true);
         PDF::MultiCell(10, 15, "", 'LR', 'C', false, 0, '',  '', true, 0, false, true, 25, 'M', true);
         PDF::MultiCell(10, 15, "", '', 'C', false, 0, '',  '', true, 0, false, true, 25, 'M', true);
@@ -701,12 +701,12 @@ class so
         PDF::MultiCell(10, 15, "", 'L', 'C', false, 0, '',  '', true, 0, false, true, 20, 'M', true);
         PDF::MultiCell(100, 15, "Approved by:", '', 'L', false, 0, '',  '', true, 0, false, true, 20, 'M', true);
         PDF::MultiCell(370, 15, $config['params']['dataparams']['approved'] != "" ? $config['params']['dataparams']['approved'] : '', 'B', '', false, 0, '',  '', true, 0, false, true, 20, 'M', true);
-        
+
         PDF::MultiCell(10, 15, "", '', 'C', false, 0, '',  '', true, 0, false, true, 20, 'M', true);
         PDF::MultiCell(10, 15, "", 'LR', 'C', false, 0, '',  '', true, 0, false, true, 20, 'M', true);
         PDF::MultiCell(10, 15, "", '', 'C', false, 0, '',  '', true, 0, false, true, 20, 'M', true);
         PDF::SetFont($fontbold, '', 13);
-        PDF::MultiCell(200, 15, "". number_format($totalext, 2), 'B', 'C', false, 0, '',  '', true, 0, false, true, 20, 'M', true);
+        PDF::MultiCell(200, 15, "" . number_format($totalext, 2), 'B', 'C', false, 0, '',  '', true, 0, false, true, 20, 'M', true);
         PDF::MultiCell(10, 15, "", 'R', 'C', false, 1, '',  '', true, 0, false, true, 20, 'M', true);
 
         PDF::SetFont($font, '', 8);
@@ -721,9 +721,9 @@ class so
 
 
         return PDF::Output($this->modulename . '.pdf', 'S');
-
     }
-    public function addsideline($line) {
+    public function addsideline($line)
+    {
         $maxline = 10;
         $addline = $maxline - $line;
         $fontsize = "12";
@@ -733,7 +733,7 @@ class so
             $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/timesbd.TTF');
         }
         PDF::SetFont($font, '', $fontsize);
-        if($maxline > $line){
+        if ($maxline > $line) {
             $addline = $maxline - $line;
             for ($i = 1; $i <= $addline; $i++) {
                 $line++;
@@ -743,7 +743,6 @@ class so
                 PDF::MultiCell(20, 20, "", 'R', '', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
             }
         }
-        
     }
 
     public function job_order_header_shooting($config, $data)
@@ -787,13 +786,13 @@ class so
         PDF::MultiCell(0, 0, "\n");
 
         PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(100, 0, " ". '', '', 'L', false, 0, '',  '', true, 0, false, true, 20, 'M', true); //Company Name: 
-        PDF::MultiCell(290, 0, " ". (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 20, 'M', true);
+        PDF::MultiCell(100, 0, " " . '', '', 'L', false, 0, '',  '', true, 0, false, true, 20, 'M', true); //Company Name: 
+        PDF::MultiCell(290, 0, " " . (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 20, 'M', true);
         PDF::MultiCell(45, 0, " ", '', 'R', false, 0, '',  '', true, 0, false, true, 20, 'M', true); //Date: 
         PDF::MultiCell(100, 0, "" . (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 20, 'M', true);
 
         PDF::SetXY(555, 113);
-     
+
         PDF::MultiCell(65, 0, "", '', 'R', false, 0, '',  '', true, 0, false, true, 20, 'M', true); // JO NO.
         PDF::SetFont($font, '', 15);
         PDF::MultiCell(100, 0, "" . (isset($data[0]['jono']) ? $data[0]['jono'] : ''), '', 'C', false, 1, '',  '', true, 0, false, true, 20, 'M', true);
@@ -816,9 +815,9 @@ class so
 
         PDF::SetFont($font, 'B', 18);
         PDF::MultiCell(695, 0, "", '', 'C', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
-
     }
-    public function Job_Order_Shooting($config,$data){
+    public function Job_Order_Shooting($config, $data)
+    {
         $username = $config['params']['user'];
         $count = $page = 35;
         $totalext = 0;
@@ -856,7 +855,7 @@ class so
             PDF::MultiCell(20, 20, "", '', '', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
         }
 
-        
+
         $this->addsideline_shooting($line);
 
         PDF::SetFont($font, '', $fontsize);
@@ -880,13 +879,13 @@ class so
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(700, 10, "", '', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
-       
+
 
         PDF::SetFont($font, '', 2);
         PDF::MultiCell(10, 10, "", '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(450, 10, "", '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(10, 10, "", '', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
-    
+
 
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(10, 15, "", '', 'C', false, 0, '',  '', true, 0, false, true, 15, 'M', true);
@@ -941,7 +940,7 @@ class so
 
 
         PDF::SetFont($font, '', 5);
-       
+
         PDF::MultiCell(10, 10, "", '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(220, 10, "", '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
         PDF::MultiCell(10, 10, "", '', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
@@ -1025,7 +1024,7 @@ class so
     }
     public function addsideline_shooting($line)
     {
-  
+
         $fontsize = "12";
         $font = '';
         if (Storage::disk('sbcpath')->exists('/fonts/times.TTF')) {
@@ -1035,7 +1034,7 @@ class so
 
         $maxline = 10;
 
-        if($maxline > $line){
+        if ($maxline > $line) {
             $addline = $maxline - $line;
             PDF::SetFont($font, '', $fontsize);
             for ($i = 1; $i <= $addline; $i++) {
@@ -1043,11 +1042,7 @@ class so
                 PDF::MultiCell(20, 20, "", '', '', false, 0, '',  '', true, 0, false, true, 0, 'M', true);
                 PDF::MultiCell(660, 20, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
                 PDF::MultiCell(20, 20, "", '', '', false, 1, '',  '', true, 0, false, true, 0, 'M', true);
-                
             }
         }
-
-       
     }
-  
 }

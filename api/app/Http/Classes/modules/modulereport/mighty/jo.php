@@ -33,9 +33,9 @@ class jo
   private $othersClass;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -192,7 +192,7 @@ class jo
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(110, 0, "Name: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(420, 0, (!isset($data[0]['clientname']) ? '' : $data[0]['clientname']) .'('. $data[0]['client'] . ')', 'B', 'L', false, 0, '',  '');
+    PDF::MultiCell(420, 0, (!isset($data[0]['clientname']) ? '' : $data[0]['clientname']) . '(' . $data[0]['client'] . ')', 'B', 'L', false, 0, '',  '');
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(90, 0, "Date: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);

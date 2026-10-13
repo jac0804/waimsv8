@@ -22,9 +22,9 @@ class entrypackingstock
     public $style = 'width:100%;;max-width:70%;';
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->tabClass = new tabClass;
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;

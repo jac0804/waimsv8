@@ -40,10 +40,10 @@ class reconstruct
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -212,8 +212,8 @@ class reconstruct
       return ['status' => false, 'msg' => 'Please check, all payments should be posted to continue.'];
     }
 
-    $dateTables = ['cntnuminfo','lahead'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+    $dateTables = ['cntnuminfo', 'lahead'];
+    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key2) {
       $info[$key2] = $head[$key2];
@@ -553,8 +553,8 @@ class reconstruct
     $dateTables = ['arledger'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-   
-     $ma = $this->othersClass->sanitizekeyfieldFast("amt", $head['fma1'], $lookups);
+
+    $ma = $this->othersClass->sanitizekeyfieldFast("amt", $head['fma1'], $lookups);
     $status = true;
     $msg = '';
     $total = 0;
@@ -563,7 +563,7 @@ class reconstruct
     $balmons = $this->coreFunctions->getfieldvalue('terms', 'days', 'terms = ?', [$head['terms']]);
     $dateid = $this->coreFunctions->getfieldvalue('arledger', 'dateid', 'trno = ? and acnoid =?', [$trno, $ar], 'dateid desc');
 
-    
+
     $financeamt = $this->othersClass->sanitizekeyfieldFast("amt", $head['bal'], $lookups);
 
     if ($head['fma1'] == 0) {

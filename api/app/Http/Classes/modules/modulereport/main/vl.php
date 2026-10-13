@@ -34,10 +34,10 @@ class vl
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -363,21 +363,21 @@ class vl
         $result = '';
 
         $maxrow = 1;
-        $arr_purpose = $this->reporter->fixcolumn([$data[$i]['purpose']],'16',0);
-        $arr_passengername = $this->reporter->fixcolumn([$data[$i]['passengername']],'16',0);
-        $arr_customername = $this->reporter->fixcolumn([$data[$i]['customername']],'16',0);
-        $arr_loc = $this->reporter->fixcolumn([$data[$i]['loc']],'16',0);
-        $arr_timein = $this->reporter->fixcolumn([$timein],'13',0);
-        $arr_timeout = $this->reporter->fixcolumn([$timeout],'13',0);
-        $arr_stimein = $this->reporter->fixcolumn([$stimein],'13',);
-        $arr_stimeout = $this->reporter->fixcolumn([$stimeout],'13',0);
-        $arr_itemname = $this->reporter->fixcolumn([$itemname],'30',0);
-        $arr_odometer = $this->reporter->fixcolumn([$odometer],'13',0);
-        $arr_result = $this->reporter->fixcolumn([$result],'13',0);
+        $arr_purpose = $this->reporter->fixcolumn([$data[$i]['purpose']], '16', 0);
+        $arr_passengername = $this->reporter->fixcolumn([$data[$i]['passengername']], '16', 0);
+        $arr_customername = $this->reporter->fixcolumn([$data[$i]['customername']], '16', 0);
+        $arr_loc = $this->reporter->fixcolumn([$data[$i]['loc']], '16', 0);
+        $arr_timein = $this->reporter->fixcolumn([$timein], '13', 0);
+        $arr_timeout = $this->reporter->fixcolumn([$timeout], '13', 0);
+        $arr_stimein = $this->reporter->fixcolumn([$stimein], '13',);
+        $arr_stimeout = $this->reporter->fixcolumn([$stimeout], '13', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '30', 0);
+        $arr_odometer = $this->reporter->fixcolumn([$odometer], '13', 0);
+        $arr_result = $this->reporter->fixcolumn([$result], '13', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_purpose, $arr_passengername, $arr_customername, $arr_loc, $arr_timein, $arr_timeout, $arr_stimein, $arr_stimeout, $arr_itemname, $arr_odometer, $arr_result]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(80, 0, (isset($arr_purpose[$r]) ? $arr_purpose[$r] : ''), 'LRB', 'L', false, 0, '', '', true, 1, false, true, 0, 'T', false);
           PDF::MultiCell(100, 0, (isset($arr_passengername[$r]) ? $arr_passengername[$r] : ''), 'LRB', 'L', false, 0, '', '', true, 1, false, true, 0, 'T', false);

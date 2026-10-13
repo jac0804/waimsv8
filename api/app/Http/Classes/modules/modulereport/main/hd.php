@@ -34,10 +34,10 @@ class hd
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -45,17 +45,19 @@ class hd
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter(){
+  public function createreportfilter()
+  {
     $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
-    $col1 = $this->fieldClass->create($fields);  
+    $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
       // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
     ]);
-    return array('col1'=>$col1);
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable("select 
       'PDFM' as print,
       '' as approved,
@@ -64,9 +66,10 @@ class hd
     ");
   }
 
-  public function report_default_query($config){
+  public function report_default_query($config)
+  {
     $trno = $config['params']['dataid'];
-    $query="
+    $query = "
     select
       head.trno, head.docno, head.empid, date(head.dateid) as dateid,
       head.artid, head.sectionno, head.violationno,
@@ -125,18 +128,19 @@ class hd
     return $result;
   }
 
-  public function reportplotting($config,$data)
-  { 
+  public function reportplotting($config, $data)
+  {
     $data = $this->report_default_query($config);
-    if($config['params']['dataparams']['print'] == "default"){
+    if ($config['params']['dataparams']['print'] == "default") {
       $str = $this->rpt_HD_layout($config, $data);
-    } else if($config['params']['dataparams']['print'] == "PDFM") {
+    } else if ($config['params']['dataparams']['print'] == "PDFM") {
       $str = $this->rpt_HD_PDF($config, $data);
     }
     return $str;
   }
 
-  public function rpt_HD_PDF($config, $data){
+  public function rpt_HD_PDF($config, $data)
+  {
     $companyid = $config['params']['companyid'];
     $decimal = $this->companysetup->getdecimal('currency', $config['params']);
 
@@ -167,7 +171,7 @@ class hd
     PDF::SetMargins(20, 20);
 
 
-    if($companyid == 58){// cdohris
+    if ($companyid == 58) { // cdohris
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(0, 0, $center . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . $username, '', 'L');
       PDF::MultiCell(0, 0, "\n");
@@ -190,7 +194,7 @@ class hd
           PDF::Image($this->companysetup->getlogopath($config['params']) . 'logoridefund.png', '645', '-10', 160, 160);
         }
       }
-    }else {
+    } else {
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(0, 0, $center . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . $username, '', 'L');
       PDF::SetFont($fontbold, '', 12);
@@ -207,11 +211,11 @@ class hd
     PDF::MultiCell(160, 0, "", '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(100, 18, "DOCUMENT # : ", '', 'L', false,0);
+    PDF::MultiCell(100, 18, "DOCUMENT # : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
-    PDF::MultiCell(450, 18, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'L', false,0);
+    PDF::MultiCell(450, 18, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'L', false, 0);
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(95, 18, "DATE : ", '', 'R', false,0);
+    PDF::MultiCell(95, 18, "DATE : ", '', 'R', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(115, 18, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false);
 
@@ -220,83 +224,83 @@ class hd
     PDF::MultiCell(160, 0, "", '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(100, 18, "Employee : ", '', 'L', false,0);
+    PDF::MultiCell(100, 18, "Employee : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
-    PDF::MultiCell(250, 18, (isset($data[0]['empname']) ? $data[0]['empname'] : ''), 'B', 'L', false,0);
+    PDF::MultiCell(250, 18, (isset($data[0]['empname']) ? $data[0]['empname'] : ''), 'B', 'L', false, 0);
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(80, 18, "Job Title : ", '', 'R', false,0);
+    PDF::MultiCell(80, 18, "Job Title : ", '', 'R', false, 0);
     PDF::SetFont($font, '', 11);
-    PDF::MultiCell(120, 18, (isset($data[0]['jobtitle']) ? $data[0]['jobtitle'] : ''), 'B', 'L', false,0);
+    PDF::MultiCell(120, 18, (isset($data[0]['jobtitle']) ? $data[0]['jobtitle'] : ''), 'B', 'L', false, 0);
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(95, 18, "Department : ", '', 'R', false,0);
+    PDF::MultiCell(95, 18, "Department : ", '', 'R', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(115, 18, (isset($data[0]['deptname']) ? $data[0]['deptname'] : ''), 'B', 'L', false);
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(600, 0, "", '', 'L', false, 0);
-    PDF::MultiCell(160, 0, "", '', 'L', false);  
+    PDF::MultiCell(160, 0, "", '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(100, 18, "Ref. Incident No. : ", '', 'L', false,0);
+    PDF::MultiCell(100, 18, "Ref. Incident No. : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
-    PDF::MultiCell(250, 18, (isset($data[0]['irno']) ? $data[0]['irno'] : ''), 'B', 'L', false,0);
+    PDF::MultiCell(250, 18, (isset($data[0]['irno']) ? $data[0]['irno'] : ''), 'B', 'L', false, 0);
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(145, 18, "Incident Description : ", '', 'R', false,0);
+    PDF::MultiCell(145, 18, "Incident Description : ", '', 'R', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(120, 18, (isset($data[0]['irdesc']) ? $data[0]['irdesc'] : ''), 'B', 'L', false);
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(600, 0, "", '', 'L', false, 0);
-    PDF::MultiCell(160, 0, "", '', 'L', false);  
+    PDF::MultiCell(160, 0, "", '', 'L', false);
     PDF::MultiCell(0, 0, "\n\n\n\n");
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(145, 18, "ARTICLE CODE : ", '', 'L', false,0);
+    PDF::MultiCell(145, 18, "ARTICLE CODE : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(120, 18, (isset($data[0]['artcode']) ? $data[0]['artcode'] : ''), '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(145, 18, "ARTICLE DESCRIPTION : ", '', 'L', false,0);
+    PDF::MultiCell(145, 18, "ARTICLE DESCRIPTION : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(120, 18, (isset($data[0]['articlename']) ? $data[0]['articlename'] : ''), '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(145, 18, "SECTION CODE : ", '', 'L', false,0);
+    PDF::MultiCell(145, 18, "SECTION CODE : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(120, 18, (isset($data[0]['sectioncode']) ? $data[0]['sectioncode'] : ''), '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(145, 18, "SECTION DESCRIPTION : ", '', 'L', false,0);
+    PDF::MultiCell(145, 18, "SECTION DESCRIPTION : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(120, 18, (isset($data[0]['sectionname']) ? $data[0]['sectionname'] : ''), '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(145, 18, "TIMES VIOLATED : ", '', 'L', false,0);
+    PDF::MultiCell(145, 18, "TIMES VIOLATED : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(120, 18, (isset($data[0]['violationno']) ? $data[0]['violationno'] : ''), '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(145, 18, "PENALTY : ", '', 'L', false,0);
+    PDF::MultiCell(145, 18, "PENALTY : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(120, 18, (isset($data[0]['penalty']) ? $data[0]['penalty'] : ''), '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(145, 18, "AMOUNT : ", '', 'L', false,0);
+    PDF::MultiCell(145, 18, "AMOUNT : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(120, 18, (isset($data[0]['amt']) ? $data[0]['amt'] : ''), '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(145, 18, "START DATE : ", '', 'L', false,0);
+    PDF::MultiCell(145, 18, "START DATE : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(120, 18, (isset($data[0]['startdate']) ? $data[0]['startdate'] : ''), '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(145, 18, "END DATE : ", '', 'L', false,0);
+    PDF::MultiCell(145, 18, "END DATE : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(120, 18, (isset($data[0]['enddate']) ? $data[0]['enddate'] : ''), '', 'L', false);
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(145, 18, "DETAILS : ", '', 'L', false,0);
+    PDF::MultiCell(145, 18, "DETAILS : ", '', 'L', false, 0);
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(120, 18, (isset($data[0]['detail']) ? $data[0]['detail'] : ''), '', 'L', false);
 
@@ -315,7 +319,8 @@ class hd
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 
-  public function rpt_HD_layout($config, $data){
+  public function rpt_HD_layout($config, $data)
+  {
     $companyid = $config['params']['companyid'];
     $decimal = $this->companysetup->getdecimal('currency', $config['params']);
 
@@ -344,7 +349,7 @@ class hd
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('DOCUMENT # :', '40', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
-    $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '350', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '') ;
+    $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '350', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('DATE : ', '40', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col((isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), '75', null, false, $border, 'B', 'R', $font, $fontsize, '', '', '');
     $str .= $this->reporter->endrow();
@@ -366,9 +371,9 @@ class hd
     $str .= $this->reporter->col((isset($data[0]['irno']) ? $data[0]['irno'] : ''), '160', null, false, $border, 'B', 'L', $font, $fontsize, '', '30px', '4px');
     $str .= $this->reporter->col('Incident Description : ', '40', null, false, $border, '', 'L', $font, $fontsize, 'B', '30px', '4px');
     $str .= $this->reporter->col((isset($data[0]['irdesc']) ? $data[0]['irdesc'] : ''), '160', null, false, $border, 'B', 'L', $font, $fontsize, '', '30px', '4px');
-    
+
     $str .= $this->reporter->endrow();
-    
+
     $str .= $this->reporter->endtable();
 
     // $str .= $this->reporter->printline();
@@ -436,7 +441,7 @@ class hd
     $str .= $this->reporter->col($data[0]['detail'], '600', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     $str .= $this->reporter->col('', '160', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->endrow();
-   
+
     $str .= $this->reporter->endtable();
     $str .= '<br/><br/>';
     $str .= $this->reporter->begintable('800');
@@ -461,5 +466,4 @@ class hd
 
     return $str;
   }
-
 }

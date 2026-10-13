@@ -34,9 +34,9 @@ class po
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -117,7 +117,7 @@ class po
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
- 
+
     $str = "";
     $font =  "Century Gothic";
     $fontsize = "11";
@@ -369,7 +369,7 @@ class po
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 0, "Warehouse: ", '', 'L', false, 0, '', '');
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(470, 0, (isset($data[0]['whcode']) ? $data[0]['whcode'].' ~ '.$data[0]['whname'] : ''), 'B', 'L', false, 0, '', '');
+    PDF::MultiCell(470, 0, (isset($data[0]['whcode']) ? $data[0]['whcode'] . ' ~ ' . $data[0]['whname'] : ''), 'B', 'L', false, 0, '', '');
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 0, "Ourref: ", '', 'L', false, 0, '', '');
     PDF::SetFont($font, '', $fontsize);
@@ -395,7 +395,7 @@ class po
 
   public function default_PO_PDF($params, $data)
   {
-  
+
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
     $decimalqty = $this->companysetup->getdecimal('qty', $params['params']);
     $decimalprice = $this->companysetup->getdecimal('price', $params['params']);

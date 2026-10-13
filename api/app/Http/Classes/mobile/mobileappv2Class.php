@@ -641,45 +641,77 @@ class mobileappv2Class
       case 'mbsitems':
         ini_set('memory_limit', '-1');
         ini_set('max_execution_time', 0);
+
+        // jad version
+        // $iend = $params['iend'];
+        // $icount = 0;
+        // $filter = "";
+        // $wh = $this->coreFunctions->datareader("select wh as value from branchwh where isdefault=1");
+        // $branchstation = $this->coreFunctions->datareader("select wh as value from branchstation limit 1");
+        // $isallitems = 1;
+        // if ($branchstation != '') {
+        //   $isallitems = $this->coreFunctions->datareader("select isallitem as value from client where client='" . $branchstation . "'");
+        // }
+        // if ($isallitems == 0) $filter = " and item.brand in (select brand from branchbrand) ";
+        // if ($iend == 0) {
+        //   $icount = $this->coreFunctions->opentable("select count(*) as icount from item where isinactive=0 " . $filter);
+        //   $icount = $icount[0]->icount;
+        // } else {
+        //   $filter .= " and item.itemid > " . $iend;
+        // }
+        // $qry = "select item.itemid, item.barcode, item.itemname, item.uom, item.partno, item.brand, item.amt, sum(stock.qty-stock.iss) as bal
+        //   from item
+        //   left join glstock as stock on stock.itemid=item.itemid
+        //   where item.barcode not in ('#', '$', '$$', '*', '**', '***') and item.isinactive=0 " . $filter . "
+        //   group by item.itemid, item.barcode, item.itemname, item.uom, item.partno, item.brand, item.amt order by itemid asc limit 5000";
+        // $items = $this->coreFunctions->opentable($qry);
+        // if (!empty($items)) {
+        //   foreach ($items as $ikey => $i) {
+        //     $bal = $this->coreFunctions->datareader("select sum(qty-iss) as value from glstock where itemid=" . $i->itemid . " and whid=14");
+        //     $items[$ikey]->bal = $bal;
+        //   }
+        // }
+        // if (count($items) > 0) $iend = $items[count($items) - 1]->itemid;
+        // $whs = $this->coreFunctions->opentable("select client.client as branch, br.wh, br.isdefault, brc.clientname as whname from branchwh as br left join client as brc on brc.client=br.wh left join client on client.clientid=br.clientid where client.clientid=br.clientid");
+        // $this->coreFunctions->execqry("delete from androidhead where dateid<date(now())");
+        // $this->coreFunctions->execqry("delete from androidstock where trno not in (select trno from androidhead)");
+
+
         $iend = $params['iend'];
+        $apptype = $params['apptype'];
+        $whlist = $params['wh'];
+        $whL = "'" . implode("','", $whlist) . "'";
+
         $icount = 0;
         $filter = "";
-        $wh = $this->coreFunctions->datareader("select wh as value from branchwh where isdefault=1");
-        // $isallitems = $this->coreFunctions->datareader("select isallitem as value from client where client='".$wh."'");
-        $branchstation = $this->coreFunctions->datareader("select wh as value from branchstation limit 1");
-        $isallitems = 1;
-        if ($branchstation != '') {
-          $isallitems = $this->coreFunctions->datareader("select isallitem as value from client where client='" . $branchstation . "'");
+
+        if ($apptype == 'mbs') {
+          $wh = $this->coreFunctions->datareader("select wh as value from branchwh where isdefault=1");
+          $branchstation = $this->coreFunctions->datareader("select wh as value from branchstation limit 1");
+          $isallitems = 1;
+          if ($branchstation != '') {
+            $isallitems = $this->coreFunctions->datareader("select isallitem as value from client where client='" . $branchstation . "'");
+          }
+          if ($isallitems == 0) $filter = " and item.brand in (select brand from branchbrand) ";
         }
-        if ($isallitems == 0) $filter = " and item.brand in (select brand from branchbrand) ";
+
         if ($iend == 0) {
           $icount = $this->coreFunctions->opentable("select count(*) as icount from item where isinactive=0 " . $filter);
           $icount = $icount[0]->icount;
         } else {
           $filter .= " and item.itemid > " . $iend;
         }
-        // $items = $this->coreFunctions->opentable("select item.itemid, item.barcode, item.itemname, item.uom, ifnull(t.bal, 0) as bal,
-        //   item.partno, item.brand, item.amt
-        //   from item left join (
-        //   select itemid, sum(bal) as bal from rrstatus left join client as wh on wh.clientid=rrstatus.whid where wh.client='".$wh."' group by itemid
-        //   ) as t on t.itemid=item.itemid
-        //   where item.barcode not in ('#', '$', '$$', '*', '**', '***') and item.isinactive=0 ".$filter." order by itemid asc limit 5000");
-        $qry = "select item.itemid, item.barcode, item.itemname, item.uom, item.partno, item.brand, item.amt, sum(stock.qty-stock.iss) as bal
-          from item
-          left join glstock as stock on stock.itemid=item.itemid
-          where item.barcode not in ('#', '$', '$$', '*', '**', '***') and item.isinactive=0 " . $filter . "
-          group by item.itemid, item.barcode, item.itemname, item.uom, item.partno, item.brand, item.amt order by itemid asc limit 5000";
+        $qry = "select item.itemid, item.barcode, item.itemname, item.uom, item.partno, item.brand, item.amt, 0 as bal
+          from item where item.barcode not in ('#', '$', '$$', '*', '**', '***') and item.isinactive=0 " . $filter . " order by itemid asc limit 5000";
         $items = $this->coreFunctions->opentable($qry);
-        if (!empty($items)) {
-          foreach ($items as $ikey => $i) {
-            $bal = $this->coreFunctions->datareader("select sum(qty-iss) as value from glstock where itemid=" . $i->itemid . " and whid=14");
-            $items[$ikey]->bal = $bal;
-          }
-        }
         if (count($items) > 0) $iend = $items[count($items) - 1]->itemid;
-        $whs = $this->coreFunctions->opentable("select client.client as branch, br.wh, br.isdefault, brc.clientname as whname from branchwh as br left join client as brc on brc.client=br.wh left join client on client.clientid=br.clientid where client.clientid=br.clientid");
-        $this->coreFunctions->execqry("delete from androidhead where dateid<date(now())");
-        $this->coreFunctions->execqry("delete from androidstock where trno not in (select trno from androidhead)");
+
+        if ($apptype == 'mbs') {
+          $whs = $this->coreFunctions->opentable("select client.client as branch, br.wh, br.isdefault, brc.clientname as whname from branchwh as br left join client as brc on brc.client=br.wh left join client on client.clientid=br.clientid where client.clientid=br.clientid");
+        } else {
+          $whs = $this->coreFunctions->opentable("select client as wh, clientname as whname, branchcode  as branch, 0 as isdefault from client where iswarehouse=1 and client in (" . $whL . ") order by clientname");
+        }
+
         return json_encode(['whs' => $whs, 'items' => $items, 'icount' => $icount, 'iend' => $iend, 'msg' => '']);
         break;
       case 'consolidatedItems':
@@ -700,63 +732,63 @@ class mobileappv2Class
         break;
       case 'downloadandroidhead':
         try {
-        $dateid = $params['dateid'];
-        $batch = 10;
-        
-        $qry = "select head.trno,head.user,head.dateid,head.devid,wh.client as wh,branch.client as branch from androidhead as head
+          $dateid = $params['dateid'];
+          $batch = 10;
+
+          $qry = "select head.trno,head.user,head.dateid,head.devid,wh.client as wh,branch.client as branch from androidhead as head
         left join client as wh on wh.clientid = head.whid
         left join client as branch on branch.clientid = head.branchid
         where date(head.dateid) = ? and head.isdownloaded = 0";
-        $data = $this->coreFunctions->opentable($qry,[$dateid]);
+          $data = $this->coreFunctions->opentable($qry, [$dateid]);
 
-        return json_encode(['status' => true,'head' => $data,'batch' => $batch]);
+          return json_encode(['status' => true, 'head' => $data, 'batch' => $batch]);
         } catch (\Exception $e) {
           return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
         }
-        
+
         break;
       case 'downloadandroidstock':
         try {
-        $apitrno = $params['apitrno'];
-        $start = $params['start'];
-        $batch = $params['batch'];
-        $end = $params['end'];
-        
-        $qry = "select trno,line,itemid,qty,loc from androidstock where trno = ? and line > ? order by line limit ?";
-        $data = $this->coreFunctions->opentable($qry,[$apitrno,$end, $batch]);
-        $items = $this->coreFunctions->datareader("select count(line) as value from androidstock where trno = ?",[$apitrno]);
-        $totalitems = 0;
+          $apitrno = $params['apitrno'];
+          $start = $params['start'];
+          $batch = $params['batch'];
+          $end = $params['end'];
 
-        if(!empty($data)){
-         $totalitems = $items > $batch ? ceil($items / $batch) : 1;
-        }
-        
-        $returnparams = ['aptrno' => $apitrno,'start' => $start,'end' => $end,'items' => $data,'totalitems' => $totalitems];
-        
-        return json_encode(['status' => true,'params' => $returnparams]);
+          $qry = "select trno,line,itemid,qty,loc from androidstock where trno = ? and line > ? order by line limit ?";
+          $data = $this->coreFunctions->opentable($qry, [$apitrno, $end, $batch]);
+          $items = $this->coreFunctions->datareader("select count(line) as value from androidstock where trno = ?", [$apitrno]);
+          $totalitems = 0;
+
+          if (!empty($data)) {
+            $totalitems = $items > $batch ? ceil($items / $batch) : 1;
+          }
+
+          $returnparams = ['aptrno' => $apitrno, 'start' => $start, 'end' => $end, 'items' => $data, 'totalitems' => $totalitems];
+
+          return json_encode(['status' => true, 'params' => $returnparams]);
         } catch (\Exception $e) {
-            return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
+          return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
         }
         break;
       case 'updateandroidhead':
         try {
-        $apitrno = $params['apitrno'];
+          $apitrno = $params['apitrno'];
 
-        $this->coreFunctions->execqry("update androidhead set isdownloaded=1 where trno= '".$apitrno."'", 'update');
-        return json_encode(['status' => true,'params' => ['aptrno' => $apitrno]]);
-         } catch (\Exception $e) {
-            return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
+          $this->coreFunctions->execqry("update androidhead set isdownloaded=1 where trno= '" . $apitrno . "'", 'update');
+          return json_encode(['status' => true, 'params' => ['aptrno' => $apitrno]]);
+        } catch (\Exception $e) {
+          return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
         }
         break;
       case 'clearandroid': //clear all transaction isdownloaded
         try {
-        
+
           $dateid = $params['dateid'];
           $this->coreFunctions->execqry("delete from androidstock where trno in (select trno from androidhead where isdownloaded = 1)");
           $this->coreFunctions->execqry("delete from androidhead where isdownloaded = 1");
-           return json_encode(['status' => true, 'dateid' => $dateid ]);
-         } catch (\Exception $e) {
-            return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
+          return json_encode(['status' => true, 'dateid' => $dateid]);
+        } catch (\Exception $e) {
+          return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
         }
         break;
     }
@@ -1869,102 +1901,99 @@ class mobileappv2Class
         break;
       case md5('uploadandroidhead'):
         try {
-        $branch = $params['branch'];
-        $dateid = $params['dateid'];
-        $wh = $params['wh'];
-        $gtype = $params['gtype'];
-        $devid = $params['devid'];
-        $apitrno = $params['apitrno'];
-        
-         
-        $branchid = $this->coreFunctions->datareader("select clientid as value from client where client='" . $branch . "'");
-        $whid = $this->coreFunctions->datareader("select clientid as value from client where client='" . $wh . "'");
-        if ($gtype == "initial") {
-          $trno = $this->coreFunctions->datareader("select trno as value from androidhead 
-          where whid='" . $whid . "' and date(dateid)='" . $dateid . "' and user = '".$params['user']."' and devid = '".$devid."'",[],'',true);
-          if ($trno == 0) {
-            $data = ['branchid' => $branchid,'whid' => $whid, 'dateid' => $dateid,'devid' => $devid , 'user' => $params['user']];
-            $trno = $this->coreFunctions->insertGetId('androidhead', $data);
+          $branch = $params['branch'];
+          $dateid = $params['dateid'];
+          $wh = $params['wh'];
+          $gtype = $params['gtype'];
+          $devid = $params['devid'];
+          $apitrno = $params['apitrno'];
+          $brand = $params['brand'];
+
+
+          $branchid = $this->coreFunctions->datareader("select clientid as value from client where client='" . $branch . "'");
+          $whid = $this->coreFunctions->datareader("select clientid as value from client where client='" . $wh . "'");
+          if ($gtype == "initial") {
+            $trno = $this->coreFunctions->datareader("select trno as value from androidhead 
+          where whid='" . $whid . "' and date(dateid)='" . $dateid . "' and user = '" . $params['user'] . "' and devid = '" . $devid . "'", [], '', true);
+            if ($trno == 0) {
+              $data = ['branchid' => $branchid, 'whid' => $whid, 'dateid' => $dateid, 'devid' => $devid, 'user' => $params['user']];
+              $trno = $this->coreFunctions->insertGetId('androidhead', $data);
+            }
+            $maxline = $this->coreFunctions->datareader("select ifnull(max(line),0) as value from androidstock where trno='" . $trno . "'");
+            $minline = $this->coreFunctions->datareader("select ifnull(min(line),0) as value from androidstock where trno='" . $trno . "'");
+          } else { //uploading final
+
+            $fdevid = $params['fdevid'];
+            $datenow = $this->othersClass->getCurrentTimeStamp();
+
+            $trno = $this->coreFunctions->datareader("select trno as value from chead 
+          where trno = $apitrno and wh='" . $wh . "' and date(dateid)='" . $dateid . "' and username = '" . $params['user'] . "' and devid = '" . $devid . "' and fdevid = '" . $fdevid . "'", [], '', true);
+            if ($trno == 0) {
+              $qry = "insert into chead(trno,branch,wh,dateid,uploadate,devid,username,fdevid,brand) values(" . $apitrno . ",'" . $branch . "','" . $wh . "','" . $dateid . "','" . $datenow . "','" . $devid . "','" . $params['user'] . "','" . $fdevid . "','" . $brand . "')";
+              $this->coreFunctions->execqry($qry, 'insert', []);
+              $trno = $apitrno;
+            }
+            $maxline = $this->coreFunctions->datareader("select ifnull(max(line),0) as value from cstock where trno='" . $trno . "'");
+            $minline = $this->coreFunctions->datareader("select ifnull(min(line),0) as value from cstock where trno='" . $trno . "'");
           }
-          $maxline = $this->coreFunctions->datareader("select ifnull(max(line),0) as value from androidstock where trno='" . $trno . "'");
-          $minline = $this->coreFunctions->datareader("select ifnull(min(line),0) as value from androidstock where trno='" . $trno . "'");
-
-
-        }else{ //uploading final
-        
-          $fdevid = $params['fdevid'];
-          $datenow = $this->othersClass->getCurrentTimeStamp();
-
-          $trno = $this->coreFunctions->datareader("select trno as value from chead 
-          where trno = $apitrno and wh='" . $wh . "' and date(dateid)='" . $dateid . "' and username = '".$params['user']."' and devid = '".$devid."' and fdevid = '".$fdevid."'",[],'',true);
-          if ($trno == 0) {
-            $qry = "insert into chead(trno,branch,wh,dateid,uploadate,devid,username,fdevid) values(".$apitrno.",'".$branch."','".$wh."','".$dateid."','".$datenow."','".$devid."','".$params['user']."','".$fdevid."')";
-            $this->coreFunctions->execqry($qry, 'insert', []);
-            $trno = $apitrno;
-          }
-          $maxline = $this->coreFunctions->datareader("select ifnull(max(line),0) as value from cstock where trno='" . $trno . "'");
-          $minline = $this->coreFunctions->datareader("select ifnull(min(line),0) as value from cstock where trno='" . $trno . "'");
-         
-        }
-          $returnparams= [
-            'batch' => 500,  
+          $returnparams = [
+            'batch' => 500,
             'start' => $minline,
             'end' => $maxline,
             'apitrno' => $trno
           ];
 
           if ($trno != 0) {
-            return json_encode(['status' => true, 'msg' => 'Upload success','params' => $returnparams]);
+            return json_encode(['status' => true, 'msg' => 'Upload success', 'params' => $returnparams]);
           } else {
-            
+
             return json_encode(['status' => false, 'msg' => 'err1: Error uploading items']);
           }
-        
-         } catch (\Exception $e) {
-            return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
+        } catch (\Exception $e) {
+          return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
         }
         break;
       case md5('uploadandroidstock'):
         try {
-        $trno = $params['apitrno'];
-        $minline = 0;
-        $maxline = 0;
-        
-        if($params['gtype'] == 'initial'){
-          if($trno != 0){
-            if (!empty($params['items'])) {
-              foreach ($params['items'] as $key => $i) {
-                if($key == 0) $minline = $i['line'];
-               $insert = $this->coreFunctions->execqry("insert into androidstock(trno, line, itemid, qty,loc) values(?, ?, ?, ?,?)", 'insert', [$trno, $i['line'], $i['itemid'], $i['qty'],$i['loc']]);
-                if ($insert == 0) {
-                  return json_encode(['status' => false, 'msg' => 'err2: Error uploading initial items']);
+          $trno = $params['apitrno'];
+          $minline = 0;
+          $maxline = 0;
+
+          if ($params['gtype'] == 'initial') {
+            if ($trno != 0) {
+              if (!empty($params['items'])) {
+                foreach ($params['items'] as $key => $i) {
+                  if ($key == 0) $minline = $i['line'];
+                  $insert = $this->coreFunctions->execqry("insert into androidstock(trno, line, itemid, qty,loc) values(?, ?, ?, ?,?)", 'insert', [$trno, $i['line'], $i['itemid'], $i['qty'], $i['loc']]);
+                  if ($insert == 0) {
+                    return json_encode(['status' => false, 'msg' => 'err2: Error uploading initial items']);
+                  }
+                  $maxline = $i['line'];
                 }
-                $maxline =$i['line'];
               }
             }
-          }
-        }else{ //uploading final
+          } else { //uploading final
             if (!empty($params['items'])) {
               foreach ($params['items'] as $key => $i) {
-                if($key == 0) $minline = $i['line'];
-               $insert = $this->coreFunctions->execqry("insert into cstock(trno, line, itemid, qty,loc) values(?, ?, ?, ?,?)", 'insert', [$trno, $i['line'], $i['itemid'], $i['qty'],$i['loc']]);
+                if ($key == 0) $minline = $i['line'];
+                $insert = $this->coreFunctions->execqry("insert into cstock(trno, line, itemid, qty,loc) values(?, ?, ?, ?,?)", 'insert', [$trno, $i['line'], $i['itemid'], $i['qty'], $i['loc']]);
                 if ($insert == 0) {
                   return json_encode(['status' => false, 'msg' => 'err2: Error uploading final items']);
                 }
-                $maxline =$i['line'];
+                $maxline = $i['line'];
               }
             }
-        }
-          $returnparams= [
+          }
+          $returnparams = [
             'batch' => 500,
             'start' => $minline,
             'end' => $maxline,
             'apitrno' => $trno
           ];
-        
-        return json_encode(['status' => true, 'msg' => 'Successfully Uploaded','params' => $returnparams]);
-          } catch (\Exception $e) {
-            return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
+
+          return json_encode(['status' => true, 'msg' => 'Successfully Uploaded', 'params' => $returnparams]);
+        } catch (\Exception $e) {
+          return json_encode(['status' => false, 'msg' => 'err: ' . $e->getMessage()]);
         }
         break;
       case md5('getUserLogs'):

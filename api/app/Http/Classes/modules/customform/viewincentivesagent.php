@@ -30,10 +30,10 @@ class viewincentivesagent
   public $issearchshow = true;
   public $showclosebtn = false;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -355,7 +355,7 @@ class viewincentivesagent
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
 
-   
+
     $start = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['start'], $lookups);
     $end = $this->othersClass->sanitizekeyfieldFast('dateid', $config['params']['dataparams']['end'], $lookups);
     $agentid = $config['params']['dataparams']['agentid'];
@@ -405,7 +405,7 @@ class viewincentivesagent
     where i.doc='" . $doc . "' and ag2.clientid is not null and i.agentid<>i.agentid2 
     and date(i.depodate) between '" . $start . "' and '" . $end . "'" . $filteragent2 . $status2 . "
     order by docno, depodate";
-    
+
 
     return $this->coreFunctions->opentable($qry);
   }

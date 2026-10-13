@@ -703,7 +703,7 @@ class moduleClass
 		$classname = __NAMESPACE__ . '\\modules\\' . $type . '\\' . $doc;
 		try {
 			$this->config['classname'] = $classname;
-			$this->config['docmodule'] = new $classname();
+			$this->config['docmodule'] = new $classname($params);
 		} catch (Exception $e) {
 			echo $e;
 			return $this;
@@ -831,15 +831,15 @@ class moduleClass
 			}
 
 			if ($isexpiry) {
-				$lbl ="Location";
+				$lbl = "Location";
 				$expirystatus = $this->config['docmodule']->expirystatus;
 				if ($this->config['params']['companyid'] == 71) { //buenatech
 					$lbl = "Lot#";
 				}
 				$itembalcol = [
 					['name' => 'wh', 'label' => 'Code', 'align' => 'left', 'field' => 'wh'],
-					['name' => 'whname', 'label' => 'Warehouse', 'align' => 'left', 'field' => 'whname'],					
-					['name' => 'loc', 'label' => $lbl, 'align' => 'left', 'field' => 'loc'],			
+					['name' => 'whname', 'label' => 'Warehouse', 'align' => 'left', 'field' => 'whname'],
+					['name' => 'loc', 'label' => $lbl, 'align' => 'left', 'field' => 'loc'],
 					['name' => 'expiry', 'label' => 'Expiry', 'align' => 'left', 'field' => 'expiry'],
 					['name' => 'bal', 'label' => 'Balance', 'align' => 'left', 'field' => 'bal'],
 					['name' => 'min', 'label' => 'Minimum', 'align' => 'left', 'field' => 'min'],
@@ -1868,6 +1868,11 @@ class moduleClass
 					case 'PP':
 						$clickclient = [];
 						$hideobj['voidtrans'] = true;
+						break;
+					case 'DA':
+						$hideobj['updatenotes'] = true;
+						$hideobj['updatetaskinfo'] = true;
+						goto defaultobjhere;
 						break;
 					default:
 						defaultobjhere:

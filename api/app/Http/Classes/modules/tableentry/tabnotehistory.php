@@ -32,15 +32,15 @@ class  tabnotehistory
     private $fields = [];
     public $showclosebtn = true;
     public $tablelogs = 'table_log';
-    
+
     public $logger;
     public $sqlquery;
     public $constructionlookup;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -75,7 +75,7 @@ class  tabnotehistory
         $obj[0][$this->gridname]['columns'][$createdate]['style'] = "width:150px;whiteSpace: normal;min-width:150px;";
 
         $obj[0][$this->gridname]['columns'][$rem]['readonly'] = true;
-        
+
 
         $obj[0][$this->gridname]['columns'][$createby]['label'] = 'Create By';
 
@@ -102,7 +102,6 @@ class  tabnotehistory
                     order by createdate desc';
                 $data = $this->coreFunctions->opentable($qry, [$trno]);
                 break;
-                
         }
 
         return $data;

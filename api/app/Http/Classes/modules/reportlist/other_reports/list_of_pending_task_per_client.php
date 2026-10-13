@@ -33,18 +33,18 @@ class list_of_pending_task_per_client
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
     public function createHeadField($config)
     {
-        $fields = ['radioprint', 'start', 'end','empname','dclientname', 'radioreporttype'];
+        $fields = ['radioprint', 'start', 'end', 'empname', 'dclientname', 'radioreporttype'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'radioprint.options', [
             ['label' => 'Default', 'value' => 'default', 'color' => 'red']
@@ -58,7 +58,7 @@ class list_of_pending_task_per_client
         data_set($col1, 'empname.lookupclass', 'projectheadlookup');
         data_set($col1, 'empname.action', 'lookupclient');
         data_set($col1, 'empname.label', 'Project Head');
-    
+
         data_set($col1, 'radioreporttype.label', 'Format');
         data_set($col1, 'radioreporttype.options', [
             ['label' => 'Detailed', 'value' => '0', 'color' => 'red'],
@@ -129,7 +129,7 @@ class list_of_pending_task_per_client
         }
 
         if ($empname != '') {
-        $filter .= " and e.client = '$phead' ";
+            $filter .= " and e.client = '$phead' ";
         }
 
         switch ($reporttype) {
@@ -175,7 +175,7 @@ class list_of_pending_task_per_client
         where d.enddate is null and d.isassigntype = 0
         ;
         ";
-         
+
         return $this->coreFunctions->opentable($query);
     }
 
@@ -219,8 +219,8 @@ class list_of_pending_task_per_client
         $str .= $this->reporter->col('', null, null, false, $border, 'B', 'LT', $font, $fontsize, 'B', '', '', '', 0, '', 0, 0, '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
-         //columns
-        if($reporttype == 0){ //Detailed
+        //columns
+        if ($reporttype == 0) { //Detailed
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('DATE', 120, 30, false, $border, 'TB', 'LM', $font, $fontsize, 'B', '', '', '', 0, '', 0, 0, '');
@@ -229,7 +229,7 @@ class list_of_pending_task_per_client
             $str .= $this->reporter->col('REMARKS', 250, 30, false, $border, 'TB', 'LM', $font, $fontsize, 'B', '', '', '', 0, '', 0, 0, '');
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
-        }else if ($reporttype == 1){//Summary
+        } else if ($reporttype == 1) { //Summary
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('DATE', 100, null, false, $border, 'tB', 'LM', $font, $fontsize, 'B', '', '', '', 0, '', 0, 0, '');
@@ -249,7 +249,7 @@ class list_of_pending_task_per_client
         return $str;
     }
 
-    private function innerheader_layout($config)//column names of TaskLists
+    private function innerheader_layout($config) //column names of TaskLists
     {
         $str = '';
         $layoutsize = '1000';
@@ -257,7 +257,7 @@ class list_of_pending_task_per_client
         $border = "1px dotted";
         $font = $this->companysetup->getrptfont($config['params']);
 
-         //columns
+        //columns
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', 95, null, false, $border, '', 'LT', $font, $fontsize, '', '', '', '', 0, '', 0, 0, '');
@@ -271,7 +271,8 @@ class list_of_pending_task_per_client
         return $str;
     }
 
-    private function lastLine($config){ //closing line of the sub rows
+    private function lastLine($config)
+    { //closing line of the sub rows
         $str = '';
         $layoutsize = '1000';
         $fontsize = "10";
@@ -300,7 +301,7 @@ class list_of_pending_task_per_client
         $str .= $this->header_layout($config);
         $this->reporter->linecounter = 0;
         $mains = $this->reportDefault($config);
-        $subs= $this->taskListQuery($config);
+        $subs = $this->taskListQuery($config);
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
@@ -311,7 +312,7 @@ class list_of_pending_task_per_client
 
         $subsByTrno = [];
 
-        if ($reporttype == 0){ //Detailed
+        if ($reporttype == 0) { //Detailed
             foreach ($subs as $sub) {
                 $subsByTrno[$sub->trno][] = $sub;
             }
@@ -329,7 +330,7 @@ class list_of_pending_task_per_client
                 }
 
                 $str .= $this->reporter->begintable($layoutsize);
-                $str .= $this->reporter->startrow();//main
+                $str .= $this->reporter->startrow(); //main
                 $str .= $this->reporter->col($main->dateid, 120, null, false, $border, '', 'LT', $font, $fontsize, '', '', '6px', '', 0, '', 0, 0, '');
                 $str .= $this->reporter->col($main->customer, 350, null, false, $border, '', 'LT', $font, $fontsize, '', '', '6px', '', 0, '', 0, 0, '');
                 $str .= $this->reporter->col($main->phead, 250, null, false, $border, '', 'LT', $font, $fontsize, '', '', '6px', '', 0, '', 0, 0, '');
@@ -362,7 +363,7 @@ class list_of_pending_task_per_client
                         $this->reporter->addline();
                     }
                     $str .= $this->reporter->begintable($layoutsize);
-                    $str .= $this->reporter->startrow();//sub
+                    $str .= $this->reporter->startrow(); //sub
                     $str .= $this->reporter->col('', 95, null, false, $border, '', 'LT', $font, $fontsize, '', '', '6px', '', 0, '', 0, 0, '');
                     $str .= $this->reporter->col($sub->title, 270, null, false, $border, 'L', 'LT', $font, $fontsize, '', '', '6px', '', 0, '', 0, 0, '');
                     $str .= $this->reporter->col($sub->userassigned, 200, null, false, $border, '', 'LT', $font, $fontsize, '', '', '6px', '', 0, '', 0, 0, '');
@@ -372,7 +373,7 @@ class list_of_pending_task_per_client
                     $str .= $this->reporter->endrow();
                     $str .= $this->reporter->endtable();
 
-                    
+
 
                     if ($this->reporter->linecounter >= $page) {
                         $str .= $this->lastLine($config);
@@ -386,13 +387,12 @@ class list_of_pending_task_per_client
                     }
                 }
                 if (!empty($subrows)) {
-                $str .= $this->lastLine($config);
+                    $str .= $this->lastLine($config);
                 }
                 $this->reporter->addline();
                 $str .= '<br>';
-                
             }
-        }else if ($reporttype == 1){ //Summary
+        } else if ($reporttype == 1) { //Summary
             foreach ($mains as $main) {
 
                 $lines = $this->reporter->estimateRowLines([
@@ -411,7 +411,7 @@ class list_of_pending_task_per_client
                 $str .= $this->reporter->col($main->customer, 320, null, false, $border, '', 'LT', $font, $fontsize, '', '', '6px', '', 0, '', 0, 0, '');
                 $str .= $this->reporter->col($main->phead, 230, null, false, $border, '', 'LT', $font, $fontsize, '', '', '6px', '', 0, '', 0, 0, '');
                 $str .= $this->reporter->col($main->rem, 220, null, false, $border, '', 'LT', $font, $fontsize, '', '', '6px', '', 0, '', 0, 0, '');
-                $str .= $this->reporter->col($main->completed. '/'.$main->overall, 100, null, false, $border, '', 'CT', $font, $fontsize, '', '', '6px', '', 0, '', 0, 0, '');
+                $str .= $this->reporter->col($main->completed . '/' . $main->overall, 100, null, false, $border, '', 'CT', $font, $fontsize, '', '', '6px', '', 0, '', 0, 0, '');
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
 
@@ -425,6 +425,4 @@ class list_of_pending_task_per_client
         $str .= $this->reporter->endreport();
         return $str;
     }
-
-
 }

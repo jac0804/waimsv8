@@ -28,33 +28,35 @@ class viewcurriculum
   private $table = 'en_sootherfees';
   private $othersClass;
   public $style = 'width:100%;';
-  private $fields = ['trno','year','term','subjectcode','subjectname','lecture','hours','laboratory','units'];
+  private $fields = ['trno', 'year', 'term', 'subjectcode', 'subjectname', 'lecture', 'hours', 'laboratory', 'units'];
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
     $this->enrollmentlookup = new enrollmentlookup;
   }
 
-  public function getAttrib(){
-    $attrib = array('load'=>0
-                    );
+  public function getAttrib()
+  {
+    $attrib = array(
+      'load' => 0
+    );
     return $attrib;
-}
+  }
 
   public function createTab($config)
   {
-    $tab = [$this->gridname => ['gridcolumns' => ['year','term','subjectcode','subjectname','lecture','hours','laboratory','units']]];
+    $tab = [$this->gridname => ['gridcolumns' => ['year', 'term', 'subjectcode', 'subjectname', 'lecture', 'hours', 'laboratory', 'units']]];
 
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
-    
+
     $obj[0][$this->gridname]['columns'][0]['type'] = "label";
     $obj[0][$this->gridname]['columns'][0]['style'] = "width:40px;whiteSpace: normal;min-width:80px;"; //action
     $obj[0][$this->gridname]['columns'][1]['type'] = "label";
@@ -85,52 +87,26 @@ class viewcurriculum
     return $obj;
   }
 
-  private function loaddataperrecord($trno,$line){
-   
+  private function loaddataperrecord($trno, $line)
+  {
+
     $qry = " select cs.trno,cy.year,sem.term,s.subjectcode,s.subjectname,cs.lecture,cs.hours,cs.laboratory,cs.units
     FROM en_glsubject as cs left join en_subject as s on s.trno=cs.subjectid
     left join en_glyear as cy on cy.trno=cs.trno and cy.line=cs.cline left join en_term as sem on sem.line=cy.semid where cs.trno=?";
 
-    $data = $this->coreFunctions->opentable($qry,[$trno]);    
+    $data = $this->coreFunctions->opentable($qry, [$trno]);
     return $data;
   }
 
-  public function loaddata($config){  
+  public function loaddata($config)
+  {
     $tableid = $config['params']['tableid'];
-    
+
     $qry =  " select cs.trno,cy.year,sem.term,s.subjectcode,s.subjectname,cs.lecture,cs.hours,cs.laboratory,cs.units
     FROM en_glsubject as cs left join en_subject as s on s.trno=cs.subjectid
     left join en_glyear as cy on cy.trno=cs.trno and cy.line=cs.cline left join en_term as sem on sem.line=cy.semid where cs.trno=? order by cy.year,sem.term";
-    $data = $this->coreFunctions->opentable($qry,[$tableid]);
+    $data = $this->coreFunctions->opentable($qry, [$tableid]);
 
     return $data;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 } //end class

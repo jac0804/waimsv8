@@ -35,10 +35,10 @@ class entrycalllog
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -113,15 +113,14 @@ class entrycalllog
     $trno = $config['params']['tableid'];
     $isposted = $this->othersClass->isposted2($trno, "transnum");
     if ($isposted) {
-      $qstrno = $this->coreFunctions->getfieldvalue("qshead","trno","optrno = ?",[$trno],'',true);
-      if($qstrno = 0){ //check sa posted
-        $qstrno = $this->coreFunctions->getfieldvalue("hqshead","trno","optrno = ?",[$trno],'',true);
-        if($qstrno !=0){
+      $qstrno = $this->coreFunctions->getfieldvalue("qshead", "trno", "optrno = ?", [$trno], '', true);
+      if ($qstrno = 0) { //check sa posted
+        $qstrno = $this->coreFunctions->getfieldvalue("hqshead", "trno", "optrno = ?", [$trno], '', true);
+        if ($qstrno != 0) {
           $call = app('App\Http\Classes\modules\tableentry\entrycalllog')->loaddata($config);
           return ['status' => false, 'msg' => 'Already Posted', 'data' => $call];
         }
       }
-      
     }
 
     $select = $this->selectqry();
@@ -129,13 +128,13 @@ class entrycalllog
     $select = $select . ",'' as bgcolor ";
     $qry = "select " . $select . " from " . $this->table . " where trno = '$tableid' order by endtime  desc limit 1 ";
     $result = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
-    $calltype='';
-    $contact='';
-    $stat='Active';
+    $calltype = '';
+    $contact = '';
+    $stat = 'Active';
     if (!empty($result)) {
-      $contact= $result[0]['contact'] != '' ? $result[0]['contact'] : '';
-      $calltype= $result[0]['calltype'] != '' ? $result[0]['calltype'] : '';
-      $stat= $result[0]['status'] != '' ? $result[0]['status'] : '';
+      $contact = $result[0]['contact'] != '' ? $result[0]['contact'] : '';
+      $calltype = $result[0]['calltype'] != '' ? $result[0]['calltype'] : '';
+      $stat = $result[0]['status'] != '' ? $result[0]['status'] : '';
     }
     $data = [];
     $data['trno'] = $trno;
@@ -144,8 +143,8 @@ class entrycalllog
     $data['endtime'] = '';
     $data['calltype'] = $calltype;
     $data['rem'] = '';
-    $data['status']= $stat;
-    $data['contact']= $contact;
+    $data['status'] = $stat;
+    $data['contact'] = $contact;
 
     if ($this->checkcalllogs($trno) == true) {
       $line = $this->coreFunctions->insertGetId($this->table, $data);
@@ -224,7 +223,7 @@ class entrycalllog
       $data = $this->loaddataperrecord($row['trno'], $row['line']);
       return ['status' => false, 'msg' => 'Notes is required', 'data' => $data];
     }
-    
+
     if ($this->coreFunctions->sbcupdate($this->table, $data, ['trno' => $row['trno'], 'line' => $row['line']]) == 1) {
       $returnrow = $this->loaddataperrecord($row['trno'], $row['line']);
       return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];

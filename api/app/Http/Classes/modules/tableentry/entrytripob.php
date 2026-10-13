@@ -36,10 +36,10 @@ class entrytripob
     public $showsearch = true;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -154,7 +154,7 @@ class entrytripob
         $row = $config['params']['data'];
         $fromdate = null;
         $todate = null;
-        
+
         $companyid = $config['params']['companyid'];
         $dateTables = [$this->detail];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -178,7 +178,7 @@ class entrytripob
                             $todate  =  $t->format("Y-m-d H:i:s");
                         }
                     }
-                    $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$key][$value],$lookups);
+                    $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$key][$value], $lookups);
                 }
 
                 $data['leadfrom'] = $fromdate;
@@ -225,7 +225,7 @@ class entrytripob
         $data = [];
         $row = $config['params']['row'];
         $date = $this->othersClass->getCurrentDate();
-        
+
         $companyid = $config['params']['companyid'];
         $dateTables = [$this->detail];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
@@ -241,7 +241,7 @@ class entrytripob
                     $todate  =  $t->format("Y-m-d H:i:s");
                 }
             }
-            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
         $data['leadfrom'] = $fromdate;
         $data['leadto'] = $todate;

@@ -30,12 +30,12 @@ class account_receivables_register
 
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -271,7 +271,6 @@ class account_receivables_register
           $str .= $this->reporter->col(number_format($d2->db, 2), '75', null, false, $border, '', 'R', $font, $fontsize, '', '', '');
           $str .= $this->reporter->col('', '75', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
           $str .= $this->reporter->endrow();
-       
         }
         $str .= $this->reporter->endtable();
       }
@@ -280,7 +279,7 @@ class account_receivables_register
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', '625', null, false, $border, 'T', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('Total Balance: ', '100', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
-     
+
         $str .= $this->reporter->col(number_format($baltotal, $this->companysetup->getdecimal('currency', $config['params'])), '75', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();

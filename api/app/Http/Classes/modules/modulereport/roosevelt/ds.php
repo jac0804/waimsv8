@@ -37,9 +37,9 @@ class ds
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -56,13 +56,13 @@ class ds
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
       // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
     ]);
-   
+
     return array('col1' => $col1);
   }
 
   public function reportparamsdata($config)
   {
-        $paramstr = "select
+    $paramstr = "select
           'PDFM' as print,
           '' as prepared,
           '' as approved,
@@ -312,7 +312,7 @@ class ds
     PDF::MultiCell(350, 0, $data[0]->contraname, 'B', 'L', false, 1, '', '');
 
 
- 
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 0, "Date: ", '', 'L', false, 0, '590',  '130');
     PDF::SetFont($font, '', $fontsize);
@@ -379,7 +379,7 @@ class ds
       $totaldb = 0;
       $totalcr = 0;
       for ($i = 0; $i < count($data); $i++) {
-     
+
 
         $maxrow = 1;
         $acno = $data[$i]->acno;
@@ -414,7 +414,7 @@ class ds
           PDF::MultiCell(100, 0, (isset($arr_client[$r]) ? $arr_client[$r] : ''), '', 'L', false, 1, '', '', false, 1);
         }
 
-     
+
         $totaldb += $data[$i]->db;
         $totalcr += $data[$i]->cr;
 
@@ -442,7 +442,7 @@ class ds
     PDF::MultiCell(560, 0, '', '', 'L');
     PDF::MultiCell(0, 0, "\n\n");
 
- 
+
 
     PDF::MultiCell(253, 0, 'Prepared By: ', '', 'L', false, 0);
     PDF::MultiCell(253, 0, 'Approved By: ', '', 'L', false, 0);
@@ -456,7 +456,7 @@ class ds
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 
-    public function default_DS_header_PDF($params, $data)
+  public function default_DS_header_PDF($params, $data)
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
@@ -511,7 +511,7 @@ class ds
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(720, 0, $this->modulename, '', 'C', false, 1, '',  '');
-    
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($font, '', $fontsize);
@@ -520,7 +520,7 @@ class ds
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(590, 0, (isset($data[0]->docno) ? $data[0]->docno : ''), '', 'L', false, 1, '',  '');
 
-  
+
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(115, 0, "BANK", '', 'L', false, 0, '',  '');
     PDF::MultiCell(15, 0, ":", '', 'L', false, 0, '',  '');
@@ -556,7 +556,7 @@ class ds
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, "", 'B', 'C', false, 1);
-    
+
     PDF::SetFont($font, '', 2);
     PDF::MultiCell(720, 0, "", '', 'C', false, 1);
 
@@ -583,7 +583,7 @@ class ds
   }
 
 
-   public function default_DS_PDF($params, $data)
+  public function default_DS_PDF($params, $data)
   {
     $companyid = $params['params']['companyid'];
     $decimalcurr = $this->companysetup->getdecimal('currency', $params['params']);
@@ -609,10 +609,10 @@ class ds
 
 
     if (!empty($data)) {
-   
-      $no=0;
 
-  
+      $no = 0;
+
+
       $totalamt = $this->coreFunctions->datareader("
               select sum(db) as value from (
               select sum(d.db) as db from lahead as h 
@@ -623,10 +623,10 @@ class ds
                select sum(d.db) as db from glhead as h 
                      left join gldetail as d on d.trno=h.trno
                      left join coa on coa.acnoid=d.acnoid
-                     where h.trno='" . $trno . "' and left(coa.alias,2)='CB' ) as a");          
+                     where h.trno='" . $trno . "' and left(coa.alias,2)='CB' ) as a");
 
       for ($i = 0; $i < count($data); $i++) {
-     
+
 
         $maxrow = 1;
         $checkno = $data[$i]->checkno;
@@ -639,53 +639,52 @@ class ds
         $arr_acnoname = $this->reporter->fixcolumn([$acnoname], '35', 0);
         $arr_debit = $this->reporter->fixcolumn([$debit], '16', 0);
 
-        $maxrow = $this->othersClass->getmaxcolumn([ $arr_checkno, $arr_acnoname, $arr_debit]);
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_checkno, $arr_acnoname, $arr_debit]);
         $no++;        // display counter
 
         for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
-          PDF::MultiCell(20, 0, ($r == 0 ? $no : '') .' .', '', 'L', false, 0, '', '', true, 1);
+          PDF::MultiCell(20, 0, ($r == 0 ? $no : '') . ' .', '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(400, 0, (isset($arr_acnoname[$r]) ? $arr_acnoname[$r] : ''), '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(150, 0, (isset($arr_checkno[$r]) ? $arr_checkno[$r] : ''), '', 'L', false, 0, '', '', false, 1);
           PDF::MultiCell(150, 0, (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), '', 'R', false, 1, '', '', false, 1);
         }
 
-  
+
         if (intval($i) + 1 == $page) {
-            PDF::SetFont($font, '', 5);
-            PDF::MultiCell(720, 0, '', 'B');
+          PDF::SetFont($font, '', 5);
+          PDF::MultiCell(720, 0, '', 'B');
 
-            PDF::SetFont($font, '', 5);
-            PDF::MultiCell(720, 0, '', '');
+          PDF::SetFont($font, '', 5);
+          PDF::MultiCell(720, 0, '', '');
 
-              $datehere = $data[0]->dateid; // date('m-d-Y');
-              $depositdate = (new DateTime($datehere))->format('Y/m/d'); //'2025-05-21'
-            
-            PDF::MultiCell(0, 0, "\n\n\n");
-            
-            PDF::SetFont($font, '', $fontsize);
-            PDF::MultiCell(240, 0, 'DEPOSIT DATE', '', 'C', false, 0);
-            PDF::MultiCell(240, 0, 'TOTAL CHECKS', '', 'C', false, 0);
-            PDF::MultiCell(240, 0, 'TOTAL AMOUNT', '', 'C', false, 1);
+          $datehere = $data[0]->dateid; // date('m-d-Y');
+          $depositdate = (new DateTime($datehere))->format('Y/m/d'); //'2025-05-21'
 
+          PDF::MultiCell(0, 0, "\n\n\n");
 
-            PDF::MultiCell(0, 0, "\n");
-
-            PDF::SetFont($fontbold, '', $fontsize);
-            PDF::MultiCell(240, 0, $depositdate, '', 'C', false, 0);
-            PDF::MultiCell(240, 0, count($data), '', 'C', false, 0);
-            PDF::MultiCell(240, 0, number_format($totalamt, $decimalcurr), '', 'C', false, 1);
+          PDF::SetFont($font, '', $fontsize);
+          PDF::MultiCell(240, 0, 'DEPOSIT DATE', '', 'C', false, 0);
+          PDF::MultiCell(240, 0, 'TOTAL CHECKS', '', 'C', false, 0);
+          PDF::MultiCell(240, 0, 'TOTAL AMOUNT', '', 'C', false, 1);
 
 
-            PDF::SetFont($font, '', 12);
-            PDF::SetXY(40, 950);
-            PDF::MultiCell(720, 0, date_format(date_create($current_timestamp), 'Y/m/d H:i:s') , '', 'L', false, 1);
+          PDF::MultiCell(0, 0, "\n");
 
-            $this->default_DS_header_PDF($params, $data);
-            $page += $count;
-            $no = 0; // reset per page only
+          PDF::SetFont($fontbold, '', $fontsize);
+          PDF::MultiCell(240, 0, $depositdate, '', 'C', false, 0);
+          PDF::MultiCell(240, 0, count($data), '', 'C', false, 0);
+          PDF::MultiCell(240, 0, number_format($totalamt, $decimalcurr), '', 'C', false, 1);
+
+
+          PDF::SetFont($font, '', 12);
+          PDF::SetXY(40, 950);
+          PDF::MultiCell(720, 0, date_format(date_create($current_timestamp), 'Y/m/d H:i:s'), '', 'L', false, 1);
+
+          $this->default_DS_header_PDF($params, $data);
+          $page += $count;
+          $no = 0; // reset per page only
         }
-        
       }
     }
 
@@ -695,9 +694,9 @@ class ds
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', '');
 
-      $datehere = $data[0]->dateid; // date('m-d-Y');
-      $depositdate = (new DateTime($datehere))->format('Y/m/d'); //'2025-05-21'
-    
+    $datehere = $data[0]->dateid; // date('m-d-Y');
+    $depositdate = (new DateTime($datehere))->format('Y/m/d'); //'2025-05-21'
+
     PDF::MultiCell(0, 0, "\n\n\n");
 
     PDF::SetFont($font, '', $fontsize);
@@ -715,9 +714,9 @@ class ds
 
     PDF::SetFont($font, '', 12);
     PDF::SetXY(40, 950);
-    PDF::MultiCell(720, 0, date_format(date_create($current_timestamp), 'Y/m/d H:i:s') , '', 'L', false, 1);
+    PDF::MultiCell(720, 0, date_format(date_create($current_timestamp), 'Y/m/d H:i:s'), '', 'L', false, 1);
 
- 
+
 
     // PDF::MultiCell(253, 0, 'Prepared By: ', '', 'L', false, 0);
     // PDF::MultiCell(253, 0, 'Approved By: ', '', 'L', false, 0);

@@ -43,9 +43,9 @@ class billing_vs_collection
 
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -120,7 +120,7 @@ class billing_vs_collection
 
         switch ($reporttype) {
 
-                #summary
+            #summary
             case '0':
                 $query = "select  cn.name as mall,cn.line, date(head.dateid) as dateid ,sum(detail.db - detail.cr) as tbill from glhead as head
          left join gldetail as detail on detail.trno = head.trno

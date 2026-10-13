@@ -42,10 +42,10 @@ class br
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -101,7 +101,8 @@ class br
     return $result;
   } //end fn
 
-  private function reportheader($params, $data){
+  private function reportheader($params, $data)
+  {
 
     $companyid = $params['params']['companyid'];
     $decimal = $this->companysetup->getdecimal('currency', $params['params']);
@@ -163,7 +164,7 @@ class br
     $str .= $this->reporter->col('', '100', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('', '75', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('TOTAL', '100', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
-    
+
     return $str;
   }
 
@@ -205,7 +206,7 @@ class br
       if ($this->reporter->linecounter == $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
-            $str .= $this->reportheader($params, $data);
+        $str .= $this->reportheader($params, $data);
         $str .= $this->reporter->endrow();
         $page = $page + $count;
       }
@@ -254,5 +255,4 @@ class br
 
     return $str;
   }
-
 }

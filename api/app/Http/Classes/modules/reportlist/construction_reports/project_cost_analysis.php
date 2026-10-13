@@ -33,12 +33,12 @@ class project_cost_analysis
 
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -916,7 +916,11 @@ class project_cost_analysis
                                        where h.projectid=? and h.subproject=? and s.stage =? and s.activity=? and sub.description=? and h.dateid <= '" . $end . "'
                                        group by sub.description";
                                 $baresult = $this->coreFunctions->opentable($ba, [
-                                    $value->projectid, $value->subprojectid, $v->stageid, $c->actid, $d->description
+                                    $value->projectid,
+                                    $value->subprojectid,
+                                    $v->stageid,
+                                    $c->actid,
+                                    $d->description
                                 ]);
 
 

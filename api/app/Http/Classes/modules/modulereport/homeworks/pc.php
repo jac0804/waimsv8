@@ -37,9 +37,9 @@ class pc
     private $reporter;
     private $reportheader;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -56,7 +56,7 @@ class pc
             ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
             ['label' => 'EXCEL', 'value' => 'excel', 'color' => 'red']
         ]);
-    
+
         return array('col1' => $col1);
     }
 
@@ -73,9 +73,8 @@ class pc
 
     public function report_default_query($filters)
     {
-        
-    return $this->default_query($filters);
-          
+
+        return $this->default_query($filters);
     }
 
     public function default_query($filters)
@@ -162,7 +161,7 @@ class pc
     public function default_pc_layout($config, $result)
     {
         $companyid = $config['params']['companyid'];
-    
+
 
         $center   = $config['params']['center'];
         $username = $config['params']['user'];

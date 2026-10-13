@@ -39,11 +39,11 @@ class timeadj
     // public $tablenum = 'timeadj';
     public $head = 'timeadj';
     public $fields = ['acnoid', 'rem', 'qty', 'batchid'];
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -268,7 +268,7 @@ class timeadj
             foreach ($data as $key => $val) {
                 foreach ($this->fields as $key => $value) {
                     foreach ($this->fields as $key2 => $value) {
-                        $tempdata[$value] = $this->othersClass->sanitizekeyfieldFast($value, $data[$value],$lookups);
+                        $tempdata[$value] = $this->othersClass->sanitizekeyfieldFast($value, $data[$value], $lookups);
                     }
                     if ($key == 'qty') {
                         $tempdata['amt'] = $data['qty'] / 60;
@@ -280,6 +280,7 @@ class timeadj
             $tempdata['dateid'] = $this->othersClass->getCurrentTimeStamp();;
             $tempdata['createtime'] = $this->othersClass->getCurrentTimeStamp();;
             $tempdata['createdby'] = $user;
+            $this->logger->sbcmasterlog2($empid, $config, 'CREATE - ' . $data['acnoname'] . ' : ' . $data['empname'] . ' - ' . ' Minutes: ' . $data['qty'] . ($data['rem'] != '' ? ' Remarks: ' . $data['rem'] : ''), 'payroll_log');
             $this->coreFunctions->sbcinsert("timeadj", $tempdata);
         }
     }
@@ -295,10 +296,11 @@ class timeadj
         $data = [];
         foreach ($row as $key => $val) { //first array
             foreach ($this->fields as $key2 => $value) {
-                $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+                $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
             }
         }
 
+        $this->logger->sbcmasterlog2($row['empid'], $config, 'UPDATE - ' . $row['acnoname'] . ' : ' . $row['clientname'] . ' - ' . ' Minutes: ' . $row['qty'] . ($row['rem'] != '' ? ' Remarks: ' . $row['rem'] : ''), 'payroll_log');
         $this->coreFunctions->sbcupdate($this->table, $data, ['line' => $trno]);
         $data = $this->loadperdetails($config, $trno);
         return ['status' => true, 'msg' => 'Successfully saved.', 'action' => 'load', 'row' => $data];

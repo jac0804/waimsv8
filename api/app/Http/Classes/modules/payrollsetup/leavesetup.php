@@ -37,7 +37,16 @@ class leavesetup
     private $stockselect;
 
     private $fields = [
-        'docno', 'dateid', 'empid', 'remarks', 'prdstart', 'prdend', 'days', 'bal', 'acnoid', 'isnopay'
+        'docno',
+        'dateid',
+        'empid',
+        'remarks',
+        'prdstart',
+        'prdend',
+        'days',
+        'bal',
+        'acnoid',
+        'isnopay'
     ];
     // 'remarks','acno','days','bal',
     private $except = ['clientid', 'client', 'acno'];
@@ -52,11 +61,11 @@ class leavesetup
         ['val' => 'posted', 'label' => 'Without Balance', 'color' => 'primary']
     ];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -303,7 +312,7 @@ class leavesetup
         $msg = '';
         $head['acnoid'] = $this->coreFunctions->getfieldvalue("paccount", "line", "code = '" . $head['acno'] . "'");
 
-        
+
         $dateTables = ['leavesetup'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
@@ -311,7 +320,7 @@ class leavesetup
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if 
             }
         }

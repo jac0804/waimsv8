@@ -58,11 +58,11 @@ class packhouseloading
     private $reporter;
     private $helpClass;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -611,7 +611,7 @@ class packhouseloading
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
 
         $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
-        
+
         if (!$islocation) {
             $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
         }
@@ -908,7 +908,7 @@ class packhouseloading
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                     $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -1810,7 +1810,7 @@ class packhouseloading
                     $dateTables = ['lastock'];
                     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
                     foreach ($stock as $skey => $sval) {
-                         $stock[$skey] = $this->othersClass->sanitizekeyfieldFast($skey, $stock[$skey], $lookups);
+                        $stock[$skey] = $this->othersClass->sanitizekeyfieldFast($skey, $stock[$skey], $lookups);
                     }
 
                     // $this->coreFunctions->LogConsole(json_encode($stock));
@@ -2287,7 +2287,7 @@ class packhouseloading
                 $hamt = number_format($computedata['amt'] * $curtopeso, 2, '.', '');
             }
         }
-          $hamt = $this->othersClass->sanitizekeyfieldFast('amt', $hamt, $lookups);
+        $hamt = $this->othersClass->sanitizekeyfieldFast('amt', $hamt, $lookups);
 
         $data = [
             'trno' => $trno,
@@ -2326,7 +2326,7 @@ class packhouseloading
 
 
         foreach ($data as $key => $value) {
-             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+            $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
         $data['editdate'] = $current_timestamp;
@@ -3381,7 +3381,7 @@ class packhouseloading
             $current_timestamp = $this->othersClass->getCurrentTimeStamp();
             foreach ($this->acctg as $key => $value) {
                 foreach ($value as $key2 => $value2) {
-                     $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
+                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
                 }
                 $this->acctg[$key]['editdate'] = $current_timestamp;
                 $this->acctg[$key]['editby'] = $config['params']['user'];
@@ -3739,9 +3739,9 @@ class packhouseloading
         $dateTables = ['lastock'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($data2 as $key => $value) {
-              $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
-              $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
-              if ($companyid == 10) {
+            $damt = $this->othersClass->sanitizekeyfieldFast('amt', $data2[$key][$this->damt], $lookups);
+            $dqty = $this->othersClass->sanitizekeyfieldFast('qty', round($data2[$key][$this->dqty], $this->companysetup->getdecimal('qty', $config['params'])), $lookups);
+            if ($companyid == 10) {
                 if ($data[$key]->disc != "") {
                     $computedata = $this->othersClass->computestock(
                         $damt * $head['forex'],
@@ -3771,7 +3771,7 @@ class packhouseloading
                     0
                 );
             }
-             $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
+            $computedata['amt'] = $this->othersClass->sanitizekeyfieldFast('amt', $computedata['amt'], $lookups);
 
             $exec = $this->coreFunctions->execqry("update lastock set amt = " . $computedata['amt'] . " where trno = " . $head['trno'] . " and line=" . $data[$key]->line, "update");
         }

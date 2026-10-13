@@ -32,12 +32,12 @@ class zero_rated_report
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -134,7 +134,7 @@ class zero_rated_report
           head.dateid between '" . $start . "' and '" . $end . "' $filter $filter1
           group by dateid, clientname, tin, addr, docno, billingaddress,agent.clientname order by dateid,docno";
 
-         // var_dump($query);exit;
+    // var_dump($query);exit;
 
     $data = $this->coreFunctions->opentable($query);
 

@@ -25,7 +25,7 @@ class vi
     private $logger;
     public $expirystatus = ['readonly' => false, 'show' => true, 'showdate' => true];
     public $tablenum = 'hrisnum';
-    public $head = 'violation'; 
+    public $head = 'violation';
     public $hhead = 'hviolation';
     public $detail = '';
     public $hdetail = '';
@@ -53,11 +53,11 @@ class vi
     private $reporter;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;

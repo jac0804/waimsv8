@@ -34,10 +34,10 @@ class updatenotes
     public $issearchshow = false;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -62,7 +62,7 @@ class updatenotes
 
     public function paramsdata($config)
     {
-        return $this->coreFunctions->opentable("select '".$config['params']['addedparams']['rem']."' as rem");
+        return $this->coreFunctions->opentable("select '" . $config['params']['addedparams']['rem'] . "' as rem");
     }
 
 
@@ -91,12 +91,12 @@ class updatenotes
     {
         $clientid = $config['params']['clientid'];
         $companyid = $config['params']['companyid'];
-       
+
         $dateTables = ['client'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         // $rem = $this->othersClass->sanitize($config['params']['dataparams']['rem'], 'STRING');
         $rem = $this->othersClass->sanitizekeyfieldFast('rem', $config['params']['dataparams']['rem'], $lookups);
-        if ($this->coreFunctions->execqry("update client set rem='".$rem."' where clientid=".$clientid, "update")) {
+        if ($this->coreFunctions->execqry("update client set rem='" . $rem . "' where clientid=" . $clientid, "update")) {
             $status = true;
             $msg = 'Notes updated';
             return ['status' => true, 'msg' => 'Notes updated', 'closecustomform' => true, 'updateheaddatafield' => ['field' => 'rem', 'value' => $rem]];

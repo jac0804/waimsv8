@@ -18,10 +18,12 @@ class txtfieldClass
     private $fields = [];
     private $coreFunctions;
     private $othersClass;
+    private $params = null;
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->othersClass = new othersClass;
+        $this->params = $params;
     }
     public function txtarray()
     {
@@ -9679,6 +9681,15 @@ class txtfieldClass
                 'type' => 'checkbox',
                 'label' => 'Week 5',
                 'class' => 'csw5',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+            'w8' => array(
+                'name' => 'w8',
+                'type' => 'checkbox',
+                'label' => 'Week 8',
+                'class' => 'csw8',
                 'readonly' => true,
                 'style' => $this->style,
                 'required' => false
@@ -20202,6 +20213,15 @@ class txtfieldClass
                 'style' => $this->style,
                 'required' => false
             ),
+            'isallowonly' => array(
+                'name' => 'isallowonly',
+                'type' => 'checkbox',
+                'label' => 'Allowance Only',
+                'class' => 'csisallowonly',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
 
             //added nov 27
             'cashier' => array(
@@ -21386,12 +21406,46 @@ class txtfieldClass
                 'lookupclass' => 'stockstatusposted',
                 'icon' => 'file_copy',
                 'access' => 'save',
-                'action' => 'copypreviousstock',
+                'action' => 'customformdialog',
                 'readonly' => true,
                 'style' => 'width:100%',
-                'required' => false,
-                'confirm' => true,
-                'confirmlabel' => 'Copy Previous Stock?'
+                'required' => false
+            ),
+            'iscatchwt' => array(
+                'name' => 'iscatchwt',
+                'type' => 'checkbox',
+                'label' => 'Catch Weight',
+                'class' => 'csiscatchwt',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+            'isparentname' => array(
+                'name' => 'isparentname',
+                'type' => 'checkbox',
+                'label' => 'Print Parent Name in SJ/SOA',
+                'class' => 'csisparentname',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+            'wt' => array(
+                'name' => 'wt',
+                'label' => 'Item Weight',
+                'type' => 'input',
+                'class' => 'cswt',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
+            ),
+            'vendorname' => array(
+                'name' => 'vendorname',
+                'type' => 'input',
+                'label' => 'Vendor Code',
+                'class' => 'csvendorname',
+                'readonly' => false,
+                'style' => $this->style,
+                'required' => false
             ),
 
 
@@ -21410,6 +21464,23 @@ class txtfieldClass
     public function create($fieldnames)
     {
         $this->txtarray();
+
+        //overwrite the default label with custom label
+        if (!empty($this->params)) {
+            $custom_labels = $this->othersClass->getCustomLabels($this->params);
+
+            $flat = []; // need this for the fields combined in one column, e.g. ['field1', 'field2']
+            array_walk_recursive($fieldnames, function ($v) use (&$flat) {
+                $flat[] = $v;
+            });
+
+            foreach ($custom_labels as $field => $label) {
+                if (in_array($field, $flat, true) && isset($this->fields[$field])) {
+                    $this->fields[$field]['label'] = $label;
+                }
+            }
+        }
+
         $txtplot = [];
         $txtfield = [];
         $labeldata = [];

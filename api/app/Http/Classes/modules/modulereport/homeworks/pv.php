@@ -37,9 +37,9 @@ class pv
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -1717,7 +1717,7 @@ class pv
                     // Pagsasama-samahin ang mga row na may parehong EWT code.
                     if (!isset($finalarrs[$value['ewtcode']])) {
                         // Gumawa ng bagong group para sa EWT code kung wala pa ito.
-                        $finalarrs[$value['ewtcode']] = [ 'oamt' => 0, 'xamt' => 0,'month' => $value['month'] ];
+                        $finalarrs[$value['ewtcode']] = ['oamt' => 0, 'xamt' => 0, 'month' => $value['month']];
                     }
 
                     // Idagdag ang current base amount sa existing total ng EWT code.

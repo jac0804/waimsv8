@@ -56,11 +56,11 @@ class st
   private $helpClass;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -227,7 +227,7 @@ class st
     $isexpiry = $this->companysetup->getisexpiry($config['params']);
     $islocation = $this->companysetup->getislocation($config['params']);
     $locname = $this->companysetup->getlocname($config['params']);
-    
+
     $action = 0;
     $isqty = 1;
     $uom = 2;
@@ -280,10 +280,10 @@ class st
 
     $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
 
-    if(!$islocation) {
+    if (!$islocation) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
     }
-        
+
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
 
     return $obj;

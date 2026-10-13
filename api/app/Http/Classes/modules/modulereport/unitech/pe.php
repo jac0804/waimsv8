@@ -37,9 +37,9 @@ class pe
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -274,21 +274,20 @@ class pe
             }
 
             $tqty = $tqty + $data[$i]['qty'];
-
         }
 
         PDF::SetFont($font, '', 5);
         PDF::MultiCell(360, 0, ' ', '', 'L', false, 0);
-        PDF::MultiCell(340, 0, ' ', 'LR', 'L', false);                
+        PDF::MultiCell(340, 0, ' ', 'LR', 'L', false);
         PDF::SetFont($fontbold, '', $fontsize);
         PDF::MultiCell(360, 15, '', '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(210, 15, ' TOTAL QTY: ' , 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(50, 15, ' ' , '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(80, 15, number_format($tqty,2), 'R', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(210, 15, ' TOTAL QTY: ', 'L', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(50, 15, ' ', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(80, 15, number_format($tqty, 2), 'R', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
         PDF::SetFont($font, '', 5);
         PDF::MultiCell(360, 0, "", '', 'C', false, 0);
         PDF::MultiCell(340, 0, "", 'BLR', 'C', false);
-    
+
 
         return PDF::Output($this->modulename . '.pdf', 'S');
     }

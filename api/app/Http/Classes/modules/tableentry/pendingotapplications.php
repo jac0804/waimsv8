@@ -35,10 +35,10 @@ class pendingotapplications
     public $otfields = ['otstatus', 'otstatus2', 'remarks', 'apothrs', 'batchid', 'approvedby', 'approvedate', 'approvedate2', 'approvedby2', 'apothrsextra', 'apndiffothrs', 'disapprovedby', 'disapprovedate', 'disapprovedby2', 'disapprovedate2', 'disapproved_remarks2'];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;

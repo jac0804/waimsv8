@@ -42,10 +42,10 @@ class en_attendancesetup
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -162,12 +162,12 @@ class en_attendancesetup
   } // end function  
 
   public function save($config)
-  { 
+  {
     $companyid = $config['params']['companyid'];
     $data = [];
     $row = $config['params']['row'];
     $data2 = [];
-    
+
     $dateTables = ['en_attendancesetup'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
@@ -331,7 +331,8 @@ class en_attendancesetup
   public function reportparamsdata($config)
   {
     return $this->coreFunctions->opentable(
-      "select 'PDFM' as print, '' as prepared, '' as approved, '' as received");
+      "select 'PDFM' as print, '' as prepared, '' as approved, '' as received"
+    );
   }
 
   public function reportdata($config)

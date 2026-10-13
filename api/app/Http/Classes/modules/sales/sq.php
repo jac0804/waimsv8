@@ -60,11 +60,11 @@ class sq
 	private $reporter;
 	private $helpClass;
 
-	public function __construct()
+	public function __construct($params = null)
 	{
 		$this->btnClass = new buttonClass;
-		$this->fieldClass = new txtfieldClass;
-		$this->tabClass = new tabClass;
+		$this->fieldClass = new txtfieldClass($params);
+		$this->tabClass = new tabClass($params);;
 		$this->companysetup = new companysetup;
 		$this->coreFunctions = new coreFunctions;
 		$this->othersClass = new othersClass;
@@ -710,7 +710,7 @@ class sq
 		}
 
 		$dateTables = ['sqhead'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+		$lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
 		foreach ($this->fields as $key) {
 			if (array_key_exists($key, $head)) {
@@ -812,7 +812,7 @@ class sq
 
 		$qt_trno = $this->coreFunctions->datareader("select trno as value from hqshead where sotrno = ? LIMIT 1", [$trno]);
 
-		if($qt_trno!=0){
+		if ($qt_trno != 0) {
 			$checking = $this->coreFunctions->opentable("select trno from lastock where refx = ?
 			union all
 			select trno from glstock where refx = ?", [$qt_trno, $qt_trno]);
@@ -833,7 +833,7 @@ class sq
 				return ['trno' => $trno, 'status' => false, 'msg' => 'UNPOST FAILED, either already have PO...'];
 			}
 		}
-	
+
 
 		$docno = $this->coreFunctions->datareader('select docno as value from ' . $this->tablenum . ' where trno=?', [$trno]);
 
@@ -1368,7 +1368,7 @@ class sq
 		}
 
 		$dateTables = ['qsstock'];
-        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+		$lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
 		$amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
 		$qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);

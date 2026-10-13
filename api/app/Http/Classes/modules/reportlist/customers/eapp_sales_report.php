@@ -29,12 +29,12 @@ class eapp_sales_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '800'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -84,7 +84,7 @@ class eapp_sales_report
     $filter = "";
     if ($month != '') $filter .= " and month(head.dateid)='" . $month . "' ";
     if ($year != '') $filter .= " and year(head.dateid)='" . $year . "' ";
-   
+
     $query = "select date(head.dateid) as dateid, head.docno, concat(info.lname, ' ', info.fname, ' ', info.mname) as planholder,
         ifnull((case info.issenior when 1 then pt.amount/1.12 else pt.amount end),0) as amount, '' as catpay,
       (select  cra.dateid  from (select cr.dateid,cr.yourref,cr.trno from lahead as cr

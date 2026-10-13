@@ -109,11 +109,11 @@ class ci
     ];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -472,10 +472,10 @@ class ci
         $obj[0]['inventory']['columns'][$barcode]['label'] = '';
 
 
-        if(!$islocation) {
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+        if (!$islocation) {
+            $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
         }
-        
+
         $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
         return $obj;
     }
@@ -1519,7 +1519,7 @@ class ci
         $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
         $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);
         $kgs = $this->othersClass->sanitizekeyfieldFast('qty', $kgs, $lookups);
-        
+
         $qry = "select item.barcode,item.itemname,ifnull(uom.factor,1) as factor,item.isnoninv from item left join uom on uom.itemid=item.itemid and uom.uom=? where item.itemid=?";
         $item = $this->coreFunctions->opentable($qry, [$uom, $itemid]);
         $factor = 1;
@@ -2341,7 +2341,7 @@ class ci
                     $this->distribution($params, $config);
                 }
             }
-        } 
+        }
 
         if ($delcharge != 0) {
             $qry = "select client,forex,dateid,cur,branch,deptid,contra from " . $this->head . " where trno = ?";

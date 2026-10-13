@@ -19,33 +19,33 @@ use App\Http\Classes\SBCPDF;
 
 class infrastructure_clearance_summary_report
 {
-  public $modulename = 'Infrastructure Clearance Summary Report';
-  private $companysetup;
-  private $coreFunctions;
-  private $fieldClass;
-  private $othersClass;
-  private $reporter;
-  public $style = 'width:1200px;max-width:1200px;';
-  public $directprint = false;
+    public $modulename = 'Infrastructure Clearance Summary Report';
+    private $companysetup;
+    private $coreFunctions;
+    private $fieldClass;
+    private $othersClass;
+    private $reporter;
+    public $style = 'width:1200px;max-width:1200px;';
+    public $directprint = false;
 
-  // orientations: portrait=p, landscape=l
-  // formats: letter, a4, legal
-  // layoutsize: reportWidth
-  public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
+    // orientations: portrait=p, landscape=l
+    // formats: letter, a4, legal
+    // layoutsize: reportWidth
+    public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
-  {
-    $this->companysetup = new companysetup;
-    $this->coreFunctions = new coreFunctions;
-    $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->reporter = new SBCPDF;
-  }
+    public function __construct($params = null)
+    {
+        $this->companysetup = new companysetup;
+        $this->coreFunctions = new coreFunctions;
+        $this->othersClass = new othersClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->reporter = new SBCPDF;
+    }
 
-   public function createHeadField($config)
+    public function createHeadField($config)
     {
         $companyid = $config['params']['companyid'];
-        $fields = ['radioprint','start', 'end','infratype'];
+        $fields = ['radioprint', 'start', 'end', 'infratype'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'start.type', 'date');
         data_set($col1, 'end.type', 'date');
@@ -57,7 +57,7 @@ class infrastructure_clearance_summary_report
         return array('col1' => $col1, 'col2' => $col2);
     }
 
-     public function paramsdata($config)
+    public function paramsdata($config)
     {
         // NAME NG INPUT YUNG NAKA ALIAS
         return $this->coreFunctions->opentable("select 
@@ -99,8 +99,8 @@ class infrastructure_clearance_summary_report
         if ($infratype != '') {
             $filter .= " and cl.infratype = '$infratype'";
         }
-        
-      
+
+
         $query = "select head.dateid,concat(left(cl.client,1), right(cl.client,4)) as brgyid, head.docno as control, cl.clientname, head.amount
             from lahead as head
             left join lastock as stock on stock.trno = head.trno
@@ -126,9 +126,9 @@ class infrastructure_clearance_summary_report
         $infratype = $config['params']['dataparams']['infratype'];
         $start = date("M-d-Y", strtotime($config['params']['dataparams']['start']));
         $end = date("M-d-Y", strtotime($config['params']['dataparams']['end']));
-        $printDate = date("m/d/y");  
+        $printDate = date("m/d/y");
         $printTime = date("g:i:s A");
-      
+
         $str = '';
         $layoutsize = '1000';
         $font = 'Tahoma';
@@ -149,54 +149,53 @@ class infrastructure_clearance_summary_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, null, null, 'L', $font, $fontsize , 'B', '', '');
+        $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, null, null, 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '430');
-        $str .= $this->reporter->col('Print Date:', '100', null, false, '', '', 'R', $font, $fontsize ,'');
-        $str .= $this->reporter->col($printDate . '  ' . $printTime, '170', null, false, '', '', 'R', $font, $fontsize );
+        $str .= $this->reporter->col('Print Date:', '100', null, false, '', '', 'R', $font, $fontsize, '');
+        $str .= $this->reporter->col($printDate . '  ' . $printTime, '170', null, false, '', '', 'R', $font, $fontsize);
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
-      
+
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('<span style="color:#8B0000;">INFRASTRUCTURE CLEARANCE SUMMARY REPORT</span>', '500', null, false, '10px solid', '', 'L', $font, $fontsize , 'B', '', '');
+        $str .= $this->reporter->col('<span style="color:#8B0000;">INFRASTRUCTURE CLEARANCE SUMMARY REPORT</span>', '500', null, false, '10px solid', '', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col('', '400');
-        $str .= $this->reporter->pagenumber('Page', '100', null, false, $border, '', 'R', $font, $fontsize , '', '30px', '5px');
+        $str .= $this->reporter->pagenumber('Page', '100', null, false, $border, '', 'R', $font, $fontsize, '', '30px', '5px');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('DATE FROM :  ' . $start . '  TO  ' . $end, '350', null, false, '', '', 'L', $font, $fontsize , 'B');
+        $str .= $this->reporter->col('DATE FROM :  ' . $start . '  TO  ' . $end, '350', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('INFRA TYPE :', '130', null, false, '', '', 'L', $font, $fontsize ,'B');
-        $str .= $this->reporter->col($infratype == '' ? 'ALL INFRA TYPE' : strtoupper($infratype), '200', null, false, '', '', 'L', $font, $fontsize,'B');
+        $str .= $this->reporter->col('INFRA TYPE :', '130', null, false, '', '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($infratype == '' ? 'ALL INFRA TYPE' : strtoupper($infratype), '200', null, false, '', '', 'L', $font, $fontsize, 'B');
         $str .= $this->reporter->col('', '670');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('', '50', null, false, '2px solid', 'T', 'R', $font, $fontsize , 'B');
-        $str .= $this->reporter->col('DATE', '170', null, false, '2px solid', 'TB', 'C', $font, $fontsize , 'B', '', '');
-        $str .= $this->reporter->col('', '10', null, false, '2px solid', 'T', 'R', $font, $fontsize , 'B');
-        $str .= $this->reporter->col('CONTROL #', '145', null, false, '2px solid', 'TB', 'C', $font, $fontsize , 'B');
-        $str .= $this->reporter->col('', '10', null, false, '2px solid', 'T', 'R', $font, $fontsize , 'B');
-        $str .= $this->reporter->col('BRGY. ID', '145', null, false, '2px solid', 'TB', 'C', $font, $fontsize , 'B');
-        $str .= $this->reporter->col('', '10', null, false, '2px solid', 'T', 'R', $font, $fontsize , 'B');
-        $str .= $this->reporter->col('FULLNAME', '270', null, false, '2px solid', 'TB', 'C', $font, $fontsize , 'B', '', '');
-        $str .= $this->reporter->col('', '10', null, false, '2px solid', 'T', 'R', $font, $fontsize , 'B');
-        $str .= $this->reporter->col('AMOUNT', '150', null, false, '2px solid', 'TB', 'C', $font, $fontsize , 'B', '', '');
-        $str .= $this->reporter->col('', '50', null, false, '2px solid', 'T', 'R', $font, $fontsize , 'B');
+        $str .= $this->reporter->col('', '50', null, false, '2px solid', 'T', 'R', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('DATE', '170', null, false, '2px solid', 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('', '10', null, false, '2px solid', 'T', 'R', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('CONTROL #', '145', null, false, '2px solid', 'TB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('', '10', null, false, '2px solid', 'T', 'R', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('BRGY. ID', '145', null, false, '2px solid', 'TB', 'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('', '10', null, false, '2px solid', 'T', 'R', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('FULLNAME', '270', null, false, '2px solid', 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('', '10', null, false, '2px solid', 'T', 'R', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('AMOUNT', '150', null, false, '2px solid', 'TB', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('', '50', null, false, '2px solid', 'T', 'R', $font, $fontsize, 'B');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
         return $str;
-
     }
 
     public function reportDefaultLayout($config, $result)
@@ -342,6 +341,4 @@ class infrastructure_clearance_summary_report
         $str .= $this->reporter->endreport();
         return $str;
     }
-
-
 } // end class

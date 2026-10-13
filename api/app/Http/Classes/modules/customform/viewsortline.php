@@ -32,10 +32,10 @@ class viewsortline
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -100,8 +100,8 @@ class viewsortline
             case 'CR':
             case 'GJ':
             case 'DS':
-            case 'GD':  
-            case 'GC':  
+            case 'GD':
+            case 'GC':
                 $tablename = 'ladetail';
                 $qry = "select stock.trno, stock.line, stock.sortline, stock.sortline as origline from " . $tablename . " as stock where stock.trno=? and stock.line=?";
                 return $this->coreFunctions->opentable($qry, [$trno, $line]);
@@ -116,7 +116,7 @@ class viewsortline
                 $tablename = "sistock";
                 $qry = "select stock.trno, stock.line, stock.sortline, stock.sortline as origline from " . $tablename . " as stock where stock.trno=? and stock.line=?";
                 return $this->coreFunctions->opentable($qry, [$trno, $line]);
-                break;    
+                break;
             default:
                 $qry = "select stock.trno, stock.line, stock.sortline, stock.sortline as origline from " . $tablename . " as stock where stock.trno=? and stock.line=?";
                 return $this->coreFunctions->opentable($qry, [$trno, $line]);
@@ -186,7 +186,7 @@ class viewsortline
                     case 'SO':
                     case 'CD':
                     case 'PR':
-                    case 'OS': 
+                    case 'OS':
                         $tablename = strtolower($doc . 'stock');
                         break;
                     case 'JB':
@@ -194,7 +194,7 @@ class viewsortline
                         break;
                     case 'CH':
                         $tablename = "sistock";
-                        break;    
+                        break;
                     case 'PV':
                     case 'AP':
                     case 'AR':
@@ -203,7 +203,7 @@ class viewsortline
                     case 'DS':
                     case 'CV':
                     case 'GD':
-                    case 'GC':     
+                    case 'GC':
                         $tablename = 'ladetail';
                         break;
                 }

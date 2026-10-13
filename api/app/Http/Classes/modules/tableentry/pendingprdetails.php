@@ -42,10 +42,10 @@ class pendingprdetails
   public $sqlquery;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -64,14 +64,14 @@ class pendingprdetails
 
   public function createTab($config)
   {
-   $columns =['action', 'barcode','itemname', 'rrqty', 'qa', 'pending'];
+    $columns = ['action', 'barcode', 'itemname', 'rrqty', 'qa', 'pending'];
 
     foreach ($columns as $key => $value) {
-        $$value = $key;
+      $$value = $key;
     }
 
     $tab = [
-      $this->gridname => ['gridcolumns' => $columns] 
+      $this->gridname => ['gridcolumns' => $columns]
     ];
 
     $stockbuttons = ['addpritem'];
@@ -90,15 +90,15 @@ class pendingprdetails
   {
     $tbuttons = []; //saveallentry
     $obj = $this->tabClass->createtabbutton($tbuttons);
-   
+
     return $obj;
   }
 
-    public function loaddata($config)
+  public function loaddata($config)
   {
     $trno = $config['params']['tableid'];
-    $rqtrno = $this->coreFunctions->getfieldvalue("lahead","rqtrno","trno=?",[$trno]);
-    $wh = $this->coreFunctions->getfieldvalue("lahead","wh","trno=?",[$trno]);
+    $rqtrno = $this->coreFunctions->getfieldvalue("lahead", "rqtrno", "trno=?", [$trno]);
+    $wh = $this->coreFunctions->getfieldvalue("lahead", "wh", "trno=?", [$trno]);
 
     $qry = "select concat(stock.trno,stock.line) as keyid,stock.trno,stock.line,item.itemname,head.docno,left(head.dateid,10) as dateid,item.barcode,
     FORMAT(stock.rrqty," . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty,
@@ -108,7 +108,7 @@ class pendingprdetails
     FORMAT(stock.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext,wh.client as wh,
     FORMAT(((stock.qa+stock.siqa) / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qa,
     FORMAT(((stock.qty-(stock.qa+stock.siqa))/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pending,
-    stock.loc,head.yourref,s.stage,stock.rem,item.itemid,head.projectid,head.subproject,'".$wh."' as source,stock.uom,stock.stageid,".$trno." as mtrno
+    stock.loc,head.yourref,s.stage,stock.rem,item.itemid,head.projectid,head.subproject,'" . $wh . "' as source,stock.uom,stock.stageid," . $trno . " as mtrno
     from hprhead as head
     right join hprstock as stock on stock.trno = head.trno
     left join item on item.itemid=stock.itemid
@@ -123,14 +123,12 @@ class pendingprdetails
     return $data;
   }
 
-  public function sbcscript($config){
+  public function sbcscript($config)
+  {
     return [
       'functtableentry2close' => '
         console.log("xxx", this.gettrno)
         '
     ];
-
   }
-
- 
 } //end class

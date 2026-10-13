@@ -31,18 +31,18 @@ class mode_of_application
     public $style = 'width:1200px;max-width:1200px;';
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
     public function createHeadField($config)
     {
-        $fields = ['radioprint','dcentername', 'area', 'dbranchname','start', 'end', 'radioreporttype'];
+        $fields = ['radioprint', 'dcentername', 'area', 'dbranchname', 'start', 'end', 'radioreporttype'];
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'dcentername.lookupclass', 'lookupcenter');
         data_set($col1, 'dcentername.label', 'Company Name');
@@ -63,10 +63,10 @@ class mode_of_application
 
     public function paramsdata($config)
     {
-    // NAME NG INPUT YUNG NAKA ALIAS
-    $center = $config['params']['center'];
-    $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
-    return $this->coreFunctions->opentable("select 
+        // NAME NG INPUT YUNG NAKA ALIAS
+        $center = $config['params']['center'];
+        $defaultcenter = json_decode(json_encode($this->coreFunctions->opentable("select code as center,name as centername,concat(code,'~',name) as dcentername from center where code='$center'")), true);
+        return $this->coreFunctions->opentable("select 
     'default' as print,
     date_format(now(), '%Y-%m-01') as start,
     left(now(),10) as end,
@@ -120,8 +120,8 @@ class mode_of_application
         }
 
         switch ($reporttype) {
-        case 0://Detailed
-            $query = "
+            case 0: //Detailed
+                $query = "
             select app.empcode as code, concat(emplast, ', ',empfirst, ' ',empmiddle) as empname, jobtitle, date(appdate) as appdate, mapp, jstatus, remarks
             from app
             left join client on client.clientid = app.branchid
@@ -129,9 +129,9 @@ class mode_of_application
             $filter
             order by mapp, appdate desc, empname;
             ";
-            break;
-        case 1://Summarized
-            $query = "
+                break;
+            case 1: //Summarized
+                $query = "
             select mapp,
             count(*) as total,
             count(case when jstatus = 'JOB OFFER' then 1 end) as hired,
@@ -145,7 +145,7 @@ class mode_of_application
             group by mapp
             order by mapp;
             ";
-            break;
+                break;
         }
         return $this->coreFunctions->opentable($query);
     }
@@ -161,14 +161,14 @@ class mode_of_application
         if (empty($result)) {
             return $this->othersClass->emptydata($config);
         }
-        
+
         $str = '';
         $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-top:10px;margin-left:95px');
         $str .= $this->reportHeader($config);
 
         foreach ($result as  $data) {
             switch ($reporttype) {
-                case 0://Detailed
+                case 0: //Detailed
                     $str .= $this->reporter->begintable($layoutsize);
                     $str .= $this->reporter->startrow();
                     $str .= $this->reporter->col($data->code, '150', null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '', '');
@@ -181,7 +181,7 @@ class mode_of_application
                     $str .= $this->reporter->endrow();
                     $str .= $this->reporter->endtable();
                     break;
-                case 1://Summarized
+                case 1: //Summarized
                     $str .= $this->reporter->begintable($layoutsize);
                     $str .= $this->reporter->startrow();
                     $str .= $this->reporter->col($data->mapp, '150', null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
@@ -241,16 +241,16 @@ class mode_of_application
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
-        if ($reporttype == 0){
+        if ($reporttype == 0) {
             $report = 'DETAILED';
-        }else if ($reporttype == 1){
+        } else if ($reporttype == 1) {
             $report = 'SUMMARIZED';
         }
 
         $str .= '<br/><br/>';
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('MODE OF APPLICATION - '. $report, null, null, false, $border, '', '', $font, '18', 'B', '', '');
+        $str .= $this->reporter->col('MODE OF APPLICATION - ' . $report, null, null, false, $border, '', '', $font, '18', 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -285,7 +285,7 @@ class mode_of_application
                 $str .= $this->reporter->endrow();
                 $str .= $this->reporter->endtable();
                 break;
-            case 1://Summarized
+            case 1: //Summarized
                 $str .= $this->reporter->begintable($layoutsize);
                 $str .= $this->reporter->startrow();
                 $str .= $this->reporter->col('MODE OF APPLICATION', '150', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '');
@@ -300,5 +300,4 @@ class mode_of_application
         }
         return $str;
     }
-
 }

@@ -250,8 +250,6 @@ class trigger_masterfile
 		$this->entrycarmodel_triggers($config);
 
 		$this->entryamtask_triggers($config);
-
-		$this->entrycarmodel_triggers($config);
 		$this->entrytasklabor_ak_triggers($config);
 		$this->entryvehicle_triggers($config);
 
@@ -272,6 +270,9 @@ class trigger_masterfile
 
 		// 09-18-26
 		$this->entryfinancerates_triggers($config);
+		
+		//yulick
+		$this->citemdesc_triggers($config);
 	}
 
 	private function settriggermasterfilelogs($config, $doc, $tablename, $table_log, $data = [], $keys, $keys2 = '', $label = '', $fieldlabel = '', $trno2 = "")
@@ -656,12 +657,30 @@ class trigger_masterfile
 
 	private function section_triggers($config)
 	{
+		$companyid = $config['params']['companyid'];
+		$doc = 'section';
+
+		if($config['params']['companyid'] == 67){ // yulick
+			$doc = 'department';
+		}
+
 		$fields = [
 			'Code' => ['sectcode' => []],
 			'Name' => ['sectname' => []],
 		];
 
-		$this->settriggermasterfilelogs($config, 'section', 'section', 'masterfile_log', $fields, 'sectid');
+		if($companyid == 67){ // yulick
+			$fields = [
+				'Department'  => ['deptid'      => [true, "clientname", "client", "clientid"]],
+				'Code' => ['sectcode' => []],
+				'Name' => ['sectname' => []],
+			];
+		}
+		if($companyid == 67){ // yulick
+			$this->settriggermasterfilelogs($config, $doc, 'section', 'masterfile_log', $fields, 'sectid', 'deptid');
+		}else {
+			$this->settriggermasterfilelogs($config, $doc, 'section', 'masterfile_log', $fields, 'sectid');
+		}
 	}
 
 	private function annualtax_triggers($config)
@@ -1042,6 +1061,7 @@ class trigger_masterfile
 			'week3' => ['w3' => []],
 			'week4' => ['w4' => []],
 			'week5' => ['w5' => []],
+			'week8' => ['w8' => []],
 			'13th' => ['w13' => []],
 			'void' => ['halt' => []],
 			'Deduct always w/out checking balance' => ['isdeductible' => []],
@@ -3042,5 +3062,13 @@ class trigger_masterfile
 			'Rebate'      => ['rebate' => []]
 		];
 		$this->settriggermasterfilelogs($config, $doc, 'mcfinancerate', 'masterfile_log', $fields, 'line');
+	}
+
+	private function citemdesc_triggers($config)
+	{
+		$fields = [
+			'Item Description' => ['itemdesc' => []]
+		];
+		$this->settriggermasterfilelogs($config, 'customeritemdesc_tab', 'itemothname', 'masterfile_log', $fields, 'line', 'itemid');
 	}
 }// end class

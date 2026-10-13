@@ -32,10 +32,10 @@ class sjrelease
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -115,14 +115,14 @@ class sjrelease
 
     public function loaddata($config)
     {
-        
+
         $companyid = $config['params']['companyid'];
         $trno = $config['params']['dataparams']['trno'];
 
         $data = [];
         $isposted = $this->othersClass->isposted2($trno, $this->table);
 
-        $dateTables = ['glhead','hcntnuminfo','cntnuminfo'];
+        $dateTables = ['glhead', 'hcntnuminfo', 'cntnuminfo'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         switch ($companyid) {
             case 37: //mega crystal

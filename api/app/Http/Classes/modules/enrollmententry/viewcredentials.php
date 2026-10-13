@@ -32,29 +32,31 @@ class viewcredentials
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
     $this->enrollmentlookup = new enrollmentlookup;
   }
 
-  public function getAttrib(){
-    $attrib = array('load'=>0
-                    );
-    return $attrib;
-}
-
-    public function createTab($config)
+  public function getAttrib()
   {
-    $tab = [$this->gridname => ['gridcolumns' => ['credentialcode','credentials','particulars','amt','percentdisc','camt','feescode']]];
+    $attrib = array(
+      'load' => 0
+    );
+    return $attrib;
+  }
+
+  public function createTab($config)
+  {
+    $tab = [$this->gridname => ['gridcolumns' => ['credentialcode', 'credentials', 'particulars', 'amt', 'percentdisc', 'camt', 'feescode']]];
 
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
-    
+
     $obj[0][$this->gridname]['columns'][0]['style'] = "width:40px;whiteSpace: normal;min-width:40px;"; //action
     $obj[0][$this->gridname]['columns'][1]['readonly'] = true; //subjectcode
     $obj[0][$this->gridname]['columns'][2]['readonly'] = true; //subjectname
@@ -72,14 +74,15 @@ class viewcredentials
     return $obj;
   }
 
- 
 
-  private function loaddataperrecord($trno,$line){
+
+  private function loaddataperrecord($trno, $line)
+  {
     $select = $this->selectqry();
-    $qry = $select." FROM en_socredentials as soc left join transnum as num on num.trno=soc.trno  left join coa on coa.acnoid=soc.acnoid left join en_credentials as c on c.line=soc.credentialid left join en_fees as f on f.line=soc.feesid left join en_subject as s on s.trno=soc.subjectid   where soc.trno=? and soc.line=? 
+    $qry = $select . " FROM en_socredentials as soc left join transnum as num on num.trno=soc.trno  left join coa on coa.acnoid=soc.acnoid left join en_credentials as c on c.line=soc.credentialid left join en_fees as f on f.line=soc.feesid left join en_subject as s on s.trno=soc.subjectid   where soc.trno=? and soc.line=? 
       union all 
-      ".$select." FROM  en_glcredentials as soc left join transnum as num on num.trno=soc.trno  left join coa on coa.acnoid=soc.acnoid left join en_credentials as c on c.line=soc.credentialid left join en_fees as f on f.line=soc.feesid left join en_subject as s on s.trno=soc.subjectid   where soc.trno=? and soc.line=?  ";
-    $data = $this->coreFunctions->opentable($qry,[$trno,$line,$trno,$line]);    
+      " . $select . " FROM  en_glcredentials as soc left join transnum as num on num.trno=soc.trno  left join coa on coa.acnoid=soc.acnoid left join en_credentials as c on c.line=soc.credentialid left join en_fees as f on f.line=soc.feesid left join en_subject as s on s.trno=soc.subjectid   where soc.trno=? and soc.line=?  ";
+    $data = $this->coreFunctions->opentable($qry, [$trno, $line, $trno, $line]);
     return $data;
   }
 
@@ -90,41 +93,33 @@ class viewcredentials
     '' as errcolor ";
   }
 
-  public function loaddata($config){  
+  public function loaddata($config)
+  {
     $tableid = $config['params']['tableid'];
     $doc = $config['params']['doc'];
-  
+
     switch ($doc) {
       case 'ER':
-          $credentials = "en_sjcredentials";
-          $hcredentials = "glcredentials";
-          break;
-      case 'EA': case 'EI':
+        $credentials = "en_sjcredentials";
+        $hcredentials = "glcredentials";
+        break;
+      case 'EA':
+      case 'EI':
         $credentials = "en_socredentials";
         $hcredentials = "en_glcredentials";
-          break;
+        break;
       case 'ED':
         $credentials = "en_adcredentials";
         $hcredentials = "glcredentials";
-      break;
-  }
+        break;
+    }
 
 
     $select = $this->selectqry();
-    $qry =  $select." FROM  ".$credentials." as soc left join transnum as num on num.trno=soc.trno  left join coa on coa.acnoid=soc.acnoid left join en_credentials as c on c.line=soc.credentialid left join en_fees as f on f.line=soc.feesid left join en_subject as s on s.trno=soc.subjectid   where soc.trno=? 
+    $qry =  $select . " FROM  " . $credentials . " as soc left join transnum as num on num.trno=soc.trno  left join coa on coa.acnoid=soc.acnoid left join en_credentials as c on c.line=soc.credentialid left join en_fees as f on f.line=soc.feesid left join en_subject as s on s.trno=soc.subjectid   where soc.trno=? 
       union all 
-      ".$select." FROM  ".$hcredentials." as soc left join transnum as num on num.trno=soc.trno  left join coa on coa.acnoid=soc.acnoid left join en_credentials as c on c.line=soc.credentialid left join en_fees as f on f.line=soc.feesid left join en_subject as s on s.trno=soc.subjectid   where soc.trno=? ";
-    $data = $this->coreFunctions->opentable($qry,[$tableid,$tableid]);
+      " . $select . " FROM  " . $hcredentials . " as soc left join transnum as num on num.trno=soc.trno  left join coa on coa.acnoid=soc.acnoid left join en_credentials as c on c.line=soc.credentialid left join en_fees as f on f.line=soc.feesid left join en_subject as s on s.trno=soc.subjectid   where soc.trno=? ";
+    $data = $this->coreFunctions->opentable($qry, [$tableid, $tableid]);
     return $data;
   }
-
-
-
-
-
-
-
-
-
 } //end class
-

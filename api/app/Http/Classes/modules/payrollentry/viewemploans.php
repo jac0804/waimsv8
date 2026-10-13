@@ -31,10 +31,10 @@ class viewemploans
   public $showclosebtn = false;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -104,58 +104,28 @@ class viewemploans
   }
 
 
-  public function createtabbutton($config){
+  public function createtabbutton($config)
+  {
     $tbuttons = [];
     $obj = $this->tabClass->createtabbutton($tbuttons);
 
     return $obj;
   }
 
-  public function loaddata($config){
+  public function loaddata($config)
+  {
     $tableid = $config['params']['tableid'];
     $qry = "select empid,trno,docno,dateid,effdate,amt,cr,amortization,acnoname, (amt - ifnull(cr,0)) as balance from (
             select ss.empid,ss.trno, ss.docno, date(ss.dateid) as dateid,date(ss.effdate) as effdate,
                    ss.amt, sum(strans.cr) as cr,ss.amortization, p.codename acnoname
-            from ".$this->table." as ss 
+            from " . $this->table . " as ss 
             left join standardtrans as strans on ss.trno = strans.trno
             left join paccount as p on p.line=ss.acnoid 
             where ss.empid=? and p.alias in ('LOAN', 'HDMFLOAN', 'SSSLOAN', 'DEDUCTION')
             group by ss.trno,ss.docno,ss.dateid,ss.effdate,ss.amt,ss.amortization,p.codename,ss.empid ) as a
             order by docno";
-    
-    $data = $this->coreFunctions->opentable($qry,[$tableid]);
+
+    $data = $this->coreFunctions->opentable($qry, [$tableid]);
     return $data;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 } //end class

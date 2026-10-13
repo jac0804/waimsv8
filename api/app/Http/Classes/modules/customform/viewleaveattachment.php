@@ -36,10 +36,10 @@ class viewleaveattachment
     public $fields = ['status', 'status2', 'approverem', 'disapproved_remarks2', 'approvedby', 'approvedate', 'disapprovedby', 'disapprovedate', 'approvedby2', 'approvedate2', 'disapprovedby2', 'disapprovedate2'];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -90,12 +90,12 @@ class viewleaveattachment
 
     public function createHeadField($config)
     {
-      return [];
+        return [];
     }
 
     public function paramsdata($config)
     {
-      return [];
+        return [];
     }
 
     public function data($config)
@@ -113,7 +113,7 @@ class viewleaveattachment
 
     public function loaddata($config)
     {
-      return [];
+        return [];
     }
     public function getFileTypes($data)
     {

@@ -29,12 +29,12 @@ class cost_adjustment_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -86,9 +86,9 @@ class cost_adjustment_report
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $center    = $config['params']['center'];
 
-     $centerfilter="";
-    if($config['params']['companyid']==60){//transpower
-     $centerfilter=" and num.center = '$center' ";
+    $centerfilter = "";
+    if ($config['params']['companyid'] == 60) { //transpower
+      $centerfilter = " and num.center = '$center' ";
     }
 
     $query = "select pvi.ref as rrdocno,head.docno as pvdocno,rrhead.invoiceno as suppinv,i.itemname,
@@ -143,7 +143,7 @@ class cost_adjustment_report
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow(null, null, false, $border, '', 'R', $font, $fontsize, '', '', '');
-    $str .= $this->reporter->col(date('M-d-Y', strtotime($start)) . ' TO ' . date('M-d-Y', strtotime($end)), '300', null, false, $border, '', 'L', $font, $fontsize, '','', '', '');
+    $str .= $this->reporter->col(date('M-d-Y', strtotime($start)) . ' TO ' . date('M-d-Y', strtotime($end)), '300', null, false, $border, '', 'L', $font, $fontsize, '', '', '', '');
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();

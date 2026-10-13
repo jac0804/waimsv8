@@ -26,43 +26,45 @@ use Illuminate\Support\Facades\Storage;
 class supplier
 {
 
-  private $modulename;
-  private $fieldClass;
-  private $companysetup;
-  private $coreFunctions;
-  private $othersClass;
-  private $logger;
-  private $reporter;
-  
-  public function __construct()
-  {
-    $this->fieldClass = new txtfieldClass;
-    $this->companysetup = new companysetup;
-    $this->coreFunctions = new coreFunctions;
-    $this->othersClass = new othersClass;
-    $this->logger = new Logger;
-    $this->reporter = new SBCPDF;
-  }
+    private $modulename;
+    private $fieldClass;
+    private $companysetup;
+    private $coreFunctions;
+    private $othersClass;
+    private $logger;
+    private $reporter;
 
-  public function createreportfilter($config)
-  {
-    $fields = ['start','radiocustreporttype','prepared','approved','received','print'];
-      
-    $col1 = $this->fieldClass->create($fields);
-    data_set($col1,'radiocustreporttype.options',
+    public function __construct($params = null)
+    {
+        $this->fieldClass = new txtfieldClass($params);
+        $this->companysetup = new companysetup;
+        $this->coreFunctions = new coreFunctions;
+        $this->othersClass = new othersClass;
+        $this->logger = new Logger;
+        $this->reporter = new SBCPDF;
+    }
+
+    public function createreportfilter($config)
+    {
+        $fields = ['start', 'radiocustreporttype', 'prepared', 'approved', 'received', 'print'];
+
+        $col1 = $this->fieldClass->create($fields);
+        data_set(
+            $col1,
+            'radiocustreporttype.options',
             [
-              ["label" => "Accounts Receivable", "value" => "ar", 'color' => 'red'],
-              ["label" => "Accounts Payable", "value" => "ap", 'color' => 'red'],
-              ["label" => "Postdated Checks", "value" => "pdc", 'color' => 'red'],
-              ["label" => "Inventory", "value" => "stock", 'color' => 'red']
+                ["label" => "Accounts Receivable", "value" => "ar", 'color' => 'red'],
+                ["label" => "Accounts Payable", "value" => "ap", 'color' => 'red'],
+                ["label" => "Postdated Checks", "value" => "pdc", 'color' => 'red'],
+                ["label" => "Inventory", "value" => "stock", 'color' => 'red']
             ]
-          );
-    return array('col1' => $col1);
-  }
+        );
+        return array('col1' => $col1);
+    }
 
-  public function reportparamsdata($config)
-  {
-    return $this->coreFunctions->opentable("
+    public function reportparamsdata($config)
+    {
+        return $this->coreFunctions->opentable("
       select
         'PDFM' as print,
         left(now(),10) as start,
@@ -71,7 +73,7 @@ class supplier
         '' as approved,
         '' as received
       ");
-  }
+    }
 
     public function generateResult($config)
     {
@@ -86,57 +88,56 @@ class supplier
         $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
 
         switch ($reporttype) {
-        case 'ar':
-            $query = $this->default_AR_QUERY($config);
-            break;
-        case 'ap':
-            $query = $this->default_AP_QUERY($config);
-            break;
-        case 'pdc':
-            $query = $this->default_PDC_QUERY($config);
-            break;
-        case 'stock':
-            $query = $this->default_STOCK_QUERY($config);
-            break;
+            case 'ar':
+                $query = $this->default_AR_QUERY($config);
+                break;
+            case 'ap':
+                $query = $this->default_AP_QUERY($config);
+                break;
+            case 'pdc':
+                $query = $this->default_PDC_QUERY($config);
+                break;
+            case 'stock':
+                $query = $this->default_STOCK_QUERY($config);
+                break;
         }
 
         return $this->coreFunctions->opentable($query);
-
     }
 
-    public function reportplotting($config,$data)
-    { 
+    public function reportplotting($config, $data)
+    {
         $data = $this->generateResult($config);
         $reporttype = $config['params']['dataparams']['reporttype'];
 
-        if($config['params']['dataparams']['print'] == "default"){
+        if ($config['params']['dataparams']['print'] == "default") {
             switch ($reporttype) {
                 case 'ar':
-                    $str = $this->reportdefaultAR($config,$data);
+                    $str = $this->reportdefaultAR($config, $data);
                     break;
                 case 'ap':
-                    $str = $this->reportdefaultAP($config,$data);
+                    $str = $this->reportdefaultAP($config, $data);
                     break;
                 case 'pdc':
-                    $str = $this->reportdefaultPDC($config,$data);
+                    $str = $this->reportdefaultPDC($config, $data);
                     break;
                 case 'stock':
-                    $str = $this->reportdefaultSTOCK($config,$data);
+                    $str = $this->reportdefaultSTOCK($config, $data);
                     break;
             }
-        }else{
+        } else {
             switch ($reporttype) {
                 case 'ar':
-                    $str = $this->reportdefaultAR_PDF($config,$data);
+                    $str = $this->reportdefaultAR_PDF($config, $data);
                     break;
                 case 'ap':
-                    $str = $this->reportdefaultAP_PDF($config,$data);
+                    $str = $this->reportdefaultAP_PDF($config, $data);
                     break;
                 case 'pdc':
-                    $str = $this->reportdefaultPDC_PDF($config,$data);
+                    $str = $this->reportdefaultPDC_PDF($config, $data);
                     break;
                 case 'stock':
-                    $str = $this->reportdefaultSTOCK_PDF($config,$data);
+                    $str = $this->reportdefaultSTOCK_PDF($config, $data);
                     break;
             }
         }
@@ -374,7 +375,7 @@ class supplier
     }
 
     //DEFAULT LAYOUT
-    public function reportdefaultAR($config,$data)
+    public function reportdefaultAR($config, $data)
     {
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -396,14 +397,14 @@ class supplier
 
         $str .= $this->reporter->beginreport();
 
-        if($companyid == 3){
-        $qry = "select name,address,tel from center where code = '" . $center . "'";
-        $headerdata = $this->coreFunctions->opentable($qry);
-        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+        if ($companyid == 3) {
+            $qry = "select name,address,tel from center where code = '" . $center . "'";
+            $headerdata = $this->coreFunctions->opentable($qry);
+            $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
-        $str .= $this->reporter->begintable('800');
+            $str .= $this->reporter->begintable('800');
             $str .= $this->reporter->startrow();
-            $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center .'&nbsp'  .'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
+            $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
             $str .= $this->reporter->endrow();
 
             $str .= $this->reporter->startrow();
@@ -416,13 +417,13 @@ class supplier
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
             $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-        }else {
-        $str .= $this->reporter->begintable('800');
+            $str .= $this->reporter->endtable();
+        } else {
+            $str .= $this->reporter->begintable('800');
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->letterhead($center, $username);
             $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
+            $str .= $this->reporter->endtable();
         }
 
         $str .= $this->reporter->begintable('800');
@@ -503,24 +504,24 @@ class supplier
         $totalcr = 0;
         $totalbal = 0;
         foreach ($data as $key => $data1) {
-        $credit = number_format($data1->cr, 2);
-        $credit = $credit < 0 ? '-' : $credit;
-        $debit = number_format($data1->db, 2);
-        $debit = $debit < 0 ? '-' : $debit;
-        $balance = number_format($data1->bal, 2);
-        $balance = $balance < 0 ? '-' : $balance;
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($data1->docno, '100', null, false, $border, '', 'L', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->dateid, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->rem, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $str .= $this->reporter->col($debit, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
-        $str .= $this->reporter->col($credit, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
-        $str .= $this->reporter->col($balance, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->ref, '200', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $totaldb = $totaldb + $data1->db;
-        $totalcr = $totalcr + $data1->cr;
-        $totalbal = $totalbal + $data1->bal;
-        $str .= $this->reporter->endrow();
+            $credit = number_format($data1->cr, 2);
+            $credit = $credit < 0 ? '-' : $credit;
+            $debit = number_format($data1->db, 2);
+            $debit = $debit < 0 ? '-' : $debit;
+            $balance = number_format($data1->bal, 2);
+            $balance = $balance < 0 ? '-' : $balance;
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($data1->docno, '100', null, false, $border, '', 'L', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->dateid, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->rem, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $str .= $this->reporter->col($debit, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
+            $str .= $this->reporter->col($credit, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
+            $str .= $this->reporter->col($balance, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->ref, '200', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $totaldb = $totaldb + $data1->db;
+            $totalcr = $totalcr + $data1->cr;
+            $totalbal = $totalbal + $data1->bal;
+            $str .= $this->reporter->endrow();
         }
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', '100', null, false, '1px dotted ', 'T', 'L', $font, '9', 'B', '', '3px');
@@ -559,7 +560,7 @@ class supplier
         return $str;
     }
 
-    public function reportdefaultAP($config,$data)
+    public function reportdefaultAP($config, $data)
     {
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -580,14 +581,14 @@ class supplier
         $border = "1px solid ";
         $str .= $this->reporter->beginreport();
 
-        if($companyid == 3){
-        $qry = "select name,address,tel from center where code = '" . $center . "'";
-        $headerdata = $this->coreFunctions->opentable($qry);
-        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+        if ($companyid == 3) {
+            $qry = "select name,address,tel from center where code = '" . $center . "'";
+            $headerdata = $this->coreFunctions->opentable($qry);
+            $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
-        $str .= $this->reporter->begintable('800');
+            $str .= $this->reporter->begintable('800');
             $str .= $this->reporter->startrow();
-            $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center .'&nbsp'  .'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
+            $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
             $str .= $this->reporter->endrow();
 
             $str .= $this->reporter->startrow();
@@ -600,13 +601,13 @@ class supplier
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
             $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-        }else {
-        $str .= $this->reporter->begintable('800');
+            $str .= $this->reporter->endtable();
+        } else {
+            $str .= $this->reporter->begintable('800');
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->letterhead($center, $username);
             $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
+            $str .= $this->reporter->endtable();
         }
 
         $str .= $this->reporter->begintable('800');
@@ -687,24 +688,24 @@ class supplier
         $totalcr = 0;
         $totalbal = 0;
         foreach ($data as $key => $data1) {
-        $credit = number_format($data1->cr, 2);
-        $credit = $credit < 0 ? '-' : $credit;
-        $debit = number_format($data1->db, 2);
-        $debit = $debit < 0 ? '-' : $debit;
-        $balance = number_format($data1->bal, 2);
-        $balance = $balance < 0 ? '-' : $balance;
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($data1->docno, '100', null, false, $border, '', 'L', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->dateid, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->rem, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $str .= $this->reporter->col($debit, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
-        $str .= $this->reporter->col($credit, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
-        $str .= $this->reporter->col($balance, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->ref, '200', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $totaldb = $totaldb + $data1->db;
-        $totalcr = $totalcr + $data1->cr;
-        $totalbal = $totalbal + $data1->bal;
-        $str .= $this->reporter->endrow();
+            $credit = number_format($data1->cr, 2);
+            $credit = $credit < 0 ? '-' : $credit;
+            $debit = number_format($data1->db, 2);
+            $debit = $debit < 0 ? '-' : $debit;
+            $balance = number_format($data1->bal, 2);
+            $balance = $balance < 0 ? '-' : $balance;
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($data1->docno, '100', null, false, $border, '', 'L', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->dateid, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->rem, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $str .= $this->reporter->col($debit, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
+            $str .= $this->reporter->col($credit, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
+            $str .= $this->reporter->col($balance, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->ref, '200', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $totaldb = $totaldb + $data1->db;
+            $totalcr = $totalcr + $data1->cr;
+            $totalbal = $totalbal + $data1->bal;
+            $str .= $this->reporter->endrow();
         }
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', '100', null, false, '1px dotted ', 'T', 'L', $font, '9', 'B', '', '3px');
@@ -743,7 +744,7 @@ class supplier
         return $str;
     }
 
-    public function reportdefaultPDC($config,$data)
+    public function reportdefaultPDC($config, $data)
     {
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -765,14 +766,14 @@ class supplier
 
         $str .= $this->reporter->beginreport();
 
-        if($companyid == 3){
-        $qry = "select name,address,tel from center where code = '" . $center . "'";
-        $headerdata = $this->coreFunctions->opentable($qry);
-        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+        if ($companyid == 3) {
+            $qry = "select name,address,tel from center where code = '" . $center . "'";
+            $headerdata = $this->coreFunctions->opentable($qry);
+            $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
-        $str .= $this->reporter->begintable('800');
+            $str .= $this->reporter->begintable('800');
             $str .= $this->reporter->startrow();
-            $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center .'&nbsp'  .'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
+            $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
             $str .= $this->reporter->endrow();
 
             $str .= $this->reporter->startrow();
@@ -785,13 +786,13 @@ class supplier
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
             $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-        }else {
-        $str .= $this->reporter->begintable('800');
+            $str .= $this->reporter->endtable();
+        } else {
+            $str .= $this->reporter->begintable('800');
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->letterhead($center, $username);
             $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
+            $str .= $this->reporter->endtable();
         }
 
         $str .= $this->reporter->begintable('800');
@@ -872,24 +873,24 @@ class supplier
         $totalcr = 0;
         $totalbal = 0;
         foreach ($data as $key => $data1) {
-        $credit = number_format($data1->cr, 2);
-        $credit = $credit < 0 ? '-' : $credit;
-        $debit = number_format($data1->db, 2);
-        $debit = $debit < 0 ? '-' : $debit;
-        $balance = number_format($data1->bal, 2);
-        $balance = $balance < 0 ? '-' : $balance;
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($data1->docno, '100', null, false, $border, '', 'L', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->dateid, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->rem, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $str .= $this->reporter->col($debit, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
-        $str .= $this->reporter->col($credit, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
-        $str .= $this->reporter->col($balance, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->ref, '200', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $totaldb = $totaldb + $data1->db;
-        $totalcr = $totalcr + $data1->cr;
-        $totalbal = $totalbal + $data1->bal;
-        $str .= $this->reporter->endrow();
+            $credit = number_format($data1->cr, 2);
+            $credit = $credit < 0 ? '-' : $credit;
+            $debit = number_format($data1->db, 2);
+            $debit = $debit < 0 ? '-' : $debit;
+            $balance = number_format($data1->bal, 2);
+            $balance = $balance < 0 ? '-' : $balance;
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($data1->docno, '100', null, false, $border, '', 'L', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->dateid, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->rem, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $str .= $this->reporter->col($debit, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
+            $str .= $this->reporter->col($credit, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
+            $str .= $this->reporter->col($balance, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->ref, '200', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $totaldb = $totaldb + $data1->db;
+            $totalcr = $totalcr + $data1->cr;
+            $totalbal = $totalbal + $data1->bal;
+            $str .= $this->reporter->endrow();
         }
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('', '100', null, false, '1px dotted ', 'T', 'L', $font, '9', 'B', '', '3px');
@@ -927,7 +928,7 @@ class supplier
         return $str;
     }
 
-    public function reportdefaultSTOCK($config,$data)
+    public function reportdefaultSTOCK($config, $data)
     {
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -949,14 +950,14 @@ class supplier
         $str .= $this->reporter->beginreport();
 
 
-        if($companyid == 3){
-        $qry = "select name,address,tel from center where code = '" . $center . "'";
-        $headerdata = $this->coreFunctions->opentable($qry);
-        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+        if ($companyid == 3) {
+            $qry = "select name,address,tel from center where code = '" . $center . "'";
+            $headerdata = $this->coreFunctions->opentable($qry);
+            $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
-        $str .= $this->reporter->begintable('800');
+            $str .= $this->reporter->begintable('800');
             $str .= $this->reporter->startrow();
-            $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center .'&nbsp'  .'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
+            $str .=  $this->reporter->col($username . '&nbsp' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '&nbsp' . $center . '&nbsp'  . 'RSSC', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', '', '', '');
             $str .= $this->reporter->endrow();
 
             $str .= $this->reporter->startrow();
@@ -969,13 +970,13 @@ class supplier
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
             $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
-        }else {
-        $str .= $this->reporter->begintable('800');
+            $str .= $this->reporter->endtable();
+        } else {
+            $str .= $this->reporter->begintable('800');
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->letterhead($center, $username);
             $str .= $this->reporter->endrow();
-        $str .= $this->reporter->endtable();
+            $str .= $this->reporter->endtable();
         }
 
         $str .= $this->reporter->begintable('800');
@@ -1060,26 +1061,26 @@ class supplier
         $totalcr = 0;
         $totalbal = 0;
         foreach ($data as $key => $data1) {
-        $cost = number_format($data1->cost, 2);
-        $cost = $cost < 0 ? '-' : $cost;
-        $rrqty = number_format($data1->rrqty, 2);
-        $rrqty = $rrqty < 0 ? '-' : $rrqty;
-        $isqty = number_format($data1->isqty, 2);
-        $isqty = $isqty < 0 ? '-' : $isqty;
-        $rrcost = number_format($data1->cost, 2);
-        $rrcost = $rrcost < 0 ? '-' : $rrcost;
-        $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col($data1->docno, '75', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->dateid, '75', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->barcode, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->itemname, '200', null, false, $border, '', 'L', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->uom, '50', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $str .= $this->reporter->col($data1->disc, '50', null, false, $border, '', 'C', $font, '9', '', '', '');
-        $str .= $this->reporter->col($rrcost, '75', null, false, $border, '', 'R', $font, '9', '', '', '');
-        $str .= $this->reporter->col($cost, '75', null, false, $border, '', 'R', $font, '9', '', '', '');
-        $str .= $this->reporter->col($rrqty, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
-        $str .= $this->reporter->col($isqty, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
-        $str .= $this->reporter->endrow();
+            $cost = number_format($data1->cost, 2);
+            $cost = $cost < 0 ? '-' : $cost;
+            $rrqty = number_format($data1->rrqty, 2);
+            $rrqty = $rrqty < 0 ? '-' : $rrqty;
+            $isqty = number_format($data1->isqty, 2);
+            $isqty = $isqty < 0 ? '-' : $isqty;
+            $rrcost = number_format($data1->cost, 2);
+            $rrcost = $rrcost < 0 ? '-' : $rrcost;
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($data1->docno, '75', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->dateid, '75', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->barcode, '100', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->itemname, '200', null, false, $border, '', 'L', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->uom, '50', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $str .= $this->reporter->col($data1->disc, '50', null, false, $border, '', 'C', $font, '9', '', '', '');
+            $str .= $this->reporter->col($rrcost, '75', null, false, $border, '', 'R', $font, '9', '', '', '');
+            $str .= $this->reporter->col($cost, '75', null, false, $border, '', 'R', $font, '9', '', '', '');
+            $str .= $this->reporter->col($rrqty, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
+            $str .= $this->reporter->col($isqty, '100', null, false, $border, '', 'R', $font, '9', '', '', '');
+            $str .= $this->reporter->endrow();
         }
 
 
@@ -1111,7 +1112,7 @@ class supplier
     }
 
     //PDF Layout - not okay pa
-    public function reportdefaultAR_PDF($config,$data)
+    public function reportdefaultAR_PDF($config, $data)
     {
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -1134,11 +1135,11 @@ class supplier
             $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
             $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
         }
-    
+
         $qry = "select code,name,address,tel from center where code = '" . $center . "'";
         $headerdata = $this->coreFunctions->opentable($qry);
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-    
+
         PDF::SetTitle($this->modulename);
         PDF::SetAuthor('Solutionbase Corp.');
         PDF::SetCreator('Solutionbase Corp.');
@@ -1149,81 +1150,81 @@ class supplier
 
         $reporttimestamp = $this->reporter->setreporttimestamp($config, $username, $headerdata);
         PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
-      
-          PDF::SetFont($fontbold, '', 12);
-          PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-          PDF::SetFont($fontbold, '', 11);
-          PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
-          
+
+        PDF::SetFont($fontbold, '', 12);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
+
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "SUPPLIER LEDGER - ACCOUNTS RECEIVABLE", '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Report Type : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Report Type : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(100, 20, strtoupper($reporttype), '', 'L', false,0);
+        PDF::MultiCell(100, 20, strtoupper($reporttype), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "View Accounts from : ", '', 'L', false,0);
+        PDF::MultiCell(130, 20, "View Accounts from : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(200, 20, $start, '', 'L', false,0);
+        PDF::MultiCell(200, 20, $start, '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(230, 20, "Agent : ", '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Customer : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Customer : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false,0);
+        PDF::MultiCell(280, 20, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Telephone No/s : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Telephone No/s : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(250, 20, (isset($data[0]->tel) ? $data[0]->tel : ''), '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Address : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Address : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->addr) ? $data[0]->addr : ''), '', 'L', false,1);
+        PDF::MultiCell(280, 20, (isset($data[0]->addr) ? $data[0]->addr : ''), '', 'L', false, 1);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "TIN # : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "TIN # : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->tin) ? $data[0]->tin : ''), '', 'L', false,0);
+        PDF::MultiCell(280, 20, (isset($data[0]->tin) ? $data[0]->tin : ''), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Fax No/s : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Fax No/s : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(250, 20, (isset($data[0]->fax) ? $data[0]->fax : ''), '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Email Address : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Email Address : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->email) ? $data[0]->email : ''), '', 'L', false,0);
+        PDF::MultiCell(280, 20, (isset($data[0]->email) ? $data[0]->email : ''), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Mobile No/s : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Mobile No/s : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(250, 20, (isset($data[0]->tel2) ? $data[0]->tel2 : ''), '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "", '', 'L', false,0);
-        PDF::MultiCell(280, 20, '', '', 'L', false,0);
+        PDF::MultiCell(100, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(280, 20, '', '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Contact Person : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Contact Person : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(250, 20, (isset($data[0]->contact) ? $data[0]->contact : ''), '', 'L', false);    
-        
+        PDF::MultiCell(250, 20, (isset($data[0]->contact) ? $data[0]->contact : ''), '', 'L', false);
+
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(760, 20, "Run Date : ". date('M-d-Y h:i:s a', time()), '', 'L', false);
+        PDF::MultiCell(760, 20, "Run Date : " . date('M-d-Y h:i:s a', time()), '', 'L', false);
 
         PDF::SetFont($font, '', 5);
         PDF::MultiCell(700, 0, "", 'T', 'L', false, 0);
         PDF::MultiCell(60, 0, "", 'T', 'L', false);
 
         PDF::SetFont($fontbold, '', 10);
-        PDF::MultiCell(110, 10, "Document #", '', 'C', false,0);
-        PDF::MultiCell(70, 10, "Date", '', 'C', false,0);
-        PDF::MultiCell(140, 10, "Notes", '', 'C', false,0);
-        PDF::MultiCell(100, 10, "Debit", '', 'R', false,0);
-        PDF::MultiCell(100, 10, "Credit", '', 'R', false,0);
-        PDF::MultiCell(100, 10, "Balance", '', 'R', false,0);
-        PDF::MultiCell(5, 10, "", '', 'R', false,0);
+        PDF::MultiCell(110, 10, "Document #", '', 'C', false, 0);
+        PDF::MultiCell(70, 10, "Date", '', 'C', false, 0);
+        PDF::MultiCell(140, 10, "Notes", '', 'C', false, 0);
+        PDF::MultiCell(100, 10, "Debit", '', 'R', false, 0);
+        PDF::MultiCell(100, 10, "Credit", '', 'R', false, 0);
+        PDF::MultiCell(100, 10, "Balance", '', 'R', false, 0);
+        PDF::MultiCell(5, 10, "", '', 'R', false, 0);
         PDF::MultiCell(135, 10, "Reference", '', 'C', false);
 
         PDF::SetFont($font, '', 5);
@@ -1253,12 +1254,12 @@ class supplier
             PDF::MultiCell(100, 15, $balance, '', 'R', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(5, 15, '', '', 'R', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(135, 15, $data1->ref, '', 'L', 0, 1, '', '', true, 0, false, false);
-            
+
             $totaldb = $totaldb + $data1->db;
             $totalcr = $totalcr + $data1->cr;
             $totalbal = $totalbal + $data1->bal;
         }
-        
+
         PDF::SetFont($font, '', 5);
         PDF::MultiCell(700, 0, "", 'B', 'L', false, 0);
         PDF::MultiCell(60, 0, "", 'B', 'L', false);
@@ -1274,7 +1275,7 @@ class supplier
         PDF::MultiCell(100, 15, number_format($totalbal, 2), '', 'R', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(5, 15, '', '', 'R', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(135, 15, '', '', 'L', 0, 1, '', '', true, 0, false, false);
-        
+
         PDF::MultiCell(0, 0, "\n\n\n\n");
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(253, 0, 'Prepared By : ', '', 'L', false, 0);
@@ -1286,11 +1287,11 @@ class supplier
         PDF::MultiCell(253, 0, $prepared, '', 'L', false, 0);
         PDF::MultiCell(253, 0, $received, '', 'L', false, 0);
         PDF::MultiCell(254, 0, $approved, '', 'L');
-        
+
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
 
-    public function reportdefaultAP_PDF($config,$data)
+    public function reportdefaultAP_PDF($config, $data)
     {
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -1312,98 +1313,98 @@ class supplier
         if (Storage::disk('sbcpath')->exists('/fonts/verdana.ttf')) {
             $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
             $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
-          }
-      
-          $qry = "select code,name,address,tel from center where code = '" . $center . "'";
-          $headerdata = $this->coreFunctions->opentable($qry);
-          $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-      
-          PDF::SetTitle($this->modulename);
-          PDF::SetAuthor('Solutionbase Corp.');
-          PDF::SetCreator('Solutionbase Corp.');
-          PDF::SetSubject($this->modulename . ' Module Report');
-          PDF::setPageUnit('px');
-          PDF::AddPage('p', [800, 1000]);
-          PDF::SetMargins(20, 20);
-      
-          
+        }
+
+        $qry = "select code,name,address,tel from center where code = '" . $center . "'";
+        $headerdata = $this->coreFunctions->opentable($qry);
+        $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+
+        PDF::SetTitle($this->modulename);
+        PDF::SetAuthor('Solutionbase Corp.');
+        PDF::SetCreator('Solutionbase Corp.');
+        PDF::SetSubject($this->modulename . ' Module Report');
+        PDF::setPageUnit('px');
+        PDF::AddPage('p', [800, 1000]);
+        PDF::SetMargins(20, 20);
+
+
         $reporttimestamp = $this->reporter->setreporttimestamp($config, $username, $headerdata);
         PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
-      
-          PDF::SetFont($fontbold, '', 12);
-          PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-          PDF::SetFont($fontbold, '', 11);
-          PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
-          
+
+        PDF::SetFont($fontbold, '', 12);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
+
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "SUPPLIER LEDGER - ACCOUNTS PAYABLE", '', 'L', false);
-   
+
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Report Type : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Report Type : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(100, 20, strtoupper($reporttype), '', 'L', false,0);
+        PDF::MultiCell(100, 20, strtoupper($reporttype), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "View Accounts from : ", '', 'L', false,0);
+        PDF::MultiCell(130, 20, "View Accounts from : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(200, 20, $start, '', 'L', false,0);
+        PDF::MultiCell(200, 20, $start, '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(230, 20, "Agent : ", '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Customer : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Customer : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false,0);
+        PDF::MultiCell(280, 20, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Telephone No/s : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Telephone No/s : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(250, 20, (isset($data[0]->tel) ? $data[0]->tel : ''), '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Address : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Address : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->addr) ? $data[0]->addr : ''), '', 'L', false,1);
+        PDF::MultiCell(280, 20, (isset($data[0]->addr) ? $data[0]->addr : ''), '', 'L', false, 1);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "TIN # : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "TIN # : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->tin) ? $data[0]->tin : ''), '', 'L', false,0);
+        PDF::MultiCell(280, 20, (isset($data[0]->tin) ? $data[0]->tin : ''), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Fax No/s : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Fax No/s : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(250, 20, (isset($data[0]->fax) ? $data[0]->fax : ''), '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Email Address : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Email Address : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->email) ? $data[0]->email : ''), '', 'L', false,0);
+        PDF::MultiCell(280, 20, (isset($data[0]->email) ? $data[0]->email : ''), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Mobile No/s : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Mobile No/s : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(250, 20, (isset($data[0]->tel2) ? $data[0]->tel2 : ''), '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "", '', 'L', false,0);
-        PDF::MultiCell(280, 20, '', '', 'L', false,0);
+        PDF::MultiCell(100, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(280, 20, '', '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Contact Person : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Contact Person : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(250, 20, (isset($data[0]->contact) ? $data[0]->contact : ''), '', 'L', false);    
-        
+        PDF::MultiCell(250, 20, (isset($data[0]->contact) ? $data[0]->contact : ''), '', 'L', false);
+
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(760, 20, "Run Date : ". date('M-d-Y h:i:s a', time()), '', 'L', false);
-       
+        PDF::MultiCell(760, 20, "Run Date : " . date('M-d-Y h:i:s a', time()), '', 'L', false);
+
         PDF::SetFont($font, '', 5);
         PDF::MultiCell(700, 0, "", 'T', 'L', false, 0);
         PDF::MultiCell(60, 0, "", 'T', 'L', false);
 
         PDF::SetFont($fontbold, '', 10);
-        PDF::MultiCell(110, 10, "Document #", '', 'C', false,0);
-        PDF::MultiCell(70, 10, "Date", '', 'C', false,0);
-        PDF::MultiCell(140, 10, "Notes", '', 'C', false,0);
-        PDF::MultiCell(100, 10, "Debit", '', 'R', false,0);
-        PDF::MultiCell(100, 10, "Credit", '', 'R', false,0);
-        PDF::MultiCell(100, 10, "Balance", '', 'R', false,0);
-        PDF::MultiCell(5, 10, "", '', 'R', false,0);
+        PDF::MultiCell(110, 10, "Document #", '', 'C', false, 0);
+        PDF::MultiCell(70, 10, "Date", '', 'C', false, 0);
+        PDF::MultiCell(140, 10, "Notes", '', 'C', false, 0);
+        PDF::MultiCell(100, 10, "Debit", '', 'R', false, 0);
+        PDF::MultiCell(100, 10, "Credit", '', 'R', false, 0);
+        PDF::MultiCell(100, 10, "Balance", '', 'R', false, 0);
+        PDF::MultiCell(5, 10, "", '', 'R', false, 0);
         PDF::MultiCell(135, 10, "Reference", '', 'C', false);
 
         PDF::SetFont($font, '', 5);
@@ -1446,7 +1447,7 @@ class supplier
             $totalcr = $totalcr + $data1->cr;
             $totalbal = $totalbal + $data1->bal;
         }
-        
+
         PDF::SetFont($font, '', 5);
         PDF::MultiCell(700, 0, "", 'B', 'L', false, 0);
         PDF::MultiCell(60, 0, "", 'B', 'L', false);
@@ -1478,7 +1479,7 @@ class supplier
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
 
-    public function reportdefaultPDC_PDF($config,$data)
+    public function reportdefaultPDC_PDF($config, $data)
     {
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -1501,11 +1502,11 @@ class supplier
             $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
             $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
         }
-    
+
         $qry = "select code,name,address,tel from center where code = '" . $center . "'";
         $headerdata = $this->coreFunctions->opentable($qry);
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-    
+
         PDF::SetTitle($this->modulename);
         PDF::SetAuthor('Solutionbase Corp.');
         PDF::SetCreator('Solutionbase Corp.');
@@ -1514,84 +1515,84 @@ class supplier
         PDF::AddPage('p', [800, 1000]);
         PDF::SetMargins(20, 20);
 
-        
+
         $reporttimestamp = $this->reporter->setreporttimestamp($config, $username, $headerdata);
         PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
-      
-          PDF::SetFont($fontbold, '', 12);
-          PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-          PDF::SetFont($fontbold, '', 11);
-          PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
-          
+
+        PDF::SetFont($fontbold, '', 12);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
+
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "SUPPLIER LEDGER - POSTDATED CHECKS", '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Report Type : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Report Type : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(100, 20, strtoupper($reporttype), '', 'L', false,0);
+        PDF::MultiCell(100, 20, strtoupper($reporttype), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "View Accounts from : ", '', 'L', false,0);
+        PDF::MultiCell(130, 20, "View Accounts from : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(200, 20, $start, '', 'L', false,0);
+        PDF::MultiCell(200, 20, $start, '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(230, 20, "Agent : ", '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Customer : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Customer : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false,0);
+        PDF::MultiCell(280, 20, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Telephone No/s : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Telephone No/s : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(250, 20, (isset($data[0]->tel) ? $data[0]->tel : ''), '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Address : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Address : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->addr) ? $data[0]->addr : ''), '', 'L', false,1);
+        PDF::MultiCell(280, 20, (isset($data[0]->addr) ? $data[0]->addr : ''), '', 'L', false, 1);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "TIN # : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "TIN # : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->tin) ? $data[0]->tin : ''), '', 'L', false,0);
+        PDF::MultiCell(280, 20, (isset($data[0]->tin) ? $data[0]->tin : ''), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Fax No/s : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Fax No/s : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(250, 20, (isset($data[0]->fax) ? $data[0]->fax : ''), '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Email Address : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Email Address : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->email) ? $data[0]->email : ''), '', 'L', false,0);
+        PDF::MultiCell(280, 20, (isset($data[0]->email) ? $data[0]->email : ''), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Mobile No/s : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Mobile No/s : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(250, 20, (isset($data[0]->tel2) ? $data[0]->tel2 : ''), '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "", '', 'L', false,0);
-        PDF::MultiCell(280, 20, '', '', 'L', false,0);
+        PDF::MultiCell(100, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(280, 20, '', '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Contact Person : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Contact Person : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(250, 20, (isset($data[0]->contact) ? $data[0]->contact : ''), '', 'L', false);    
-        
+        PDF::MultiCell(250, 20, (isset($data[0]->contact) ? $data[0]->contact : ''), '', 'L', false);
+
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(760, 20, "Run Date : ". date('M-d-Y h:i:s a', time()), '', 'L', false);
+        PDF::MultiCell(760, 20, "Run Date : " . date('M-d-Y h:i:s a', time()), '', 'L', false);
 
         PDF::SetFont($font, '', 5);
         PDF::MultiCell(700, 0, "", 'T', 'L', false, 0);
         PDF::MultiCell(60, 0, "", 'T', 'L', false);
 
         PDF::SetFont($fontbold, '', 10);
-        PDF::MultiCell(110, 10, "Document #", '', 'C', false,0);
-        PDF::MultiCell(70, 10, "Date", '', 'C', false,0);
-        PDF::MultiCell(140, 10, "Notes", '', 'C', false,0);
-        PDF::MultiCell(100, 10, "Debit", '', 'R', false,0);
-        PDF::MultiCell(100, 10, "Credit", '', 'R', false,0);
-        PDF::MultiCell(100, 10, "Balance", '', 'R', false,0);
-        PDF::MultiCell(5, 10, "", '', 'R', false,0);
+        PDF::MultiCell(110, 10, "Document #", '', 'C', false, 0);
+        PDF::MultiCell(70, 10, "Date", '', 'C', false, 0);
+        PDF::MultiCell(140, 10, "Notes", '', 'C', false, 0);
+        PDF::MultiCell(100, 10, "Debit", '', 'R', false, 0);
+        PDF::MultiCell(100, 10, "Credit", '', 'R', false, 0);
+        PDF::MultiCell(100, 10, "Balance", '', 'R', false, 0);
+        PDF::MultiCell(5, 10, "", '', 'R', false, 0);
         PDF::MultiCell(135, 10, "Reference", '', 'C', false);
 
         PDF::SetFont($font, '', 5);
@@ -1610,7 +1611,7 @@ class supplier
             $debit = $debit < 0 ? '-' : $debit;
             $balance = number_format($data1->bal, 2);
             $balance = $balance < 0 ? '-' : $balance;
-            
+
             PDF::SetFont($font, '', $fontsize);
             // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
             PDF::MultiCell(110, 15, $data1->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1621,12 +1622,12 @@ class supplier
             PDF::MultiCell(100, 15, $balance, '', 'R', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(5, 15, '', '', 'R', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(135, 15, $data1->ref, '', 'L', 0, 1, '', '', true, 0, false, false);
-            
+
             $totaldb = $totaldb + $data1->db;
             $totalcr = $totalcr + $data1->cr;
             $totalbal = $totalbal + $data1->bal;
         }
-        
+
         PDF::SetFont($font, '', 5);
         PDF::MultiCell(700, 0, "", 'B', 'L', false, 0);
         PDF::MultiCell(60, 0, "", 'B', 'L', false);
@@ -1658,7 +1659,7 @@ class supplier
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
 
-    public function reportdefaultSTOCK_PDF($config,$data)
+    public function reportdefaultSTOCK_PDF($config, $data)
     {
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -1681,11 +1682,11 @@ class supplier
             $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdana.ttf');
             $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
         }
-    
+
         $qry = "select code,name,address,tel from center where code = '" . $center . "'";
         $headerdata = $this->coreFunctions->opentable($qry);
         $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-    
+
         PDF::SetTitle($this->modulename);
         PDF::SetAuthor('Solutionbase Corp.');
         PDF::SetCreator('Solutionbase Corp.');
@@ -1694,85 +1695,85 @@ class supplier
         PDF::AddPage('p', [800, 1000]);
         PDF::SetMargins(20, 20);
 
-        
+
         $reporttimestamp = $this->reporter->setreporttimestamp($config, $username, $headerdata);
         PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
-      
-          PDF::SetFont($fontbold, '', 12);
-          PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-          PDF::SetFont($fontbold, '', 11);
-          PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
-          
+
+        PDF::SetFont($fontbold, '', 12);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+        PDF::SetFont($fontbold, '', 11);
+        PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
+
         PDF::SetFont($fontbold, '', 15);
         PDF::MultiCell(760, 30, "SUPPLIER LEDGER - INVENTORY", '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Report Type : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Report Type : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(100, 20, strtoupper($reporttype), '', 'L', false,0);
+        PDF::MultiCell(100, 20, strtoupper($reporttype), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "View Accounts from : ", '', 'L', false,0);
+        PDF::MultiCell(130, 20, "View Accounts from : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(200, 20, $start, '', 'L', false,0);
+        PDF::MultiCell(200, 20, $start, '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(230, 20, "Agent : ", '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Customer : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Customer : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false,0);
+        PDF::MultiCell(280, 20, (isset($data[0]->clientname) ? $data[0]->clientname : ''), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Telephone No/s : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Telephone No/s : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(250, 20, (isset($data[0]->tel) ? $data[0]->tel : ''), '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Address : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Address : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->addr) ? $data[0]->addr : ''), '', 'L', false,1);
+        PDF::MultiCell(280, 20, (isset($data[0]->addr) ? $data[0]->addr : ''), '', 'L', false, 1);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "TIN # : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "TIN # : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->tin) ? $data[0]->tin : ''), '', 'L', false,0);
+        PDF::MultiCell(280, 20, (isset($data[0]->tin) ? $data[0]->tin : ''), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Fax No/s : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Fax No/s : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(250, 20, (isset($data[0]->fax) ? $data[0]->fax : ''), '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "Email Address : ", '', 'L', false,0);
+        PDF::MultiCell(100, 20, "Email Address : ", '', 'L', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(280, 20, (isset($data[0]->email) ? $data[0]->email : ''), '', 'L', false,0);
+        PDF::MultiCell(280, 20, (isset($data[0]->email) ? $data[0]->email : ''), '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Mobile No/s : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Mobile No/s : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
         PDF::MultiCell(250, 20, (isset($data[0]->tel2) ? $data[0]->tel2 : ''), '', 'L', false);
 
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(100, 20, "", '', 'L', false,0);
-        PDF::MultiCell(280, 20, '', '', 'L', false,0);
+        PDF::MultiCell(100, 20, "", '', 'L', false, 0);
+        PDF::MultiCell(280, 20, '', '', 'L', false, 0);
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(130, 20, "Contact Person : ", '', 'R', false,0);
+        PDF::MultiCell(130, 20, "Contact Person : ", '', 'R', false, 0);
         PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(250, 20, (isset($data[0]->contact) ? $data[0]->contact : ''), '', 'L', false);    
-        
+        PDF::MultiCell(250, 20, (isset($data[0]->contact) ? $data[0]->contact : ''), '', 'L', false);
+
         PDF::SetFont($font, '', 11);
-        PDF::MultiCell(760, 20, "Run Date : ". date('M-d-Y h:i:s a', time()), '', 'L', false);
+        PDF::MultiCell(760, 20, "Run Date : " . date('M-d-Y h:i:s a', time()), '', 'L', false);
 
         PDF::SetFont($font, '', 5);
         PDF::MultiCell(700, 0, "", 'T', 'L', false, 0);
         PDF::MultiCell(60, 0, "", 'T', 'L', false);
 
         PDF::SetFont($fontbold, '', 10);
-        PDF::MultiCell(110, 10, "Document #", '', 'C', false,0);
-        PDF::MultiCell(70, 10, "Date", '', 'C', false,0);
-        PDF::MultiCell(110, 10, "Item Code", '', 'C', false,0);
-        PDF::MultiCell(160, 10, "Description", '', 'C', false,0);
-        PDF::MultiCell(50, 10, "Unit", '', 'C', false,0);
-        PDF::MultiCell(60, 10, "Discount", '', 'C', false,0);
-        PDF::MultiCell(80, 10, "Price", '', 'R', false,0);
-        PDF::MultiCell(60, 10, "In", '', 'R', false,0);
+        PDF::MultiCell(110, 10, "Document #", '', 'C', false, 0);
+        PDF::MultiCell(70, 10, "Date", '', 'C', false, 0);
+        PDF::MultiCell(110, 10, "Item Code", '', 'C', false, 0);
+        PDF::MultiCell(160, 10, "Description", '', 'C', false, 0);
+        PDF::MultiCell(50, 10, "Unit", '', 'C', false, 0);
+        PDF::MultiCell(60, 10, "Discount", '', 'C', false, 0);
+        PDF::MultiCell(80, 10, "Price", '', 'R', false, 0);
+        PDF::MultiCell(60, 10, "In", '', 'R', false, 0);
         PDF::MultiCell(60, 10, "Out", '', 'R', false);
 
         PDF::SetFont($font, '', 5);
@@ -1793,7 +1794,7 @@ class supplier
             $isqty = $isqty < 0 ? '-' : $isqty;
             $rrcost = number_format($data1->cost, 2);
             $rrcost = $rrcost < 0 ? '-' : $rrcost;
-            
+
             PDF::SetFont($font, '', $fontsize);
             // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
             PDF::MultiCell(110, 15, $data1->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1823,10 +1824,7 @@ class supplier
         PDF::MultiCell(253, 0, $prepared, '', 'L', false, 0);
         PDF::MultiCell(253, 0, $received, '', 'L', false, 0);
         PDF::MultiCell(254, 0, $approved, '', 'L');
-        
+
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
-
-
-
 }

@@ -138,7 +138,12 @@ class companysetup
   public $ismirrortrans = false;
   public $issuemultipleexpiry = false;
   public $islocation = false;
+
+
+
+  // default label for txtfields/grid column used in modules
   public $locname = 'Location';
+  public $projectName = 'Project';
 
 
 
@@ -244,6 +249,8 @@ class companysetup
     $this->islocation = false;
     $this->ispayrolldetachment = false;
     $this->reportdateformat = "Y-m-d";
+
+    $this->projectName = 'Project';
 
 
 
@@ -409,10 +416,9 @@ class companysetup
         $this->isfa = false;
         $this->masterlimit = 500;
         $this->isglc = true;
-        $this->branchaccess = 1;
-        $this->multibranch = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\\yulick\\";
         $this->logopath = "public/images/yulick/";
+        $this->projectName = "Company";
         $this->ismysql8 = true;
         break;
       case 66:  //metro dragon - payroll
@@ -462,7 +468,7 @@ class companysetup
       case 64:  //excelin
         $this->clientlength = 15;
         $this->documentlength = 15;
-        $this->barcodelength = 0;
+        $this->barcodelength = 15;
         $this->tax = 12;
         $this->serial = false;
         $this->companyname = 'EXCELIN';
@@ -2379,6 +2385,16 @@ class companysetup
   public function getdecimal($action, $params)
   {
     switch ($params['companyid']) {
+      case 72: // hahsy
+        switch ($action) {
+          case 'price':
+            return 6;
+            break;
+          default:
+            return 2;
+            break;
+        }
+        break;
       case 71: //buenatech
         switch ($action) {
           case 'price':
@@ -3215,5 +3231,17 @@ class companysetup
   {
     $this->companylist($params);
     return $this->reportdateformat;
+  }
+
+  // apply to all txtfields/grid column used in modules
+  public function getCustomLabels($params)
+  {
+    $this->companylist($params);
+    return [
+      'dprojectname' => $this->projectName,
+      'costcenter' => $this->projectName,
+      'project' => $this->projectName,
+      'loc' => $this->locname,
+    ];
   }
 }

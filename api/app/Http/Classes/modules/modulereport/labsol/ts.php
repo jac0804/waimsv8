@@ -36,9 +36,9 @@ class ts
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -419,8 +419,15 @@ class ts
 
 
             $maxrow = $this->othersClass->getmaxcolumn([
-                $arr_barcode, $arr_itemname, $arr_qty, $arr_uom,
-                $arr_amt, $arr_disc, $arr_ext, $arr_expiry, $arr_loc
+                $arr_barcode,
+                $arr_itemname,
+                $arr_qty,
+                $arr_uom,
+                $arr_amt,
+                $arr_disc,
+                $arr_ext,
+                $arr_expiry,
+                $arr_loc
             ]);
 
             for ($r = 0; $r < $maxrow; $r++) {

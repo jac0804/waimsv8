@@ -42,11 +42,34 @@ class gpal
   public $tagging = "isemployee";
 
   private $fields = [
-    'client', 'clientname', 'addr', 'start', 'tel2',
-    'contact', 'rem', 'type',
-    'iscustomer', 'issupplier', 'isagent', 'iswarehouse', 'isinactive', 'isemployee', 'isdepartment', 'picture',
-    'isadmin', 'uv_ischecker', 'uv_ispicker', 'deptid', 'position', 'empid', 'salesgroupid', 'branchid',
-    'wh', 'isdriver', 'ispassenger', 'tin'
+    'client',
+    'clientname',
+    'addr',
+    'start',
+    'tel2',
+    'contact',
+    'rem',
+    'type',
+    'iscustomer',
+    'issupplier',
+    'isagent',
+    'iswarehouse',
+    'isinactive',
+    'isemployee',
+    'isdepartment',
+    'picture',
+    'isadmin',
+    'uv_ischecker',
+    'uv_ispicker',
+    'deptid',
+    'position',
+    'empid',
+    'salesgroupid',
+    'branchid',
+    'wh',
+    'isdriver',
+    'ispassenger',
+    'tin'
   ];
 
   private $otherfields = ['isapprover', 'idbarcode'];
@@ -60,11 +83,11 @@ class gpal
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;

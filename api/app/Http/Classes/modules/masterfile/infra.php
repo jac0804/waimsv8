@@ -70,11 +70,11 @@ class infra
     private $reporter;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -105,7 +105,7 @@ class infra
         $listclient = 1;
         $listclientname = 2;
         $listaddr = 2;
-        $getcols = ['action', 'listclient','listclientname','addr', 'listinfratype',  'listregdate'];
+        $getcols = ['action', 'listclient', 'listclientname', 'addr', 'listinfratype',  'listregdate'];
         $stockbuttons = ['view'];
         $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
         $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
@@ -268,7 +268,7 @@ class infra
         $col11 = $this->fieldClass->create($fields);
         $fields = [''];
         $col12 = $this->fieldClass->create($fields);
-        
+
         $fields = ['sentence2'];
         $col13 = $this->fieldClass->create($fields);
         $fields = ['sentence3'];

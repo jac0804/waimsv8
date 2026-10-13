@@ -36,7 +36,15 @@ class eq
     public $htablelogs = 'htransnum_log';
 
     private $fields = [
-        'trno', 'docno', 'dateid', 'empid', 'itemid', 'projectid', 'opincentive', 'whid', 'rem'
+        'trno',
+        'docno',
+        'dateid',
+        'empid',
+        'itemid',
+        'projectid',
+        'opincentive',
+        'whid',
+        'rem'
     ];
     private $except = ['trno', 'dateid'];
     public $showfilteroption = true;
@@ -52,11 +60,11 @@ class eq
     ];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -133,7 +141,10 @@ class eq
         $fields = ['rem'];
         $col4 = $this->fieldClass->create($fields);
         return [
-            'col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4
+            'col1' => $col1,
+            'col2' => $col2,
+            'col3' => $col3,
+            'col4' => $col4
         ];
     }
     public function createTab($access, $config)
@@ -153,7 +164,15 @@ class eq
         $tab = [
             $this->gridname => [
                 'gridcolumns' => [
-                    'action', 'category', 'starttime', 'endtime', 'duration', 'odostart', 'odoend', 'distance', 'fuelconsumption'
+                    'action',
+                    'category',
+                    'starttime',
+                    'endtime',
+                    'duration',
+                    'odostart',
+                    'odoend',
+                    'distance',
+                    'fuelconsumption'
                 ],
             ]
         ];
@@ -413,7 +432,7 @@ class eq
             if (array_key_exists($key, $head)) {
                 $data[$key] = $head[$key];
                 if (!in_array($key, $this->except)) {
-                      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+                    $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
                 } //end if
             }
         }
@@ -538,9 +557,8 @@ class eq
 
         foreach ($data as $key => $value) {
             $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
-
         }
-        
+
         $this->coreFunctions->LogConsole(json_encode($data));
         if ($action == 'insert') {
             $data['encodeddate'] = $this->othersClass->getCurrentTimeStamp();

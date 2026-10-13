@@ -37,9 +37,9 @@ class pv
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -88,13 +88,19 @@ class pv
 
   public function reportparamsdata($config)
   {
+
+    $prepared = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'prepared' and doc =? and userid=? ", [$config['params']['doc'], $config['params']['user']]);
+    $approved = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'approved' and doc =? and userid=? ", [$config['params']['doc'], $config['params']['user']]);
+    $received = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'received' and doc =? and userid=? ", [$config['params']['doc'], $config['params']['user']]);
+    $checked = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'checked' and doc =? and userid=? ", [$config['params']['doc'], $config['params']['user']]);
+
     return $this->coreFunctions->opentable(
       "select 
           'PDFM' as print,
-          '' as prepared,
-          '' as approved,
-          '' as received,
-          '' as checked,
+          '" . $prepared . "' as prepared,
+          '" . $approved . "' as approved,
+          '" . $received . "' as received,
+          '" . $checked . "' as checked,
           '' as payor,
           '' as tin,
           '' as position,
@@ -336,7 +342,7 @@ class pv
     // PDF::MultiCell(253, 0, 'Received By: ', '', 'L');
 
 
-    PDF::MultiCell(0, 0, "\n");
+    PDF::MultiCell(0, 0, "\n\n");
 
     PDF::MultiCell(253, 0, $params['params']['dataparams']['prepared'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);

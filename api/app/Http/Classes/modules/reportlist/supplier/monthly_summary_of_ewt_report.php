@@ -29,12 +29,12 @@ class monthly_summary_of_ewt_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -180,9 +180,9 @@ class monthly_summary_of_ewt_report
         group by h.trno,h.docno, h.dateid, ewt.rate, c.clientname, c.client, c.tin, c.addr, ewt.code,cent.name,d.ewtrate,d.isewt, d.isvat, d.isvewt
       ) as tbl2
       order by dateid, code, client, docno";
-    
+
     $data = $this->coreFunctions->opentable($qry);
-    
+
     return $data;
   }
 
@@ -1004,7 +1004,7 @@ class monthly_summary_of_ewt_report
         }
         $str .= $this->reporter->startrow();
         // $str .= $this->reporter->col($data_->dateid, '100', '', false, $border, '', 'l', $font, $fontsize,  '', '', '', '');
-        
+
 
         $str .= $this->reporter->col($data_->dateid, '100', '', false, $border, '', 'LT', $font, $fontsize,  '', '', '', '');
         $str .= $this->reporter->col('', '100', '', false, $border, '', 'LT', $font, $fontsize,  '', '', '', '');
@@ -1020,7 +1020,7 @@ class monthly_summary_of_ewt_report
           $str .= $this->reporter->col('Sub Total: ', '100', '', false, $border, '', 'RT', $font, $fontsize,  '', '', '', '');
           $str .= $this->reporter->col(number_format($c, 2), '100', '1', false, $border, '', 'RT', $font, $fontsize,  '', '', '', '');
         }
-        
+
         $str .= $this->reporter->endrow();
         // $str .= $this->reporter->endtable();
         // $str .= $this->reporter->begintable($layoutsize);
@@ -1029,7 +1029,7 @@ class monthly_summary_of_ewt_report
 
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      $str .= $this->reporter->col($data_->ewttag.' - '.$data_->purchases.' - '.$data_->less, '100', '', false, $border, '', 'LT', $font, $fontsize,  '', '', '', '');
+      $str .= $this->reporter->col($data_->ewttag . ' - ' . $data_->purchases . ' - ' . $data_->less, '100', '', false, $border, '', 'LT', $font, $fontsize,  '', '', '', '');
       // if ($center == '') {
       $str .= $this->reporter->col($data_->client, '100', '', false, $border, '', 'LT', $font, $fontsize,  '', '', '', '');
       // }
@@ -1038,15 +1038,14 @@ class monthly_summary_of_ewt_report
 
       $str .= $this->reporter->col($data_->addr, '175', '', false, $border, '', 'LT', $font, $fontsize,  '', '', '', '');
       $str .= $this->reporter->col($data_->docno, '125', '', false, $border, '', 'LT', $font, $fontsize,  '', '', '', '');
-      if($data_->ewttag==1){
-        $str .= $this->reporter->col(number_format($data_->less, $decimal_currency), '100', '', false, $border, '', 'RT', $font, $fontsize,  '', '', '', '');  
+      if ($data_->ewttag == 1) {
+        $str .= $this->reporter->col(number_format($data_->less, $decimal_currency), '100', '', false, $border, '', 'RT', $font, $fontsize,  '', '', '', '');
         $a += $data_->less;
         $totala = $totala + $data_->less;
-      }else{
+      } else {
         $str .= $this->reporter->col(number_format($data_->purchases, $decimal_currency), '100', '', false, $border, '', 'RT', $font, $fontsize,  '', '', '', '');
         $a += $data_->purchases;
         $totala = $totala + $data_->purchases;
-
       }
       $str .= $this->reporter->col($data_->rate . '%', '100', '', false, $border, '', 'RT', $font, $fontsize,  '', '', '', '');
 
@@ -1058,10 +1057,10 @@ class monthly_summary_of_ewt_report
       $str .= $this->reporter->endrow();
 
       $date = $data_->dateid;
-      
+
       $b += $data_->rate;
       $c += $data_->wt;
-      
+
       $totalb = $totalb + $data_->rate;
       $totalc = $totalc + $data_->wt;
 
@@ -1170,9 +1169,9 @@ class monthly_summary_of_ewt_report
     if ($client != "") {
       $filter1 .= " and c.clientid = '$clientid'";
     }
-    
+
     $fields = '*';
-    if($companyid == 56) { //homeworks
+    if ($companyid == 56) { //homeworks
       // $wt = ',abs(ifnull((select sum(g.db-g.cr) from gldetail as g where trno=tbl.trno and g.acnoid=5533),0)) as `EWT AMT`';
       $wt1 = ',abs(ifnull((select sum(g.db-g.cr) from ladetail as g where trno=tbl1.trno and g.acnoid=5533),0)) as `EWT AMT`';
       $wt2 = ',abs(ifnull((select sum(g.db-g.cr) from gldetail as g where trno=tbl2.trno and g.acnoid=5533),0)) as `EWT AMT`';
@@ -1221,7 +1220,7 @@ class monthly_summary_of_ewt_report
         group by h.trno,h.docno, h.dateid, ewt.rate, c.clientname, c.client, c.tin, c.addr, ewt.code,cent.name,d.isvewt
         ) as tbl2
       order by DATE, EWT, client, DOCNO";
-      
+
     $data = $this->coreFunctions->opentable($query);
 
     foreach ($data as $row => $value) {

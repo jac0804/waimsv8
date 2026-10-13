@@ -34,10 +34,10 @@ class canvassapproval2
   public $rowperpage = 0;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -358,9 +358,7 @@ class canvassapproval2
     return $this->coreFunctions->opentable("select '" . $sortby . "' as sortby, '" . $clientname . "' as clientname");
   }
 
-  public function loadheaddata($config)
-  {
-  }
+  public function loadheaddata($config) {}
 
   public function tableentrystatus($config)
   {
@@ -508,7 +506,7 @@ class canvassapproval2
                     $uom = $value["UOM"];
                     $status = 1;
 
-                  
+
 
                     $amt = $this->othersClass->sanitizekeyfieldFast('amt', $amt, $lookups);
                     $qty = $this->othersClass->sanitizekeyfieldFast('qty', $qty, $lookups);

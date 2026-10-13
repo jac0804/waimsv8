@@ -24,6 +24,7 @@ use App\Http\Classes\reportheader;
 use PDF;
 use TCPDF_FONTS;
 use Illuminate\Support\Facades\Storage;
+
 class mr
 {
   private $modulename = "Material Request";
@@ -35,9 +36,9 @@ class mr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -104,7 +105,7 @@ class mr
     return $result;
   } //end fn
 
-    public function reportplotting($params, $data)
+  public function reportplotting($params, $data)
   {
     return $this->Jda_MR_PDF($params, $data);
   }
@@ -251,6 +252,6 @@ class mr
     PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['received'], '', 'L');
 
-     return PDF::Output($this->modulename . '.pdf', 'S');
+    return PDF::Output($this->modulename . '.pdf', 'S');
   }
 }

@@ -34,9 +34,9 @@ class kr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -94,7 +94,7 @@ class kr
     left join client on client.client = head.client
     left join client as ag on ag.clientid=head2.agentid
     where head.trno='$trno' order by postdate,dateid, docno";
-    
+
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
@@ -386,9 +386,9 @@ class kr
         $date = $data[$i]['postdate'];
         $docno = $data[$i]['docno'];
         $ref = $data[$i]['ref'];
-        $db = number_format($data[$i]['db'],$decimalcurr);
-        $cr = number_format($data[$i]['cr'],$decimalcurr);
-        if($cr <= 0) $cr = '-';
+        $db = number_format($data[$i]['db'], $decimalcurr);
+        $cr = number_format($data[$i]['cr'], $decimalcurr);
+        if ($cr <= 0) $cr = '-';
         $rem = $data[$i]['rem2'];
 
         $arr_date = $this->reporter->fixcolumn([$date], '15');
@@ -400,14 +400,14 @@ class kr
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_date, $arr_docno, $arr_ref, $arr_db, $arr_cr, $arr_rem]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
-          PDF::MultiCell(80, 15, ' '.(isset($arr_date[$r]) ? $arr_date[$r] : ''), '', 'L', false, 0);
-          PDF::MultiCell(130, 15, ' '.(isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'L', false, 0);
-          PDF::MultiCell(180, 15, ' '.(isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'L', false, 0);
-          PDF::MultiCell(80, 15, ' '.(isset($arr_db[$r]) ? $arr_db[$r] : ''), '', 'R', false, 0);
-          PDF::MultiCell(80, 15, ' '.(isset($arr_cr[$r]) ? $arr_cr[$r] : ''), '', 'R', false, 0);
-          PDF::MultiCell(150, 15, ' '.(isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'L', false);
+          PDF::MultiCell(80, 15, ' ' . (isset($arr_date[$r]) ? $arr_date[$r] : ''), '', 'L', false, 0);
+          PDF::MultiCell(130, 15, ' ' . (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'L', false, 0);
+          PDF::MultiCell(180, 15, ' ' . (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'L', false, 0);
+          PDF::MultiCell(80, 15, ' ' . (isset($arr_db[$r]) ? $arr_db[$r] : ''), '', 'R', false, 0);
+          PDF::MultiCell(80, 15, ' ' . (isset($arr_cr[$r]) ? $arr_cr[$r] : ''), '', 'R', false, 0);
+          PDF::MultiCell(150, 15, ' ' . (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'L', false);
         }
         $totaldb += $data[$i]['db'];
         $totalcr += $data[$i]['cr'];
@@ -428,7 +428,7 @@ class kr
     PDF::MultiCell(80, 0, 'TOTAL: ', '', 'C', false, 0);
     PDF::MultiCell(390, 0, number_format($totaldb, $decimalprice), '', 'R', false, 0);
     PDF::MultiCell(80, 0, number_format($totalcr, $decimalprice), '', 'R', false, 0);
-    PDF::MultiCell(150, 0, number_format(($totaldb - $totalcr),$decimalprice), '', 'R', false);
+    PDF::MultiCell(150, 0, number_format(($totaldb - $totalcr), $decimalprice), '', 'R', false);
 
     PDF::MultiCell(0, 0, "\n");
 
@@ -449,7 +449,7 @@ class kr
     PDF::MultiCell(220, 0, $params['params']['dataparams']['approved'], 'B', 'L', false, 0);
     PDF::MultiCell(13, 0, '', '', '', false, 0);
     PDF::MultiCell(220, 0, '', 'B', 'L');
-    
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 }

@@ -36,12 +36,12 @@ class alphalist
   // layoutsize: reportWidth
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1100'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -134,23 +134,26 @@ class alphalist
     //   $filter1 .= " and e.divid = $divid";
     // }
     if ($divname != '') {
-        if ($divid != 0) {
-            $filter1 .= " and e.divid = $divid";
-    }}
+      if ($divid != 0) {
+        $filter1 .= " and e.divid = $divid";
+      }
+    }
     // if ($deptid != "") {
     //   $filter2 .= " and e.deptid = $deptid";
     // }
     if ($deptname != '') {
-        if ($deptid != 0) {
-            $filter2 .= " and e.deptid = $deptid";
-    }}
+      if ($deptid != 0) {
+        $filter2 .= " and e.deptid = $deptid";
+      }
+    }
     // if ($sectid != "") {
     //   $filter3 .= " and e.sectid = $sectid";
     // }
     if ($sectname != '') {
-        if ($sectid != 0) {
-            $filter3 .= " and e.sectid = $sectid";
-    }}
+      if ($sectid != 0) {
+        $filter3 .= " and e.sectid = $sectid";
+      }
+    }
 
     $emplvl = $this->othersClass->checksecuritylevel($config);
 

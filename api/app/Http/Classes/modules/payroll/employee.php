@@ -136,7 +136,8 @@ class employee
     'approver1',
     'empstatus',
     'is13th',
-    'bank'
+    'bank',
+    'isnobio'
   ];
 
   private $contactfields = ['contact1', 'relation1', 'addr1', 'homeno1', 'mobileno1', 'officeno1', 'ext1', 'notes1', 'contact2', 'relation2', 'addr2', 'homeno2', 'mobileno2', 'officeno2', 'ext2', 'notes2'];
@@ -178,7 +179,7 @@ class employee
     'policyend'
   ];
   private $except = ['empid', 'age', 'clientid', 'mapp', 'aplcode', 'jgrade', 'emprank', 'emploc', 'emptype', 'paymode', 'division', 'dept', 'orgsection', 'floor'];
-  private $blnfields = ['isemployee', 'isactive', 'atm', 'chksss', 'chktin', 'chkphealth', 'chkpibig', 'isapprover', 'issupervisor', 'iscustomer', 'isagent', 'isemployee', 'isdepartment', 'issupplier', 'iswarehouse', 'isinactive', 'is13th'];
+  private $blnfields = ['isemployee', 'isactive', 'atm', 'chksss', 'chktin', 'chkphealth', 'chkpibig', 'isapprover', 'issupervisor', 'iscustomer', 'isagent', 'isemployee', 'isdepartment', 'issupplier', 'iswarehouse', 'isinactive', 'is13th', 'isnobio'];
   private $acctg = [];
   public $showfilteroption = false;
   public $showfilter = false;
@@ -186,11 +187,11 @@ class employee
   private $reporter;
   // public $showfilterlabel = [];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -218,6 +219,9 @@ class employee
   {
     $companyid = $config['params']['companyid'];
     $getcols = ['action', 'listclient', 'emplast', 'empfirst', 'empmiddle', 'listaddr', 'paymode', 'paygroup', 'hired', 'bday'];
+    if ($companyid == 29) {
+      $getcols = ['action', 'listclient', 'emplast', 'empfirst', 'empmiddle', 'listaddr', 'paymode', 'paygroup', 'jobtitle', 'hired', 'bday'];
+    }
     $stockbuttons = ['view'];
 
     foreach ($getcols as $key => $value) {
@@ -232,6 +236,11 @@ class employee
     $cols[$bday]['align'] = 'text-left';
     if ($companyid == 44) { // stonepro
       $cols[$listclient]['label'] = 'ID No.';
+    }
+    if ($companyid == 29) {
+      $cols[$listaddr]['style'] = 'width:350px;whiteSpace: normal;min-width:350px;';
+      $cols[$empfirst]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
+      $cols[$jobtitle]['style'] = 'width:250px;whiteSpace: normal;min-width:250px;';
     }
 
     return $cols;
@@ -314,8 +323,12 @@ class employee
       $paygroup = 'code';
     }
 
-
+    $jobtitle = "";
     $leftjoin = "";
+    if ($companyid == 29) {
+      $jobtitle = " ,jt.jobtitle";
+      $leftjoin .= " left join jobthead as jt on jt.line = emp.jobid ";
+    }
 
     if ($id != 0) {
       if ($viewaccess == '0') {
@@ -334,7 +347,8 @@ class employee
     }
 
 
-    $qry = "select cl.clientid,cl.client,cl.clientname,cl.addr,emp.emplast,emp.empfirst,emp.empmiddle,emp.paymode, paygroup." . $paygroup . " as paygroup, date(emp.hired) as hired, date(emp.bday) as bday
+    $qry = "select cl.clientid,cl.client,cl.clientname,cl.addr,emp.emplast,emp.empfirst,emp.empmiddle,emp.paymode, paygroup." . $paygroup . " as paygroup, 
+    date(emp.hired) as hired, date(emp.bday) as bday $jobtitle
     from  " . $this->head . " as cl 
     left join employee as emp on emp.empid = cl.clientid
     left join paygroup on paygroup.line = emp.paygroup
@@ -934,6 +948,11 @@ class employee
     if ($companyid == 62) { //onesky
       $fields = array_diff($fields, ['empnoref']);
     }
+
+    if ($companyid == 62 || $companyid == 66) { //onesky | metrodrag
+      array_push($fields, 'isnobio');
+    }
+
     $col4 = $this->fieldClass->create($fields);
     data_set($col4, 'picture.lookupclass', 'client');
     data_set($col4, 'picture.folder', 'employee');
@@ -1256,25 +1275,22 @@ class employee
     if ($ispayrolldetachment) {
       $detachmentjoin = 'left join ' . $this->licenses . ' on ' . $this->licenses . '.clientid=' . $this->head . '.clientid';
       $licensesdates = ['sagsdexp', 'soexp', 'paexp', 'ntcexp', 'brgystart', 'brgyend', 'pnpstart', 'pnpend', 'nbistart', 'nbiend', 'nuerostart', 'nueroend', 'drugstart', 'drugend', 'medicalstart', 'medicalend', 'dilgstart', 'dilgend', 'occustart', 'occuend', 'courtstart', 'courtend', 'ctcdate', 'policyend'];
-     
-       foreach ($this->licensesfields as $key => $value) {
+
+      foreach ($this->licensesfields as $key => $value) {
 
         if (in_array($value, $licensesdates)) {
 
           // $fields .= ',date(' . $this->licenses . '.' . $value . ') as ' . $value;
           $fields .= ',ifnull(date(' . $this->licenses . '.' . $value . '), \'\') as ' . $value;
-
         } elseif ($value == 'premium') {
 
-            $fields .= ',ifnull(' . $this->licenses . '.premium, 0) as premium';
-
+          $fields .= ',ifnull(' . $this->licenses . '.premium, 0) as premium';
         } elseif ($value == 'amt') {
 
-            $fields .= ',ifnull(' . $this->licenses . '.amt, 0) as amt';
-
+          $fields .= ',ifnull(' . $this->licenses . '.amt, 0) as amt';
         } else {
 
-            $fields .= ',' . $this->licenses . '.' . $value;
+          $fields .= ',' . $this->licenses . '.' . $value;
         }
       }
     }
@@ -1602,6 +1618,7 @@ class employee
     $str = app($this->companysetup->getreportpath($config['params']))->reportplotting($config, $data);
     return ['status' => true, 'msg' => 'Generating report successfully.', 'report' => $str];
   }
+
   public function stockstatusposted($config)
   {
     switch ($config['params']['action']) {

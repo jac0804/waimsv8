@@ -31,10 +31,10 @@ class entrystudcurriculum
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -108,9 +108,8 @@ class entrystudcurriculum
 
   public function add($config)
   {
-   
+
     return;
-   
   }
 
   public function saveallentry($config)
@@ -123,7 +122,7 @@ class entrystudcurriculum
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-           $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         $datas = [
           'trno' => $data2['trno'],
@@ -166,7 +165,6 @@ class entrystudcurriculum
       left join en_term as sem on sem.line=yr.semid
       where c.clientid=? and c.trno=? and c.line=? and c.cline=? order by c.cline,sub.subjectcode  ";
     return $this->coreFunctions->opentable($qry, [$clientid, $trno, $line, $cline]);
-    
   }
 
   public function loaddata($config)

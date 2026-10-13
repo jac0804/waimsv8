@@ -29,12 +29,12 @@ class sales_per_item_group_per_sales_person
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -417,11 +417,11 @@ class sales_per_item_group_per_sales_person
         $str .= $this->reporter->col('', '100', null, false, $border, 'TRB', 'C', $font, '12', 'B', '', '4px');
       } elseif ($keyx == $yr . ' CATA Team Revise') {
         $str .= $this->reporter->col('', '85', null, false, $border, 'TLB', 'C', $font, '12', 'B', '', '4px');
-        $str .= $this->reporter->col(number_format($finaltotal, 2), '130', null, false, $border, 'TB', 'C', $font, '12', 'B', '', '4px','', 0, '', 1);
+        $str .= $this->reporter->col(number_format($finaltotal, 2), '130', null, false, $border, 'TB', 'C', $font, '12', 'B', '', '4px', '', 0, '', 1);
         $str .= $this->reporter->col('', '85', null, false, $border, 'TRB', 'C', $font, '12', 'B', '', '4px');
       } else {
-        $str .= $this->reporter->col(number_format($totalcol, 2), '85', null, false, $border, 'TLRB', 'C', $font, '12', 'B', '', '4px','', 0, '', 1);
-        $str .= $this->reporter->col(number_format($agents2[$keyx], 2), '130', null, false, $border, 'TLRB', 'C', $font, '12', 'B', '', '4px','', 0, '', 1);
+        $str .= $this->reporter->col(number_format($totalcol, 2), '85', null, false, $border, 'TLRB', 'C', $font, '12', 'B', '', '4px', '', 0, '', 1);
+        $str .= $this->reporter->col(number_format($agents2[$keyx], 2), '130', null, false, $border, 'TLRB', 'C', $font, '12', 'B', '', '4px', '', 0, '', 1);
         $str .= $this->reporter->col('', '85', null, false, $border, 'TLRB', 'C', $font, '12', 'B', '', '4px');
         $finaltotal += $totalcol;
         $finaltotalx += $agents2[$keyx];

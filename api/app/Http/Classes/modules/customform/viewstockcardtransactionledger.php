@@ -31,10 +31,10 @@ class viewstockcardtransactionledger
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -399,7 +399,7 @@ class viewstockcardtransactionledger
     $companyid = $config['params']['companyid'];
 
     //transaction history button in po module -transpower
-    if ($companyid == 60 && ($config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR' )) {
+    if ($companyid == 60 && ($config['params']['doc'] == 'PO' || $config['params']['doc'] == 'RR')) {
       $row = $config['params']['row'];
       $itemid = $row['itemid'];
       $item = $this->othersClass->getitemname($itemid);
@@ -611,7 +611,7 @@ class viewstockcardtransactionledger
 
 
   public function loadhistory($itemid, $center, $date, $uom, $filterwh, $config, $enddate = '')
-    {
+  {
     $companyid = $config['params']['companyid'];
     $filtercenter = " and cntnum.center='" . $center . "' ";
     $isshareinv = $this->companysetup->getisshareinv($config['params']);

@@ -31,12 +31,12 @@ class profit_and_loss_per_product_line
     public $xdept = [];
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -51,7 +51,7 @@ class profit_and_loss_per_product_line
         $fields = ['project', 'branchname'];
         $col2 = $this->fieldClass->create($fields);
         data_set($col2, 'project.name', "projectname");
-        
+
         switch ($companyid) {
             case 10: //afti
             case 12: //afti usd

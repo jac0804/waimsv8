@@ -37,9 +37,9 @@ class cv
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -69,7 +69,7 @@ class cv
         ['label' => 'BIR Form 2307', 'value' => '2', 'color' => 'blue']
       ]
     );
-  
+
     return array('col1' => $col1);
   }
 
@@ -296,7 +296,7 @@ class cv
         left join cntnum on cntnum.trno=head.trno
         LEFT JOIN cbledger AS cb ON cb.trno = detail.trno AND cb.line = detail.line
         where head.doc='cv' and head.trno ='$trno'";
-      
+
         $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
         break;
     } // end switch
@@ -333,10 +333,10 @@ class cv
     PDF::SetMargins(40, 40);
 
     PDF::SetFont($font, '');
-        $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
-        PDF::SetFont($font, '', 9);
-        PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
-        
+    $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
+    PDF::SetFont($font, '', 9);
+    PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
+
     PDF::MultiCell(0, 0, "\n\n");
     $this->reportheader->getheader($params);
 
@@ -360,7 +360,7 @@ class cv
     PDF::MultiCell(70, 5, 'PAYEE : ', '', 'L', false, 0);
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(295, 5, (isset($data[0]['clientname']) ? $data[0]['clientname'] : ''), '', 'L', false, 0, '',  '');
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(85, 5, 'DATE:', '', 'R', false, 0);
     PDF::SetFont($font, '', $fontsize);
@@ -421,9 +421,9 @@ class cv
     PDF::MultiCell(80, 0, 'DEBIT', '', 'R', false, 0);
     PDF::MultiCell(80, 0, 'CREDIT', '', 'R', false, 0);
     // PDF::MultiCell(10, 0, '', '', 'C', false, 0);
-  
-    PDF::MultiCell(65, 0, 'REF', '', 'C', false,0);
-    PDF::MultiCell(65, 0, 'REF NO', '', 'C', false,0);
+
+    PDF::MultiCell(65, 0, 'REF', '', 'C', false, 0);
+    PDF::MultiCell(65, 0, 'REF NO', '', 'C', false, 0);
     PDF::MultiCell(95, 0, 'REMARKS', '', 'C', false);
 
     PDF::SetLineWidth(1.0);
@@ -480,7 +480,7 @@ class cv
         $refno = $data[$i]['dyourref'];
 
         $arr_acno = $this->reporter->fixcolumn([$acno], '15', 0);
-        $arr_checkno = $this->reporter->fixcolumn([$checkno], '13', 0);//8
+        $arr_checkno = $this->reporter->fixcolumn([$checkno], '13', 0); //8
         $arr_acnonamedescs = $this->reporter->fixcolumn([$acnonamedescs], '25', 0);
         $arr_pdate = $this->reporter->fixcolumn([$pdate], '13', 0);
         $arr_debit = $this->reporter->fixcolumn([$debit], '15', 0);
@@ -491,14 +491,14 @@ class cv
         $arr_refno = $this->reporter->fixcolumn([$refno], '15', 0);
 
 
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_acnonamedescs, $arr_checkno, $arr_pdate, $arr_debit, $arr_credit, $arr_drem,$arr_ref,$arr_refno]);
+        $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_acnonamedescs, $arr_checkno, $arr_pdate, $arr_debit, $arr_credit, $arr_drem, $arr_ref, $arr_refno]);
 
         // $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_acnonamedescs, $arr_checkno, $arr_pdate, $arr_debit, $arr_credit, $arr_drem]);
 
         for ($r = 0; $r < $maxrow; $r++) {
-           
-         $reference=isset($arr_ref[$r]) ? $arr_ref[$r] : ''; 
-         $refno=isset($arr_refno[$r]) ? $arr_refno[$r] : ''; 
+
+          $reference = isset($arr_ref[$r]) ? $arr_ref[$r] : '';
+          $refno = isset($arr_refno[$r]) ? $arr_refno[$r] : '';
           // $reference='RRSP00004010692';
           // $reference = preg_replace_callback( '/^([A-Za-z]+)(.*)$/',function ($m) { return $m[1] . ltrim($m[2], '0');}, $reference);
           $prefix = substr($reference, 0, 4);
@@ -512,8 +512,8 @@ class cv
           PDF::MultiCell(65, 15, ' ' . (isset($arr_pdate[$r]) ? $arr_pdate[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(80, 15, ' ' . (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(80, 15, ' ' . (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(65, 15, ' ' .$reference, '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(65, 15, ' ' .$refno, '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(65, 15, ' ' . $reference, '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(65, 15, ' ' . $refno, '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(95, 15, ' ' . (isset($arr_drem[$r]) ? $arr_drem[$r] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
         }
         $totaldb += $data[$i]['db'];
@@ -537,7 +537,7 @@ class cv
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(335, 5, 'GRAND TOTAL : ', '', 'R', false, 0);
     PDF::MultiCell(80, 5, ($totaldb <= 0 ? '-' : number_format($totaldb, $decimal)), '', 'R', false, 0);
-    PDF::MultiCell(80, 5, ($totalcr <= 0 ? '-' : number_format($totalcr, $decimal)), '', 'R', false,0);
+    PDF::MultiCell(80, 5, ($totalcr <= 0 ? '-' : number_format($totalcr, $decimal)), '', 'R', false, 0);
     PDF::MultiCell(225, 5, '', '', 'R', false);
 
     PDF::SetLineWidth(0.1);
@@ -550,9 +550,9 @@ class cv
 
 
     PDF::MultiCell(200, 0, 'Prepared By: ', '', 'L', false, 0);
-     PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+    PDF::MultiCell(60, 0, '', '', 'L', false, 0);
     PDF::MultiCell(200, 0, 'Approved By: ', '', 'L', false, 0);
-     PDF::MultiCell(60, 0, '', '', 'L', false, 0);
+    PDF::MultiCell(60, 0, '', '', 'L', false, 0);
     PDF::MultiCell(200, 0, 'Received By: ', '', 'L');
 
 
@@ -960,7 +960,7 @@ class cv
       PDF::MultiCell(80, $max_height, $key, 'LRB', '', false, 0);
 
       switch ($data['head'][0]['month']) {
-          // case '1': case '2': case '3':
+        // case '1': case '2': case '3':
         case '1':
         case '4':
         case '7':
@@ -970,7 +970,7 @@ class cv
           PDF::MultiCell(95, $max_height, '', 'LRB', '', false, 0);
           $totalwtx1 +=  $data['detail'][$key]['oamt'];
           break;
-          // case '4': case '5': case '6':
+        // case '4': case '5': case '6':
         case '2':
         case '5':
         case '8':
@@ -1251,7 +1251,7 @@ class cv
   {
 
     $companyid = $filters['params']['companyid'];
-    $decimal = $this->companysetup->getdecimal('currency',$filters['params'] );
+    $decimal = $this->companysetup->getdecimal('currency', $filters['params']);
 
     $center = $filters['params']['center'];
     $username = $filters['params']['user'];

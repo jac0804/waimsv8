@@ -34,10 +34,10 @@ class ar
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -51,7 +51,7 @@ class ar
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
     return array('col1' => $col1);
   }
@@ -132,7 +132,7 @@ class ar
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('RECEIVABLE SETUP', '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
     $str .= $this->reporter->col('DOCUMENT # :', '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '100', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '') . '<br />';
@@ -162,10 +162,10 @@ class ar
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->printline();
-    
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('ACCT.#', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
     $str .= $this->reporter->col('ACCOUNT NAME', '350', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
     $str .= $this->reporter->col('REFERENCE&nbsp#', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
@@ -222,10 +222,10 @@ class ar
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
 
-        
+
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
-        
+
         $str .= $this->reporter->col('RECEIVABLE SETUP', '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
         $str .= $this->reporter->col('DOCUMENT # :', '100', null, false, $border, '', 'L', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : ''), '100', null, false, $border, 'B', 'L', $font, $fontsize, '', '', '') . '<br />';
@@ -254,10 +254,10 @@ class ar
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
-        
+
         $str .= $this->reporter->begintable('800');
         $str .= $this->reporter->startrow();
-        
+
         $str .= $this->reporter->col('ACCT.#', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
         $str .= $this->reporter->col('ACCOUNT NAME', '350', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
         $str .= $this->reporter->col('REFERENCE #', '75', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '30px', '8px');
@@ -315,7 +315,7 @@ class ar
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -329,7 +329,7 @@ class ar
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -338,7 +338,7 @@ class ar
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
-    
+
 
     PDF::SetFont($font, '', 9);
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
@@ -348,7 +348,7 @@ class ar
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
     PDF::SetFont($fontbold, '', $fontsize);

@@ -33,9 +33,9 @@ class po
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -90,9 +90,9 @@ class po
     return $result;
   } //end fn
 
-  public function reportplotting($params, $data) {
-   return $this->default_PO_LAYOUT($params, $data);
-    
+  public function reportplotting($params, $data)
+  {
+    return $this->default_PO_LAYOUT($params, $data);
   }
 
   public function default_header($params, $data)
@@ -147,11 +147,12 @@ class po
     $str .= $this->title_header($params);
     return $str;
   }
-  public function title_header($params){
+  public function title_header($params)
+  {
     $border = "1px solid ";
     $font =  "Century Gothic";
     $str = "";
-   
+
     //($w=null,$h=null, $bg=false,  $b=false, $al='',  $f='', $fs='',$fw='',$fc='',$pad='',$m='')
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
@@ -164,7 +165,7 @@ class po
     $str .= $this->reporter->col('TOTAL', '100', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     return $str;
   }
-  
+
   public function default_PO_LAYOUT($params, $data)
   {
     $companyid = $params['params']['companyid'];
@@ -288,11 +289,11 @@ class po
     // write2DBarcode(code, type, x, y, width, height, style, align)
 
     PDF::SetFont($font, '', 9);
-    PDF::MultiCell(0, 0, $username.' - '.date_format(date_create($current_timestamp),'m/d/Y H:i:s').'  '.strtoupper($headerdata[0]->name), '', 'L');
+    PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s') . '  ' . strtoupper($headerdata[0]->name), '', 'L');
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -359,7 +360,7 @@ class po
     }
     $this->vitaline_PO_header_PDF($params, $data);
 
-    
+
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', '');
 
@@ -371,29 +372,29 @@ class po
 
         $barcode = $data[$i]['barcode'];
         $itemname = $data[$i]['itemname'];
-        $qty = number_format($data[$i]['qty'],$decimalqty);
+        $qty = number_format($data[$i]['qty'], $decimalqty);
         $uom = $data[$i]['uom'];
-        $netamt = number_format($data[$i]['netamt'],$decimalcurr);
+        $netamt = number_format($data[$i]['netamt'], $decimalcurr);
         $disc = $data[$i]['disc'];
-        $ext = number_format($data[$i]['ext'],$decimalcurr);
+        $ext = number_format($data[$i]['ext'], $decimalcurr);
 
-        $arr_barcode = $this->reporter->fixcolumn([$barcode],'16',0);
-        $arr_itemname = $this->reporter->fixcolumn([$itemname],'100',0);
-        $arr_qty = $this->reporter->fixcolumn([$qty],'13',0);
-        $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-        $arr_netamt = $this->reporter->fixcolumn([$netamt],'13',0);
-        $arr_disc = $this->reporter->fixcolumn([$disc],'13',0);
-        $arr_ext = $this->reporter->fixcolumn([$ext],'13',0);
+        $arr_barcode = $this->reporter->fixcolumn([$barcode], '16', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '100', 0);
+        $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+        $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+        $arr_netamt = $this->reporter->fixcolumn([$netamt], '13', 0);
+        $arr_disc = $this->reporter->fixcolumn([$disc], '13', 0);
+        $arr_ext = $this->reporter->fixcolumn([$ext], '13', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_itemname, $arr_qty, $arr_uom, $arr_netamt, $arr_disc, $arr_ext]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(100, 0, (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
           PDF::MultiCell(50, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
           PDF::MultiCell(50, 0, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
           PDF::MultiCell(200, 0, (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', 0, 0, '', '', true, 0, true, false);
-          PDF::MultiCell(100, 0, (isset($arr_netamt[$r]) ? $arr_netamt[$r] : ''), '', 'R', 0, 0, '', '', true, 0 , true, false);
+          PDF::MultiCell(100, 0, (isset($arr_netamt[$r]) ? $arr_netamt[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
           PDF::MultiCell(100, 0, (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'C', 0, 0, '', '', true, 0, true, false);
           PDF::MultiCell(100, 0, (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', 0, 0, '', '', true, 0, true, false);
           PDF::MultiCell(100, 0, '', '', 'L', 0, 1, '', '', true, 0, false, false);
@@ -410,7 +411,7 @@ class po
 
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', 'T');
-   
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(600, 0, 'GRAND TOTAL: ', '', 'R', false, 0);
     PDF::MultiCell(100, 0, number_format($totalext, $decimalcurr), '', 'R');

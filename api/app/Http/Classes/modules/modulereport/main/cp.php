@@ -34,7 +34,7 @@ class cp
   private $othersClass;
   private $logger;
   private $reporter;
-  
+
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '800'];
 
   public $tablenum = 'cntnum';
@@ -43,9 +43,9 @@ class cp
   public $stock = 'lastock';
   public $hstock = 'glstock';
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -206,7 +206,7 @@ class cp
       PDF::MultiCell(680, 0, '', '', '', false, 1);
       PDF::MultiCell(680, 0, '', '', '', false, 1);
       PDF::MultiCell(680, 0, '', '', '', false, 1);
-      
+
 
 
       PDF::SetFont($fontbold, '', '20');
@@ -245,7 +245,7 @@ class cp
       PDF::MultiCell(50, 0, 'Gender', '', 'L', false, 0);
       PDF::MultiCell(210, 0, '', '', 'L', false, 1);
 
-      
+
 
       PDF::SetFont($fontbold, '', '10');
       PDF::MultiCell(20, 0, '', '', '', false, 0);
@@ -269,7 +269,7 @@ class cp
       PDF::MultiCell(140, 0, 'Contact No.', '', 'L', false, 0);
       PDF::MultiCell(210, 0, '', '', 'L', false, 1);
 
-      
+
       $arr_address = $this->reporter->fixcolumn([$data[0]->certaddr], '65', 0);
 
       $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
@@ -321,7 +321,7 @@ class cp
       PDF::MultiCell(10, 0, '', '', '', false, 0);
       PDF::MultiCell(710, 0, 'II. Contract Specifications', '', 'L', false, 1);
 
-      
+
 
       PDF::SetFont($fontbold, '', '9.9');
       PDF::MultiCell(20, 0, '', '', '', false, 0);
@@ -350,7 +350,7 @@ class cp
       PDF::MultiCell(140, 0, number_format($inival, 2), 'B', 'L', false, 0);
       PDF::MultiCell(270, 0, '', '', '', false, 1);
 
-      
+
       PDF::SetFont($fontbold, '', '5');
       PDF::MultiCell(720, 0, '', '', '', false, 1);
 
@@ -384,7 +384,7 @@ class cp
           break;
         case 'FULL PAYMENT':
           $amt =  $data[0]->amount;
-          break; 
+          break;
         default:
           $amt = ($data[0]->issenior == 1 ? $data[0]->cash / 1.12 : $data[0]->cash);
           break;
@@ -393,11 +393,11 @@ class cp
       $fullpaydate = $this->coreFunctions->datareader("select dateid as value from 
       (select h.dateid from glhead as h left join cntnum as cnt on cnt.trno = h.trno left join hcntnuminfo as c on c.trno = h.trno where cnt.doc='CR' and  c.cptrno = ?
       union all
-      select h.dateid from lahead as h left join cntnum as cnt on cnt.trno = h.trno left join cntnuminfo as c on c.trno = h.trno where  cnt.doc='CR' and  c.cptrno = ?) as a order by dateid desc limit 1",[$trno,$trno]);
+      select h.dateid from lahead as h left join cntnum as cnt on cnt.trno = h.trno left join cntnuminfo as c on c.trno = h.trno where  cnt.doc='CR' and  c.cptrno = ?) as a order by dateid desc limit 1", [$trno, $trno]);
 
       PDF::MultiCell(150, 0, (isset($data[0]->plantype) ? $data[0]->plangrp . "-" . $data[0]->plantype : ''), 'B', 'L', false, 0);
       PDF::MultiCell(15, 0, '', '', '', false, 0);
-      PDF::MultiCell(110, 0, (isset($fullpaydate) ? date('m/d/Y',strtotime($fullpaydate)) : ''), 'B', 'L', false, 0);
+      PDF::MultiCell(110, 0, (isset($fullpaydate) ? date('m/d/Y', strtotime($fullpaydate)) : ''), 'B', 'L', false, 0);
       PDF::MultiCell(5, 0, '', '', '', false, 0);
       PDF::MultiCell(150, 0, '', '', 'L', false, 0);
       PDF::MultiCell(270, 0, '', '', '', false, 1);
@@ -405,7 +405,7 @@ class cp
       PDF::SetFont($fontbold, '', '11.81');
       PDF::MultiCell(720, 0, '', '', '', false, 1);
       PDF::MultiCell(720, 0, '', '', '', false, 1);
-      
+
 
       // beneficiaries
       $beneficiaries = $this->getBeneficiaries($data[0]->aftrno);
@@ -414,7 +414,7 @@ class cp
       PDF::MultiCell(710, 0, 'III. Beneficiaries/Assignments', '', 'L', false, 1);
 
       PDF::SetFont($fontbold, '', '9.9');
-      
+
 
       PDF::MultiCell(20, 0, '', '', '', false, 0);
       PDF::MultiCell(150, 0, 'Name(s)', '', 'L', false, 0);
@@ -426,7 +426,7 @@ class cp
       PDF::MultiCell(70, 0, 'Relationship', '', 'L', false, 0);
       PDF::MultiCell(195, 0, '', '', 'L', false, 1);
 
-      
+
 
       PDF::MultiCell(5, 0, '', '', '', false, 0);
       PDF::SetFont($font, '', '9');
@@ -455,8 +455,8 @@ class cp
       PDF::MultiCell(150, 0, (isset($beneficiaries[2]->name) ? $beneficiaries[2]->name : ''), 'B', 'L', false, 0);
       PDF::MultiCell(5, 0, '', '', '', false, 0);
       PDF::MultiCell(80, 0, (isset($beneficiaries[2]->relation) ? $beneficiaries[2]->relation : ''), 'B', 'L', false, 0);
-      
-      if(count($beneficiaries)>3){
+
+      if (count($beneficiaries) > 3) {
         //$this->coreFunctions->LogConsole("Over".count($beneficiaries));
         PDF::MultiCell(15, 0, '', '', 'L', false, 0);
         PDF::SetFont($font, '', 9);
@@ -466,10 +466,10 @@ class cp
         PDF::MultiCell(5, 0, '', '', '', false, 0);
         PDF::MultiCell(70, 0, (isset($beneficiaries[3]->relation) ? $beneficiaries[3]->relation : ''), 'B', 'L', false, 0);
         PDF::MultiCell(190, 0, '', '', 'L', false, 1);
-      }else{
+      } else {
         PDF::MultiCell(15, 0, '', '', 'L', false, 1);
       }
-     
+
       PDF::MultiCell(680, 0, '', '', '', false, 1);
       // PDF::MultiCell(680, 0, '', '', '', false, 1);
 
@@ -480,7 +480,7 @@ class cp
       $d =  date("d", strtotime($this->othersClass->getCurrentTimeStamp()));
       $day = $nf->format($d);
       $m =  date("F", strtotime($this->othersClass->getCurrentTimeStamp()));
-      $yr=date("Y", strtotime($this->othersClass->getCurrentTimeStamp()));
+      $yr = date("Y", strtotime($this->othersClass->getCurrentTimeStamp()));
       PDF::SetFont($fontreg, '', '10');
       PDF::MultiCell(680, 0, 'EVERGREEN LIFEPLAN SERVICES, INC., through this certificate guarantees to the PLANHOLDER, his/her executor, administrator, or', '', 'L', false, 1);
       PDF::MultiCell(680, 0, 'assignee, the benefits and privileges of the PLANHOLDER subject only and always to the LIFEPLAN Contract and any and all ', '', 'L', false, 1);
@@ -521,38 +521,38 @@ class cp
       PDF::MultiCell(680, 0, '', '', '', false, 1);
 
 
-      
-    $arr_planholder = $this->reporter->fixcolumn([$params['params']['dataparams']['prepared']], '27', 0);
-    // $arr_planholder = $this->reporter->fixcolumn(['Miravite, Eurydice Teresita Zzxcxczzzzzzz'], '35', 0);
 
-    $maxrow = $this->othersClass->getmaxcolumn([$arr_planholder]);
-    
-    
+      $arr_planholder = $this->reporter->fixcolumn([$params['params']['dataparams']['prepared']], '27', 0);
+      // $arr_planholder = $this->reporter->fixcolumn(['Miravite, Eurydice Teresita Zzxcxczzzzzzz'], '35', 0);
 
-    for ($r = 0; $r < $maxrow; $r++) {
-      PDF::SetFont($font, '', '12');
-      PDF::MultiCell(10, 0, '', '', '', false, 0);
-      
-      if ($r + 1 == $maxrow) {
-        PDF::MultiCell(140, 0, (isset($arr_planholder[$r]) ? $arr_planholder[$r] : ''), 'B', 'L', false, 0);
+      $maxrow = $this->othersClass->getmaxcolumn([$arr_planholder]);
+
+
+
+      for ($r = 0; $r < $maxrow; $r++) {
+        PDF::SetFont($font, '', '12');
         PDF::MultiCell(10, 0, '', '', '', false, 0);
-        PDF::MultiCell(80, 0, $current_date, 'B', 'L', false, 0);
-        PDF::MultiCell(30, 0, '', '', '', false, 0);
-        PDF::MultiCell(150, 0, $params['params']['dataparams']['approved'], 'B', 'L', false, 0);
-        PDF::MultiCell(10, 0, '', '', '', false, 0);
-        PDF::MultiCell(80, 0, $current_date, 'B', 'L', false, 0);
-        PDF::MultiCell(210, 0, '', '', 'L', false, 1);
-      } else {
-        PDF::MultiCell(140, 0, (isset($arr_planholder[$r]) ? $arr_planholder[$r] : ''), '', 'L', false, 0);
-        PDF::MultiCell(10, 0, '', '', '', false, 0);
-        PDF::MultiCell(80, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(30, 0, '', '', '', false, 0);
-        PDF::MultiCell(150, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(10, 0, '', '', '', false, 0);
-        PDF::MultiCell(80, 0, '', '', 'L', false, 0);
-        PDF::MultiCell(210, 0, '', '', 'L', false, 1);
+
+        if ($r + 1 == $maxrow) {
+          PDF::MultiCell(140, 0, (isset($arr_planholder[$r]) ? $arr_planholder[$r] : ''), 'B', 'L', false, 0);
+          PDF::MultiCell(10, 0, '', '', '', false, 0);
+          PDF::MultiCell(80, 0, $current_date, 'B', 'L', false, 0);
+          PDF::MultiCell(30, 0, '', '', '', false, 0);
+          PDF::MultiCell(150, 0, $params['params']['dataparams']['approved'], 'B', 'L', false, 0);
+          PDF::MultiCell(10, 0, '', '', '', false, 0);
+          PDF::MultiCell(80, 0, $current_date, 'B', 'L', false, 0);
+          PDF::MultiCell(210, 0, '', '', 'L', false, 1);
+        } else {
+          PDF::MultiCell(140, 0, (isset($arr_planholder[$r]) ? $arr_planholder[$r] : ''), '', 'L', false, 0);
+          PDF::MultiCell(10, 0, '', '', '', false, 0);
+          PDF::MultiCell(80, 0, '', '', 'L', false, 0);
+          PDF::MultiCell(30, 0, '', '', '', false, 0);
+          PDF::MultiCell(150, 0, '', '', 'L', false, 0);
+          PDF::MultiCell(10, 0, '', '', '', false, 0);
+          PDF::MultiCell(80, 0, '', '', 'L', false, 0);
+          PDF::MultiCell(210, 0, '', '', 'L', false, 1);
+        }
       }
-    }
 
 
       PDF::SetFont($fontbold, '', '11.81');
@@ -636,7 +636,7 @@ class cp
     $strdocno = $data[0]->bref . $data[0]->seq;
     $strdocno = $this->othersClass->PadJ($strdocno, 10);
 
-    
+
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(400, 0, '', '', '', false, 0);
     PDF::MultiCell(70, 0, 'Contract No:', '', 'R', false, 0);
@@ -685,7 +685,7 @@ class cp
     PDF::MultiCell(15, 0, '', '', '', false, 0);
     PDF::MultiCell(565, 0, 'arrangement, delivery and performance of funeral and/or cremation services by THE EVERGREEN at the time of need, subject to the terms', '', 'L');
     PDF::MultiCell(15, 0, '', '', '', false, 0);
-    PDF::MultiCell(565, 0, 'and conditions set forth under the Lifeplan’s Provisions, provided that the lifeplan is fully paid or the payment terms are current.', '', 'L'); 
+    PDF::MultiCell(565, 0, 'and conditions set forth under the Lifeplan’s Provisions, provided that the lifeplan is fully paid or the payment terms are current.', '', 'L');
 
     PDF::SetFont($fontbold, '', '4');
     PDF::MultiCell(560, 0, '', '', '', false, 1);
@@ -750,19 +750,19 @@ class cp
       } else {
         PDF::MultiCell(130, 0, '', '', 'L', false, 1);
       }
-     // PDF::MultiCell(210, 0, '', '', 'L', false, 1);
+      // PDF::MultiCell(210, 0, '', '', 'L', false, 1);
     }
 
     PDF::SetFont($font, '', '4');
     PDF::MultiCell(70, 0, '', '', '', false, 0);
     PDF::MultiCell(345, 0, '', 'T', 'L', false, 0);
     PDF::MultiCell(5, 0, '', '', '', false, 0);
-    PDF::MultiCell(130, 0, '', 'T', 'L', false, 1);   
+    PDF::MultiCell(130, 0, '', 'T', 'L', false, 1);
 
 
     // PDF::SetFont($fontbold, '', '4');
     // PDF::MultiCell(560, 0, '', '', '', false, 1);
-    
+
 
     // PDF::MultiCell(70, 0, '', '', '', false, 0);
     // PDF::SetFont($font, '', 11);
@@ -786,7 +786,7 @@ class cp
       PDF::MultiCell(300, 0, '', 'B', 'L', false, 1);
     } else {
       PDF::SetFont($font, '', 12);
-      PDF::MultiCell(300, 0, (isset($data[0]->plname) ? $data[0]->plname : '') . ', ' . (isset($data[0]->pfname) ? $data[0]->pfname : '') . ' ' . (isset($data[0]->pmname) ? $data[0]->pmname : ''). ' ' . (isset($data[0]->pext) ? $data[0]->pext : ''), 'B', 'L', false, 1);
+      PDF::MultiCell(300, 0, (isset($data[0]->plname) ? $data[0]->plname : '') . ', ' . (isset($data[0]->pfname) ? $data[0]->pfname : '') . ' ' . (isset($data[0]->pmname) ? $data[0]->pmname : '') . ' ' . (isset($data[0]->pext) ? $data[0]->pext : ''), 'B', 'L', false, 1);
     }
 
     PDF::SetFont($font, '', '4');
@@ -864,7 +864,7 @@ class cp
         break;
       case 'FULL PAYMENT':
         $amt = $data[0]->amount;
-      break;
+        break;
       default:
         $amt = ($data[0]->issenior == 1 ? $data[0]->cash / 1.12 : $data[0]->cash);
         break;
@@ -880,13 +880,13 @@ class cp
       PDF::MultiCell(185, 0, '2 Years', 'B', 'L', false, 0);
     }
 
-    $due = $this->coreFunctions->datareader("select date_format(dateid, '%m/%d/%Y') as value from arledger where trno = ".$trno." order by dateid desc limit 1");
+    $due = $this->coreFunctions->datareader("select date_format(dateid, '%m/%d/%Y') as value from arledger where trno = " . $trno . " order by dateid desc limit 1");
     PDF::MultiCell(5, 0, '', '', '', false, 0);
     PDF::MultiCell(100, 0, (isset($due) ? $due : ''), 'B', 'L', false, 1);
 
     PDF::SetFont($fontbold, '', '6');
     PDF::MultiCell(560, 0, '', '', '', false, 1);
-    
+
 
     // beneficiaries
     $beneficiaries = $this->getBeneficiaries($data[0]->aftrno);
@@ -934,8 +934,8 @@ class cp
     PDF::SetFont($font, '', '12');
     PDF::MultiCell(133, 0, (isset($beneficiaries[1]->name) ? $beneficiaries[1]->name : ''), 'B', 'L', false, 0);
     PDF::MultiCell(5, 0, '', '', '', false, 0);
-    
-    if(count($beneficiaries)>3){
+
+    if (count($beneficiaries) > 3) {
       PDF::MultiCell(80, 0, (isset($beneficiaries[1]->relation) ? $beneficiaries[1]->relation : ''), 'B', 'L', false, 0);
       PDF::MultiCell(5, 0, '', '', '', false, 0);
       PDF::SetFont($font, '', 8);
@@ -944,10 +944,10 @@ class cp
       PDF::MultiCell(142, 0, (isset($beneficiaries[3]->name) ? $beneficiaries[3]->name : ''), 'B', 'L', false, 0);
       PDF::MultiCell(5, 0, '', '', '', false, 0);
       PDF::MultiCell(80, 0, (isset($beneficiaries[3]->relation) ? $beneficiaries[3]->relation : ''), 'B', 'L', false, 1);
-    }else{
+    } else {
       PDF::MultiCell(80, 0, (isset($beneficiaries[1]->relation) ? $beneficiaries[1]->relation : ''), 'B', 'L', false, 1);
     }
-    
+
     PDF::MultiCell(560, 0, '', '', '', false, 1);
 
     // terms
@@ -966,26 +966,26 @@ class cp
     PDF::MultiCell(15, 0, '', '', '', false, 0);
     PDF::MultiCell(565, 0, 'IN WITNESS WHEREOF, Evergreen Lifeplan Services, Inc. and Planholder have caused this Contract and Agreement to be effective in', '', 'L', false, 1);
     PDF::MultiCell(15, 0, '', '', '', false, 0);
-    PDF::MultiCell(565, 0, 'accordance to the terms stated above.', '', 'L', false, 1);    
+    PDF::MultiCell(565, 0, 'accordance to the terms stated above.', '', 'L', false, 1);
 
-    
+
     PDF::SetFont($font, '', '15');
     PDF::MultiCell(565, 0, '', '', '', false, 1);
 
 
     $current_date = date("m/d/Y", strtotime($this->othersClass->getCurrentTimeStamp()));
-    
+
     $arr_planholder = $this->reporter->fixcolumn([(isset($data[0]->lname) ? $data[0]->lname : '') . ', ' . (isset($data[0]->fname) ? $data[0]->fname : '') . ' ' . (isset($data[0]->mname) ? $data[0]->mname : '')], '30', 0);
     // $arr_planholder = $this->reporter->fixcolumn(['Miravite, Eurydice Teresita Zzxcxczzzzzzz'], '35', 0);
 
     $maxrow = $this->othersClass->getmaxcolumn([$arr_planholder]);
-    
-    
+
+
 
     for ($r = 0; $r < $maxrow; $r++) {
       PDF::MultiCell(40, 0, '', '', '', false, 0);
       PDF::SetFont($font, '', '11');
-      
+
       if ($r + 1 == $maxrow) {
         PDF::MultiCell(140, 0, (isset($arr_planholder[$r]) ? $arr_planholder[$r] : ''), 'B', 'L', false, 0);
         PDF::MultiCell(10, 0, '', '', '', false, 0);
@@ -1016,7 +1016,7 @@ class cp
     PDF::MultiCell(10, 0, '', '', '', false, 0);
     PDF::MultiCell(80, 0, 'Date', '', 'L', false, 1);
 
-    
+
     PDF::SetFont($font, '', '4');
     PDF::MultiCell(560, 0, '', '', '', false, 1);
 
@@ -1040,7 +1040,7 @@ class cp
 
     PDF::SetFont($fontmyriad, '', '8');
     PDF::MultiCell(560, 0, '', '', '', false, 1);
-    
+
     //    PDF::MultiCell(550, 0, "\n");
     PDF::MultiCell(560, 0, '', '', '', false, 1);
     PDF::SetFont($font, '', 8);
@@ -1050,13 +1050,13 @@ class cp
     PDF::MultiCell(577, 0, 'approval of your application. This Agreement, together with any annexes, riders or endorsments duly signed by any of our authorized officers constitutes the entire contract. No', '', 'L', false, 1);
     PDF::MultiCell(2, 0, '', '', '', false, 0);
     PDF::MultiCell(575, 0, 'statement, promise, inducememt made by any person or through any agent, employee or representative not contained herein shall be binding or valid.', '', 'L', false, 1);
-     
+
     //    PDF::MultiCell(550, 0, "\n");
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(560, 0, '', '', '', false, 1);
     PDF::MultiCell(2, 0, '', '', '', false, 0);
     PDF::SetFont($font, '', 8);
-    PDF::MultiCell(582, 0, 'This Lifeplan Agreement may not be amended, endorsed or otherwise changed except through a written document signed by the President, Corporate Secretary, or other officers', '', 'L', false, 1);   
+    PDF::MultiCell(582, 0, 'This Lifeplan Agreement may not be amended, endorsed or otherwise changed except through a written document signed by the President, Corporate Secretary, or other officers', '', 'L', false, 1);
     PDF::MultiCell(2, 0, '', '', '', false, 0);
     PDF::SetFont($font, '', 8);
     PDF::MultiCell(575, 0, 'duly authorized by the Company at the time of the amendment. Any such modification must be made in writing and submitted to the Insurance Commission for prior approval. ', '', 'L', false, 1);
@@ -1073,14 +1073,14 @@ class cp
     PDF::SetFont($font, '', 14);
     PDF::MultiCell(560, 0, '(This Page Intentionally Left Blank)', '', 'B', false, 1, '200', '250');
 
-    PDF::AddPage('p', [610, 820]);    
+    PDF::AddPage('p', [610, 820]);
     //changeimage
     PDF::Image($this->companysetup->getlogopath($params['params']) . 'elsi.png', '19', '12', 342, 78);
     PDF::SetFont($font, '', 10);
     //PDF::MultiCell(575, 0, 'Page ' . PDF::PageNo() . ' of ' . PDF::getAliasNbPages(), '', 'R', false, 1, '40', '10');
 
     PDF::SetFont($font, '', 57);
-    
+
     PDF::MultiCell(560, 0, '', '', '', false, 1);
 
     PDF::SetFont($font, '', '8');
@@ -1091,7 +1091,7 @@ class cp
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(560, 0, '', '', '', false, 1);
 
-    PDF::SetFont($font, '', 7.8);    
+    PDF::SetFont($font, '', 7.8);
     PDF::MultiCell(575, 0, ' I. DEFINITION OF TERMS', 'LRT', 'L', false, 1);
     PDF::MultiCell(575, 0, ' o ln this Plan Contract the words "you" or "your` refer to the Planholder named in the Applicaton. The words "we", "us" and "our" or the "Company" refer to Evergreen Lifeplan', 'LR', 'L', false, 1);
     PDF::MultiCell(575, 0, ' Service, Inc.', 'LR', 'L', false, 1);
@@ -1162,7 +1162,7 @@ class cp
     PDF::MultiCell(575, 0, ' Time being of the essence, it is the responsibility of your family, heirs, beneficiary/ies, executor/s or administrator/s to give immediate notification to us in person or by', 'LR', 'L', false, 1);
     PDF::MultiCell(575, 0, ' telephone or other form of communication in order for us to make the necessary arrangements for the rendition of memorial services. lf the Planholder`s family will negotiate', 'LR', 'L', false, 1);
     PDF::MultiCell(575, 0, ' directly with another mortuary for the rendition of memorial services, we will consider the plan unrendered in accordance with the provision on Unrendered Services', 'LR', 'L', false, 1);
-    
+
     PDF::MultiCell(575, 0, ' IV. CONTRACT PRICE', 'LRT', 'L', false, 1);
     PDF::MultiCell(575, 0, ' You agree to pay the Contract Price, plus handling and other charges, if any, under this Plan Contract, according to the selected mode of payment on the designated due', 'LR', 'L', false, 1);
     PDF::MultiCell(575, 0, ' dates. You may pay at any of our offices or through our authorized representatives or through auto-debit facility without any need of notice or demand. We only honor', 'LR', 'L', false, 1);
@@ -1237,7 +1237,7 @@ class cp
     PDF::MultiCell(575, 0, ' XIII. TAXES AND FEES', 'LRT', 'L', false, 1);
     PDF::MultiCell(575, 0, ' The Gross Contract Price stated in this Plan Contract does not include any tax or fee which any law or regulation may impose in the future. lf during the effectivity of this Plan', 'LR', 'L', false, 1);
     PDF::MultiCell(575, 0, ' Contract, the Contract Price or the benefits are subjected to any tax or fee, said tax or fee will be charged to you, or your Beneficiary, as the case may be.', 'LR', 'L', false, 1);
-    
+
     PDF::MultiCell(575, 0, ' XIV. LIMITATION OF ACTION', 'LRT', 'L', false, 1);
     PDF::MultiCell(575, 0, ' No legal action under this Plan Contract may be filed after five (5) years from the time the cause of action accrues.', 'LR', 'L', false, 1);
 
@@ -1252,7 +1252,7 @@ class cp
     PDF::MultiCell(575, 0, ' The provision of Article 1250 of the Republic Act No. 386, otherwise known as the Civil Code of the Philippines which states that in case an extraordinary inflation or deflation', 'LR', 'L', false, 1);
     PDF::MultiCell(575, 0, ' of the currency stipulated should supervene, the value of the currency at the time of the establishment of the obligation shall be the basis of payment, unless there is a contract', 'LR', 'L', false, 1);
     PDF::MultiCell(575, 0, ' to the contrary, shall be waived in determining the extent of benefits or liabilities under this Plan Contract.', 'LR', 'L', false, 1);
-    
+
     PDF::MultiCell(575, 0, ' XVII. JURISDICTION AND VENUE', 'LRT', 'L', false, 1);
     PDF::MultiCell(575, 0, ' The lnsurance Commission shall have the primary and exclusive power to adjudicate any and all claims involving pre-need plans. lf the amount of pre-need benefits does not', 'LR', 'L', false, 1);
     PDF::MultiCell(575, 0, ' exceed One Hundred Thousand Pesos (P100, 000.00), the decision of the lnsurance Commission shall be final and executory.', 'LR', 'L', false, 1);
@@ -1274,7 +1274,7 @@ class cp
     PDF::MultiCell(575, 0, ' For any inquiries or complaints, please', 'LR', 'L', false, 1);
     PDF::MultiCell(575, 0, ' contact the Public Assistance and Mediation Division (PAMD) of the lnsurance Commission at 1071 United Nations Avenue, Manila with telephone numbers +632-8523-8461', 'LR', 'L', false, 1);
     PDF::MultiCell(575, 0, ' to 70 and email address pubassist@insurance.qov.ph. The official website of the lnsurance Commission is www. insurance. gov. ph.', 'LRB', 'L', false, 1);
-    
+
     PDF::SetFont($font, '', 10);
     PDF::MultiCell(560, 0, 'Page ' . PDF::PageNo() . ' of ' . PDF::getAliasNbPages(), '', 'R', false, 1, '40', '10');
   }

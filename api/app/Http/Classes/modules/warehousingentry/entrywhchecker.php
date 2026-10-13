@@ -28,9 +28,9 @@ class entrywhchecker
     public $style = 'width:100%;';
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->tabClass = new tabClass;
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -183,7 +183,7 @@ class entrywhchecker
     public function save($config)
     {
         $row = $config['params']['row'];
-        
+
         $dateTables = ['replaceqty'];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $config['params']['companyid'], [], false, $dateTables);
         $ispick = $this->coreFunctions->datareader("select  ifnull(checkerrcvdate,'') as value from cntnuminfo where trno=?", [$row['trno']]);
@@ -192,8 +192,8 @@ class entrywhchecker
         }
 
 
-        $replaceqty = $this->othersClass->sanitizekeyfieldFast('qty', $row['replaceqty'],$lookups);
-        $isqty = $this->othersClass->sanitizekeyfieldFast('qty', $row['isqty'],$lookups);
+        $replaceqty = $this->othersClass->sanitizekeyfieldFast('qty', $row['replaceqty'], $lookups);
+        $isqty = $this->othersClass->sanitizekeyfieldFast('qty', $row['isqty'], $lookups);
 
         if ($replaceqty > $isqty) {
             return ['status' => false, 'msg' => 'Replacement qty mmust greater than DR qty.'];

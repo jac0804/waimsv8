@@ -32,12 +32,12 @@ class daily_cement_withdrawal_without_total_form_report
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -352,11 +352,11 @@ class daily_cement_withdrawal_without_total_form_report
     if ($companyid == 21) $supp = $config['params']['dataparams']['client']; //kinggeorge
 
     $logo = URL::to('/images/reports/gfc.png');
-    
-    
+
+
     $str = '';
     $str .= $this->reporter->begintable($layoutsize);
-    $str .= $this->reporter->startrow();  
+    $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('<img src ="' . $logo . '" alt="logo" width="975px" height ="100px">', '10', null, false, '2px solid ', '', 'R', 'Century Gothic', '15', 'B', '', '1px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -389,7 +389,7 @@ class daily_cement_withdrawal_without_total_form_report
 
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('DAILY CEMENT WITHDRAWAL REPORT', '700', null, false, $border, 'LB', 'C', $font, $fontsize+10, 'B', '', '');
+    $str .= $this->reporter->col('DAILY CEMENT WITHDRAWAL REPORT', '700', null, false, $border, 'LB', 'C', $font, $fontsize + 10, 'B', '', '');
     $str .= $this->reporter->col('Latest Update', '140', null, false, $border, 'BLR', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '135', null, false, $border, 'BLR', 'C', $font, $fontsize, '', '', '');
     $str .= $this->reporter->endrow();
@@ -514,7 +514,7 @@ class daily_cement_withdrawal_without_total_form_report
       if ($this->reporter->linecounter >= $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
-        
+
         $str .= $this->default_displayHeader($config);
         // $str .= $this->reporter->endrow();
         // $str .= $this->reporter->printline();

@@ -38,11 +38,44 @@ class detachment
   public $tablelogs_del = 'del_masterfile_log';
   private $stockselect;
 
-  private $fields=['divcode','divname','address','group','remarks','attention','tel','faxno'];
-  private $divinfofields = ['colltype', 'isexcessbasic', 'isnodeductbank', 'isnodeductemp', 'isbasic8', 'isbasic4', 'isndiff', 'isworkingrd', 'isexcessduty', 'isregot', 'isworkingrd', 'isholiday',
-                            'noguards','yrdays','wkdays', 'dutyhrs',  'mons',  'days', 'hrs', 'excesshrs',
-                            'dailywage', 'salary', 'excessduty', 'cola', 'otamt', 'amt13th', 'incentive', 'uniformamt',
-                            'retireamt', 'sssamt', 'phicamt', 'hdmfamt', 'eccamt', 'agencyfee', 'agencyvat'];
+  private $fields = ['divcode', 'divname', 'address', 'group', 'remarks', 'attention', 'tel', 'faxno'];
+  private $divinfofields = [
+    'colltype',
+    'isexcessbasic',
+    'isnodeductbank',
+    'isnodeductemp',
+    'isbasic8',
+    'isbasic4',
+    'isndiff',
+    'isworkingrd',
+    'isexcessduty',
+    'isregot',
+    'isworkingrd',
+    'isholiday',
+    'noguards',
+    'yrdays',
+    'wkdays',
+    'dutyhrs',
+    'mons',
+    'days',
+    'hrs',
+    'excesshrs',
+    'dailywage',
+    'salary',
+    'excessduty',
+    'cola',
+    'otamt',
+    'amt13th',
+    'incentive',
+    'uniformamt',
+    'retireamt',
+    'sssamt',
+    'phicamt',
+    'hdmfamt',
+    'eccamt',
+    'agencyfee',
+    'agencyvat'
+  ];
   private $except = ['divid'];
   private $blnfields = ['isexcessbasic', 'isnodeductbank', 'isnodeductemp', 'isbasic8', 'isbasic4', 'isndiff', 'isworkingrd', 'isexcessduty', 'isregot', 'isworkingrd', 'isholiday'];
   private $acctg = [];
@@ -52,11 +85,11 @@ class detachment
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -164,8 +197,17 @@ class detachment
 
   public function createTab($access, $config)
   {
-    $fields = ['lblinvreq',['lbltotalkg', 'num'],['lblshipping', 'year'],['lblbilling', 'numdays'],['lblacquisition', 'hours'],
-               ['lbldepreciation', 'monthsno'],['lbllocation','nodays'],['lblvehicleinfo', 'othrs'],['lblrem', 'workloc']];
+    $fields = [
+      'lblinvreq',
+      ['lbltotalkg', 'num'],
+      ['lblshipping', 'year'],
+      ['lblbilling', 'numdays'],
+      ['lblacquisition', 'hours'],
+      ['lbldepreciation', 'monthsno'],
+      ['lbllocation', 'nodays'],
+      ['lblvehicleinfo', 'othrs'],
+      ['lblrem', 'workloc']
+    ];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'lblinvreq.label', '.');
     data_set($col1, 'lblinvreq.style', 'font-weight:bold; font-size:15px; display:flex; justify-content:center; transform:translateY(8px);color:white;');
@@ -222,9 +264,17 @@ class detachment
     data_set($col1, 'workloc.class', 'csworkloc sbccsreadonly');
 
 
-    $fields = ['lblsource',['lbldestination', 'basicrate'],['lblpassbook', 'tbasicrate'],['lblreconcile', 'othrsextra'],
-              ['lblearned', 'cola'],['lblcleared', 'apothrs'],['lblrecondate', 'paymentname'],['lblendingbal', 'opincentive'],
-              ['lblunclear', 'tallowrate']];
+    $fields = [
+      'lblsource',
+      ['lbldestination', 'basicrate'],
+      ['lblpassbook', 'tbasicrate'],
+      ['lblreconcile', 'othrsextra'],
+      ['lblearned', 'cola'],
+      ['lblcleared', 'apothrs'],
+      ['lblrecondate', 'paymentname'],
+      ['lblendingbal', 'opincentive'],
+      ['lblunclear', 'tallowrate']
+    ];
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'lblsource.label', 'AMOUNT DIRECTLY TO GUARDS');
     data_set($col2, 'lblsource.style', 'font-weight:bold; font-size:15px; position:relative; top:8px;');
@@ -281,8 +331,17 @@ class detachment
     data_set($col2, 'tallowrate.label', '');
     data_set($col2, 'tallowrate.class', 'cstallowrate sbccsreadonly');
 
-    $fields = ['lblbranch',['lbldateid', 'leadfrom'],['lblreceived', 'sss'],['lblattached', 'phic'],['lblinvreq', 'hdmf'],
-              ['lblforapproval', 'escalation'],['lblapproved', 'agentcno'],['lbllocked', 'taxdef'],['lblitemdesc', 'fcontractprice']];
+    $fields = [
+      'lblbranch',
+      ['lbldateid', 'leadfrom'],
+      ['lblreceived', 'sss'],
+      ['lblattached', 'phic'],
+      ['lblinvreq', 'hdmf'],
+      ['lblforapproval', 'escalation'],
+      ['lblapproved', 'agentcno'],
+      ['lbllocked', 'taxdef'],
+      ['lblitemdesc', 'fcontractprice']
+    ];
     $col3 = $this->fieldClass->create($fields);
     data_set($col3, 'lblbranch.label', 'AMOUNT TO GOV\'T IN FAVOR OF GUARD');
     data_set($col3, 'lblbranch.style', 'font-weight:bold; font-size:15px; position:relative; top:8px;');
@@ -344,8 +403,11 @@ class detachment
 
     // $tab = ['multiinput1' => ['inputcolumn' => ['col1' => $col1,'col2' => $col2, 'col3' => $col3, 'col4'=>$col4], 'label' => 'CONTRACT RATE']];
 
-    $tab = [ 'multiinput1' => ['inputcolumn' => [  'col1' => $col1,  'col2' => $col2, 'col3' => $col3,'col4' => $col4],'label' => 'CONTRACT RATE'],
-             'tableentry' => ['action' => 'payrollentry', 'lookupclass' => 'contracthistory', 'label' => 'CONTRACT HISTORY' ] ];
+    $tab = [
+      'multiinput1' => ['inputcolumn' => ['col1' => $col1,  'col2' => $col2, 'col3' => $col3, 'col4' => $col4], 'label' => 'CONTRACT RATE'],
+      'tableentry' => ['action' => 'payrollentry', 'lookupclass' => 'contracthistory', 'label' => 'CONTRACT HISTORY'],
+      'tableentry2' => ['action' => 'payrollentry', 'lookupclass' => 'statementhistory', 'label' => 'STATEMENT HISTORY']
+    ];
 
     $stockbuttons = [];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
@@ -354,7 +416,7 @@ class detachment
 
   public function createTab2($access, $config)
   {
-    return []; 
+    return [];
   }
 
   public function createtabbutton($config)
@@ -367,7 +429,7 @@ class detachment
   public function createHeadField($config)
   {
     //divsion
-    $fields = ['client', 'divname','address','subgroup', 'attention'];
+    $fields = ['client', 'divname', 'address', 'subgroup', 'attention'];
     $col1 = $this->fieldClass->create($fields);
 
     data_set($col1, 'address.maxlength', '80');
@@ -383,8 +445,8 @@ class detachment
     data_set($col1, 'divname.label', 'Description');
     data_set($col1, 'attention.label', 'Contact');
 
-  
-    $fields = ['tel','faxno','colltype', 'lblgrossprofit', 'istenant', 'iscustomer', 'issupplier'];
+
+    $fields = ['tel', 'faxno', 'colltype', 'lblgrossprofit', 'istenant', 'iscustomer', 'issupplier'];
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'faxno.maxlength', '45');
     data_set($col2, 'tel.maxlength', '20');
@@ -400,9 +462,9 @@ class detachment
     data_set($col2, 'issupplier.name', 'isnodeductemp');
     data_set($col2, 'issupplier.label', 'No Deduction of EMP');
 
-  
 
-    $fields = ['lblcostuom', ['isagent', 'iswarehouse'], ['istrucking', 'isassetwh'],['isfa', 'isemployee'], 'isstudent'];
+
+    $fields = ['lblcostuom', ['isagent', 'iswarehouse'], ['istrucking', 'isassetwh'], ['isfa', 'isemployee'], 'isstudent'];
     $col3 = $this->fieldClass->create($fields);
     data_set($col3, 'lblcostuom.label', 'Basic Amount for SSS Contribution');
     data_set($col3, 'lblcostuom.style', 'font-weight:bold; font-size:15px;');
@@ -510,19 +572,19 @@ class detachment
     }
     $center = $config['params']['center'];
     $head = [];
-    $fields="";
+    $fields = "";
 
     foreach ($this->divinfofields as $key => $value) {
       // if ($value == 'agencyvat') {
       //   $fields .= ',format(if(' . $this->divinfo . '.agencyfee <> 0, '
       //     . '(' . $this->divinfo . '.agencyfee * 0.12), 0), 2) as agencyvat';
       // } else {
-        $fields = $fields . ',' . $this->divinfo . '.' . $value;
+      $fields = $fields . ',' . $this->divinfo . '.' . $value;
       // }
     }
 
     // Total Contract
-      $fields .= ',format((
+    $fields .= ',format((
           ifnull(' . $this->divinfo . '.salary, 0)
           + ifnull(' . $this->divinfo . '.excessduty, 0)
           + ifnull(' . $this->divinfo . '.cola, 0)
@@ -545,7 +607,7 @@ class detachment
             left join divinfo on divinfo.divid=dv.divid
             where dv.divid =? ";
     $head = $this->coreFunctions->opentable($qry, [$clientid]);
-   
+
     if (!empty($head)) {
       foreach ($this->blnfields as $key => $value) {
         if ($head[0]->$value) {
@@ -590,10 +652,10 @@ class detachment
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
       }
-      }
+    }
 
     foreach ($this->divinfofields as $key) {
       if (array_key_exists($key, $head)) {
@@ -611,26 +673,26 @@ class detachment
       //divinfo
       // $dataInfo['editdate'] = $this->othersClass->getCurrentTimeStamp();
       // $dataInfo['editby'] = $config['params']['user'];
-      // $this->coreFunctions->sbcupdate('division', $data, ['divid' => $head['clientid']]);
+      $this->coreFunctions->sbcupdate('division', $data, ['divid' => $head['clientid']]);
 
-      // $exist = $this->coreFunctions->getfieldvalue($this->divinfo, "divid", "divid=?", [$head['clientid']]);
-      // if (floatval($exist) != 0) {
-      //   $this->coreFunctions->sbcupdate($this->divinfo, $dataInfo, ['divid' => $head['clientid']]);
-      // } else {
-      //   $dataInfo['divid'] = $head['clientid'];
-      //   $this->coreFunctions->sbcinsert($this->divinfo, $dataInfo);
-      // }
+      $exist = $this->coreFunctions->getfieldvalue($this->divinfo, "divid", "divid=?", [$head['clientid']]);
+      if (floatval($exist) != 0) {
+        $this->coreFunctions->sbcupdate($this->divinfo, $dataInfo, ['divid' => $head['clientid']]);
+      } else {
+        $dataInfo['divid'] = $head['clientid'];
+        $this->coreFunctions->sbcinsert($this->divinfo, $dataInfo);
+      }
       $clientid = $head['clientid'];
     } else {
       $dataInfo['encodeddate'] = $this->othersClass->getCurrentTimeStamp();
       $dataInfo['encodedby'] = $config['params']['user'];
-     
+
       $data['center'] = $center;
       $clientid = $this->coreFunctions->insertGetId('division', $data);
 
-      if($clientid) {
-      $dataInfo['divid'] = $clientid;
-      $this->coreFunctions->sbcinsert($this->divinfo, $dataInfo);
+      if ($clientid) {
+        $dataInfo['divid'] = $clientid;
+        $this->coreFunctions->sbcinsert($this->divinfo, $dataInfo);
       }
       $this->logger->sbcmasterlog($clientid, $config, 'CREATE Division ID - ' . $clientid . ' Code - ' . $head['client'] . '  Division Name - ' . $head['divname']);
     }

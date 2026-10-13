@@ -43,9 +43,9 @@ class collection_summary
 
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -137,10 +137,10 @@ class collection_summary
             }
         }
         switch ($reporttype) {
-                //summary
+            //summary
             case '0':
                 switch ($posttype) {
-                        //posted
+                    //posted
                     case '0':
                         $query =   "select date(dateid) as dateid,head.docno,tenant.clientname, ifnull(loc.name,'') as loc,sum(detail.db-detail.cr) as amount
     from glhead as head
@@ -151,7 +151,7 @@ class collection_summary
      where doc = 'CR' and left(al.alias,2) in ('AR')  and date(head.dateid) between '$start' and '$end'  $tenant
     group by date(head.dateid),head.docno,tenant.clientname,loc order by dateid";
                         break;
-                        //unposted
+                    //unposted
                     case '1':
                         $query = "select date(dateid) as dateid,head.docno,tenant.clientname, ifnull(loc.name,'') as loc,sum(detail.db-detail.cr) as amount
     from lahead as head
@@ -162,7 +162,7 @@ class collection_summary
     where doc = 'CR' and left(al.alias,2) in ('AR')  and date(head.dateid) between '$start' and '$end' $tenant
     group by date(head.dateid),head.docno,tenant.clientname,loc order by dateid";
                         break;
-                        //all
+                    //all
                     case '2':
                         $query = "select date(dateid) as dateid,head.docno,tenant.clientname, ifnull(loc.name,'') as loc,sum(detail.db-detail.cr) as amount
     from glhead as head
@@ -188,7 +188,7 @@ select date(dateid) as dateid,head.docno,tenant.clientname, ifnull(loc.name,'') 
             case '1':
                 //detailed
                 switch ($posttype) {
-                        //posted
+                    //posted
                     case '0':
                         $query = "select dateid, doc,clientname,loc,docno,rent,cusa,aircon,water,elec,reimb,others,amtt from (
 select date(head.dateid) as dateid ,head.doc ,head.docno,cl.clientname, ifnull(loc.name,'') as loc,
@@ -211,7 +211,7 @@ where left(al.alias,2) = 'AR'
 left join client as cl on cl.clientid = detail.clientid
 left join loc as loc on loc.line = cl.locid  where head.doc = 'CR'  and date(head.dateid) between '$start' and '$end' $tenant group by cl.clientname,head.docno,head.doc,head.dateid,loc.name)  as cr order by dateid";
                         break;
-                        //unposted
+                    //unposted
                     case '1':
                         $query = "select dateid, doc,clientname,loc,docno,rent,cusa,aircon,water,elec,reimb,others,amtt  from (
 select date(head.dateid) as dateid,head.doc,head.docno,cl.clientname,ifnull(loc.name,'') as loc,

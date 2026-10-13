@@ -34,10 +34,10 @@ class bl
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -47,8 +47,8 @@ class bl
 
   public function createreportfilter()
   {
-    $fields = ['radioprint','radioreporttype', 'prepared', 'received', 'approved', 'refresh'];
-    
+    $fields = ['radioprint', 'radioreporttype', 'prepared', 'received', 'approved', 'refresh'];
+
     $col1 = $this->fieldClass->create($fields);
 
     data_set($col1, 'radioprint.options', [
@@ -58,7 +58,7 @@ class bl
       ['label' => 'BRUR', 'value' => '0', 'color' => 'red'],
       ['label' => 'Liquidation', 'value' => '1', 'color' => 'red']
     ]);
-    data_set($col1,'received.label','Verified by');  
+    data_set($col1, 'received.label', 'Verified by');
     return array('col1' => $col1);
   }
 
@@ -66,10 +66,10 @@ class bl
   {
 
     $user = $config['params']['user'];
-    $qry="select name from useraccess where username='$user'";
+    $qry = "select name from useraccess where username='$user'";
     $name = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
 
-    if((isset($name[0]['name']) ? $name[0]['name'] : '')!=''){
+    if ((isset($name[0]['name']) ? $name[0]['name'] : '') != '') {
       $user = $name[0]['name'];
     }
     return $this->coreFunctions->opentable(
@@ -120,7 +120,7 @@ class bl
             left join hbrhead as br on br.trno = head.brtrno
             left join hbrstock as brs on brs.trno = stock.refx and brs.line=stock.linex
             where head.trno = '$trno' and stock.refx <> 0" . $groupby;
-            
+
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn
@@ -164,7 +164,7 @@ class bl
                          stock.purchase,stock.vat,stock.ext,date(stock.ordate) as ordate,stock.isvat,
                          date(stock.dateid) as dateid,brh.start,brh.end";
 
-    $query = $qryselect ." from blstock as stock
+    $query = $qryselect . " from blstock as stock
             left join blhead as head on head.trno = stock.trno
             left join hbrhead as brh on brh.trno = head.brtrno
             where head.trno = $trno
@@ -178,28 +178,27 @@ class bl
   } //end fn
 
 
-  public function reportplotting($config){
+  public function reportplotting($config)
+  {
     $reporttype = $config['params']['dataparams']['reporttype'];
 
     switch ($reporttype) {
       case 0:
-        if($config['params']['dataparams']['print'] == "default"){
+        if ($config['params']['dataparams']['print'] == "default") {
           return $this->report_summarized_layout($config);
-        }else if($config['params']['dataparams']['print'] == "PDFM") {
+        } else if ($config['params']['dataparams']['print'] == "PDFM") {
           return $this->report_summarized_layout_PDF($config);
         }
         break;
       case 1:
-        if($config['params']['dataparams']['print'] == "default"){
+        if ($config['params']['dataparams']['print'] == "default") {
           return $this->report_detailed_layout($config);
-        }else if($config['params']['dataparams']['print'] == "PDFM") {
+        } else if ($config['params']['dataparams']['print'] == "PDFM") {
           return $this->report_detailed_layout_PDF($config);
         }
-        
+
         break;
-      
     }
-    
   }
 
   public function reportheader($config, $data, $prevdrdocno)
@@ -213,25 +212,25 @@ class bl
     $font =  "Century Gothic";
     $fontsize = "11";
     $border = "1px solid ";
-    
+
     $str .= "<div style='position: relative;'>";
     $str .= $this->reporter->begintable('1200');
-    $qry = "select name,address,tel from center where code = '".$center."'";
+    $qry = "select name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col(strtoupper($headerdata[0]->name),null,null,false,'1px solid ','','c','Century Gothic','14','B','','').'<br />';
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '14', 'B', '', '') . '<br />';
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col(strtoupper($headerdata[0]->address),null,null,false,'1px solid ','','c','Century Gothic','13','B','','').'<br />';
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->address), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col(strtoupper($headerdata[0]->tel),null,null,false,'1px solid ','','c','Century Gothic','13','B','','').'<br />';
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->tel), null, null, false, '1px solid ', '', 'c', 'Century Gothic', '13', 'B', '', '') . '<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-    
+
     $str .= "<div style='position:absolute; top: 60px;'>";
-   
+
     $str .= "</div>";
 
     $str .= "</div>";
@@ -310,7 +309,7 @@ class bl
     $str .= $this->reporter->col('Estimated Amount', '100', null, false, $border, 'LR', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->col('Approved Amount', '100', null, false, $border, 'LR', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->col('Total', '125', null, false, $border, 'LR', 'C', $font, '12', 'B', '', '');
-    
+
     $str .= $this->reporter->col('QTY', '50', null, false, $border, 'LR', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->col('AMOUNT', '125', null, false, $border, 'LR', 'C', $font, '12', 'B', '', '');
 
@@ -323,7 +322,7 @@ class bl
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('A.', '50', null, false, $border, 'TBLR', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->col('Requested Budget', '200', null, false, $border, 'TBLR', 'L', $font, '12', 'B', '', '');
-    
+
     $str .= $this->reporter->col('', '50', null, false, $border, 'TBLR', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->col('', '50', null, false, $border, 'TBLR', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, 'TBLR', 'C', $font, '12', 'B', '', '');
@@ -335,7 +334,7 @@ class bl
 
     $str .= $this->reporter->col('', '100', null, false, $border, 'TBLR', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->col('', '250', null, false, $border, 'TBLR', 'C', $font, '12', 'B', '', '');
-    
+
     return $str;
   }
 
@@ -387,11 +386,11 @@ class bl
       head.end,p.name,head.projectid,head.subproject
       order by head.trno desc";
     $previousbr = $this->coreFunctions->opentable($qry);
-   
+
     $str .= $this->reporter->beginreport();
-    
+
     $str .= $this->reportheader($config, $data, $previousbr[0]->docno);
-    
+
     $subtotalA = 0;
     $subtotalB = 0;
     $totalext = 0;
@@ -411,11 +410,10 @@ class bl
       $str .= $this->reporter->col(round($data[$i]['qty']), '50', null, false, $border, 'LRTB', 'C', $font, '12', '', '', '');
       $str .= $this->reporter->col(number_format($data[$i]['ext'], $decimal), '125', null, false, $border, 'LRTB', 'R', $font, '12', '', '', '');
 
-      $str .= $this->reporter->col(number_format($balamount,2), '100', null, false, $border, 'LRTB', 'R', $font, '12', '', '', '');
+      $str .= $this->reporter->col(number_format($balamount, 2), '100', null, false, $border, 'LRTB', 'R', $font, '12', '', '', '');
       $str .= $this->reporter->col($data[$i]['remarks'], '250', null, false, $border, 'LRTB', 'L', $font, '12', '', '', '');
 
       $subtotalA += $data[$i]['ext'];
-      
     }
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->addline();
@@ -439,7 +437,7 @@ class bl
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->col('B.', '50', null, false, $border, 'BLR', 'C', $font, '12', 'B', '', '');
       $str .= $this->reporter->col('Other', '200', null, false, $border, 'BLR', 'L', $font, '12', 'B', '', '');
-      
+
       $str .= $this->reporter->col('', '50', null, false, $border, 'BLR', 'C', $font, '12', 'B', '', '');
       $str .= $this->reporter->col('', '50', null, false, $border, 'BLR', 'C', $font, '12', 'B', '', '');
       $str .= $this->reporter->col('', '100', null, false, $border, 'BLR', 'C', $font, '12', 'B', '', '');
@@ -456,26 +454,25 @@ class bl
       for ($i = 0; $i < count($otherdata); $i++) {
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->addline();
-      
+
         $str .= $this->reporter->col($i + 1, '50', null, false, $border, 'LRTB', 'C', $font, '12', '', '', '');
         $str .= $this->reporter->col($otherdata[$i]['particulars'], '200', null, false, $border, 'LRTB', 'L', $font, '12', '', '', '');
         $str .= $this->reporter->col(round($otherdata[$i]['qty']), '50', null, false, $border, 'LRTB', 'C', $font, '12', '', '', '');
         $str .= $this->reporter->col($otherdata[$i]['uom'], '50', null, false, $border, 'LRTB', 'C', $font, '12', '', '', '');
-  
+
         $str .= $this->reporter->col('', '100', null, false, $border, 'LRTB', 'R', $font, '12', '', '', '');
         $str .= $this->reporter->col('', '100', null, false, $border, 'LRTB', 'R', $font, '12', '', '', '');
         $str .= $this->reporter->col('', '125', null, false, $border, 'LRTB', 'R', $font, '12', '', '', '');
-  
+
         $str .= $this->reporter->col('', '50', null, false, $border, 'LRTB', 'R', $font, '12', '', '', '');
         $str .= $this->reporter->col(number_format($otherdata[$i]['rrcost'], $decimal), '125', null, false, $border, 'LRTB', 'R', $font, '12', '', '', '');
-  
+
         $str .= $this->reporter->col('', '100', null, false, $border, 'LRTB', 'R', $font, '12', '', '', '');
         $str .= $this->reporter->col($otherdata[$i]['remarks'], '250', null, false, $border, 'LRTB', 'L', $font, '12', '', '', '');
-  
+
         $subtotalB += $otherdata[$i]['ext'];
-        
       }
-      
+
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
       $str .= $this->reporter->col('', '50', null, false, $border, 'TBLR', 'C', $font, '12', 'B', '', '');
@@ -490,10 +487,8 @@ class bl
       $str .= $this->reporter->col('', '100', null, false, $border, 'TBLR', 'C', $font, '12', 'B', '', '');
       $str .= $this->reporter->col('', '250', null, false, $border, 'TBLR', 'C', $font, '12', 'B', '', '');
       $str .= $this->reporter->endrow();
-  
+
       $str .= $this->reporter->endtable();
-
-
     }
 
     $totalext = $subtotalA + $subtotalB;
@@ -524,7 +519,7 @@ class bl
       where head.trno = '" . $brtrno . "'";
     $result2 = json_decode(json_encode($this->coreFunctions->opentable($qry)), true);
 
-    
+
     $str .= $this->reporter->begintable('1200');
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->addline();
@@ -539,7 +534,7 @@ class bl
     $str .= $this->reporter->col('', '50', null, false, $border, 'BLR', 'C', $font, '12', 'B', '', '');
 
     $str .= $this->reporter->col('', '125', null, false, $border, 'BLR', 'R', $font, '12', 'B', '', '');
-    
+
     $str .= $this->reporter->col('', '100', null, false, $border, 'BLR', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->col('', '250', null, false, $border, 'BLR', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->endrow();
@@ -568,7 +563,7 @@ class bl
     $str .= $this->reporter->addline();
     $str .= $this->reporter->col('', '50', null, false, $border, 'BLR', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->col('BALANCE FROM PREVIOUS BUDGET', '250', null, false, $border, 'BLR', 'L', $font, '12', 'B', '', '');
-   
+
     $str .= $this->reporter->col('', '50', null, false, $border, 'BLR', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, 'BLR', 'C', $font, '12', 'B', '', '');
     $str .= $this->reporter->col('', '100', null, false, $border, 'BLR', 'C', $font, '12', 'B', '', '');
@@ -639,7 +634,7 @@ class bl
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('<div style="margin-left: 20px; margin-top: -15px;">______________________________</div>
       &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp Project In Charge', '400', null, false, $border, '', 'L', $font, '12', '', '', '');
-      $str .= $this->reporter->col('<div style="margin-left: 20px; margin-top: -15px;">______________________________</div>', '400', null, false, $border, '', 'L', $font, '12', '', '', '');
+    $str .= $this->reporter->col('<div style="margin-left: 20px; margin-top: -15px;">______________________________</div>', '400', null, false, $border, '', 'L', $font, '12', '', '', '');
     $str .= $this->reporter->col('<div style="margin-left: 20px; margin-top: -15px;">______________________________</div>', '400', null, false, $border, '', 'L', $font, '12', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -665,18 +660,18 @@ class bl
     $border = "1px solid ";
 
     $str .= $this->reporter->beginreport();
-    
+
     $str .= $this->reporter->begintable('1200');
-    $qry = "select name,address,tel from center where code = '".$center."'";
+    $qry = "select name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col(strtoupper($headerdata[0]->name),null,null,false,'1px solid ','','L','Century Gothic','13','B','','').'<br />';
+    $str .= $this->reporter->col(strtoupper($headerdata[0]->name), null, null, false, '1px solid ', '', 'L', 'Century Gothic', '13', 'B', '', '') . '<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col(' Period Covered: ' . date('M-d-Y', strtotime($data[0]['start'])) . ' TO ' . date('M-d-Y', strtotime($data[0]['end'])),null,null,false,'1px solid ','','L','Century Gothic','13','B','','');
+    $str .= $this->reporter->col(' Period Covered: ' . date('M-d-Y', strtotime($data[0]['start'])) . ' TO ' . date('M-d-Y', strtotime($data[0]['end'])), null, null, false, '1px solid ', '', 'L', 'Century Gothic', '13', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-    
+
     $str .= "<br>";
 
     $str .= $this->reporter->begintable('1200');
@@ -696,8 +691,8 @@ class bl
     $str .= $this->reporter->col('O.R. Date', '70', null, false, $border, 'TLR', 'C', $font, $fontsizehead, 'B', '', '');
     $str .= $this->reporter->col('VAT', '30', null, false, $border, 'TLR', 'C', $font, $fontsizehead, 'B', '', '');
     $str .= $this->reporter->col('Entry Date', '70', null, false, $border, 'TLR', 'C', $font, $fontsizehead, 'B', '', '');
-    
-    $totalamt = $totalpurchase = $totalvat =0;
+
+    $totalamt = $totalpurchase = $totalvat = 0;
 
     $totalext = 0;
     $liq = 0;
@@ -705,7 +700,7 @@ class bl
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
       $liq = $data[0]['liqno'] * 1;
-      $str .= $this->reporter->col('LIQ.#'.$liq, '50', null, false, $border, 'LRTB', 'C', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col('LIQ.#' . $liq, '50', null, false, $border, 'LRTB', 'C', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data[$i]['location'], '100', null, false, $border, 'LRTB', 'L', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data[$i]['supplier'], '100', null, false, $border, 'LRTB', 'L', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data[$i]['address'], '100', null, false, $border, 'LRTB', 'L', $font, $fontsize, '', '', '');
@@ -715,11 +710,11 @@ class bl
       $str .= $this->reporter->col($data[$i]['particulars'], '90', null, false, $border, 'LRTB', 'L', $font, $fontsize, '', '', '');
 
       $str .= $this->reporter->col(round($data[$i]['qty']), '50', null, false, $border, 'LRTB', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col(number_format($data[$i]['rrcost'],2), '100', null, false, $border, 'LRTB', 'R', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format($data[$i]['rrcost'], 2), '100', null, false, $border, 'LRTB', 'R', $font, $fontsize, '', '', '');
 
-      $str .= $this->reporter->col(number_format($data[$i]['purchase'],2), '80', null, false, $border, 'LRTB', 'R', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col(number_format($data[$i]['vat'],2), '80', null, false, $border, 'LRTB', 'R', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col(number_format($data[$i]['ext'],2), '100', null, false, $border, 'LRTB', 'R', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format($data[$i]['purchase'], 2), '80', null, false, $border, 'LRTB', 'R', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format($data[$i]['vat'], 2), '80', null, false, $border, 'LRTB', 'R', $font, $fontsize, '', '', '');
+      $str .= $this->reporter->col(number_format($data[$i]['ext'], 2), '100', null, false, $border, 'LRTB', 'R', $font, $fontsize, '', '', '');
       $str .= $this->reporter->col($data[$i]['ordate'], '70', null, false, $border, 'LRTB', 'C', $font, $fontsize, '', '', '');
       if ($data[$i]['isvat'] == 1) {
         $isvat = 'T';
@@ -733,29 +728,28 @@ class bl
       $totalpurchase += $data[$i]['purchase'];
       $totalvat += $data[$i]['vat'];
       $totalext += $data[$i]['ext'];
-      
     }
-      $str .= $this->reporter->startrow();
-      $str .= $this->reporter->addline();
-      $str .= $this->reporter->col('', '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->startrow();
+    $str .= $this->reporter->addline();
+    $str .= $this->reporter->col('', '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
 
-      $str .= $this->reporter->col('', '90', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', '90', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', '90', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '90', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '90', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '90', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
 
-      $str .= $this->reporter->col('', '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col(number_format($totalamt,2), '100', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '50', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col(number_format($totalamt, 2), '100', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
 
-      $str .= $this->reporter->col(number_format($totalpurchase,2), '80', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col(number_format($totalvat,2), '80', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col(number_format($totalext,2), '100', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '70', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', '30', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->col('', '70', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
-      $str .= $this->reporter->endrow();
+    $str .= $this->reporter->col(number_format($totalpurchase, 2), '80', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalvat, 2), '80', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col(number_format($totalext, 2), '100', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '70', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '30', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->col('', '70', null, false, $border, '', 'C', $font, $fontsize, '', '', '');
+    $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
 
@@ -770,7 +764,7 @@ class bl
     $str .= $this->reporter->startrow();
     $str .= $this->reporter->col('<div style="margin-left: 20px; margin-top: -15px;">______________________________</div>
       &nbsp&nbsp&nbsp&nbsp&nbsp PREPARED BY : ', '400', null, false, $border, '', 'L', $font, '12', 'B', '', '');
-      $str .= $this->reporter->col('', '400', null, false, $border, '', 'L', $font, '12', '', '', '');
+    $str .= $this->reporter->col('', '400', null, false, $border, '', 'L', $font, '12', '', '', '');
     $str .= $this->reporter->col('<div style="margin-left: 20px; margin-top: -15px;">______________________________</div>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp CHECKED/VERIFIED : ', '400', null, false, $border, '', 'L', $font, '12', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -781,190 +775,189 @@ class bl
     return $str;
   }
 
-  public function PDF_header($config, $data, $prevdrdocno) 
+  public function PDF_header($config, $data, $prevdrdocno)
   {
-      $otherdata = $this->report_other_query($config['params']['dataid']);
-      $decimal = $this->companysetup->getdecimal('currency', $config['params']);
-      $center = $config['params']['center'];
-      $username = $config['params']['user'];
+    $otherdata = $this->report_other_query($config['params']['dataid']);
+    $decimal = $this->companysetup->getdecimal('currency', $config['params']);
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
 
-      $qry = "select name,address,tel from center where code = '" . $center . "'";
-      $headerdata = $this->coreFunctions->opentable($qry);
-      $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+    $qry = "select name,address,tel from center where code = '" . $center . "'";
+    $headerdata = $this->coreFunctions->opentable($qry);
+    $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
-      $font = "";
-      $fontbold = "";
-      $fontsize = 11;
-      if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
-        $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
-        $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
-      }
+    $font = "";
+    $fontbold = "";
+    $fontsize = 11;
+    if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
+      $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
+      $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
+    }
 
-      PDF::SetTitle($this->modulename);
-      PDF::SetAuthor('Solutionbase Corp.');
-      PDF::SetCreator('Solutionbase Corp.');
-      PDF::SetSubject($this->modulename . ' Module Report');
-      PDF::setPageUnit('px');
-      PDF::AddPage('l', [1200, 800]);
-      PDF::SetMargins(40, 40);
+    PDF::SetTitle($this->modulename);
+    PDF::SetAuthor('Solutionbase Corp.');
+    PDF::SetCreator('Solutionbase Corp.');
+    PDF::SetSubject($this->modulename . ' Module Report');
+    PDF::setPageUnit('px');
+    PDF::AddPage('l', [1200, 800]);
+    PDF::SetMargins(40, 40);
 
-      PDF::MultiCell(0, 0, "\n");
-      // SetFont(family, style, size)
-      // MultiCell(width, height, txt, border, align, x, y)
-      // write2DBarcode(code, type, x, y, width, height, style, align)
+    PDF::MultiCell(0, 0, "\n");
+    // SetFont(family, style, size)
+    // MultiCell(width, height, txt, border, align, x, y)
+    // write2DBarcode(code, type, x, y, width, height, style, align)
 
-      PDF::SetFont($fontbold, '', 14);
-      PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
-      PDF::SetFont($font, '', 12);
-      PDF::MultiCell(0, 0, $headerdata[0]->address."\n".$headerdata[0]->tel."\n", '', 'C');
+    PDF::SetFont($fontbold, '', 14);
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
+    PDF::SetFont($font, '', 12);
+    PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n", '', 'C');
 
-      PDF::MultiCell(0, 0, "\n\n");
+    PDF::MultiCell(0, 0, "\n\n");
 
-      PDF::Image('public/images/reports/mdc.jpg', '90', '20', 120, 65);
-      PDF::Image('public/images/reports/tuv.jpg', '970', '20', 120, 65);
-      
-      if (!empty($data)) {
-        $start = $data[0]['start'];
-        $end = $data[0]['end'];
-        $projectname = $data[0]['projectname'];
-        $docno = $data[0]['docno'];
-        $projectcode = $data[0]['projectcode'];
-        $dateid = $data[0]['dateid'];
-        $address = $data[0]['address'];
-      } else {
-        $start = $otherdata[0]['start'];
-        $end = $otherdata[0]['end'];
-        $projectname = $otherdata[0]['projectname'];
-        $docno = $otherdata[0]['docno'];
-        $projectcode = $otherdata[0]['projectcode'];
-        $dateid = $otherdata[0]['dateid'];
-        $address = $otherdata[0]['address'];
-      }
+    PDF::Image('public/images/reports/mdc.jpg', '90', '20', 120, 65);
+    PDF::Image('public/images/reports/tuv.jpg', '970', '20', 120, 65);
 
-      PDF::SetFont($fontbold, '', 12);
-      PDF::MultiCell(0, 0, strtoupper(strtoupper($this->modulename)), '', 'C');
-      PDF::SetFont($fontbold, '', 5);
-      PDF::MultiCell(0, 0, "");
-      PDF::SetFont($fontbold, '', 10);
-     
-      PDF::MultiCell(0, 0, 'Previous BR# ' . $prevdrdocno ." Period Covered: ". date('M d Y', strtotime($start)).' - '.date('M d Y', strtotime($end)) . "\n\n", '', 'C');
+    if (!empty($data)) {
+      $start = $data[0]['start'];
+      $end = $data[0]['end'];
+      $projectname = $data[0]['projectname'];
+      $docno = $data[0]['docno'];
+      $projectcode = $data[0]['projectcode'];
+      $dateid = $data[0]['dateid'];
+      $address = $data[0]['address'];
+    } else {
+      $start = $otherdata[0]['start'];
+      $end = $otherdata[0]['end'];
+      $projectname = $otherdata[0]['projectname'];
+      $docno = $otherdata[0]['docno'];
+      $projectcode = $otherdata[0]['projectcode'];
+      $dateid = $otherdata[0]['dateid'];
+      $address = $otherdata[0]['address'];
+    }
 
-      PDF::MultiCell(0, 0, "\n\n");
+    PDF::SetFont($fontbold, '', 12);
+    PDF::MultiCell(0, 0, strtoupper(strtoupper($this->modulename)), '', 'C');
+    PDF::SetFont($fontbold, '', 5);
+    PDF::MultiCell(0, 0, "");
+    PDF::SetFont($fontbold, '', 10);
 
-      PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(50, 0, "Project: ", '', 'L', false, 0, '',  '');
-      PDF::MultiCell(900, 0, $projectname, '', 'L', false, 0, '',  '');
-      PDF::MultiCell(50, 0, "BL No.: ", '', 'L', false, 0, '',  '');
-      PDF::MultiCell(100, 0, $docno, '', 'L', false, 1, '',  '');
+    PDF::MultiCell(0, 0, 'Previous BR# ' . $prevdrdocno . " Period Covered: " . date('M d Y', strtotime($start)) . ' - ' . date('M d Y', strtotime($end)) . "\n\n", '', 'C');
 
-      PDF::SetFont($fontbold, '', 5);
-      PDF::MultiCell(0, 0, "");
+    PDF::MultiCell(0, 0, "\n\n");
 
-      PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(70, 0, "Contact No.: ", '', 'L', false, 0, '',  '');
-      PDF::MultiCell(880, 0, $projectcode, '', 'L', false, 0, '',  '');
-      PDF::MultiCell(50, 0, "Date: ", '', 'L', false, 0, '',  '');
-      PDF::MultiCell(100, 0, $dateid, '', 'L', false, 1, '',  '');
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(50, 0, "Project: ", '', 'L', false, 0, '',  '');
+    PDF::MultiCell(900, 0, $projectname, '', 'L', false, 0, '',  '');
+    PDF::MultiCell(50, 0, "BL No.: ", '', 'L', false, 0, '',  '');
+    PDF::MultiCell(100, 0, $docno, '', 'L', false, 1, '',  '');
 
-      PDF::SetFont($fontbold, '', 5);
-      PDF::MultiCell(0, 0, "");
+    PDF::SetFont($fontbold, '', 5);
+    PDF::MultiCell(0, 0, "");
 
-      PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(60, 0, "Location: ", '', 'L', false, 0, '',  '');
-      PDF::MultiCell(900, 0, $address, '', 'L', false, 1, '',  '');
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(70, 0, "Contact No.: ", '', 'L', false, 0, '',  '');
+    PDF::MultiCell(880, 0, $projectcode, '', 'L', false, 0, '',  '');
+    PDF::MultiCell(50, 0, "Date: ", '', 'L', false, 0, '',  '');
+    PDF::MultiCell(100, 0, $dateid, '', 'L', false, 1, '',  '');
 
-      PDF::MultiCell(0, 0, "\n\n");
-      PDF::SetFont($fontbold, '', 5);
-      PDF::MultiCell(50, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(200, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(420, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(175, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(100, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(180, 0, "", 'TLR', 'C', false);
+    PDF::SetFont($fontbold, '', 5);
+    PDF::MultiCell(0, 0, "");
 
-      PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(50, 20, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(200, 20, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(420, 20, "REQUESTED BUDGET", 'LRB', 'C', false, 0);
-      PDF::MultiCell(175, 20, "PURCHASES/EXPENSES", 'LRB', 'C', false, 0);
-      PDF::MultiCell(100, 20, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(180, 20, "", 'LR', 'C', false);
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(60, 0, "Location: ", '', 'L', false, 0, '',  '');
+    PDF::MultiCell(900, 0, $address, '', 'L', false, 1, '',  '');
 
-      PDF::SetFont($fontbold, '', 5);
-      PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(200, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(0, 0, "\n\n");
+    PDF::SetFont($fontbold, '', 5);
+    PDF::MultiCell(50, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(200, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(420, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(175, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(100, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(180, 0, "", 'TLR', 'C', false);
 
-      PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(90, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(100, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(130, 10, "", 'LR', 'C', false, 0);
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(50, 20, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(200, 20, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(420, 20, "REQUESTED BUDGET", 'LRB', 'C', false, 0);
+    PDF::MultiCell(175, 20, "PURCHASES/EXPENSES", 'LRB', 'C', false, 0);
+    PDF::MultiCell(100, 20, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(180, 20, "", 'LR', 'C', false);
 
-      PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(125, 10, "", 'LR', 'C', false, 0);
+    PDF::SetFont($fontbold, '', 5);
+    PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(200, 10, "", 'LR', 'C', false, 0);
 
-      PDF::MultiCell(100, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(180, 10, "", 'LR', 'C', false);
-      
-      PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(50, 20, "ITEM NO.", 'LR', 'C', false, 0);
-      PDF::MultiCell(200, 20, "PARTICULARS", 'LR', 'C', false, 0);
+    PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(90, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(100, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(130, 10, "", 'LR', 'C', false, 0);
 
-      PDF::MultiCell(50, 20, "Qty", 'LR', 'C', false, 0);
-      PDF::MultiCell(50, 20, "Unit", 'LR', 'C', false, 0);
-      PDF::MultiCell(90, 20, "Estimated Amount", 'LR', 'C', false, 0);
-      PDF::MultiCell(100, 20, "Approved Amount", 'LR', 'C', false, 0);
-      PDF::MultiCell(130, 20, "Total", 'LR', 'C', false, 0);
+    PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(125, 10, "", 'LR', 'C', false, 0);
 
-      PDF::MultiCell(50, 20, "QTY", 'LR', 'C', false, 0);
-      PDF::MultiCell(125, 20, "AMOUNT", 'LR', 'C', false, 0);
+    PDF::MultiCell(100, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(180, 10, "", 'LR', 'C', false);
 
-      PDF::MultiCell(100, 20, "BALANCE AMOUNT", 'LR', 'C', false, 0);
-      PDF::MultiCell(180, 20, "REMARKS", 'LR', 'C', false);
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(50, 20, "ITEM NO.", 'LR', 'C', false, 0);
+    PDF::MultiCell(200, 20, "PARTICULARS", 'LR', 'C', false, 0);
 
-      PDF::SetFont($fontbold, '', 5);
-      PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(200, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(50, 20, "Qty", 'LR', 'C', false, 0);
+    PDF::MultiCell(50, 20, "Unit", 'LR', 'C', false, 0);
+    PDF::MultiCell(90, 20, "Estimated Amount", 'LR', 'C', false, 0);
+    PDF::MultiCell(100, 20, "Approved Amount", 'LR', 'C', false, 0);
+    PDF::MultiCell(130, 20, "Total", 'LR', 'C', false, 0);
 
-      PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(90, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(100, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(130, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(50, 20, "QTY", 'LR', 'C', false, 0);
+    PDF::MultiCell(125, 20, "AMOUNT", 'LR', 'C', false, 0);
 
-      PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(125, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(100, 20, "BALANCE AMOUNT", 'LR', 'C', false, 0);
+    PDF::MultiCell(180, 20, "REMARKS", 'LR', 'C', false);
 
-      PDF::MultiCell(100, 10, "", 'LR', 'C', false, 0);
-      PDF::MultiCell(180, 10, "", 'LR', 'C', false);
+    PDF::SetFont($fontbold, '', 5);
+    PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(200, 10, "", 'LR', 'C', false, 0);
+
+    PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(90, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(100, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(130, 10, "", 'LR', 'C', false, 0);
+
+    PDF::MultiCell(50, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(125, 10, "", 'LR', 'C', false, 0);
+
+    PDF::MultiCell(100, 10, "", 'LR', 'C', false, 0);
+    PDF::MultiCell(180, 10, "", 'LR', 'C', false);
 
 
-      PDF::SetFont($fontbold, '', 5);
-      PDF::MultiCell(50, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(200, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(50, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(50, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(90, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(100, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(130, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(50, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(125, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(100, 0, "", 'TLR', 'C', false, 0);
-      PDF::MultiCell(180, 0, "", 'TLR', 'C', false);
+    PDF::SetFont($fontbold, '', 5);
+    PDF::MultiCell(50, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(200, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(50, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(50, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(90, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(100, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(130, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(50, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(125, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(100, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(180, 0, "", 'TLR', 'C', false);
 
-      PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(50, 20, "A", 'LRB', 'C', false, 0);
-      PDF::MultiCell(200, 20, " Requested Budget", 'LRB', 'L', false, 0);
-      PDF::MultiCell(50, 20, "", 'LRB', 'C', false, 0);
-      PDF::MultiCell(50, 20, "", 'LRB', 'C', false, 0);
-      PDF::MultiCell(90, 20, "", 'LRB', 'C', false, 0);
-      PDF::MultiCell(100, 20, "", 'LRB', 'C', false, 0);
-      PDF::MultiCell(130, 20, "", 'LRB', 'C', false, 0);
-      PDF::MultiCell(50, 20, "", 'LRB', 'C', false, 0);
-      PDF::MultiCell(125, 20, "", 'LRB', 'C', false, 0);
-      PDF::MultiCell(100, 20, "", 'LRB', 'C', false, 0);
-      PDF::MultiCell(180, 20, "", 'LRB', 'C', false);
-
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(50, 20, "A", 'LRB', 'C', false, 0);
+    PDF::MultiCell(200, 20, " Requested Budget", 'LRB', 'L', false, 0);
+    PDF::MultiCell(50, 20, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(50, 20, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(90, 20, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(100, 20, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(130, 20, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(50, 20, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(125, 20, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(100, 20, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(180, 20, "", 'LRB', 'C', false);
   }
 
   public function report_summarized_layout_PDF($config)
@@ -1032,7 +1025,7 @@ class bl
 
     for ($i = 0; $i < count($data); $i++) {
 
-      $particularname = $this->reporter->fixcolumn([$data[$i]['particulars']],'30');
+      $particularname = $this->reporter->fixcolumn([$data[$i]['particulars']], '30');
 
       $maxrow = 1;
 
@@ -1042,8 +1035,8 @@ class bl
       $balamount = $data[$i]['brsamount'] - $data[$i]['ext'];
       if ($data[$i]['particulars'] == "") {
         PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(50, 0, $i+1, 'TLR', 'C', false, 0, '', '', true, 1);
-        PDF::MultiCell(200, 0, ' '.$data[$i]['particulars'], 'TLR', 'L', false, 0, '', '', false, 1);
+        PDF::MultiCell(50, 0, $i + 1, 'TLR', 'C', false, 0, '', '', true, 1);
+        PDF::MultiCell(200, 0, ' ' . $data[$i]['particulars'], 'TLR', 'L', false, 0, '', '', false, 1);
         PDF::MultiCell(50, 0, round($data[$i]['brsqty']), 'TLR', 'C', false, 0, '', '', false, 1);
         PDF::MultiCell(50, 0, $data[$i]['brsuom'], 'TLR', 'C', false, 0, '', '', false, 1);
         PDF::MultiCell(90, 0, number_format($data[$i]['brsrrcost'], $decimalprice), 'TLR', 'R', false, 0, '', '', false, 1);
@@ -1051,66 +1044,64 @@ class bl
         PDF::MultiCell(130, 0, number_format($data[$i]['brsext'], $decimalprice), 'TLR', 'R', false, 0, '', '', false, 1);
         PDF::MultiCell(50, 0, round($data[$i]['qty']), 'TLR', 'C', false, 0, '', '', false, 1);
         PDF::MultiCell(125, 0, number_format($data[$i]['ext'], $decimalprice), 'TLR', 'R', false, 0, '', '', false, 1);
-        PDF::MultiCell(100, 0, number_format($balamount,2), 'TLR', 'R', false, 0, '', '', false, 1);
+        PDF::MultiCell(100, 0, number_format($balamount, 2), 'TLR', 'R', false, 0, '', '', false, 1);
         PDF::MultiCell(180, 0, $data[$i]['remarks'], 'TLR', 'L', false, 1, '', '', false, 1);
       } else {
-        for($r = 0; $r < $maxrow; $r++) {
-          if($r == 0) {
-              $brsqty = round($data[$i]['brsqty']);
-              $brsuom = $data[$i]['brsuom'];
-              $brsrrcost = number_format($data[$i]['brsrrcost'], $decimalprice);
-              $brsamount = number_format($data[$i]['brsamount'], $decimalprice);
-              $brsext = number_format($data[$i]['brsext'], $decimalprice);
-              $qty = round($data[$i]['qty']);
-              $ext = number_format($data[$i]['ext'], $decimalprice);
-              $balamount = number_format($balamount,2);
-              $remarks = (isset($data[$i]['remarks']) ? $data[$i]['remarks'] : '');
-              $n= $i + 1;
+        for ($r = 0; $r < $maxrow; $r++) {
+          if ($r == 0) {
+            $brsqty = round($data[$i]['brsqty']);
+            $brsuom = $data[$i]['brsuom'];
+            $brsrrcost = number_format($data[$i]['brsrrcost'], $decimalprice);
+            $brsamount = number_format($data[$i]['brsamount'], $decimalprice);
+            $brsext = number_format($data[$i]['brsext'], $decimalprice);
+            $qty = round($data[$i]['qty']);
+            $ext = number_format($data[$i]['ext'], $decimalprice);
+            $balamount = number_format($balamount, 2);
+            $remarks = (isset($data[$i]['remarks']) ? $data[$i]['remarks'] : '');
+            $n = $i + 1;
           } else {
-              $brsqty = "";
-              $brsuom = "";
-              $brsrrcost = "";
-              $brsamount = "";
-              $brsext = "";
-              $qty = "";
-              $ext = "";
-              $balamount = "";
-              $remarks = "";
-              $n = '';
-
+            $brsqty = "";
+            $brsuom = "";
+            $brsrrcost = "";
+            $brsamount = "";
+            $brsext = "";
+            $qty = "";
+            $ext = "";
+            $balamount = "";
+            $remarks = "";
+            $n = '';
           }
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(50, 0, $n, 'LR', 'C', false, 0, '', '', true, 1);
-          PDF::MultiCell(200, 0, isset($particularname[$r]) ? ' '.$particularname[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
+          PDF::MultiCell(200, 0, isset($particularname[$r]) ? ' ' . $particularname[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
           PDF::MultiCell(50, 0, $brsqty, 'L', 'C', false, 0, '', '', false, 1);
           PDF::MultiCell(50, 0, $brsuom, 'L', 'C', false, 0, '', '', false, 1);
-          PDF::MultiCell(90, 0, $brsrrcost.' ', 'L', 'R', false, 0, '', '', false, 1);
-          PDF::MultiCell(100, 0, $brsamount.' ', 'L', 'R', false, 0, '', '', false, 1);
-          PDF::MultiCell(130, 0, $brsext.' ', 'L', 'R', false, 0, '', '', false, 1);
+          PDF::MultiCell(90, 0, $brsrrcost . ' ', 'L', 'R', false, 0, '', '', false, 1);
+          PDF::MultiCell(100, 0, $brsamount . ' ', 'L', 'R', false, 0, '', '', false, 1);
+          PDF::MultiCell(130, 0, $brsext . ' ', 'L', 'R', false, 0, '', '', false, 1);
           PDF::MultiCell(50, 0, $qty, 'L', 'C', false, 0, '', '', false, 1);
-          PDF::MultiCell(125, 0, $ext.' ', 'L', 'R', false, 0, '', '', false, 1);
-          PDF::MultiCell(100, 0, $balamount.' ', 'L', 'R', false, 0, '', '', false, 1);
-          PDF::MultiCell(180, 0, ' '.$remarks, 'LR', 'L', false, 1, '', '', false, 1);
+          PDF::MultiCell(125, 0, $ext . ' ', 'L', 'R', false, 0, '', '', false, 1);
+          PDF::MultiCell(100, 0, $balamount . ' ', 'L', 'R', false, 0, '', '', false, 1);
+          PDF::MultiCell(180, 0, ' ' . $remarks, 'LR', 'L', false, 1, '', '', false, 1);
         }
 
-            PDF::SetFont($font, '', 2);
-            PDF::MultiCell(50, 0, '', 'LRT', 'C', false, 0,'','',true,0);
-            PDF::MultiCell(200, 0, '', 'LT', 'L', false, 0, '', '', false, 1);
-            PDF::MultiCell(50, 0, '', 'LT', 'L', false, 0, '', '', false, 1);
-            PDF::MultiCell(50, 0, '', 'LT', 'C', false, 0, '', '', false, 1);
-            PDF::MultiCell(90, 0,'', 'LT', 'R', false, 0, '', '', false, 1);
-            PDF::MultiCell(100, 0,'', 'LT', 'R', false, 0, '', '', false, 1);
-            PDF::MultiCell(130, 0,'', 'LT', 'R', false, 0, '', '', false, 1);
-            PDF::MultiCell(50, 0,'', 'LT', 'R', false, 0, '', '', false, 1);
-            PDF::MultiCell(125, 0, '', 'LT', 'C', false, 0, '', '', false, 1);
-            PDF::MultiCell(100, 0, '', 'LT', 'C', false, 0, '', '', false, 1);
-            PDF::MultiCell(180, 0, '', 'LRT', 'C', false, 1, '', '', false, 1);
+        PDF::SetFont($font, '', 2);
+        PDF::MultiCell(50, 0, '', 'LRT', 'C', false, 0, '', '', true, 0);
+        PDF::MultiCell(200, 0, '', 'LT', 'L', false, 0, '', '', false, 1);
+        PDF::MultiCell(50, 0, '', 'LT', 'L', false, 0, '', '', false, 1);
+        PDF::MultiCell(50, 0, '', 'LT', 'C', false, 0, '', '', false, 1);
+        PDF::MultiCell(90, 0, '', 'LT', 'R', false, 0, '', '', false, 1);
+        PDF::MultiCell(100, 0, '', 'LT', 'R', false, 0, '', '', false, 1);
+        PDF::MultiCell(130, 0, '', 'LT', 'R', false, 0, '', '', false, 1);
+        PDF::MultiCell(50, 0, '', 'LT', 'R', false, 0, '', '', false, 1);
+        PDF::MultiCell(125, 0, '', 'LT', 'C', false, 0, '', '', false, 1);
+        PDF::MultiCell(100, 0, '', 'LT', 'C', false, 0, '', '', false, 1);
+        PDF::MultiCell(180, 0, '', 'LRT', 'C', false, 1, '', '', false, 1);
       }
-     
+
       $subtotalA += $data[$i]['ext'];
-      
     }
-  
+
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', true, 1);
     PDF::MultiCell(200, 20, ' Subtotal A', 'LRB', 'L', false, 0, '', '', false, 1);
@@ -1120,7 +1111,7 @@ class bl
     PDF::MultiCell(100, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
     PDF::MultiCell(130, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
     PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', false, 1);
-    PDF::MultiCell(125, 20, number_format($subtotalA, $decimalprice).' ', 'LRB', 'R', false, 0, '', '', false, 1);
+    PDF::MultiCell(125, 20, number_format($subtotalA, $decimalprice) . ' ', 'LRB', 'R', false, 0, '', '', false, 1);
     PDF::MultiCell(100, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
     PDF::MultiCell(180, 20, '', 'LRB', 'L', false, 1, '', '', false, 1);
 
@@ -1140,7 +1131,7 @@ class bl
 
 
       for ($i = 0; $i < count($otherdata); $i++) {
-        $particularname = $this->reporter->fixcolumn([$otherdata[$i]['particulars']],'30');
+        $particularname = $this->reporter->fixcolumn([$otherdata[$i]['particulars']], '30');
 
         $maxrow = 1;
 
@@ -1149,7 +1140,7 @@ class bl
 
         if ($otherdata[$i]['particulars'] == "") {
           PDF::SetFont($font, '', $fontsize);
-          PDF::MultiCell(50, 20, $i+1, 'TLR', 'C', false, 0, '', '', true, 1);
+          PDF::MultiCell(50, 20, $i + 1, 'TLR', 'C', false, 0, '', '', true, 1);
           PDF::MultiCell(200, 20, $otherdata[$i]['particulars'], 'TLR', 'L', false, 0, '', '', false, 1);
           PDF::MultiCell(50, 20, round($otherdata[$i]['qty']), 'TLR', 'C', false, 0, '', '', false, 1);
           PDF::MultiCell(50, 20, $otherdata[$i]['uom'], 'TLR', 'C', false, 0, '', '', false, 1);
@@ -1161,53 +1152,51 @@ class bl
           PDF::MultiCell(100, 20, '', 'TLR', 'R', false, 0, '', '', false, 1);
           PDF::MultiCell(180, 20, $otherdata[$i]['remarks'], 'TLR', 'L', false, 1, '', '', false, 1);
         } else {
-          for($r = 0; $r < $maxrow; $r++) {
-            if($r == 0) {
-                $qty = round($otherdata[$i]['qty']);
-                $uom = $otherdata[$i]['uom'];
-                $rrcost = number_format($otherdata[$i]['rrcost'], $decimalprice);
-                $remarks = $otherdata[$i]['remarks'];
-                $n= $i + 1;
+          for ($r = 0; $r < $maxrow; $r++) {
+            if ($r == 0) {
+              $qty = round($otherdata[$i]['qty']);
+              $uom = $otherdata[$i]['uom'];
+              $rrcost = number_format($otherdata[$i]['rrcost'], $decimalprice);
+              $remarks = $otherdata[$i]['remarks'];
+              $n = $i + 1;
             } else {
-                $qty = "";
-                $uom = "";
-                $rrcost = "";
-                $remarks = "";
-                $n = '';
-  
+              $qty = "";
+              $uom = "";
+              $rrcost = "";
+              $remarks = "";
+              $n = '';
             }
             PDF::SetFont($font, '', $fontsize);
             PDF::MultiCell(50, 0, $n, 'LR', 'C', false, 0, '', '', true, 1);
-            PDF::MultiCell(200, 0, isset($particularname[$r]) ? ' '.$particularname[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(200, 0, isset($particularname[$r]) ? ' ' . $particularname[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
             PDF::MultiCell(50, 0, $qty, 'L', 'C', false, 0, '', '', false, 1);
             PDF::MultiCell(50, 0, $uom, 'L', 'C', false, 0, '', '', false, 1);
             PDF::MultiCell(90, 0, '', 'L', 'R', false, 0, '', '', false, 1);
             PDF::MultiCell(100, 0, '', 'L', 'R', false, 0, '', '', false, 1);
             PDF::MultiCell(130, 0, '', 'L', 'R', false, 0, '', '', false, 1);
             PDF::MultiCell(50, 0, '', 'L', 'C', false, 0, '', '', false, 1);
-            PDF::MultiCell(125, 0, $rrcost.' ', 'L', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(125, 0, $rrcost . ' ', 'L', 'R', false, 0, '', '', false, 1);
             PDF::MultiCell(100, 0, '', 'L', 'R', false, 0, '', '', false, 1);
-            PDF::MultiCell(180, 0, ' '.$remarks, 'LR', 'L', false, 1, '', '', false, 1);
+            PDF::MultiCell(180, 0, ' ' . $remarks, 'LR', 'L', false, 1, '', '', false, 1);
           }
-  
-              PDF::SetFont($font, '', 2);
-              PDF::MultiCell(50, 0, '', 'LRT', 'C', false, 0,'','',true,0);
-              PDF::MultiCell(200, 0, '', 'LT', 'L', false, 0, '', '', false, 1);
-              PDF::MultiCell(50, 0, '', 'LT', 'L', false, 0, '', '', false, 1);
-              PDF::MultiCell(50, 0, '', 'LT', 'C', false, 0, '', '', false, 1);
-              PDF::MultiCell(90, 0,'', 'LT', 'R', false, 0, '', '', false, 1);
-              PDF::MultiCell(100, 0,'', 'LT', 'R', false, 0, '', '', false, 1);
-              PDF::MultiCell(130, 0,'', 'LT', 'R', false, 0, '', '', false, 1);
-              PDF::MultiCell(50, 0,'', 'LT', 'R', false, 0, '', '', false, 1);
-              PDF::MultiCell(125, 0, '', 'LT', 'C', false, 0, '', '', false, 1);
-              PDF::MultiCell(100, 0, '', 'LT', 'C', false, 0, '', '', false, 1);
-              PDF::MultiCell(180, 0, '', 'LRT', 'C', false, 1, '', '', false, 1);
+
+          PDF::SetFont($font, '', 2);
+          PDF::MultiCell(50, 0, '', 'LRT', 'C', false, 0, '', '', true, 0);
+          PDF::MultiCell(200, 0, '', 'LT', 'L', false, 0, '', '', false, 1);
+          PDF::MultiCell(50, 0, '', 'LT', 'L', false, 0, '', '', false, 1);
+          PDF::MultiCell(50, 0, '', 'LT', 'C', false, 0, '', '', false, 1);
+          PDF::MultiCell(90, 0, '', 'LT', 'R', false, 0, '', '', false, 1);
+          PDF::MultiCell(100, 0, '', 'LT', 'R', false, 0, '', '', false, 1);
+          PDF::MultiCell(130, 0, '', 'LT', 'R', false, 0, '', '', false, 1);
+          PDF::MultiCell(50, 0, '', 'LT', 'R', false, 0, '', '', false, 1);
+          PDF::MultiCell(125, 0, '', 'LT', 'C', false, 0, '', '', false, 1);
+          PDF::MultiCell(100, 0, '', 'LT', 'C', false, 0, '', '', false, 1);
+          PDF::MultiCell(180, 0, '', 'LRT', 'C', false, 1, '', '', false, 1);
         }
 
-          $subtotalB += $otherdata[$i]['ext'];
-        
+        $subtotalB += $otherdata[$i]['ext'];
       }
-  
+
       PDF::SetFont($font, '', $fontsize);
       PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', true, 1);
       PDF::MultiCell(200, 20, ' Subtotal B', 'LRB', 'L', false, 0, '', '', false, 1);
@@ -1217,26 +1206,25 @@ class bl
       PDF::MultiCell(100, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
       PDF::MultiCell(130, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
       PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', false, 1);
-      PDF::MultiCell(125, 20, number_format($subtotalB, $decimalprice).' ', 'LRB', 'R', false, 0, '', '', false, 1);
+      PDF::MultiCell(125, 20, number_format($subtotalB, $decimalprice) . ' ', 'LRB', 'R', false, 0, '', '', false, 1);
       PDF::MultiCell(100, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
       PDF::MultiCell(180, 20, '', 'LRB', 'L', false, 1, '', '', false, 1);
-  
     }
 
     $totalext = $subtotalA + $subtotalB;
- 
-      PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', true, 1);
-      PDF::MultiCell(200, 20, 'TOTAL', 'LRB', 'C', false, 0, '', '', false, 1);
-      PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', false, 1);
-      PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', false, 1);
-      PDF::MultiCell(90, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
-      PDF::MultiCell(100, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
-      PDF::MultiCell(130, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
-      PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', false, 1);
-      PDF::MultiCell(125, 20, number_format($totalext, $decimalprice).' ', 'LRB', 'R', false, 0, '', '', false, 1);
-      PDF::MultiCell(100, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
-      PDF::MultiCell(180, 20, '', 'LRB', 'L', false, 1, '', '', false, 1);
+
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', true, 1);
+    PDF::MultiCell(200, 20, 'TOTAL', 'LRB', 'C', false, 0, '', '', false, 1);
+    PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', false, 1);
+    PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', false, 1);
+    PDF::MultiCell(90, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
+    PDF::MultiCell(100, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
+    PDF::MultiCell(130, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
+    PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', false, 1);
+    PDF::MultiCell(125, 20, number_format($totalext, $decimalprice) . ' ', 'LRB', 'R', false, 0, '', '', false, 1);
+    PDF::MultiCell(100, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
+    PDF::MultiCell(180, 20, '', 'LRB', 'L', false, 1, '', '', false, 1);
 
     $qry = "select sum(stock.rrcost) as budgetreq, sum(stock.amount) as budgetapp
     from hbrhead as head 
@@ -1253,7 +1241,7 @@ class bl
     PDF::MultiCell(100, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
 
     PDF::MultiCell(30, 20, 'Php ', 'LB', 'R', false, 0, '', '', false, 1);
-    PDF::MultiCell(100, 20, number_format($result2[0]['budgetreq'], $decimalprice).' ', 'RB', 'R', false, 0, '', '', false, 1);
+    PDF::MultiCell(100, 20, number_format($result2[0]['budgetreq'], $decimalprice) . ' ', 'RB', 'R', false, 0, '', '', false, 1);
 
     PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', false, 1);
     PDF::MultiCell(125, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
@@ -1269,7 +1257,7 @@ class bl
     PDF::MultiCell(100, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
 
     PDF::MultiCell(30, 20, 'Php ', 'LB', 'R', false, 0, '', '', false, 1);
-    PDF::MultiCell(100, 20, number_format($result2[0]['budgetapp'], $decimalprice).' ', 'RB', 'R', false, 0, '', '', false, 1);
+    PDF::MultiCell(100, 20, number_format($result2[0]['budgetapp'], $decimalprice) . ' ', 'RB', 'R', false, 0, '', '', false, 1);
 
     PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', false, 1);
     PDF::MultiCell(125, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
@@ -1286,7 +1274,7 @@ class bl
     PDF::MultiCell(100, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
 
     PDF::MultiCell(30, 20, 'Php ', 'LB', 'R', false, 0, '', '', false, 1);
-    PDF::MultiCell(100, 20, number_format($bal, $decimalprice).' ', 'RB', 'R', false, 0, '', '', false, 1);
+    PDF::MultiCell(100, 20, number_format($bal, $decimalprice) . ' ', 'RB', 'R', false, 0, '', '', false, 1);
 
     PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', false, 1);
     PDF::MultiCell(125, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
@@ -1303,7 +1291,7 @@ class bl
     PDF::MultiCell(100, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
 
     PDF::MultiCell(30, 20, 'Php ', 'LB', 'R', false, 0, '', '', false, 1);
-    PDF::MultiCell(100, 20, number_format($totalext, $decimalprice).' ', 'RB', 'R', false, 0, '', '', false, 1);
+    PDF::MultiCell(100, 20, number_format($totalext, $decimalprice) . ' ', 'RB', 'R', false, 0, '', '', false, 1);
 
     PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', false, 1);
     PDF::MultiCell(125, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
@@ -1322,7 +1310,7 @@ class bl
     PDF::MultiCell(100, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
 
     PDF::MultiCell(30, 20, 'Php ', 'LB', 'R', false, 0, '', '', false, 1);
-    PDF::MultiCell(100, 20, number_format($coh, $decimalprice).' ', 'RB', 'R', false, 0, '', '', false, 1);
+    PDF::MultiCell(100, 20, number_format($coh, $decimalprice) . ' ', 'RB', 'R', false, 0, '', '', false, 1);
 
     PDF::MultiCell(50, 20, '', 'LRB', 'C', false, 0, '', '', false, 1);
     PDF::MultiCell(125, 20, '', 'LRB', 'R', false, 0, '', '', false, 1);
@@ -1392,67 +1380,67 @@ class bl
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(1000, 0, ' '.strtoupper($headerdata[0]->name), '', 'L',false);
+    PDF::MultiCell(1000, 0, ' ' . strtoupper($headerdata[0]->name), '', 'L', false);
 
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(1000, 0, ' Period Covered: ' . date('M-d-Y', strtotime($data[0]['start'])) . ' TO ' . date('M-d-Y', strtotime($data[0]['end'])), '', 'L',false);
-    
+    PDF::MultiCell(1000, 0, ' Period Covered: ' . date('M-d-Y', strtotime($data[0]['start'])) . ' TO ' . date('M-d-Y', strtotime($data[0]['end'])), '', 'L', false);
+
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(100, 0, "", '', 'L', false,0);
+    PDF::MultiCell(100, 0, "", '', 'L', false, 0);
     PDF::MultiCell(140, 0, '', '', 'L', false);
 
     PDF::SetFont($fontbold, '', 5);
-    PDF::MultiCell(50, 0, "", 'TLR', 'C', false,0);
-    PDF::MultiCell(70, 0, "", 'TLR', 'C', false,0);
-    PDF::MultiCell(170, 0, "", 'TLR', 'C', false,0);
-    PDF::MultiCell(100, 0, "", 'TLR', 'C', false,0);
-    PDF::MultiCell(110, 0, "", 'TLR', 'C', false,0);
-    PDF::MultiCell(90, 0, "", 'TLR', 'C', false,0);
-    PDF::MultiCell(170, 0, "", 'TLR', 'C', false,0);
-    PDF::MultiCell(50, 0, "", 'TLR', 'C', false,0);
-    PDF::MultiCell(70, 0, "", 'TLR', 'C', false,0);
-    PDF::MultiCell(60, 0, "", 'TLR', 'C', false,0);
-    PDF::MultiCell(60, 0, "", 'TLR', 'C', false,0);
-    PDF::MultiCell(80, 0, "", 'TLR', 'C', false,0);
-    PDF::MultiCell(70, 0, "", 'TLR', 'C', false,0);
-    PDF::MultiCell(30, 0, "", 'TLR', 'C', false,0);
+    PDF::MultiCell(50, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(70, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(170, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(100, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(110, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(90, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(170, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(50, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(70, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(60, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(60, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(80, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(70, 0, "", 'TLR', 'C', false, 0);
+    PDF::MultiCell(30, 0, "", 'TLR', 'C', false, 0);
     PDF::MultiCell(70, 0, "", 'TLR', 'C', false);
 
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(50, 0, "Liq. No.", 'LR', 'C', false,0);
-    PDF::MultiCell(70, 0, "Location", 'LR', 'C', false,0);
-    PDF::MultiCell(170, 0, "Supplier", 'LR', 'C', false,0);
-    PDF::MultiCell(100, 0, "Address", 'LR', 'C', false,0);
-    PDF::MultiCell(110, 0, "TIN Number", 'LR', 'C', false,0);
-    PDF::MultiCell(90, 0, "O.R. Number", 'LR', 'C', false,0);
-    PDF::MultiCell(170, 0, "Particular", 'LR', 'C', false,0);
-    PDF::MultiCell(50, 0, "Qty", 'LR', 'C', false,0);
-    PDF::MultiCell(70, 0, "Amount", 'LR', 'C', false,0);
-    PDF::MultiCell(60, 0, "Purchase", 'LR', 'C', false,0);
-    PDF::MultiCell(60, 0, "Input VAT", 'LR', 'C', false,0);
-    PDF::MultiCell(80, 0, "Total Amount", 'LR', 'C', false,0);
-    PDF::MultiCell(70, 0, "O.R. Date", 'LR', 'C', false,0);
-    PDF::MultiCell(30, 0, "VAT", 'LR', 'C', false,0);
+    PDF::MultiCell(50, 0, "Liq. No.", 'LR', 'C', false, 0);
+    PDF::MultiCell(70, 0, "Location", 'LR', 'C', false, 0);
+    PDF::MultiCell(170, 0, "Supplier", 'LR', 'C', false, 0);
+    PDF::MultiCell(100, 0, "Address", 'LR', 'C', false, 0);
+    PDF::MultiCell(110, 0, "TIN Number", 'LR', 'C', false, 0);
+    PDF::MultiCell(90, 0, "O.R. Number", 'LR', 'C', false, 0);
+    PDF::MultiCell(170, 0, "Particular", 'LR', 'C', false, 0);
+    PDF::MultiCell(50, 0, "Qty", 'LR', 'C', false, 0);
+    PDF::MultiCell(70, 0, "Amount", 'LR', 'C', false, 0);
+    PDF::MultiCell(60, 0, "Purchase", 'LR', 'C', false, 0);
+    PDF::MultiCell(60, 0, "Input VAT", 'LR', 'C', false, 0);
+    PDF::MultiCell(80, 0, "Total Amount", 'LR', 'C', false, 0);
+    PDF::MultiCell(70, 0, "O.R. Date", 'LR', 'C', false, 0);
+    PDF::MultiCell(30, 0, "VAT", 'LR', 'C', false, 0);
     PDF::MultiCell(70, 0, "Entry Date", 'LR', 'C', false);
-    
+
     PDF::SetFont($fontbold, '', 5);
-    PDF::MultiCell(50, 0, "", 'LRB', 'C', false,0);
-    PDF::MultiCell(70, 0, "", 'LRB', 'C', false,0);
-    PDF::MultiCell(170, 0, "", 'LRB', 'C', false,0);
-    PDF::MultiCell(100, 0, "", 'LRB', 'C', false,0);
-    PDF::MultiCell(110, 0, "", 'LRB', 'C', false,0);
-    PDF::MultiCell(90, 0, "", 'LRB', 'C', false,0);
-    PDF::MultiCell(170, 0, "", 'LRB', 'C', false,0);
-    PDF::MultiCell(50, 0, "", 'LRB', 'C', false,0);
-    PDF::MultiCell(70, 0, "", 'LRB', 'C', false,0);
-    PDF::MultiCell(60, 0, "", 'LRB', 'C', false,0);
-    PDF::MultiCell(60, 0, "", 'LRB', 'C', false,0);
-    PDF::MultiCell(80, 0, "", 'LRB', 'C', false,0);
-    PDF::MultiCell(70, 0, "", 'LRB', 'C', false,0);
-    PDF::MultiCell(30, 0, "", 'LRB', 'C', false,0);
+    PDF::MultiCell(50, 0, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(70, 0, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(170, 0, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(100, 0, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(110, 0, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(90, 0, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(170, 0, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(50, 0, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(70, 0, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(60, 0, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(60, 0, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(80, 0, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(70, 0, "", 'LRB', 'C', false, 0);
+    PDF::MultiCell(30, 0, "", 'LRB', 'C', false, 0);
     PDF::MultiCell(70, 0, "", 'LRB', 'C', false);
 
-    $totalamt = $totalpurchase = $totalvat =0;
+    $totalamt = $totalpurchase = $totalvat = 0;
 
     $countarr = 0;
     $countarrlocation = 0;
@@ -1466,7 +1454,7 @@ class bl
 
     if (!empty($data)) {
       for ($i = 0; $i < count($data); $i++) {
-        
+
         $location = $data[$i]['location'];
         $supplier = $data[$i]['supplier'];
         $address = $data[$i]['address'];
@@ -1474,31 +1462,31 @@ class bl
         $ref = $data[$i]['ref'];
         $particular = $data[$i]['particulars'];
 
-        $arrsupplier = $this->reporter->fixcolumn([$supplier],'23');
+        $arrsupplier = $this->reporter->fixcolumn([$supplier], '23');
         $countarr = count($arrsupplier);
 
-        $arrlocation = $this->reporter->fixcolumn([$location],'10');
+        $arrlocation = $this->reporter->fixcolumn([$location], '10');
         $countarrlocation = count($arrlocation);
 
-        $arraddress = $this->reporter->fixcolumn([$address],'13');
+        $arraddress = $this->reporter->fixcolumn([$address], '13');
         $countarraddress = count($arraddress);
 
-        $arrtin = $this->reporter->fixcolumn([$tin],'17');
+        $arrtin = $this->reporter->fixcolumn([$tin], '17');
         $countarrtin = count($arrtin);
 
-        $arrref = $this->reporter->fixcolumn([$ref],'13');
+        $arrref = $this->reporter->fixcolumn([$ref], '13');
         $countarrornum = count($arrref);
 
-        $arrparticular = $this->reporter->fixcolumn([$particular],'23');
+        $arrparticular = $this->reporter->fixcolumn([$particular], '23');
         $countarrparticular = count($arrparticular);
 
         $maxrow = 1;
-        $maxrow = max($countarr,$countarrlocation,$countarraddress,$countarrtin,$countarrornum,$countarrparticular);
+        $maxrow = max($countarr, $countarrlocation, $countarraddress, $countarrtin, $countarrornum, $countarrparticular);
 
         if ($data[$i]['particulars'] == "") {
-          
+
           PDF::SetFont($font, '', 10);
-          $liq = 'LIQ. #'.$data[0]['liqno'] * 1;
+          $liq = 'LIQ. #' . $data[0]['liqno'] * 1;
           PDF::MultiCell(50, 0, $liq, 'LB', 'C', false, 0);
           PDF::MultiCell(70, 0, $data[$i]['location'], 'LB', 'L', false, 0);
           PDF::MultiCell(170, 0, $data[$i]['supplier'], 'LB', 'L', false, 0);
@@ -1507,91 +1495,90 @@ class bl
           PDF::MultiCell(90, 0, $data[$i]['ref'], 'LB', 'L', false, 0);
           PDF::MultiCell(170, 0, $data[$i]['particulars'], 'LB', 'L', false, 0);
           PDF::MultiCell(50, 0, round($data[$i]['qty']), 'LB', 'C', false, 0);
-          PDF::MultiCell(70, 0, number_format($data[$i]['rrcost'],2), 'LB', 'R', false, 0);
-          PDF::MultiCell(60, 0, number_format($data[$i]['purchase'],2), 'LB', 'R', false, 0);
-          PDF::MultiCell(60, 0, number_format($data[$i]['vat'],2), 'LB', 'R', false, 0);
-          PDF::MultiCell(80, 0, number_format($data[$i]['ext'],2), 'LB', 'R', false, 0);
+          PDF::MultiCell(70, 0, number_format($data[$i]['rrcost'], 2), 'LB', 'R', false, 0);
+          PDF::MultiCell(60, 0, number_format($data[$i]['purchase'], 2), 'LB', 'R', false, 0);
+          PDF::MultiCell(60, 0, number_format($data[$i]['vat'], 2), 'LB', 'R', false, 0);
+          PDF::MultiCell(80, 0, number_format($data[$i]['ext'], 2), 'LB', 'R', false, 0);
           PDF::MultiCell(70, 0, $data[$i]['ordate'], 'LB', 'C', false, 0);
           if ($data[$i]['isvat'] == 1) {
             $isvat = 'T';
           } else {
             $isvat = 'F';
           }
-          
+
           PDF::MultiCell(30, 0, $isvat, 'LB', 'C', false, 0);
           PDF::MultiCell(70, 0, $data[$i]['dateid'], 'LBR', 'C');
         } else {
-            for($r = 0; $r < $maxrow; $r++) {
-              if($r == 0) {
-                  $qty = round($data[$i]['qty']);
-                  $rrcost = number_format($data[$i]['rrcost'],2);
-                  $purchase = number_format($data[$i]['purchase'],2);
-                  $vat = number_format($data[$i]['vat'],2);
-                  $ext = number_format($data[$i]['ext'],2);
-                  $ordate = $data[$i]['ordate'];
-                  if ($data[$i]['isvat'] == 1) {
-                    $isvat = 'T';
-                  } else {
-                    $isvat = 'F';
-                  }
-                  $dateid = $data[$i]['dateid'];
-                  $liq = 'LIQ. #'.$data[0]['liqno'] * 1;
+          for ($r = 0; $r < $maxrow; $r++) {
+            if ($r == 0) {
+              $qty = round($data[$i]['qty']);
+              $rrcost = number_format($data[$i]['rrcost'], 2);
+              $purchase = number_format($data[$i]['purchase'], 2);
+              $vat = number_format($data[$i]['vat'], 2);
+              $ext = number_format($data[$i]['ext'], 2);
+              $ordate = $data[$i]['ordate'];
+              if ($data[$i]['isvat'] == 1) {
+                $isvat = 'T';
               } else {
-                  $qty = '';
-                  $rrcost = '';
-                  $purchase = '';
-                  $vat = '';
-                  $ext = '';
-                  $ordate = '';
-                  $isvat = '';
-                  $dateid = '';
-                  $liq = '';
+                $isvat = 'F';
               }
-              PDF::SetFont($font, '', $fontsize);
-              PDF::MultiCell(50, 0, $liq , 'LR', 'C', false, 0,'','',true,1);
-              PDF::MultiCell(70, 0, isset($arrlocation[$r]) ? ' '.$arrlocation[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
-              PDF::MultiCell(170, 0, isset($arrsupplier[$r]) ? ' '.$arrsupplier[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
-              PDF::MultiCell(100, 0, isset($arraddress[$r]) ? ' '.$arraddress[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
-              PDF::MultiCell(110, 0, isset($arrtin[$r]) ? ' '.$arrtin[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
-              PDF::MultiCell(90, 0, isset($arrref[$r]) ? ' '.$arrref[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
-              PDF::MultiCell(170, 0, isset($arrparticular[$r]) ? ' '.$arrparticular[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
-              PDF::MultiCell(50, 0, $qty, 'L', 'C', false, 0, '', '', false, 1);
-              PDF::MultiCell(70, 0, $rrcost, 'L', 'R', false, 0, '', '', false, 1);
-              PDF::MultiCell(60, 0, $purchase, 'L', 'R', false, 0, '', '', false, 1);
-              PDF::MultiCell(60, 0, $vat, 'L', 'R', false, 0, '', '', false, 1);
-              PDF::MultiCell(80, 0, $ext, 'L', 'R', false, 0, '', '', false, 1);
-              PDF::MultiCell(70, 0, $ordate, 'L', 'C', false, 0, '', '', false, 1);
-              PDF::MultiCell(30, 0, $isvat, 'L', 'C', false, 0, '', '', false, 1);
-              PDF::MultiCell(70, 0, $dateid, 'LR', 'C', false, 1, '', '', false, 0);
+              $dateid = $data[$i]['dateid'];
+              $liq = 'LIQ. #' . $data[0]['liqno'] * 1;
+            } else {
+              $qty = '';
+              $rrcost = '';
+              $purchase = '';
+              $vat = '';
+              $ext = '';
+              $ordate = '';
+              $isvat = '';
+              $dateid = '';
+              $liq = '';
             }
+            PDF::SetFont($font, '', $fontsize);
+            PDF::MultiCell(50, 0, $liq, 'LR', 'C', false, 0, '', '', true, 1);
+            PDF::MultiCell(70, 0, isset($arrlocation[$r]) ? ' ' . $arrlocation[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(170, 0, isset($arrsupplier[$r]) ? ' ' . $arrsupplier[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(100, 0, isset($arraddress[$r]) ? ' ' . $arraddress[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(110, 0, isset($arrtin[$r]) ? ' ' . $arrtin[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(90, 0, isset($arrref[$r]) ? ' ' . $arrref[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(170, 0, isset($arrparticular[$r]) ? ' ' . $arrparticular[$r] : '', 'L', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(50, 0, $qty, 'L', 'C', false, 0, '', '', false, 1);
+            PDF::MultiCell(70, 0, $rrcost, 'L', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(60, 0, $purchase, 'L', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(60, 0, $vat, 'L', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(80, 0, $ext, 'L', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(70, 0, $ordate, 'L', 'C', false, 0, '', '', false, 1);
+            PDF::MultiCell(30, 0, $isvat, 'L', 'C', false, 0, '', '', false, 1);
+            PDF::MultiCell(70, 0, $dateid, 'LR', 'C', false, 1, '', '', false, 0);
+          }
 
-            PDF::SetFont($font, '', 2);
-            PDF::MultiCell(50, 0, '', 'LRB', 'C', false, 0,'','',true,0);
-            PDF::MultiCell(70, 0, '', 'LB', 'L', false, 0, '', '', false, 1);
-            PDF::MultiCell(170, 0, '', 'LB', 'L', false, 0, '', '', false, 1);
-            PDF::MultiCell(100, 0, '', 'LB', 'L', false, 0, '', '', false, 1);
-            PDF::MultiCell(110, 0, '', 'LB', 'L', false, 0, '', '', false, 1);
-            PDF::MultiCell(90, 0, '', 'LB', 'L', false, 0, '', '', false, 1);
-            PDF::MultiCell(170, 0, '', 'LB', 'L', false, 0, '', '', false, 1);
-            PDF::MultiCell(50, 0, '', 'LB', 'C', false, 0, '', '', false, 1);
-            PDF::MultiCell(70, 0,'', 'LB', 'R', false, 0, '', '', false, 1);
-            PDF::MultiCell(60, 0,'', 'LB', 'R', false, 0, '', '', false, 1);
-            PDF::MultiCell(60, 0,'', 'LB', 'R', false, 0, '', '', false, 1);
-            PDF::MultiCell(80, 0,'', 'LB', 'R', false, 0, '', '', false, 1);
-            PDF::MultiCell(70, 0, '', 'LB', 'C', false, 0, '', '', false, 1);
-            PDF::MultiCell(30, 0, '', 'LB', 'C', false, 0, '', '', false, 1);
-            PDF::MultiCell(70, 0, '', 'LRB', 'C', false, 1, '', '', false, 1);
+          PDF::SetFont($font, '', 2);
+          PDF::MultiCell(50, 0, '', 'LRB', 'C', false, 0, '', '', true, 0);
+          PDF::MultiCell(70, 0, '', 'LB', 'L', false, 0, '', '', false, 1);
+          PDF::MultiCell(170, 0, '', 'LB', 'L', false, 0, '', '', false, 1);
+          PDF::MultiCell(100, 0, '', 'LB', 'L', false, 0, '', '', false, 1);
+          PDF::MultiCell(110, 0, '', 'LB', 'L', false, 0, '', '', false, 1);
+          PDF::MultiCell(90, 0, '', 'LB', 'L', false, 0, '', '', false, 1);
+          PDF::MultiCell(170, 0, '', 'LB', 'L', false, 0, '', '', false, 1);
+          PDF::MultiCell(50, 0, '', 'LB', 'C', false, 0, '', '', false, 1);
+          PDF::MultiCell(70, 0, '', 'LB', 'R', false, 0, '', '', false, 1);
+          PDF::MultiCell(60, 0, '', 'LB', 'R', false, 0, '', '', false, 1);
+          PDF::MultiCell(60, 0, '', 'LB', 'R', false, 0, '', '', false, 1);
+          PDF::MultiCell(80, 0, '', 'LB', 'R', false, 0, '', '', false, 1);
+          PDF::MultiCell(70, 0, '', 'LB', 'C', false, 0, '', '', false, 1);
+          PDF::MultiCell(30, 0, '', 'LB', 'C', false, 0, '', '', false, 1);
+          PDF::MultiCell(70, 0, '', 'LRB', 'C', false, 1, '', '', false, 1);
         }
 
         $totalamt += $data[$i]['rrcost'];
         $totalpurchase += $data[$i]['purchase'];
         $totalvat += $data[$i]['vat'];
         $totalext += $data[$i]['ext'];
-
       }
 
       PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(50, 0, '', '', 'C', false, 0,'','',true,0);
+      PDF::MultiCell(50, 0, '', '', 'C', false, 0, '', '', true, 0);
       PDF::MultiCell(70, 0, '', '', 'L', false, 0, '', '', false, 1);
       PDF::MultiCell(170, 0, '', '', 'L', false, 0, '', '', false, 1);
       PDF::MultiCell(100, 0, '', '', 'L', false, 0, '', '', false, 1);
@@ -1599,10 +1586,10 @@ class bl
       PDF::MultiCell(90, 0, '', '', 'L', false, 0, '', '', false, 1);
       PDF::MultiCell(170, 0, '', '', 'L', false, 0, '', '', false, 1);
       PDF::MultiCell(50, 0, '', '', 'C', false, 0, '', '', false, 1);
-      PDF::MultiCell(70, 0,number_format($totalamt,2), '', 'R', false, 0, '', '', false, 1);
-      PDF::MultiCell(60, 0,number_format($totalpurchase,2), '', 'R', false, 0, '', '', false, 1);
-      PDF::MultiCell(60, 0,number_format($totalvat,2), '', 'R', false, 0, '', '', false, 1);
-      PDF::MultiCell(80, 0,number_format($totalext,2), '', 'R', false, 0, '', '', false, 1);
+      PDF::MultiCell(70, 0, number_format($totalamt, 2), '', 'R', false, 0, '', '', false, 1);
+      PDF::MultiCell(60, 0, number_format($totalpurchase, 2), '', 'R', false, 0, '', '', false, 1);
+      PDF::MultiCell(60, 0, number_format($totalvat, 2), '', 'R', false, 0, '', '', false, 1);
+      PDF::MultiCell(80, 0, number_format($totalext, 2), '', 'R', false, 0, '', '', false, 1);
       PDF::MultiCell(70, 0, '', '', 'C', false, 0, '', '', false, 1);
       PDF::MultiCell(30, 0, '', '', 'C', false, 0, '', '', false, 1);
       PDF::MultiCell(70, 0, '', '', 'C', false, 1, '', '', false, 1);
@@ -1614,7 +1601,7 @@ class bl
     PDF::MultiCell(200, 0, $config['params']['dataparams']['prepared'], 'T', 'L', false, 0);
     PDF::MultiCell(500, 0, '', '', 'L', false, 0);
     PDF::MultiCell(200, 0, $config['params']['dataparams']['received'], 'T', 'L');
-    
+
     PDF::SetFont($font, '', 2);
     PDF::MultiCell(200, 0, '', '', 'L');
 
@@ -1623,8 +1610,7 @@ class bl
     PDF::MultiCell(200, 0, 'PREPARED BY : ', '', 'L', false, 0);
     PDF::MultiCell(500, 0, '', '', 'L', false, 0);
     PDF::MultiCell(200, 0, 'CHECKED/VERIFIED : ', '', 'L');
-    
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

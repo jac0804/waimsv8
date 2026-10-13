@@ -36,11 +36,11 @@ class barcodeassigning
   public $showclosebtn = false;
   public $rowperpage = 0;
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -154,7 +154,15 @@ class barcodeassigning
     $barcode = 8;
     $tab = [$this->gridname => [
       'gridcolumns' => [
-        'otapproved', 'ctrlno', 'itemdesc', 'specs', 'unit', 'docno', 'deptname', 'clientname', 'barcode'
+        'otapproved',
+        'ctrlno',
+        'itemdesc',
+        'specs',
+        'unit',
+        'docno',
+        'deptname',
+        'clientname',
+        'barcode'
       ],
       'rowperpage' => 0
     ]];

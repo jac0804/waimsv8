@@ -32,17 +32,17 @@ class entryreplacementcheque
     public $htablelogs = 'htable_log';
     private $othersClass;
     public $style = 'width:100%;max-width:1400px;';
-    private $fields = ['trno', 'line', 'refx', 'linex', 'rctrno', 'rcline','rhtrno','rhline'];
+    private $fields = ['trno', 'line', 'refx', 'linex', 'rctrno', 'rcline', 'rhtrno', 'rhline'];
     public $showclosebtn = true;
     private $reporter;
     private $logger;
     private $sqlquery;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -157,17 +157,17 @@ class entryreplacementcheque
     }
 
 
-    public function loaddataperrecord($trno, $line, $rtrno, $rline,$cash)
+    public function loaddataperrecord($trno, $line, $rtrno, $rline, $cash)
     {
         $select = $this->selectqry();
         $select = $select . ",'' as bgcolor ";
-        if($cash == 'CASH'){
+        if ($cash == 'CASH') {
             $qry = "select " . $select . " from chequedetail as detail
 				join hrhdetail as d on  d.trno = detail.rhtrno and d.line = detail.rhline
 				left join hrhhead as head on head.trno = d.trno
                 left join client on client.clientid = d.clientid
 				where detail.trno = " . $trno . " and detail.line = " . $line . " and  detail.rhtrno = " . $rtrno . " and detail.rhline = " . $rline . "";
-        }else {
+        } else {
             $qry = "select " . $select . " from chequedetail as detail
 				join hrcdetail as d on  d.trno = detail.rctrno and d.line = detail.rcline
 				left join hrchead as head on head.trno = d.trno
@@ -187,7 +187,7 @@ class entryreplacementcheque
         $dateTables = [$this->table];
         $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
         foreach ($this->fields as $key2 => $value) {
-            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+            $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
         }
 
 
@@ -198,18 +198,18 @@ class entryreplacementcheque
             if ($data['refx'] != 0) {
                 $this->coreFunctions->execqry("update hparticulars set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['refx'], $data['linex']]);
             }
-            $cash = $this->coreFunctions->datareader('select bank as value from hrhdetail where trno =? and line =?',[$data['rhtrno'], $data['rhline']]);
+            $cash = $this->coreFunctions->datareader('select bank as value from hrhdetail where trno =? and line =?', [$data['rhtrno'], $data['rhline']]);
 
-            if($cash == 'CASH'){
+            if ($cash == 'CASH') {
                 $this->coreFunctions->execqry("update hrhdetail set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['rhtrno'], $data['rhline']]);
                 $trno = $data['rhtrno'];
                 $line = $data['rhline'];
-            }else {
+            } else {
                 $this->coreFunctions->execqry("update hrcdetail set retrno = " . $data['trno'] . " where trno =? and line =? ", "update", [$data['rctrno'], $data['rcline']]);
                 $trno = $data['rctrno'];
                 $line = $data['rcline'];
             }
-          
+
             $checkno = $this->coreFunctions->datareader("select checkno as value from hrcdetail where trno = " . $data['rctrno'] . " and line  = " . $data['rcline'] . "");
             $this->logger->sbcwritelog($row['trno'], $config, 'DETAIL', 'ADD - Line: ' . $data['rcline'] . ' Check #: ' . $checkno);
             $returnrow = $this->loaddataperrecord($data['trno'], $data['line'], $trno, $line, $cash);
@@ -223,16 +223,16 @@ class entryreplacementcheque
         $row = $config['params']['row'];
         $cash = $this->coreFunctions->datareader('select bank as value from hrhdetail where trno =? and line =?', [$row['rhtrno'], $row['rhline']]);
 
-        if($cash == 'CASH'){
+        if ($cash == 'CASH') {
             $qry = "delete from " . $this->table . " where trno = " . $row['trno'] . " and line= " . $row['line'] . " and rhtrno = " . $row['rhtrno'] . " and rhline = " . $row['rhline'] . "";
-        }else {
+        } else {
             $qry = "delete from " . $this->table . " where trno = " . $row['trno'] . " and line= " . $row['line'] . " and rctrno = " . $row['rctrno'] . " and rcline = " . $row['rcline'] . "";
         }
         $this->coreFunctions->execqry($qry, 'delete', []);
 
         if ($row['rctrno'] != 0) {
             $this->coreFunctions->sbcupdate('hrcdetail', ['retrno' => 0], ['trno' => $row['rctrno'], 'line' => $row['rcline']]);
-        }else {
+        } else {
             $this->coreFunctions->sbcupdate('hrhdetail', ['retrno' => 0], ['trno' => $row['rhtrno'], 'line' => $row['rhline']]); //receive cash
         }
         $this->logger->sbcwritelog($row['trno'], $config, 'DETAIL',  'REMOVE - Checkno: ' . $row['checkno']);

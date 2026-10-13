@@ -37,9 +37,9 @@ class cv
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -497,9 +497,9 @@ class cv
                         $coltext = $dremtext;
                     }
                     PDF::MultiCell(310, 15, $coltext, '', 'L', false, 1, '', '', true, 0, true, true, 0, 'M', false);
-                    }
-                    $totaldb += $data[$i]['db'];
-                    $totalcr += $data[$i]['cr'];
+                }
+                $totaldb += $data[$i]['db'];
+                $totalcr += $data[$i]['cr'];
 
 
                 if (PDF::getY() > 900) {

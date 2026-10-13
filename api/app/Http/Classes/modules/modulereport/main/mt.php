@@ -34,10 +34,10 @@ class mt
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -46,15 +46,16 @@ class mt
   }
 
 
-public function createreportfilter(){
-  $fields = ['radioprint', 'prepared', 'approved', 'received', 'refresh'];
-  $col1 = $this->fieldClass->create($fields);
-  data_set($col1, 'radioprint.options', [
-    ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-    // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
-  ]); 
-  return array('col1' => $col1);
-}
+  public function createreportfilter()
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'refresh'];
+    $col1 = $this->fieldClass->create($fields);
+    data_set($col1, 'radioprint.options', [
+      ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
+      // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
+    ]);
+    return array('col1' => $col1);
+  }
 
   public function reportparamsdata($config)
   {
@@ -95,9 +96,9 @@ public function createreportfilter(){
     return $result;
   } //end fn
 
-  public function reportplotting($params, $data) {
+  public function reportplotting($params, $data)
+  {
     return $this->default_MT_PDF($params, $data);
-    
   }
 
   private function rpt_default_header($params, $data)
@@ -289,9 +290,9 @@ public function createreportfilter(){
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
     // PDF::Image('/images/reports/mdc.jpg', '45', '35', 100, 40);
     // PDF::Image('/images/reports/tuv.jpg', '630', '35', 100, 40);
 
@@ -397,22 +398,22 @@ public function createreportfilter(){
         // $maxh = PDF::GetStringHeight(200, $data[$i]['itemname']);
         $maxrow = 1;
         $barcode = $data[$i]['barcode'];
-        $qty = number_format($data[$i]['qty'],$decimalqty);
+        $qty = number_format($data[$i]['qty'], $decimalqty);
         $uom = $data[$i]['uom'];
         $itemname = $data[$i]['itemname'];
-        $amt = number_format($data[$i]['amt'],$decimalprice);
-        $ext = number_format($data[$i]['ext'],$decimalprice);
+        $amt = number_format($data[$i]['amt'], $decimalprice);
+        $ext = number_format($data[$i]['ext'], $decimalprice);
 
-        $arr_barcode = $this->reporter->fixcolumn([$barcode],'16',0);
-        $arr_qty = $this->reporter->fixcolumn([$qty],'13',0);
-        $arr_uom = $this->reporter->fixcolumn([$uom],'13',0);
-        $arr_itemname = $this->reporter->fixcolumn([$itemname],'35',0);
-        $arr_amt = $this->reporter->fixcolumn([$amt],'13',0);
-        $arr_ext = $this->reporter->fixcolumn([$ext],'13',0);
+        $arr_barcode = $this->reporter->fixcolumn([$barcode], '16', 0);
+        $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
+        $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
+        $arr_itemname = $this->reporter->fixcolumn([$itemname], '35', 0);
+        $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
+        $arr_ext = $this->reporter->fixcolumn([$ext], '13', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_barcode, $arr_qty, $arr_uom, $arr_itemname, $arr_amt, $arr_ext]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(100, 0, (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0, '', '', true, 1);
           PDF::MultiCell(100, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '', '', false, 1);
@@ -451,7 +452,7 @@ public function createreportfilter(){
         //   }
         // }
         $totalext += $data[$i]['ext'];
-    
+
         if (intVal($i) + 1 == $page) {
           $this->default_MT_header_PDF($params, $data);
           $page += $count;
@@ -498,5 +499,4 @@ public function createreportfilter(){
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

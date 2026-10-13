@@ -29,10 +29,10 @@ class viewuomdet
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -124,18 +124,12 @@ class viewuomdet
       left join hstockinfotrans as si on si.trno=stock.trno and si.line=stock.line
       left join hstockinfotrans as info on info.trno=stock.reqtrno and info.line=stock.reqline
       where stock.reqtrno = ? and stock.reqline = ? order by line";
-        
+
         $data = $this->coreFunctions->opentable($select, [$trno, $line]);
         return $data;
-
-        
     } //end function
 
-    public function loaddata($config, $reqtrno, $reqline)
-    {
-
-        
-    } //end function
+    public function loaddata($config, $reqtrno, $reqline) {} //end function
 
 
 

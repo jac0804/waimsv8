@@ -29,12 +29,12 @@ class current_customer_receivables_aging
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -114,10 +114,15 @@ class current_customer_receivables_aging
           default:
             array_push($fields, 'dclientname', 'dcentername', 'contra');
             if ($companyid == 32) array_push($fields, 'dagentname'); //3m
+            if ($companyid == 67) array_push($fields, 'project'); //yulick
             $col1 = $this->fieldClass->create($fields);
             data_set($col1, 'contra.lookupclass', 'AR');
             data_set($col1, 'dclientname.lookupclass', 'lookupclient');
             data_set($col1, 'dclientname.label', 'Customer');
+            if ($companyid == 67) { //yulick
+              data_set($col1, 'project.required', false);
+              data_set($col1, 'project.label', 'Company');
+            }
             break;
         }
 
@@ -184,6 +189,8 @@ class current_customer_receivables_aging
       '" . $defaultcenter[0]['centername'] . "' as centername,
       '" . $defaultcenter[0]['dcentername'] . "' as dcentername,
       adddate(left(now(),10),-360) as start, date_add(date(now()),interval 1 month) as end,
+
+      '' as project, '' as projectname, '0' as projectid,
 
       '' as category_name, '' as category_id, '' as customerfilter
       ";
@@ -1216,7 +1223,8 @@ class current_customer_receivables_aging
     $acnoname       = $config['params']['dataparams']['acnoname'];
     $acnoid       = $config['params']['dataparams']['acnoid'];
 
-
+    $project  = $config['params']['dataparams']['project'];
+    $projectid  = $config['params']['dataparams']['projectid'];
 
     $filter = "";
     $filter1 = "";
@@ -1225,7 +1233,11 @@ class current_customer_receivables_aging
       $filter = " and client.clientid='$clientid'";
     }
 
+    if ($project != '') {
+      $filter .= " and project.line='$projectid'";
+    }
 
+    $leftjoinproject = ' left join projectmasterfile as project on project.line = head.projectid ';
 
     if ($filtercenter != "") {
       $filter .= " and cntnum.center='$filtercenter'";
@@ -1333,6 +1345,7 @@ class current_customer_receivables_aging
             left join category_masterfile as cat on cat.cat_id = client.category
             left join cntnum on cntnum.trno=detail.trno
             left join glhead as head on head.trno=detail.trno
+            " . $leftjoinproject . "
             left join gldetail as gdetail on gdetail.trno=detail.trno and gdetail.line=detail.line
             left join coa on coa.acnoid=gdetail.acnoid
             where detail.bal<>0 and left(coa.alias,2)='AR' and detail.dateid<=now() $filter $filter1 $filter2 ) as x
@@ -1351,6 +1364,7 @@ class current_customer_receivables_aging
           left join category_masterfile as cat on cat.cat_id = client.category
           left join cntnum on cntnum.trno=detail.trno
           left join glhead as head on head.trno=detail.trno
+          " . $leftjoinproject . "
           left join gldetail as gdetail on gdetail.trno=detail.trno and gdetail.line=detail.line
           left join coa on coa.acnoid=gdetail.acnoid
           where detail.bal<>0 and left(coa.alias,2)='AR' and detail.dateid<=now()  $filter $filter1 $filter2
@@ -1378,6 +1392,9 @@ class current_customer_receivables_aging
     $acnoname       = $config['params']['dataparams']['acnoname'];
     $acnoid       = $config['params']['dataparams']['acnoid'];
 
+    $project  = $config['params']['dataparams']['project'];
+    $projectid  = $config['params']['dataparams']['projectid'];
+
     $filter = "";
     $filter1 = "";
     $filter2 = "";
@@ -1393,6 +1410,13 @@ class current_customer_receivables_aging
     if ($contra != '') {
       $filter2 .= " and coa.acnoid='$acnoid'";
     }
+
+    if ($project != '') {
+      $filter .= " and project.line='$projectid'";
+    }
+
+    $leftjoinproject = ' left join projectmasterfile as project on project.line = head.projectid ';
+
 
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $deptid = $config['params']['dataparams']['ddeptname'];
@@ -1455,6 +1479,7 @@ class current_customer_receivables_aging
         left join coa on coa.acnoid=detail.acnoid)
         left join category_masterfile as cat on cat.cat_id = client.category
         left join cntnum on cntnum.trno=head.trno
+        " . $leftjoinproject . "
         where cntnum.doc IN ('GJ','AR','CR') and left(coa.alias,2)='AR' and detail.refx = 0  $filter $filter1 $filter2 $filter3
         group by cntnum.center, client.clientname, head.dateid, head.docno, head.yourref,detail.db,head.trno,head.doc,detail.ref,head.deldate $field
         union all
@@ -1462,6 +1487,7 @@ class current_customer_receivables_aging
         date(head.dateid) as dateid, head.docno, datediff(now(), $elapsedate) as elapse,
         sum(stock.ext) as balance, head.yourref,date(head.deldate) as deldate $field
         from lahead as head left join lastock as stock on stock.trno=head.trno
+        " . $leftjoinproject . "
         left join client on client.client=head.client
         left join category_masterfile as cat on cat.cat_id = client.category
         left join cntnum on cntnum.trno=head.trno
@@ -1481,6 +1507,7 @@ class current_customer_receivables_aging
         left join coa on coa.acnoid=detail.acnoid)
         left join category_masterfile as cat on cat.cat_id = client.category
         left join cntnum on cntnum.trno=head.trno
+        " . $leftjoinproject . "
         where cntnum.doc IN ('GJ','AR','CR') and left(coa.alias,2)='AR' and detail.refx = 0  $filter $filter1 $filter2 $filter3
         group by cntnum.center, client.clientname, head.dateid, head.docno, head.yourref,detail.db " . $addfields3m . "
         ) as t
@@ -1495,6 +1522,7 @@ class current_customer_receivables_aging
         left join client on client.client=head.client
         left join category_masterfile as cat on cat.cat_id = client.category
         left join cntnum on cntnum.trno=head.trno
+        " . $leftjoinproject . "
         where cntnum.doc IN ('SJ','MJ','CM')  $filter $filter1 $filter3
         group by cntnum.center, client.clientname, head.dateid, head.docno, head.yourref " . $addfields3m . ") as x
         group by clientname, elapse, name " . $addfields3m2 . "
@@ -1520,6 +1548,9 @@ class current_customer_receivables_aging
     $acnoname       = $config['params']['dataparams']['acnoname'];
     $acnoid       = $config['params']['dataparams']['acnoid'];
 
+    $project  = $config['params']['dataparams']['project'];
+    $projectid  = $config['params']['dataparams']['projectid'];
+
     $filter = "";
     $filter1 = "";
     $filter2 = "";
@@ -1536,6 +1567,13 @@ class current_customer_receivables_aging
     if ($contra != '') {
       $filter2 .= " and coa.acnoid='$acnoid'";
     }
+
+    if ($project != '') {
+      $filter .= " and project.line='$projectid'";
+    }
+
+    $leftjoinproject = ' left join projectmasterfile as project on project.line = head.projectid ';
+
 
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $deptid = $config['params']['dataparams']['ddeptname'];
@@ -1602,6 +1640,7 @@ class current_customer_receivables_aging
             left join category_masterfile as cat on cat.cat_id = client.category
             left join cntnum on cntnum.trno=detail.trno
             left join glhead as head on head.trno=detail.trno
+            " . $leftjoinproject . "
             left join gldetail as gdetail on gdetail.trno=detail.trno and gdetail.line=detail.line
             left join coa on coa.acnoid=gdetail.acnoid
             where detail.bal<>0 and left(coa.alias,2)='AR' and detail.dateid<=now() $filter $filter1 $filter2
@@ -1616,6 +1655,7 @@ class current_customer_receivables_aging
                   left join coa on coa.acnoid=detail.acnoid)
                   left join category_masterfile as cat on cat.cat_id = client.category
                   left join cntnum on cntnum.trno=head.trno
+                  " . $leftjoinproject . "
                   where cntnum.doc IN ('GJ','AR','CR') and left(coa.alias,2)='AR' and detail.refx = 0  $filter $filter1 $filter2 $filter3
                   group by cntnum.center, client.clientname, head.dateid, head.docno, head.yourref,detail.db,head.trno,head.doc,detail.ref,head.deldate  $field
                   
@@ -1628,6 +1668,7 @@ class current_customer_receivables_aging
                   left join client on client.client=head.client
                   left join category_masterfile as cat on cat.cat_id = client.category
                   left join cntnum on cntnum.trno=head.trno
+                  " . $leftjoinproject . "
                   where cntnum.doc IN ('SJ','MJ','CM')  $filter $filter1 $filter3
                   group by cntnum.center, client.clientname, head.dateid, head.docno, head.yourref,head.trno,head.doc,head.deldate $field
                   order by clientname, dateid, docno) as x
@@ -1651,6 +1692,7 @@ class current_customer_receivables_aging
         left join glhead as head on head.trno=detail.trno
         left join gldetail as gdetail on gdetail.trno=detail.trno and gdetail.line=detail.line
         left join coa on coa.acnoid=gdetail.acnoid
+        " . $leftjoinproject . "
         where detail.bal<>0 and left(coa.alias,2)='AR' and detail.dateid<=now()  $filter $filter1 $filter2
         union all
         select  '' as center, 'z' as tr, '' as clientname, '' as name, '' as dateid, '' as docno, '' as elapse, 0 as balance,'' as yourref, null as deldate " . $addfields3m2 . ") as x
@@ -1670,6 +1712,7 @@ class current_customer_receivables_aging
         left join category_masterfile as cat on cat.cat_id = client.category
         left join coa on coa.acnoid=detail.acnoid)
         left join cntnum on cntnum.trno=head.trno
+        " . $leftjoinproject . "
         where cntnum.doc IN ('GJ','AR','CR') and left(coa.alias,2)='AR' and detail.refx = 0  $filter $filter1 $filter2 $filter3
         group by cntnum.center, client.clientname, head.dateid, head.docno, head.yourref,detail.db, head.deldate" . $addfields3m . ") as t
         group by clientname, elapse, name  " . $addfields3m2 . "
@@ -1686,6 +1729,7 @@ class current_customer_receivables_aging
         left join client on client.client=head.client
         left join category_masterfile as cat on cat.cat_id = client.category
         left join cntnum on cntnum.trno=head.trno
+        " . $leftjoinproject . "
         where cntnum.doc IN ('SJ','MJ','CM')  $filter $filter1 $filter3
         group by cntnum.center, client.clientname, head.dateid, head.docno, head.yourref, head.deldate" . $addfields3m . ") as x
         group by clientname, elapse, name " . $addfields3m2 . "
@@ -2817,6 +2861,10 @@ class current_customer_receivables_aging
       $agent = $config['params']['dataparams']['agentname'];
       if ($agent == '') $agent = 'ALL';
       $str .= $this->reporter->col('Agent: ' . strtoupper($agent), '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    } elseif ($companyid == 67) { //yulick
+      $project = $config['params']['dataparams']['projectname'];
+      if ($project == '') $project = 'ALL';
+      $str .= $this->reporter->col('Project : ' . strtoupper($project), '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     } else {
       $str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     }
@@ -3260,6 +3308,10 @@ class current_customer_receivables_aging
       $agent = $config['params']['dataparams']['agentname'];
       if ($agent == '') $agent = 'ALL';
       $str .= $this->reporter->col('Agent: ' . strtoupper($agent), '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
+    } elseif ($companyid == 67) { //yulick
+      $project = $config['params']['dataparams']['projectname'];
+      if ($project == '') $project = 'ALL';
+      $str .= $this->reporter->col('Project : ' . strtoupper($project), '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     } else {
       $str .= $this->reporter->col('', '110px', null, false, $border, '', 'L', $font, $fontsize, '', '', '');
     }

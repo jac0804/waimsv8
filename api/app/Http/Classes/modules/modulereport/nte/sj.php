@@ -33,10 +33,10 @@ class sj
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -54,12 +54,12 @@ class sj
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
     data_set($col1, 'radioreporttype.options', [
       ['label' => 'Default', 'value' => 'default', 'color' => 'red'],
       ['label' => 'SI', 'value' => 'SI', 'color' => 'red']
-      
+
     ]);
     return array('col1' => $col1);
   }
@@ -137,7 +137,7 @@ class sj
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -151,7 +151,7 @@ class sj
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -168,7 +168,7 @@ class sj
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel), '', 'C');
 
-    
+
     PDF::MultiCell(0, 0, "\n");
 
     PDF::SetFont($fontbold, '', 18);
@@ -187,7 +187,7 @@ class sj
     PDF::SetFont($font, '', 10);
     PDF::MultiCell(100, 20, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 20, "Customer : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
@@ -197,7 +197,7 @@ class sj
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 20, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
-    
+
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 20, "Address : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
@@ -323,7 +323,7 @@ class sj
     PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
     PDF::MultiCell(253, 0, $params['params']['dataparams']['received'], '', 'L');
 
-    
+
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 
@@ -345,9 +345,9 @@ class sj
     $border = "1px solid ";
     $fontsize = "11";
 
-    
 
-    
+
+
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
 
     $font = "";
@@ -358,7 +358,7 @@ class sj
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -369,10 +369,10 @@ class sj
 
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(0, 0, $username . ' - ' . date_format(date_create($current_timestamp), 'm/d/Y H:i:s'), '', 'L');
-    
+
     PDF::MultiCell(0, 0, "\n");
 
-    
+
 
     PDF::MultiCell(0, 0, "\n");
 
@@ -397,13 +397,13 @@ class sj
     PDF::MultiCell(550, 0, (isset($data[0]['bstyle']) ? $data[0]['bstyle'] : ''), '', 'L', false, 0, '70',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(170, 0, (isset($data[0]['agent']) ? $data[0]['agent'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
 
     if (Storage::disk('sbcpath')->exists('/fonts/GOTHIC.TTF')) {
       $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHIC.TTF');
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
-    
+
 
     $countarr = 0;
 
@@ -434,22 +434,20 @@ class sj
         for ($r = 0; $r < $maxrow; $r++) {
 
           PDF::SetFont($font, '', $fontsize);
-          
+
           PDF::MultiCell(75, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'C', false, 0, '20',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(75, 15, ' ' . (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0, '95',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(400, 15, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(85, 15, ' ' . (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          
+
           PDF::MultiCell(85, 15, ' ' . (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
         }
 
         $totalext += $data[$i]['ext'];
-
-        
       }
     }
 
-    
+
     $vat = 0.12;
     $vat2 = 1.12;
 
@@ -510,7 +508,7 @@ class sj
     PDF::MultiCell(150, 0, $params['params']['dataparams']['prepared'], '', 'C', false, 1, '20',  '910', true, 0, false, true, 0, 'M', false);
     PDF::MultiCell(150, 0, $params['params']['dataparams']['approved'], '', 'C', false, 1, '150',  '910', true, 0, false, true, 0, 'M', false);
 
-    
+
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
@@ -719,7 +717,7 @@ class sj
         $str .= $this->report_default_header($params, $data);
 
         $str .= $this->reporter->endrow();
-        
+
         $page = $page + $count;
       } //end if
     } //end for

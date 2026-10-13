@@ -52,7 +52,7 @@ class ledgerClass
 		$classname = __NAMESPACE__ . '\\modules\\' . $type . '\\' . $doc;
 		try {
 			$this->config['classname'] = $classname;
-			$this->config['docmodule'] = new $classname;
+			$this->config['docmodule'] = new $classname($params);
 		} catch (Exception $e) {
 			echo $e;
 			return $this;

@@ -34,12 +34,12 @@ class employee_movement_report
 
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -101,9 +101,10 @@ class employee_movement_report
         $year = $config['params']['dataparams']['year'];
 
         if ($divname != '') {
-        if ($divid != 0) {
-            $filter .= " and emp.divid = $divid";
-        }}
+            if ($divid != 0) {
+                $filter .= " and emp.divid = $divid";
+            }
+        }
 
         if ($reporttype == 0) {
             $date = 'emp.hired';

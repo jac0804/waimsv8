@@ -31,10 +31,10 @@ class viewinstructiontab
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -54,7 +54,7 @@ class viewinstructiontab
     $isposted = $this->othersClass->isposted2($trno, "transnum");
 
 
-    $fields = ['lblshipping', 'yourref','dtcno','rem2', 'instructions', 'ispartial', 'isshipmentnotif', 'shipmentnotif'];
+    $fields = ['lblshipping', 'yourref', 'dtcno', 'rem2', 'instructions', 'ispartial', 'isshipmentnotif', 'shipmentnotif'];
 
     if (!$isposted) {
       if ($config['params']['doc'] == 'QS') { // quotation for save button
@@ -67,7 +67,7 @@ class viewinstructiontab
     data_set($col1, 'lblshipping.label', 'Instruction');
     data_set($col1, 'instructions.type', 'textarea');
     data_set($col1, 'rem2.label', 'PCF Details');
-    data_set($col1, 'rem2.readonly',true);
+    data_set($col1, 'rem2.readonly', true);
     data_set($col1, 'yourref.type', 'cinput');
     data_set($col1, 'yourref.name', 'inspo');
     data_set($col1, 'yourref.maxlength', '50');
@@ -281,7 +281,7 @@ class viewinstructiontab
 
 
         if ($tax != 0) {
-          $total = round($total,2);
+          $total = round($total, 2);
           $total = round($total * 1.12, 2);
         }
 
@@ -550,7 +550,7 @@ class viewinstructiontab
   {
     $trno = $config['params']['dataparams']['trno'];
     $companyid = $config['params']['companyid'];
-   
+
     $data = [
       'trno' => $trno,
       'inspo' => $config['params']['dataparams']['inspo'],
@@ -580,9 +580,9 @@ class viewinstructiontab
 
     if ($count != '') {
       $this->coreFunctions->sbcupdate("headinfotrans", $data, ['trno' => $trno]);
-      if($data['dtctrno'] !=0){
-        $poref = $this->coreFunctions->getfieldvalue("qshead","yourref","trno=?",[$trno]);
-        $this->coreFunctions->execqry("update hpxhead set potrno =". $trno.",poref ='".$poref."' where trno =?","update", [$data['dtctrno']]);
+      if ($data['dtctrno'] != 0) {
+        $poref = $this->coreFunctions->getfieldvalue("qshead", "yourref", "trno=?", [$trno]);
+        $this->coreFunctions->execqry("update hpxhead set potrno =" . $trno . ",poref ='" . $poref . "' where trno =?", "update", [$data['dtctrno']]);
       }
     } else {
       $this->coreFunctions->insertGetId("headinfotrans", $data);
@@ -597,9 +597,9 @@ class viewinstructiontab
           . ', SHIPMENTNOTIF: ' . $data['isshipmentnotif']
           . ', NOTIFICATION: ' . $data['shipmentnotif']
       );
-      if($data['dtctrno'] !=0){
-        $poref = $this->coreFunctions->getfieldvalue("qshead","yourref","trno=?",[$trno]);
-        $this->coreFunctions->execqry("update hpxhead set potrno =". $trno.",poref ='".$poref."' where trno =?",'update', [$data['dtctrno']]);
+      if ($data['dtctrno'] != 0) {
+        $poref = $this->coreFunctions->getfieldvalue("qshead", "yourref", "trno=?", [$trno]);
+        $this->coreFunctions->execqry("update hpxhead set potrno =" . $trno . ",poref ='" . $poref . "' where trno =?", 'update', [$data['dtctrno']]);
       }
     }
 

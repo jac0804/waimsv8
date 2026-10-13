@@ -37,9 +37,9 @@ class kr
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -78,7 +78,7 @@ class kr
   public function reportparamsdata($config)
   {
     $username = $this->coreFunctions->datareader("select name as value from useraccess where username =? ", [$config['params']['user']]);
-    
+
     return $this->coreFunctions->opentable(
       "select 
       'PDFM' as print,

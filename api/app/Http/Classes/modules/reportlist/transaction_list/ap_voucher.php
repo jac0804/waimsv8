@@ -29,12 +29,12 @@ class ap_voucher
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -176,20 +176,20 @@ class ap_voucher
       case 15: //nathina
         switch ($reporttype) {
           case '0': // SUMMARIZED
-            $query = $this->default_nathina_QUERY_SUMMARIZED($config); 
+            $query = $this->default_nathina_QUERY_SUMMARIZED($config);
             break;
           case '1': // DETAILED
-            $query = $this->default_nathina_QUERY_DETAILED($config); 
+            $query = $this->default_nathina_QUERY_DETAILED($config);
             break;
         }
         break;
       default:
         switch ($reporttype) {
           case '0': // SUMMARIZED
-            $query = $this->default_QUERY_SUMMARIZED($config); 
+            $query = $this->default_QUERY_SUMMARIZED($config);
             break;
           case '1': // DETAILED
-            $query = $this->default_QUERY_DETAILED($config); 
+            $query = $this->default_QUERY_DETAILED($config);
             break;
         }
         break;
@@ -229,7 +229,7 @@ class ap_voucher
       $filter .= " and hclient.clientid = '$clientid' ";
     }
 
- 
+
 
     $query = "select head.createby,head.docno,hclient.client as hclient,hclient.clientname as hclientname,date(head.dateid) as dateid,date_format(detail.postdate,'%Y-%m-%d') as postdate,detail.checkno,coa.acno,coa.acnoname,
         concat(left(dclient.client,2),right(dclient.client,7)) as dclient,dclient.clientname as dclientname,detail.db,
@@ -328,7 +328,7 @@ class ap_voucher
 
   public function default_nathina_QUERY_DETAILED($config)
   {
- 
+
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $filterusername  = $config['params']['dataparams']['username'];
@@ -367,7 +367,7 @@ class ap_voucher
     } else {
       $filter2 = " and cntnum.seq between '" . $apvfrom . "' and '" . $apvto . "' ";
     }
-    
+
 
     $query = "select head.createby,head.docno,hclient.client as hclient,hclient.clientname as hclientname,date(head.dateid) as dateid,date_format(detail.postdate,'%Y-%m-%d') as postdate,detail.checkno,coa.acno,coa.acnoname,
         concat(left(dclient.client,2),right(dclient.client,7)) as dclient,dclient.clientname as dclientname,detail.db,
@@ -591,7 +591,7 @@ class ap_voucher
       $filter .= " and hclient.clientid = '$clientid' ";
     }
 
-  
+
     $gatherby = $config['params']['dataparams']['gatherby'];
     $apvfrom = $config['params']['dataparams']['apvfrom'];
     $apvto = $config['params']['dataparams']['apvto'];
@@ -603,7 +603,7 @@ class ap_voucher
     } else {
       $filter2 = " and cntnum.seq between '" . $apvfrom . "' and '" . $apvto . "' ";
     }
-   
+
 
     $query = "select docno, createby, date(dateid) as dateid, postdate, GROUP_CONCAT(IF(checkno='', NULL, checkno)) as checkno, 
       sum(db) as debit, sum(cr) as credit, rem,hclient,hclientname,yourref,ourref,name,ewtrate,tin
@@ -916,16 +916,16 @@ class ap_voucher
 
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-       
+
           $str .= $this->reporter->col('<b>' . 'Docno#: ' . '</b>' . $data->docno, '500', null, false, $border, '', '', $font, $fontsize, '', '', '2px');
           $str .= $this->reporter->col('<b>' . 'Date: ' . '</b>' . $data->dateid, '500', null, false, $border, '', '', $font, $fontsize, '', '', '2px');
           $str .= $this->reporter->endrow();
- 
+
           $str .= $this->reporter->startrow();
-   
+
           $str .= $this->reporter->col('<b>' . 'Supplier: ' . '</b>' . $data->hclientname, '500', null, false, $border, '', '', $font, $fontsize, '', '', '2px');
           $str .= $this->reporter->endrow();
- 
+
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
 
@@ -940,13 +940,12 @@ class ap_voucher
           $str .= $this->reporter->col('Reference', '130', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
-
         }
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
 
-       
+
         $str .= $this->reporter->col($data->postdate, '100', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->checkno, '100', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->acno, '100', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
@@ -958,7 +957,7 @@ class ap_voucher
         $str .= $this->reporter->col($data->ref, '130', null, false, '10px solid ', '', 'CT', $font, $fontsize, '', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->addline();
-    
+
 
         if ($docno == $data->docno) {
           $debit += $data->db;
@@ -972,7 +971,7 @@ class ap_voucher
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
 
-         
+
           $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
@@ -982,7 +981,7 @@ class ap_voucher
           $str .= $this->reporter->col(number_format($credit, 2), '100', null, false, $border, 'T', 'RT', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', '', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->col('', '130', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
-       
+
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
 
@@ -1005,7 +1004,7 @@ class ap_voucher
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
-   
+
     $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
@@ -1028,7 +1027,7 @@ class ap_voucher
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
-   
+
     $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
@@ -1038,7 +1037,7 @@ class ap_voucher
     $str .= $this->reporter->col(number_format($totalcr, 2), '100', null, false, $border, '', 'RT', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', '', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '130', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
-   
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();
@@ -1083,14 +1082,14 @@ class ap_voucher
         if ($docno != "" && $docno != $data->docno) {
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-     
+
           $str .= $this->reporter->col('', '100', null, false, '10px dotted', '', 'C', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('', '150', null, false, '10px dotted', '', 'C', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('Total:', '200', null, false, '10px dotted', '', 'R', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col(number_format($debit, 2), '200', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col(number_format($credit, 2), '200', null, false, $border, 'T', 'R', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('', '150', null, false, '10px dotted', '', 'C', $font, $fontsize, 'B', '', '');
-        
+
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
           $str .= $this->reporter->begintable($layoutsize);
@@ -1108,49 +1107,48 @@ class ap_voucher
 
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-         
+
           $str .= $this->reporter->col('<b>' . 'Docno#: ' . '</b>' . $data->docno, '200', null, false, $border, '', '', $font, $fontsize, '', '', '2px'); //2px padding?
           $str .= $this->reporter->col('<b>' . 'Date: ' . '</b>' . $data->dateid, '100', null, false, $border, '', '', $font, $fontsize, '', '', '2px');
           $str .= $this->reporter->col('<b>' . 'Ourref: ' . '</b>' . $data->ourref, '100', null, false, $border, '', '', $font, $fontsize, '', '', '2px');
           $str .= $this->reporter->col('<b>' . 'Ewtrate: ' . '</b>' . $data->ewtrate, '100', null, false, $border, '', '', $font, $fontsize, '', '', '2px');
 
-        
+
           $str .= $this->reporter->startrow();
-        
+
           $str .= $this->reporter->col('<b>' . 'Supplier: ' . '</b>' . $data->hclientname, '500', null, false, $border, '', '', $font, $fontsize, '', '', '2px');
           $str .= $this->reporter->col('<b>' . 'Yourref: ' . '</b>' . $data->yourref, '350', null, false, $border, '', '', $font, $fontsize, '', '', '2px');
           $str .= $this->reporter->col('<b>' . 'Project: ' . '</b>' . $data->name, '250', null, false, $border, '', '', $font, $fontsize, '', '', '2px');
-         
+
           $str .= $this->reporter->startrow();
 
           $str .= $this->reporter->col('<b>' . 'Notes: ' . '</b>' . $data->rem, '100', null, false, $border, '', '', $font, $fontsize, '', '', '2px');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
-        
+
 
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-        
+
           $str .= $this->reporter->col('Date', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('Account', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('Title', '200', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('Debit', '200', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('Credit', '200', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('Reference', '150', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '');
-         
         }
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
 
-       
+
         $str .= $this->reporter->col($data->postdate, '100', null, false, '10px solid ', '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->acno, '150', null, false, '10px solid ', '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->acnoname, '200', null, false, '10px solid ', '', 'C', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(number_format($data->db, 2), '200', null, false, '10px solid ', '', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col(number_format($data->cr, 2), '200', null, false, '10px solid ', '', 'R', $font, $fontsize, '', '', '');
         $str .= $this->reporter->col($data->ref, '150', null, false, '10px solid ', '', 'C', $font, $fontsize, '', '', '');
-      
+
 
         if ($docno == $data->docno) {
           $debit += $data->db;
@@ -1164,14 +1162,14 @@ class ap_voucher
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
 
-       
+
           $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->col('', '150', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->col('Total: ', '200', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->col(number_format($debit, 2), '200', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->col(number_format($credit, 2), '200', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->col('', '150', null, false, '1px dotted', '', '', $font, $fontsize, 'B', '', '', '');
-         
+
 
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
@@ -1195,14 +1193,14 @@ class ap_voucher
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
-   
+
     $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '150', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('Total: ', '200', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col(number_format($debit, 2), '200', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col(number_format($credit, 2), '200', null, false, $border, 'T', 'C', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '150', null, false, '1px dotted', '', '', $font, $fontsize, 'B', '', '', '');
-    
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -1215,14 +1213,14 @@ class ap_voucher
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
-  
+
     $str .= $this->reporter->col('', '100', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '150', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('Grand Total: ', '200', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col(number_format($totaldb, 2), '200', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col(number_format($totalcr, 2), '200', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('', '150', null, false, '1px dotted', '', 'R', $font, $fontsize, 'B', '', '', '');
-   
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();

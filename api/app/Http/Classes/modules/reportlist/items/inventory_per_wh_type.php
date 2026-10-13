@@ -29,12 +29,12 @@ class inventory_per_wh_type
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -240,7 +240,7 @@ class inventory_per_wh_type
         left join part_masterfile as partgrp on partgrp.part_id = item.part
         where item.isofficesupplies=0 $filter  
         group by disc, category, item.itemid,barcode, itemname, cat.name, uom, partgrp.part_name" . $order;
-        
+
         return $query;
     }
 

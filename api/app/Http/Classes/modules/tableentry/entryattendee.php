@@ -33,17 +33,37 @@ class entryattendee
   private $logger;
   public $style = 'width:100%;';
   private $fields = [
-    'exhibitid', 'clientid', 'client', 'companyname', 'contactname', 'contactno', 'department', 'designation', 'email', 'isexhibit', 'isseminar', 'issource',
-    'dateid', 'contactid', 'clientstatus', 'mrktremarks', 'saleremarks', 'salesperson', 'salesid', 'status', 'officialwebsite', 'officialemail'
+    'exhibitid',
+    'clientid',
+    'client',
+    'companyname',
+    'contactname',
+    'contactno',
+    'department',
+    'designation',
+    'email',
+    'isexhibit',
+    'isseminar',
+    'issource',
+    'dateid',
+    'contactid',
+    'clientstatus',
+    'mrktremarks',
+    'saleremarks',
+    'salesperson',
+    'salesid',
+    'status',
+    'officialwebsite',
+    'officialemail'
   ];
   public $showclosebtn = true;
   private $lookupclass;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -70,7 +90,7 @@ class entryattendee
     $officialwebsite = 3;
     $officialemail = 4;
     $contactname = 5;
-    $contactno = 6;    
+    $contactno = 6;
     $dateid = 7;
     $department = 8;
     $designation = 9;
@@ -82,7 +102,7 @@ class entryattendee
     $inqstatus = 15;
     $docno = 16;
 
-    $columns = ['action', 'client', 'companyname', 'officialwebsite', 'officialemail', 'contactname', 'contactno', 'dateid', 'department', 'designation', 'email', 'mrktremarks', 'status', 'isinactive','salesperson', 'saleremarks', 'inqstatus', 'docno'];
+    $columns = ['action', 'client', 'companyname', 'officialwebsite', 'officialemail', 'contactname', 'contactno', 'dateid', 'department', 'designation', 'email', 'mrktremarks', 'status', 'isinactive', 'salesperson', 'saleremarks', 'inqstatus', 'docno'];
     foreach ($columns as $key => $value) {
       $$value = $key;
     }
@@ -265,7 +285,7 @@ class entryattendee
 
     if ($row['isinactive'] == 'false') {
       $data['isinactive'] = 0;
-    }else{
+    } else {
       $data['isinactive'] = 1;
     }
 
@@ -315,7 +335,7 @@ class entryattendee
       return ['status' => true, 'msg' => 'Successfully saved.', 'row' => $returnrow];
     } else {
       $qry = "select clientid as value from " . $this->table . " where clientid = '" . $data['clientid'] . "'  and contactid = '" . $data['contactid'] . "' 
-        and isexhibit = '" . $row['isexhibit'] . "' and isseminar = '" . $row['isseminar'] . "' and issource = '" . $row['issource'] . "'  and clientid <>0 and contactid <>0 and line <> ".$row['line'];
+        and isexhibit = '" . $row['isexhibit'] . "' and isseminar = '" . $row['isseminar'] . "' and issource = '" . $row['issource'] . "'  and clientid <>0 and contactid <>0 and line <> " . $row['line'];
       $checking1 = $this->coreFunctions->datareader($qry);
 
       if (!empty($checking1)) {
@@ -526,8 +546,6 @@ class entryattendee
             $data2[$key]['inqstatus'] = '';
             $data2[$key]['optrno'] = 0;
           }
-
-         
         }
 
         return $data2;
@@ -662,8 +680,6 @@ class entryattendee
             $data2[$key]['inqstatus'] = '';
             $data2[$key]['optrno'] = 0;
           }
-
-         
         }
 
         return $data2;
@@ -686,8 +702,8 @@ class entryattendee
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($data as $key => $value) {
-      $data2 = [];     
-     
+      $data2 = [];
+
 
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
@@ -696,7 +712,7 @@ class entryattendee
 
         if ($data[$key]['isinactive'] == 'false') {
           $data2['isinactive'] = 0;
-        }else{
+        } else {
           $data2['isinactive'] = 1;
         }
 

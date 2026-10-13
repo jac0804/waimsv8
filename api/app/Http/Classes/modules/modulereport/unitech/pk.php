@@ -38,9 +38,9 @@ class pk
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -141,7 +141,7 @@ class pk
     // if ($params['params']['dataparams']['print'] == "default") {
     //   return $this->default_sj_layout($params, $data);
     // } else if ($params['params']['dataparams']['print'] == "PDFM") {
-      return $this->default_PDF($params, $data);
+    return $this->default_PDF($params, $data);
     // }
   }
 
@@ -213,15 +213,15 @@ class pk
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(120, 20, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 20, "Warehouse : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(410, 20, (isset($data[0]['whcode']) ? $data[0]['whcode'].'~'.$data[0]['whname'] : ''), 'B', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(410, 20, (isset($data[0]['whcode']) ? $data[0]['whcode'] . '~' . $data[0]['whname'] : ''), 'B', 'L', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(90, 20, "AP Account : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(120, 20, (isset($data[0]['acno']) ? $data[0]['acno'].'~'.$data[0]['acnoname'] : ''), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(120, 20, (isset($data[0]['acno']) ? $data[0]['acno'] . '~' . $data[0]['acnoname'] : ''), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
     // PDF::MultiCell(0, 0, "\n");
 
@@ -234,7 +234,7 @@ class pk
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(120, 20, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 20, "Yourref : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
@@ -242,9 +242,9 @@ class pk
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(90, 20, "Project : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(120, 20,  (isset($data[0]['projcode']) ? $data[0]['projcode'].'~'.$data[0]['projname'] : ''), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(120, 20, (isset($data[0]['projcode']) ? $data[0]['projcode'] . '~' . $data[0]['projname'] : ''), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 20, "Ourref : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);

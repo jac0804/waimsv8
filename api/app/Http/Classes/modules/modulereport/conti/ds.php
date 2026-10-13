@@ -35,9 +35,9 @@ class ds
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -296,7 +296,7 @@ class ds
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
- 
+
     PDF::SetFont($font, '', 9);
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
     PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');

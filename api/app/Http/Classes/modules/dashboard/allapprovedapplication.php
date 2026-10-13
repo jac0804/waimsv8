@@ -49,10 +49,10 @@ class allapprovedapplication
     ];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -371,7 +371,7 @@ class allapprovedapplication
             $line = $config['params']['dataparams']['line'];
             if ($action == 'disapproved') {
                 $label = 'Disapproved';
-                $condition = ['line' => $line,'status' => 'A'];
+                $condition = ['line' => $line, 'status' => 'A'];
                 switch ($type) {
 
                     case 'OT':

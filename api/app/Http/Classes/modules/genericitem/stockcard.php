@@ -38,12 +38,50 @@ class stockcard
   private $stockselect;
 
   private $fields = [
-    'barcode', 'picture', 'itemname', 'uom', 'cost', 'itemrem', 'shortname',
-    'part', 'model', 'class', 'brand', 'groupid', 'critical', 'reorder',
-    'category', 'subcat', 'body', 'sizeid', 'color', 'asset', 'liability', 'revenue', 'expense',
-    'isinactive', 'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial',
-    'markup', 'foramt', 'supplier', 'partno', 'subcode', 'packaging', 'islabor', 'dqty',
-    'ispositem', 'projectid', 'moq', 'mmoq', 'linkdept', 'isgeneric'
+    'barcode',
+    'picture',
+    'itemname',
+    'uom',
+    'cost',
+    'itemrem',
+    'shortname',
+    'part',
+    'model',
+    'class',
+    'brand',
+    'groupid',
+    'critical',
+    'reorder',
+    'category',
+    'subcat',
+    'body',
+    'sizeid',
+    'color',
+    'asset',
+    'liability',
+    'revenue',
+    'expense',
+    'isinactive',
+    'isvat',
+    'isimport',
+    'fg_isfinishedgood',
+    'fg_isequipmenttool',
+    'isnoninv',
+    'isserial',
+    'markup',
+    'foramt',
+    'supplier',
+    'partno',
+    'subcode',
+    'packaging',
+    'islabor',
+    'dqty',
+    'ispositem',
+    'projectid',
+    'moq',
+    'mmoq',
+    'linkdept',
+    'isgeneric'
   ];
   private $except = ['itemid', 'itemrem'];
   private $blnfields = ['isinactive', 'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial', 'islabor', 'ispositem', 'isgeneric'];
@@ -54,11 +92,11 @@ class stockcard
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -230,9 +268,7 @@ class stockcard
   }
 
 
-  public function tabprice($config)
-  {
-  }
+  public function tabprice($config) {}
 
   public function createTab($config)
   {

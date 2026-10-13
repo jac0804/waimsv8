@@ -31,10 +31,10 @@ class viewiteminfo
     public $issearchshow = true;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -64,19 +64,19 @@ class viewiteminfo
             case 'PX';
                 break;
             default:
-            if (isset($config['params']['row'])) {
-                $trno = $config['params']['row']['trno'];
-                $this->modulename = 'ITEM INFORMATION - ' . $config['params']['row']['itemname'];
-            } else{
-                if (isset($config['params']['clientid'])) {
-                    if ($config['params']['clientid'] != 0) {
-                        $itemid = $config['params']['clientid'];
-                        $item = $this->othersClass->getitemname($itemid);
-                        $this->modulename = 'ITEM INFORMATION - ' . $item[0]->barcode . ' ~ ' . $item[0]->itemname;
+                if (isset($config['params']['row'])) {
+                    $trno = $config['params']['row']['trno'];
+                    $this->modulename = 'ITEM INFORMATION - ' . $config['params']['row']['itemname'];
+                } else {
+                    if (isset($config['params']['clientid'])) {
+                        if ($config['params']['clientid'] != 0) {
+                            $itemid = $config['params']['clientid'];
+                            $item = $this->othersClass->getitemname($itemid);
+                            $this->modulename = 'ITEM INFORMATION - ' . $item[0]->barcode . ' ~ ' . $item[0]->itemname;
+                        }
                     }
                 }
-            }
-                
+
                 break;
         }
 
@@ -648,7 +648,7 @@ class viewiteminfo
 
                 break;
             default:
-                $dateTables = ['stockinfotrans','stockinfo'];
+                $dateTables = ['stockinfotrans', 'stockinfo'];
                 $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
                 $isnew = $config['params']['dataparams']['isnew'];
                 $trno = $config['params']['dataparams']['trno'];

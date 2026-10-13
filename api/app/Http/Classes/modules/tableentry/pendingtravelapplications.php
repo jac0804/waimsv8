@@ -39,10 +39,10 @@ class pendingtravelapplications
     public $fields = ['status', 'status2', 'approvedby', 'approvedate', 'approvedrem', 'approverem', 'disapprovedby', 'disapprovedate', 'approvedby2', 'approvedate2', 'approvedrem2', 'disapprovedby2', 'disapprovedate2'];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;

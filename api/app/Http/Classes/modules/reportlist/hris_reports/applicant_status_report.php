@@ -35,18 +35,18 @@ class applicant_status_report
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1200'];
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
     public function createHeadField($config)
     {
-        $fields = ['radioprint','start', 'end'];
+        $fields = ['radioprint', 'start', 'end'];
         $col1 = $this->fieldClass->create($fields);
 
         data_set($col1, 'radioprint.options', [
@@ -123,7 +123,7 @@ class applicant_status_report
         $companyid  = $config['params']['companyid'];
         $start      = $config['params']['dataparams']['start'];
         $end        = $config['params']['dataparams']['end'];
-      
+
         $str      = '';
         $font     = 'Tahoma';
         $fontsize = "10";
@@ -143,8 +143,8 @@ class applicant_status_report
 
         $str .= '<br/>';
 
-        $str .= $this->reporter->begintable($layoutsize);   
-        $str .= $this->reporter->col( $this->coreFunctions->opentable($qry)[0]->name, null, null, false, '', '', 'C', $font, '14', 'B', '', '');
+        $str .= $this->reporter->begintable($layoutsize);
+        $str .= $this->reporter->col($this->coreFunctions->opentable($qry)[0]->name, null, null, false, '', '', 'C', $font, '14', 'B', '', '');
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->col($this->coreFunctions->opentable($qry)[0]->address, null, null, false, '', '', 'C', $font, '14', 'B', '', '');
@@ -172,13 +172,13 @@ class applicant_status_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('DOCUMENT NO.','120', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('TRANSACTION DATE','120', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('BRANCH','110', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('JOB TITLE','140', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('NO. OF PERSONNEL NEEDED','100', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
-        $str .= $this->reporter->col('LIST OF APPLICANT PROCESS','200', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B', '', '');
-        $str .= $this->reporter->col('APPLICATIONS STATUS','245', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('DOCUMENT NO.', '120', null, false, $border, 'TBLR', 'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('TRANSACTION DATE', '120', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('BRANCH', '110', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('JOB TITLE', '140', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('NO. OF PERSONNEL NEEDED', '100', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B');
+        $str .= $this->reporter->col('LIST OF APPLICANT PROCESS', '200', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B', '', '');
+        $str .= $this->reporter->col('APPLICATIONS STATUS', '245', null, false, $border, 'TBR',  'C', $font, $fontsize, 'B', '', '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -218,7 +218,7 @@ class applicant_status_report
 
             $applicants = [];
             $status   = [];
-            
+
             foreach ($rows as $row) {
                 if (!empty($row->list)) {
                     $applicants[] = strtoupper($row->list);
@@ -244,13 +244,13 @@ class applicant_status_report
 
             $str .= $this->reporter->begintable($layoutsize);
             $str .= $this->reporter->startrow();
-            $str .= $this->reporter->col($docno,'120', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
-            $str .= $this->reporter->col($dateid,'120', null, false, $border, 'BLR', 'CT', $font, $fontsize, '',  '', '');
-            $str .= $this->reporter->col($branch,'110', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
-            $str .= $this->reporter->col($jobtitle,'140', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
-            $str .= $this->reporter->col($headcount,'100', null, false, $border, 'BLR', 'CT', $font, $fontsize, '',  '', '');
-            $str .= $this->reporter->col($applicantList,'200', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
-            $str .= $this->reporter->col($statusList,'245', null, false, $border, 'BLR', 'LT', $font, $fontsize, '', '', '');
+            $str .= $this->reporter->col($docno, '120', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
+            $str .= $this->reporter->col($dateid, '120', null, false, $border, 'BLR', 'CT', $font, $fontsize, '',  '', '');
+            $str .= $this->reporter->col($branch, '110', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
+            $str .= $this->reporter->col($jobtitle, '140', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
+            $str .= $this->reporter->col($headcount, '100', null, false, $border, 'BLR', 'CT', $font, $fontsize, '',  '', '');
+            $str .= $this->reporter->col($applicantList, '200', null, false, $border, 'BLR', 'LT', $font, $fontsize, '',  '', '');
+            $str .= $this->reporter->col($statusList, '245', null, false, $border, 'BLR', 'LT', $font, $fontsize, '', '', '');
             $str .= $this->reporter->endrow();
             $str .= $this->reporter->endtable();
         }
@@ -259,5 +259,4 @@ class applicant_status_report
 
         return $str;
     }
-
 } // end of class

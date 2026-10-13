@@ -36,9 +36,9 @@ class customer
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -155,7 +155,7 @@ class customer
                 break;
             case 'analysis':
                 $query = $this->default_analysis_QUERY($config);
-                break;    
+                break;
         }
         return $this->coreFunctions->opentable($query);
     }
@@ -218,7 +218,7 @@ class customer
                     break;
                 case 'analysis':
                     $str = $this->reportdefault_analysis_PDF($config, $data);
-                    break;    
+                    break;
             }
         }
         return $str;
@@ -3558,15 +3558,15 @@ class customer
 
 
 
-     public function default_analysis_QUERY($config)
+    public function default_analysis_QUERY($config)
     {
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
         $clientid = $config['params']['dataid'];
 
         $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-      
-         $query="     select sum(collectionamt) as collectionamt, sum(bounced) as bounced,
+
+        $query = "     select sum(collectionamt) as collectionamt, sum(bounced) as bounced,
                            sum(amount) as uncleared_amt, sum(balance) as balance, clientname, sum(cleared_amount) as cleared_amount
                            from (
                             SELECT sum(if(left(coa.alias,2) in ('ca','cr','pc') and head.doc='cr', d.db, 0)) as collectionamt,0 as bounced,
@@ -3616,12 +3616,12 @@ class customer
                             left join client as cl on cl.clientid=ar.clientid
                             where   date(ar.dateid)  <= '$start'   and cl.clientid=$clientid
                             group by cl.clientname) as ax
-                            group by clientname";                     
+                            group by clientname";
         return $query;
     }
 
 
-     public function reportdefault_analysis_PDF($config, $data)
+    public function reportdefault_analysis_PDF($config, $data)
     {
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -3671,7 +3671,7 @@ class customer
 
 
         PDF::SetFont($fontbold, '', 12);
-        PDF::MultiCell(500, 0, "CUSTOMER LEDGER - CUSTOMER ACCOUNT ANALYSIS REPORT", '', 'L', false,0);
+        PDF::MultiCell(500, 0, "CUSTOMER LEDGER - CUSTOMER ACCOUNT ANALYSIS REPORT", '', 'L', false, 0);
         PDF::MultiCell(220, 0, "", '', '', false, 1);
 
         PDF::SetFont($font, '', 11);
@@ -3712,59 +3712,59 @@ class customer
         PDF::MultiCell(10, 0, "", 'R', '', false, 0);
         PDF::MultiCell(210, 0, "", '', '', false, 1);
 
-        $collectionamt =(isset($data[0]->collectionamt) ? number_format($data[0]->collectionamt, 2) : 0);
+        $collectionamt = (isset($data[0]->collectionamt) ? number_format($data[0]->collectionamt, 2) : 0);
 
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
         PDF::MultiCell(290, 0, "TOTAL OR/CR AMOUNT", '', 'L', false, 0);
-        PDF::MultiCell(200, 0, $collectionamt !=0 ? $collectionamt : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(200, 0, $collectionamt != 0 ? $collectionamt : '-', 'L', 'R', false, 0);
         PDF::MultiCell(10, 0, "", 'R', '', false, 0);
         PDF::MultiCell(210, 0, "", '', '', false, 1);
 
-        $uncleared =(isset($data[0]->uncleared_amt) ? number_format($data[0]->uncleared_amt, 2) : 0);
+        $uncleared = (isset($data[0]->uncleared_amt) ? number_format($data[0]->uncleared_amt, 2) : 0);
 
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
         PDF::MultiCell(290, 0, "UNCLEARED CHECKS", '', 'L', false, 0);
-        PDF::MultiCell(200, 0, $uncleared !=0 ? $uncleared : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(200, 0, $uncleared != 0 ? $uncleared : '-', 'L', 'R', false, 0);
         PDF::MultiCell(10, 0, "", 'R', '', false, 0);
         PDF::MultiCell(210, 0, "", '', '', false, 1);
 
-        $bouncedamt =(isset($data[0]->bounced) ? number_format($data[0]->bounced, 2) : 0);
+        $bouncedamt = (isset($data[0]->bounced) ? number_format($data[0]->bounced, 2) : 0);
 
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
         PDF::MultiCell(290, 0, "BOUNCED CHECKS BALANCE", '', 'L', false, 0);
-        PDF::MultiCell(200, 0, $bouncedamt !=0 ? $bouncedamt : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(200, 0, $bouncedamt != 0 ? $bouncedamt : '-', 'L', 'R', false, 0);
         PDF::MultiCell(10, 0, "", 'R', '', false, 0);
         PDF::MultiCell(210, 0, "", '', '', false, 1);
 
 
-        $balance =(isset($data[0]->balance) ? number_format($data[0]->balance, 2) : 0);
+        $balance = (isset($data[0]->balance) ? number_format($data[0]->balance, 2) : 0);
 
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
         PDF::MultiCell(290, 0, "ACCOUNT RECEIVABLE BALANCE", '', 'L', false, 0);
-        PDF::MultiCell(200, 0, $balance !=0 ? $balance : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(200, 0, $balance != 0 ? $balance : '-', 'L', 'R', false, 0);
         PDF::MultiCell(10, 0, "", 'R', '', false, 0);
         PDF::MultiCell(210, 0, "", '', '', false, 1);
 
 
-        $cleared =(isset($data[0]->cleared_amount) ? number_format($data[0]->cleared_amount, 2) : 0);
+        $cleared = (isset($data[0]->cleared_amount) ? number_format($data[0]->cleared_amount, 2) : 0);
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
         PDF::MultiCell(290, 0, "TOTAL CLEARED PAYMENTS", '', 'L', false, 0);
-        PDF::MultiCell(200, 0, $cleared !=0 ? $cleared : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(200, 0, $cleared != 0 ? $cleared : '-', 'L', 'R', false, 0);
         PDF::MultiCell(10, 0, "", 'R', '', false, 0);
         PDF::MultiCell(210, 0, "", '', '', false, 1);
 
-        $exposure=0;
-        $purchase=0;
+        $exposure = 0;
+        $purchase = 0;
 
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
         PDF::MultiCell(290, 0, "TOTAL EXPOSURE", '', 'L', false, 0);
-        PDF::MultiCell(200, 0, $exposure !=0 ? number_format($exposure, 2) : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(200, 0, $exposure != 0 ? number_format($exposure, 2) : '-', 'L', 'R', false, 0);
         PDF::MultiCell(10, 0, "", 'R', '', false, 0);
         PDF::MultiCell(210, 0, "", '', '', false, 1);
 
@@ -3772,7 +3772,7 @@ class customer
         PDF::SetFont($font, '', 11);
         PDF::MultiCell(10, 0, "", 'L', 'L', false, 0);
         PDF::MultiCell(290, 0, "TOTAL PURCHASES", '', 'L', false, 0);
-        PDF::MultiCell(200, 0, $purchase !=0 ? number_format($purchase, 2) : '-', 'L', 'R', false, 0);
+        PDF::MultiCell(200, 0, $purchase != 0 ? number_format($purchase, 2) : '-', 'L', 'R', false, 0);
         PDF::MultiCell(10, 0, "", 'R', '', false, 0);
         PDF::MultiCell(210, 0, "", '', '', false, 1);
 
@@ -3808,5 +3808,4 @@ class customer
 
         return PDF::Output($this->modulename . '.pdf', 'S');
     }
-
 }

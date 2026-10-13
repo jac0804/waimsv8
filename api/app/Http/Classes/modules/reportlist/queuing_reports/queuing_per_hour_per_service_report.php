@@ -32,7 +32,7 @@ class queuing_per_hour_per_service_report
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup  = new companysetup;
         $this->coreFunctions = new coreFunctions;
@@ -182,7 +182,7 @@ class queuing_per_hour_per_service_report
             return $this->othersClass->emptydata($config);
         }
 
-        
+
         $services   = [];
         $hoursFound = [];
 
@@ -209,12 +209,12 @@ class queuing_per_hour_per_service_report
         ksort($hoursFound);
         $hours = array_keys($hoursFound);
 
-        
+
         $labelWidth  = 152;
         $remaining   = 1000 - $labelWidth;
         $colWidth    = count($hours) > 0 ? floor($remaining / count($hours)) : 94;
 
-        
+
         $hourLabel = function ($h) {
             if ($h == 0)  return '12AM';
             if ($h < 12)  return $h . 'AM';
@@ -222,7 +222,7 @@ class queuing_per_hour_per_service_report
             return ($h - 12) . 'PM';
         };
 
-        
+
         $str .= $this->reporter->beginreport($layoutsize);
         $str .= $this->displayHeader($config);
         $str .= $this->reporter->begintable($layoutsize);
@@ -235,7 +235,7 @@ class queuing_per_hour_per_service_report
 
         $str .= $this->reporter->endrow();
 
-        
+
         $grandTotal      = 0;
         $grandTotalPerHr = array_fill_keys($hours, 0);
 
@@ -258,7 +258,7 @@ class queuing_per_hour_per_service_report
             $str .= $this->reporter->endrow();
         }
 
-        
+
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('TOTAL', $labelWidth, null, false, '1px solid', 'TB', 'L', $font, $fontsize, 'B', '', '');
 

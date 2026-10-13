@@ -34,9 +34,9 @@ class po
   private $othersClass;
   private $logger;
   private $reporter;
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -47,7 +47,7 @@ class po
 
   public function createreportfilter($config)
   {
-    $fields = ['radioprint','prepared','checked','approved', 'print'];
+    $fields = ['radioprint', 'prepared', 'checked', 'approved', 'print'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
@@ -57,7 +57,7 @@ class po
 
   public function reportparamsdata($config)
   {
-  $paramstr = "select
+    $paramstr = "select
   'PDFM' as print, 
   '' as prepared,
   '' as checked,
@@ -94,6 +94,7 @@ class po
   {
     return $this->default_PO_PDF($params, $data);
   }
+
   public function default_PO_header_PDF($params, $data)
   {
     $center = $params['params']['center'];
@@ -106,7 +107,7 @@ class po
       $font = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/ARIAL.TTF');
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/ARIALB.TTF');
     }
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -126,10 +127,10 @@ class po
 
     PDF::MultiCell(0, 0, "\n");
     PDF::SetFont($fontbold, '', 12);
-    PDF::MultiCell(500, 0, ' '.strtoupper($headerdata[0]->name), 'LTR', 'L', false);
+    PDF::MultiCell(500, 0, ' ' . strtoupper($headerdata[0]->name), 'LTR', 'L', false);
     PDF::SetFont($fontbold, '', 8);
-    PDF::MultiCell(500, 0, ' '.strtoupper($headerdata[0]->address), 'LR', 'L', false);
-    PDF::MultiCell(500, 0, "\n",'LR');
+    PDF::MultiCell(500, 0, ' ' . strtoupper($headerdata[0]->address), 'LR', 'L', false);
+    PDF::MultiCell(500, 0, "\n", 'LR');
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(500, 0, $this->modulename, 'LR', 'R', false);
 
@@ -156,17 +157,17 @@ class po
     PDF::MultiCell(250, 10, (isset($data[0]['tin']) ? $data[0]['tin'] : ''), '', 'L', false, 0);
     PDF::MultiCell(110, 10, 'DELIVERY DATE:', '', 'R', false, 0);
     PDF::MultiCell(90, 10, (isset($data[0]['deldate']) ? $data[0]['deldate'] : ''), 'R', 'C', false);
-    
+
     PDF::MultiCell(50, 10, ' TEL. NO.', 'L', 'L', false, 0);
     PDF::MultiCell(250, 10, (isset($data[0]['tel']) ? $data[0]['tel'] : ''), '', 'L', false, 0);
     PDF::MultiCell(110, 10, 'TERMS:', '', 'R', false, 0);
     PDF::MultiCell(90, 10, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), 'R', 'C', false);
-    
-    PDF::MultiCell(100, 10, ' CONTACT PERSION ', 'L', 'L', false, 0);
+
+    PDF::MultiCell(100, 10, ' CONTACT PERSON ', 'L', 'L', false, 0);
     PDF::MultiCell(400, 10, (isset($data[0]['contact']) ? $data[0]['contact'] : ''), 'R', 'L', false);
     PDF::MultiCell(50, 10, ' EMAIL', 'L', 'L', false, 0);
     PDF::MultiCell(450, 10, (isset($data[0]['email']) ? $data[0]['email'] : ''), 'R', 'L', false);
-    PDF::MultiCell(500, 10, "\n", 'LR'); 
+    PDF::MultiCell(500, 10, "\n", 'LR');
 
     PDF::SetFont($fontbold, '', 10);
     PDF::MultiCell(45, 20, 'Item No.', 'LT', 'C', false, 0);
@@ -178,6 +179,7 @@ class po
     PDF::MultiCell(40, 0, 'DISC%', 'LT', 'C', false, 0);
     PDF::MultiCell(70, 0, 'TOTAL COST', 'LTR', 'C', false, 1);
   }
+
   public function default_PO_PDF($params, $data)
   {
     $totalext = 0;
@@ -189,21 +191,17 @@ class po
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/ARIALB.TTF');
     }
     $this->default_PO_header_PDF($params, $data);
+    $pagenumber = 'PAGE ' . PDF::getAliasNumPage() . ' of ' . PDF::getAliasNbPages();
     $counted = count($data);
-    $row = 0;
     $rowPerPage = 0;
-    $maxRowsPerPage = 20;
+    $maxRowsPerPage = 38;
     $count = 0;
-    $vat = 0;
-    $totalvat = 0;
-    $totalnonvat = 0;
     $totalnet = 0;
     $vat12 = 0;
-    $totalvat12 = 0;
 
     for ($i = 0; $i < ($counted); $i++) {
       $maxrow = 2;
-      $count ++;
+      $count++;
       $barcode = $data[$i]['barcode'];
       $itemname = $data[$i]['itemname'];
       $uom = $data[$i]['uom'];
@@ -211,7 +209,7 @@ class po
       $amt = number_format($data[$i]['netamt'], 2);
       $disc = isset($data[$i]['disc']) ? $data[$i]['disc'] : '';
       $ext = number_format($data[$i]['ext'], 2);
-      
+
       $arr_barcode = $this->reporter->fixcolumn([$barcode], '15', 0);
       $arr_itemname = $this->reporter->fixcolumn([$itemname], '25', 0);
       $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
@@ -220,71 +218,95 @@ class po
       $arr_disc = $this->reporter->fixcolumn([$disc], '15', 0);
       $arr_ext = $this->reporter->fixcolumn([$ext], '15', 0);
 
-      $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_barcode,$arr_qty, $arr_uom, $arr_amt, $arr_ext]);
+      $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname, $arr_barcode, $arr_qty, $arr_uom, $arr_amt, $arr_ext]);
       for ($r = 0; $r < $maxrow; $r++) {
-        
+
         if ($rowPerPage == $maxRowsPerPage) { //when new page
-          $this->footer_layout($params, $data, $totalext, $totalnet, $totalvat12);
+          PDF::SetFont($font, '', '8');
+          PDF::MultiCell(500, 10, $pagenumber, 'TBLR', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
           $this->default_PO_header_PDF($params, $data);
           $rowPerPage = 0; // reset
         }
         $rowPerPage++;
-        $row++;
+        if ($r == 0) {
+          $totalext += $data[$i]['ext'];
+        }
         PDF::SetFont($font, '', $fontsize);
 
-        PDF::MultiCell(45, 10,($r == 0 ? $count : '') , 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(55, 10,(isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(140, 10,(isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), 'TL', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(50, 10,(isset($arr_uom[$r]) ? $arr_uom[$r] : ''), 'TL', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(40, 10,(isset($arr_qty[$r]) ? $arr_qty[$r] : ''), 'TL', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(60, 10,(isset($arr_amt[$r]) ? $arr_amt[$r] : ''), 'TL', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(40, 10,(isset($arr_disc[$r]) ? $arr_disc[$r] : ''), 'TLR', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-        PDF::MultiCell(70, 10,(isset($arr_ext[$r]) ? $arr_ext[$r] : ''), 'TLR', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
-
-        if ($maxRowsPerPage<= $rowPerPage) {
-          $this->footer_layout($params, $data, $totalext, $totalnet, $totalvat12);
-          $this->default_PO_header_PDF($params, $data);
-          $rowPerPage = 0;
-        }
+        PDF::MultiCell(45, 10, ($r == 0 ? $count : ''), 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(55, 10, (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(140, 10, (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), 'TL', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(50, 10, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), 'TL', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(40, 10, (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), 'TL', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(60, 10, (isset($arr_amt[$r]) ? $arr_amt[$r] : ''), 'TL', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(40, 10, (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), 'TLR', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(70, 10, (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), 'TLR', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
       }
+    }
 
-      if ($data[$i]['vattype'] == 'VATABLE') {
-        $vat = ($data[$i]['ext']/1.12);  
-        $vat12 = $data[$i]['ext'] - $vat;
-        $totalvat += $vat;
-        $totalvat12 += $vat12;
-      }else if ($data[$i]['vattype'] == 'NON-VATABLE') {
-        $totalnonvat += $data[$i]['ext'];
+    if ((isset($data[0]['vattype']) ? $data[0]['vattype'] : '') == 'VATABLE') {
+      $totalnet = ($totalext / 1.12);
+      $vat12 = $totalext - $totalnet;
+    } else {
+      $totalnet = $totalext;
+      $vat12 = 0;
+    }
+
+    $footerRows = 10;
+    $emptyRows = $maxRowsPerPage - $rowPerPage - $footerRows;
+    if (($maxRowsPerPage - $rowPerPage) >= $footerRows) { //if footer can fit
+      for ($i = 0; $i < $emptyRows; $i++) {
+        PDF::MultiCell(45, 10, ' ', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(55, 10, ' ', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(140, 10, ' ', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(50, 10, ' ', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(40, 10, ' ', 'TL', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(60, 10, ' ', 'TL', 'R', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(40, 10, ' ', 'TL', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(70, 10, ' ', 'TLR', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
       }
-
-
-
-      $totalext += $data[$i]['ext'];
+      $this->footer_layout($params, $data, $totalext, $totalnet, $vat12);
+    } else {
+      $emptyRows = $maxRowsPerPage - $rowPerPage;
+      for ($i = 0; $i < $emptyRows; $i++) { //print  empty rows
+        PDF::MultiCell(45, 10, ' ', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(55, 10, ' ', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(140, 10, ' ', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(50, 10, ' ', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(40, 10, ' ', 'TL', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(60, 10, ' ', 'TL', 'R', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(40, 10, ' ', 'TL', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(70, 10, ' ', 'TLR', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+      }
+      PDF::SetFont($font, '', '8');
+      PDF::MultiCell(500, 10, $pagenumber, 'TBLR', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+      $rowPerPage = 0;
+      $emptyRows = $maxRowsPerPage - $rowPerPage - $footerRows;
+      $this->default_PO_header_PDF($params, $data);
+      // PDF::SetFont($font, '', $fontsize);
+      for ($i = 0; $i < $emptyRows; $i++) { //for unified structure
+        PDF::MultiCell(45, 10, ' ', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(55, 10, ' ', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(140, 10, ' ', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(50, 10, ' ', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(40, 10, ' ', 'TL', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(60, 10, ' ', 'TL', 'R', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(40, 10, ' ', 'TL', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+        PDF::MultiCell(70, 10, ' ', 'TLR', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+      }
+      $this->footer_layout($params, $data, $totalext, $totalnet, $vat12);
     }
-    $totalnet += ($totalvat + $totalnonvat);
-
-    $emptyRows = $maxRowsPerPage - $rowPerPage;
-    for ($i = 0; $i < $emptyRows; $i++) {
-    PDF::MultiCell(45, 10, ' ' , 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(55, 10, ' ' , 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(140, 10, ' ' , 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(50, 10, ' ', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(40, 10, ' ' , 'TL', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(60, 10, ' ' , 'TL', 'R', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(40, 10, ' ' , 'TL', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(70, 10, ' ', 'TLR', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
-    }
-    $this->footer_layout($params, $data, $totalext, $totalnet, $totalvat12);
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-  public function footer_layout($params, $data,  $totalext, $totalnet, $totalvat12)
+
+  public function footer_layout($params, $data,  $totalext, $totalnet, $vat12)
   {
     $prepared = $params['params']['dataparams']['prepared'];
     $checked = $params['params']['dataparams']['checked'];
     $approved = $params['params']['dataparams']['approved'];
 
     $pagenumber = 'PAGE ' . PDF::getAliasNumPage() . ' of ' . PDF::getAliasNbPages();
-    
+
     $font = "";
     $fontbold = "";
     $fontsize = 8;
@@ -293,49 +315,45 @@ class po
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/ARIALB.TTF');
     }
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(130, 12, 'Delivery Address' , 'TL', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(210, 12, (isset($data[0]['shipto']) ? $data[0]['shipto'] : '') , 'TL', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(130, 12, 'Delivery Address', 'TL', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(210, 12, (isset($data[0]['shipto']) ? $data[0]['shipto'] : ''), 'TL', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
     PDF::SetFont($font, '', 9);
-    PDF::MultiCell(90, 12, 'TOTALNET' , 'TL', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(90, 12, 'TOTALNET', 'TL', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
     PDF::SetFont($fontbold, '', 9);
-    PDF::MultiCell(70, 12, number_format($totalnet, 2) , 'TLR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(70, 12, number_format($totalnet, 2), 'TLR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
 
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(130, 12, 'Delivery Day & Time' , 'TL', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(210, 12, 'MONDAY TO FRIDAY 8:00 am - 3:00 pm' , 'TL', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(130, 12, 'Delivery Day & Time', 'TL', 'L', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(210, 12, 'MONDAY TO FRIDAY 8:00 am - 3:00 pm', 'TL', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
     PDF::SetFont($font, '', 9);
 
-    PDF::MultiCell(90, 12, 'VAT 12%' , 'TL', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(70, 12, $totalvat12 == 0 ? '' : number_format($totalvat12, 2) , 'TLR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(90, 12, 'VAT 12%', 'TL', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(70, 12, $vat12 == 0 ? '' : number_format($vat12, 2), 'TLR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
     PDF::SetFont($fontbold, '', 8);
     PDF::SetCellPaddings(0, 8, 0, 0); // left, top, right, bottom
-    PDF::MultiCell(130, 20, 'REMARKS' , 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);  
-    PDF::MultiCell(210, 20, (isset($data[0]['rem']) ? $data[0]['rem'] : '') , 'TL', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(130, 20, 'REMARKS', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(210, 20, (isset($data[0]['rem']) ? $data[0]['rem'] : ''), 'TL', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
     PDF::SetFont($fontbold, '', 9);
-    PDF::MultiCell(90, 20, 'TOTAL AMOUNT ' , 'TL', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-    PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(70, 20, number_format($totalext, 2) , 'TLR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
-    PDF::SetCellPaddings(0, 0, 0, 0); 
-    
+    PDF::MultiCell(90, 20, 'TOTAL AMOUNT ', 'TL', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+    PDF::SetFont($fontbold, '', 9);
+    PDF::MultiCell(70, 20, number_format($totalext, 2), 'TLR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
+    PDF::SetCellPaddings(0, 0, 0, 0);
+
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(180, 10, 'PREPARED BY/DATE' , 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(180, 10, 'PREPARED BY/DATE', 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
     PDF::MultiCell(150, 10, 'CHECKED BY/DATE', 'TL', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
     PDF::MultiCell(170, 10, 'APPROVED BY/DATE', 'TLR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::SetCellPaddings(0, 20, 0, 0); // left, top, right, bottom
-    PDF::MultiCell(180, 30, $prepared , 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(180, 30, $prepared, 'TL', 'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
     PDF::MultiCell(150, 30, $checked, 'TL', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
     PDF::MultiCell(170, 30, $approved, 'TLR', 'C', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
-    PDF::SetCellPaddings(0, 0, 0, 0); 
+    PDF::SetCellPaddings(0, 0, 0, 0);
     PDF::SetFont($font, '', 8);
-    PDF::MultiCell(500, 10, ' 1. Delivery personnel must bring the original Sale invoice and Delivery Receipt together with photo copy of signed PO' , 'TLR', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(500, 10, ' 2. Only original copy of SI and original DR are being left to the receiver.' , 'LR', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(500, 10, ' 3. Notify us immediately if you are unable to deliver as specified' , 'LR', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(500, 10, ' 4. Advise us converning delivery of any Back Order covered by this P.O.' , 'BLR', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
-    PDF::MultiCell(500, 10, $pagenumber , 'TBLR', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(500, 10, ' 1. Delivery personnel must bring the original Sale invoice and Delivery Receipt together with photo copy of signed PO', 'TLR', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(500, 10, ' 2. Only original copy of SI and original DR are being left to the receiver.', 'LR', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(500, 10, ' 3. Notify us immediately if you are unable to deliver as specified', 'LR', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(500, 10, ' 4. Advise us concerning delivery of any Back Order covered by this P.O.', 'BLR', 'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
+    PDF::MultiCell(500, 10, $pagenumber, 'TBLR', 'R', false, 1, '', '', true, 0, false, true, 0, 'M', false);
   }
-
-
-
-
 }

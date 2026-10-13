@@ -26,10 +26,10 @@ class viewserialhistory
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -88,14 +88,30 @@ class viewserialhistory
 
   public function createHeadField($config)
   {
-    $fields = ['wh', 'yourref'];
+    $companyid = $config['params']['companyid'];
+    
+    if ($companyid == 68) { // JDA
+      $fields = ['whname', 'yourref'];
+    } else {
+      $fields = ['wh', 'yourref'];
+    }
+
     $col1 = $this->fieldClass->create($fields);
-    data_set($col1, 'wh.lookupclass', 'whledger');
+
+
+    if ($companyid == 68) { // JDA
+      data_set($col1, 'whname.type', 'lookup');
+      data_set($col1, 'whname.lookupclass', 'whledger');
+      data_set($col1, 'whname.action', 'lookupclient');
+      data_set($col1, 'whname.label', 'Warehouse');
+      data_set($col1, 'whname.readonly', true);
+    } else {
+      data_set($col1, 'wh.lookupclass', 'whledger');
+    }
     data_set($col1, 'yourref.label', 'Enter Serial');
     data_set($col1, 'yourref.readonly', false);
     data_set($col1, 'yourref.maxlength', 40);
-
-
+    
 
     $fields = ['update', 'refresh'];
     $col2 = $this->fieldClass->create($fields);
@@ -109,10 +125,20 @@ class viewserialhistory
 
   public function paramsdata($config)
   {
+    $companyid = $config['params']['companyid'];
     $itemid = $config['params']['clientid'];
     $wh = $this->companysetup->getwh($config['params']);
-    return $this->coreFunctions->opentable("select '$wh' as wh,'' as yourref");
-  }
+    $result = $this->coreFunctions->opentable("select '$wh' as wh,'' as yourref");
+
+    if ($companyid == 68) { // JDA
+      $whname = $wh == '' ? '' : $wh . ' ~ ' . $this->coreFunctions->getfieldvalue('client', 'clientname', 'client=?', [$wh]);
+      if (!empty($result)) {
+        $result[0]->whname = $whname;
+      }
+    }
+
+    return $result;
+   }
 
   public function data()
   {
@@ -121,6 +147,7 @@ class viewserialhistory
 
   public function loaddata($config)
   {
+    $companyid = $config['params']['companyid'];
     $itemid = $config['params']['itemid'];
     $center = $config['params']['center'];
     $wh = $config['params']['dataparams']['wh'];
@@ -149,17 +176,32 @@ class viewserialhistory
         ";
       $data = $this->coreFunctions->opentable($qry, [$itemid, $serial, $itemid, $serial, $itemid, $serial]);
     } else {
+
+      if ($companyid == 68 && $wh == '') { // JDA
+        $filterwh = '';
+      } else {
+        $filterwh = " and wh.client='" . $wh . "'";
+      }
+
+
       $qry = "
         select rrstatus.dateid,rrstatus.docno,wh.client,serialin.serial as clientname,'IN' as units
         from rrstatus left join serialin on serialin.trno=rrstatus.trno and serialin.line=rrstatus.line
         left join client as wh on wh.clientid=rrstatus.whid
         left join serialout on serialout.sline=serialin.outline
-        where rrstatus.itemid=? and wh.client=? and serialin.outline=0 limit 60000
+        where rrstatus.itemid=? " . $filterwh . " and serialin.outline=0 limit 60000
         ";
-      $data = $this->coreFunctions->opentable($qry, [$itemid, $wh]);
+      $data = $this->coreFunctions->opentable($qry, [$itemid]);
     }
 
     $txtdata = $this->coreFunctions->opentable("select '$wh' as wh, '$serial' as yourref");
+
+    if ($companyid == 68) { // JDA
+      $whname = $wh == '' ? '' : $wh . ' ~ ' . $this->coreFunctions->getfieldvalue('client', 'clientname', 'client=?', [$wh]);
+      if (!empty($txtdata)) {
+        $txtdata[0]->whname = $whname;
+      }
+    }
 
     return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data, 'txtdata' => $txtdata];
   } //end function

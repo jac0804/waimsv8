@@ -29,12 +29,12 @@ class purchase_per_supplier
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -133,7 +133,7 @@ class purchase_per_supplier
         }
         break;
 
-        case 56: //homeworks
+      case 56: //homeworks
         switch ($reporttype) {
           case '0':
             $result = $this->homeworks_SUMMARIZED($config);
@@ -226,13 +226,12 @@ class purchase_per_supplier
       $filter1 .= "";
     }
 
-     $addfields='';
-     $grpf='';
+    $addfields = '';
+    $grpf = '';
 
-    if($companyid==56){// homeworks
-      $addfields=', dateid,docno';
-      $grpf=', dateid,docno';
-
+    if ($companyid == 56) { // homeworks
+      $addfields = ', dateid,docno';
+      $grpf = ', dateid,docno';
     }
 
     switch ($companyid) {
@@ -360,7 +359,7 @@ class purchase_per_supplier
       $filter1 .= "";
     }
 
-  
+
     switch ($companyid) {
       case 6: // MITSUKOSHI
         $addqry = "union all
@@ -1503,7 +1502,7 @@ class purchase_per_supplier
   }
 
 
-   private function homeworks_displayHeader($config)
+  private function homeworks_displayHeader($config)
   {
     $center     = $config['params']['center'];
     $username   = $config['params']['user'];
@@ -1516,7 +1515,7 @@ class purchase_per_supplier
     $vatfilter  = $config['params']['dataparams']['vatfilter'];
     $reporttype = $config['params']['dataparams']['reporttype'];
 
-   
+
 
     $str = '';
     $layoutsize = '1000';
@@ -1589,10 +1588,10 @@ class purchase_per_supplier
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow(NULL, null, false, $border, '', 'R', $font, $fontsize, '', 'b', '');
     $str .= $this->reporter->col('Class : ' . $cla, 250, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
-    
+
     $str .= $this->reporter->col('', 250, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
     $str .= $this->reporter->col('', 300, null, false, $border, '', 'L', $font, $fontsize, '', 'b', '');
-    
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -1606,7 +1605,7 @@ class purchase_per_supplier
   }
 
 
-   private function homeworks_displayDetailtable($config)
+  private function homeworks_displayDetailtable($config)
   {
     $str = "";
     $layoutsize = '1000';
@@ -1630,7 +1629,7 @@ class purchase_per_supplier
 
 
 
-   public function homeworks_layout_DETAILED($config)
+  public function homeworks_layout_DETAILED($config)
   {
     $result  = $this->reportDefault($config);
     $count = 0;
@@ -1696,7 +1695,7 @@ class purchase_per_supplier
 
         $str .= $this->reporter->begintable($layoutsize);
         if ($itemname != '') {
-          $count =$count + 2;
+          $count = $count + 2;
           $str .= $this->reporter->startrow();
           $str .= $this->reporter->col('', '70', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
           $str .= $this->reporter->col('', '130', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
@@ -1743,10 +1742,10 @@ class purchase_per_supplier
 
       $itemname = $data->itemname;
       $arr_itemname = $this->reporter->fixcolumn([$itemname], '50', 0);
-      $maxrow=1;
+      $maxrow = 1;
       $maxrow = $this->othersClass->getmaxcolumn([$arr_itemname]);
 
-      $docnos= $data->docno;
+      $docnos = $data->docno;
       $prefix = substr($docnos, 0, 6);
       $number = ltrim(substr($docnos, 6), '0');
       $docno1 = $prefix . $number;
@@ -1787,12 +1786,12 @@ class purchase_per_supplier
       $iitem = $data->itemname;
 
 
-    if ($count >= $page) {
-          // logger("PAGE BREAK: " . $count . " >= " . $page);
-          $str .= $this->reporter->page_break();
-          $str .= $this->homeworks_displayHeader($config);
-          $str .= $this->homeworks_displayDetailtable($config);
-          $count = 0;
+      if ($count >= $page) {
+        // logger("PAGE BREAK: " . $count . " >= " . $page);
+        $str .= $this->reporter->page_break();
+        $str .= $this->homeworks_displayHeader($config);
+        $str .= $this->homeworks_displayDetailtable($config);
+        $count = 0;
       }
     }
 
@@ -1800,8 +1799,8 @@ class purchase_per_supplier
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
-     $str .= $this->reporter->col('', '70', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
-      $str .= $this->reporter->col('', '130', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '70', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
+    $str .= $this->reporter->col('', '130', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
 
     $str .= $this->reporter->col('', '100', null, false, $border, '', 'C', $font, $fontsize, 'B', '', '');
     $str .= $this->reporter->col('', '350', null, false, $border, '', 'R', $font, $fontsize, 'B', '', '');
@@ -1834,7 +1833,7 @@ class purchase_per_supplier
   }
 
 
-   private function homeworks_displayHeadertable($config)
+  private function homeworks_displayHeadertable($config)
   {
     $str = "";
     $layoutsize = '1000';
@@ -1847,18 +1846,18 @@ class purchase_per_supplier
     $str .= $this->reporter->col('CODE', '100', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '3px');
     $str .= $this->reporter->col('SUPPLIER', '250', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '3px');
 
- 
+
     $str .= $this->reporter->col('ADDRESS', '250', null, false, $border, 'TB', 'C', $font, $fontsize, 'B', '', '3px');
     $str .= $this->reporter->col('QTY', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '3px');
     // $str .= $this->reporter->col('TONS', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '3px');
-    
+
     $str .= $this->reporter->col('AMOUNT', '100', null, false, $border, 'TB', 'R', $font, $fontsize, 'B', '', '3px');
     $str .= $this->reporter->endrow();
     return $str;
   }
 
 
-  
+
   public function homeworks_SUMMARIZED($config)
   {
     $result  = $this->reportDefault($config);
@@ -1890,7 +1889,7 @@ class purchase_per_supplier
 
       $address = $data->addr;
       $arr_addr = $this->reporter->fixcolumn([$address], '52', 0);
-      $maxrow=1;
+      $maxrow = 1;
       $maxrow = $this->othersClass->getmaxcolumn([$arr_addr]);
 
       $count = $count + $maxrow;
@@ -1918,10 +1917,10 @@ class purchase_per_supplier
       // }
 
       if ($count >= $page) {
-          $str .= $this->reporter->page_break();
-          $str .= $this->default_displayHeader($config);
-          $str .= $this->homeworks_displayHeadertable($config);
-          $count = 0;
+        $str .= $this->reporter->page_break();
+        $str .= $this->default_displayHeader($config);
+        $str .= $this->homeworks_displayHeadertable($config);
+        $count = 0;
       }
     }
 
@@ -1939,6 +1938,4 @@ class purchase_per_supplier
 
     return $str;
   }
-
-
 }

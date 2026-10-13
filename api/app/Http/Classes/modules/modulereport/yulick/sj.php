@@ -38,9 +38,9 @@ class sj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -115,11 +115,11 @@ class sj
   public function report_default_query($config)
   {
     $trno = $config['params']['dataid'];
-    $query = "select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,item.subclass,
+    $query = "select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,ifnull(nullif(stock.rem, ''), item.itemname) as subclass,
             right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
             head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
             item.itemname, stock.isqty as qty, stock.uom , stock.isamt as amt, stock.disc, stock.ext, head.agent,
-            item.sizeid, ag.clientname as agname, item.brand,head.vattype, head.ewtrate,client.bstyle,client.registername,head.conaddr,head.rfno,
+            item.sizeid, ag.clientname as agname, item.brand,head.vattype, head.ewtrate,client.bstyle,client.registername,client.clientpref as conaddr,client.vendorname as rfno,
             wh.client as whcode, wh.clientname as whname, ((stock.isamt * stock.isqty) - stock.ext) as disc_amount from lahead as head
             left join lastock as stock on stock.trno=head.trno
             left join client on client.client=head.client
@@ -128,11 +128,11 @@ class sj
             left join client as wh on wh.client=head.wh
             where head.doc='sj' and head.trno='$trno'
             UNION ALL
-            select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,item.subclass,
+            select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,ifnull(nullif(stock.rem, ''), item.itemname) as subclass,
             right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
             head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
             item.itemname, stock.isqty as qty, stock.uom , stock.isamt as amt, stock.disc, stock.ext, ag.client as agent,
-            item.sizeid, ag.clientname as agname, item.brand,head.vattype, head.ewtrate,client.bstyle,client.registername,head.conaddr,head.rfno,
+            item.sizeid, ag.clientname as agname, item.brand,head.vattype, head.ewtrate,client.bstyle,client.registername,client.clientpref as conaddr,client.vendorname as rfno,
             wh.client as whcode, wh.clientname as whname, ((stock.isamt * stock.isqty) - stock.ext) as disc_amount from glhead as head
             left join glstock as stock on stock.trno=head.trno
             left join client on client.clientid=head.clientid
@@ -1107,14 +1107,14 @@ class sj
     PDF::SetY(488);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 0, '', '', 'R', false, 0);
-    PDF::MultiCell(213, 0, 'VENDOR CODE : ', '', 'L', false, 0);
+    PDF::MultiCell(213, 0, 'VENDOR CODE : ' . (isset($data[0]['rfno']) ? $data[0]['rfno'] : ''), '', 'L', false, 0);
     // PDF::MultiCell(200, 0, 'VENDOR CODE : '. (isset($data[0]['rem']) ? $data[0]['rem'] : ''), '', 'R', false, 0);
     PDF::MultiCell(200, 0, '', '', 'R');
 
     PDF::SetY(512);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 0, '', '', 'R', false, 0);
-    PDF::MultiCell(213, 0, 'SODEXO : GOVO MANILA CENTRAL', '', 'L', false, 0);
+    PDF::MultiCell(213, 0, 'SODEXO : ' . (isset($data[0]['conaddr']) ? $data[0]['conaddr'] : ''), '', 'L', false, 0);
     PDF::MultiCell(200, 0, '', '', 'R');
 
     //Right Side
@@ -2790,6 +2790,13 @@ class sj
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(700, 0, '', '');
 
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(100, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(250, 20, (isset($data[0]['conaddr']) ? $data[0]['conaddr'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(100, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(250, 20, (isset($data[0]['rfno']) ? $data[0]['rfno'] : '') . ' - ' . (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+
     //Right Side
     PDF::SetFont($fontbold, '', $fontsize2);
     PDF::SetCellPaddings(0, 5, 0, 0);
@@ -3107,14 +3114,12 @@ class sj
       PDF::MultiCell(10,  $rowHeight, ' ', '',  'L', false, 1, '', '', true, 0, false, true, 0, 'M', false);
     }
 
-    $rem = (isset($data[0]['rem']) ? $data[0]['rem'] : '');
-    $arr_rem = $this->reporter->fixcolumn([$rem], '27', 0);
-    $maxrow = min($this->othersClass->getmaxcolumn([$arr_rem]), 3);
-    for ($r = 0; $r < $maxrow; $r++) {
-      PDF::SetFont($font, '', $fontsize);
-      PDF::MultiCell(10,  15.9, '', '',  'C', false, 0, '', '', true, 0, false, true, 0, 'M', false);
-      PDF::MultiCell(150,  15.9, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '',  'C', false, 1, '', '', true, 0, false, true, 0, 'M', false);
-    }
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(50, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(250, 20, (isset($data[0]['conaddr']) ? $data[0]['conaddr'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::SetFont($fontbold, '', $fontsize);
+    PDF::MultiCell(50, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(250, 20, (isset($data[0]['rfno']) ? $data[0]['rfno'] : '') . ' - ' . (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     if ($vattype == 'VATABLE') {
       $vat = $totalext / 1.12 * 0.12;

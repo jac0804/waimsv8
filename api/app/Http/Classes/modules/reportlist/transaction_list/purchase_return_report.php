@@ -29,12 +29,12 @@ class purchase_return_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -56,12 +56,15 @@ class purchase_return_report
         array_push($fields, 'radiostatus');
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'radiostatus.label', 'Type of Status');
-        data_set($col1, 'radiostatus.options',[
-                  ['label' => 'Open', 'value' => '0', 'color' => 'orange'],
-                  ['label' => 'Close', 'value' => '1', 'color' => 'orange'],
-                  ['label' => 'Both', 'value' => '2', 'color' => 'orange']
-                ]
-                );
+        data_set(
+          $col1,
+          'radiostatus.options',
+          [
+            ['label' => 'Open', 'value' => '0', 'color' => 'orange'],
+            ['label' => 'Close', 'value' => '1', 'color' => 'orange'],
+            ['label' => 'Both', 'value' => '2', 'color' => 'orange']
+          ]
+        );
         break;
       default:
         $col1 = $this->fieldClass->create($fields);
@@ -196,19 +199,20 @@ class purchase_return_report
     $statusFilter = "";
     $statusFilter1 = "";
 
-      // if ($status == 0) {          // open
-      //   $statusFilter = " AND bal > 0 ";
-      // } elseif ($status == 1) {    // closed
-      //   $statusFilter = " AND bal <= 0 ";
-      // }
+    // if ($status == 0) {          // open
+    //   $statusFilter = " AND bal > 0 ";
+    // } elseif ($status == 1) {    // closed
+    //   $statusFilter = " AND bal <= 0 ";
+    // }
 
-      if ($status == 0) {
-        $statusFilter1 = "  x.status  = 'OPEN' ";
-      } elseif ($status == 1) {
-        $statusFilter1 = "  x.status  = 'CLOSED' ";
-      } else { 
-        $statusFilter1 = "  x.status  in ('CLOSED','OPEN') ";}
-      
+    if ($status == 0) {
+      $statusFilter1 = "  x.status  = 'OPEN' ";
+    } elseif ($status == 1) {
+      $statusFilter1 = "  x.status  = 'CLOSED' ";
+    } else {
+      $statusFilter1 = "  x.status  in ('CLOSED','OPEN') ";
+    }
+
 
 
 
@@ -305,7 +309,7 @@ class purchase_return_report
               ) as x
               where $statusFilter1
               order by docno $sorting";
-              // var_dump($query);
+            // var_dump($query);
             break;
         }
         break;
@@ -327,7 +331,7 @@ class purchase_return_report
             ) as x
             where $statusFilter1
             order by docno $sorting";
-          // var_dump($query);
+            // var_dump($query);
             break;
 
           case 1: // unposted
@@ -670,7 +674,7 @@ class purchase_return_report
         if ($docno != "" && $docno != $data->docno) {
           $str .= $this->reporter->begintable($layoutsize);
           $str .= $this->reporter->startrow();
-           $str .= $this->reporter->col('', '600', null, false, '1px dotted', 'B', '', $font, $fontsize, 'B', '', '', '');
+          $str .= $this->reporter->col('', '600', null, false, '1px dotted', 'B', '', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->col('Total: ' . number_format($total, 2), '400', null, false, '1px dotted', 'B', 'L', $font, $fontsize, 'B', '', '', '');
           $str .= $this->reporter->endrow();
 
@@ -872,7 +876,7 @@ class purchase_return_report
         } else {
           $str .= $this->reporter->col($data->docno, '150', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
         }
-       
+
         $str .= $this->reporter->col($data->dateid, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
         $str .= $this->reporter->col($data->supplier, '200', null, false, $border, '', 'LT', $font, $fontsize, '', '', '', ''); //150
         $str .= $this->reporter->col($data->whname, '125', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
@@ -886,7 +890,7 @@ class purchase_return_report
         }
 
         if ($companyid == 60) { //Trans power
-           $str .= $this->reporter->col($data->status, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
+          $str .= $this->reporter->col($data->status, '100', null, false, $border, '', 'CT', $font, $fontsize, '', '', '', '');
         }
 
         $str .= $this->reporter->endrow();
@@ -1154,7 +1158,7 @@ class purchase_return_report
       $str .= $this->reporter->col('Document No.', '150', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
     }
 
-    
+
 
     $str .= $this->reporter->col('Date', '100', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');
     $str .= $this->reporter->col('Name', '200', null, false, $border, 'B', 'C', $font, $fontsize, 'B', '', '', '');

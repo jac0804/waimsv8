@@ -32,12 +32,12 @@ class job_offer
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -123,10 +123,11 @@ class job_offer
     //   $filter .= " and dept.clientid = $deptid";
     // }
 
-    if ($deptname !=''){
-    if ($deptid != 0) {
-      $filter .= " and dept.clientid = $deptid";
-    }}
+    if ($deptname != '') {
+      if ($deptid != 0) {
+        $filter .= " and dept.clientid = $deptid";
+      }
+    }
 
     if ($config['params']['companyid'] == 58) { //cdo
       $branchid     = $config['params']['dataparams']['branchid'];

@@ -40,11 +40,11 @@ class downloadcoll
   public $tablelogs = 'table_log';
   public $tablelogs_del = 'del_table_log';
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -330,12 +330,11 @@ class downloadcoll
       }
 
       return ['status' => 'true', 'msg' => 'Successfully downloaded', 'action' => 'load'];
-    }else{
+    } else {
       return ['status' => 'true', 'msg' => 'No data downloaded', 'action' => 'load'];
     }
 
     $this->loaddata($config, $date1, $date2);
-    
   }
 
   private function downloadclient()

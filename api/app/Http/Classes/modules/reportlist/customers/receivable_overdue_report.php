@@ -30,19 +30,19 @@ class receivable_overdue_report
     public $directprint = false;
     public $reportParams = array('orientation' => 'l', 'format' => 'Letter', 'layoutSize' => '1000');
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
     public function createHeadField($config)
     {
         $companyid = $config['params']['companyid'];
-        $fields = array('radioprint', 'asofdate', 'dclientname','radioreporttype');
+        $fields = array('radioprint', 'asofdate', 'dclientname', 'radioreporttype');
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'asofdate.readonly', false);
         data_set($col1, 'dclientname.lookupclass', 'lookupclient_rep');
@@ -60,7 +60,7 @@ class receivable_overdue_report
         return array('col1' => $col1, 'col2' => $col2);
     }
 
-        public function paramsdata($config)
+    public function paramsdata($config)
     {
         // NAME NG INPUT YUNG NAKA ALIAS
         $currentDate = $this->othersClass->getCurrentDate();
@@ -107,7 +107,7 @@ class receivable_overdue_report
         $sortBy = $config['params']['dataparams']['reporttype'];
         if ($sortBy == 0) {
             $sort .= " order by ar.docno";
-        }else if ($sortBy == 1) {
+        } else if ($sortBy == 1) {
             $sort .= " order by cl.clientname";
         } else if ($sortBy == 2) {
             $sort .= " order by ar.dateid";
@@ -140,14 +140,14 @@ class receivable_overdue_report
         $customer = '';
 
         if ($clientname != '') {
-            $customer = $clientname ;
-        }else{
+            $customer = $clientname;
+        } else {
             $customer = 'All Customers';
         }
 
         if ($sortBy == 0) {
             $sort = "Document";
-        }else if ($sortBy == 1) {
+        } else if ($sortBy == 1) {
             $sort = "Customer";
         } else if ($sortBy == 2) {
             $sort = "Transaction Date";
@@ -175,18 +175,18 @@ class receivable_overdue_report
 
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
-        $str .= $this->reporter->col('As-of Date : ' , 100, null, false, '', '', 'L', $font, $fontsize, 'B');
-        $str .= $this->reporter->col( $asof, null, null, false, '', '', 'L', $font, $fontsize, '');
+        $str .= $this->reporter->col('As-of Date : ', 100, null, false, '', '', 'L', $font, $fontsize, 'B');
+        $str .= $this->reporter->col($asof, null, null, false, '', '', 'L', $font, $fontsize, '');
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('Customer : ', 100, null, false, '', '', 'L', $font, $fontsize, 'B');
-        $str .= $this->reporter->col(  $customer, null, null, false, '', '', 'L', $font, $fontsize, '');
+        $str .= $this->reporter->col($customer, null, null, false, '', '', 'L', $font, $fontsize, '');
         $str .= $this->reporter->endrow();
 
         $str .= $this->reporter->startrow();
         $str .= $this->reporter->col('Sort By : ', 100, null, false, '', '', 'L', $font, $fontsize, 'B');
-        $str .= $this->reporter->col(  $sort, null, null, false, '', '', 'L', $font, $fontsize, '');
+        $str .= $this->reporter->col($sort, null, null, false, '', '', 'L', $font, $fontsize, '');
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
 
@@ -232,74 +232,73 @@ class receivable_overdue_report
         $str .= $this->reporter->beginreport($layoutsize, null, false, false, '', '', '', '', '', '', '', '25px;margin-top:10px;margin-left:100px');
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->displayHeader($config);
-        
+
         if (empty($result)) {
             return $this->othersClass->emptydata($config);
         }
 
         $str .= $this->reporter->begintable();
         foreach ($result as $key => $data) {
-        $daysOverdue = isset($data->due) && $data->due != '' ? (strtotime($asof) - strtotime($data->due)) / 86400 : '';
+            $daysOverdue = isset($data->due) && $data->due != '' ? (strtotime($asof) - strtotime($data->due)) / 86400 : '';
 
-        // for Aging Bucket
-        if ($data->bal <= 0) {
-            $agingBucket = 'Settled';
-        } else if ($daysOverdue <= 30) {
-            $agingBucket = '1-30 days';
-        } else if ($daysOverdue <= 60) {
-            $agingBucket = '31-60 days';
-        } else if ($daysOverdue <= 90) {
-            $agingBucket = '61-90 days';
-        } else {
-            $agingBucket = '91+ days';
-        }
+            // for Aging Bucket
+            if ($data->bal <= 0) {
+                $agingBucket = 'Settled';
+            } else if ($daysOverdue <= 30) {
+                $agingBucket = '1-30 days';
+            } else if ($daysOverdue <= 60) {
+                $agingBucket = '31-60 days';
+            } else if ($daysOverdue <= 90) {
+                $agingBucket = '61-90 days';
+            } else {
+                $agingBucket = '91+ days';
+            }
 
-        //Action/Exception
-        $exception = '';
-        if ($data->bal == 0) {
-            $exception = 'No action';
-        } else if ($data->short > 0) { //placeholder, will replace
-            $exception = 'Resolve Short Payment';
-        } else if ($data->unapplied > 0)  {  //placeholder, will replace
-            $exception = 'Match unapplied receipt';
-        } else if ($data->bal && ($daysOverdue > 0)) {
-            $exception = 'Collection follow-up';
-        }
+            //Action/Exception
+            $exception = '';
+            if ($data->bal == 0) {
+                $exception = 'No action';
+            } else if ($data->short > 0) { //placeholder, will replace
+                $exception = 'Resolve Short Payment';
+            } else if ($data->unapplied > 0) {  //placeholder, will replace
+                $exception = 'Match unapplied receipt';
+            } else if ($data->bal && ($daysOverdue > 0)) {
+                $exception = 'Collection follow-up';
+            }
 
-        $rowcols = [$data->docno, $data->clientname, $data->addr];
-        $rowlens = [8, 28, 20];
-        $next = $this->countline($rowcols, $rowlens, false); //check next data
+            $rowcols = [$data->docno, $data->clientname, $data->addr];
+            $rowlens = [8, 28, 20];
+            $next = $this->countline($rowcols, $rowlens, false); //check next data
 
-        if (($this->reporter->linecounter + $next) > ($count + 1) ) {
-            $str .= $this->reporter->endtable();
-            $this->reporter->linecounter = 0;
-            $str .= $this->reporter->page_break();
-            $str .= $this->displayHeader($config);
-            $str .= $this->reporter->begintable();
-        }
+            if (($this->reporter->linecounter + $next) > ($count + 1)) {
+                $str .= $this->reporter->endtable();
+                $this->reporter->linecounter = 0;
+                $str .= $this->reporter->page_break();
+                $str .= $this->displayHeader($config);
+                $str .= $this->reporter->begintable();
+            }
 
-        $this->countline($rowcols, $rowlens);
-        $str .= $this->reporter->startrow();  
-        $str .= $this->reporter->col($data->docno, 80, '20', false, $border, '', 'L', $font, $fontsize2, '');
-        $str .= $this->reporter->col($data->client, 80, '20', false, $border, '', 'L', $font, $fontsize2, '');
-        $str .= $this->reporter->col($data->clientname, 150, '20', false, $border, '', 'L', $font, $fontsize2, '');
-        $str .= $this->reporter->col($data->addr, 100, '20', false, $border, '', 'L', $font, $fontsize2, '');
-        $str .= $this->reporter->col($data->agent, 100, '20', false, $border, '', 'L', $font, $fontsize2, '');
-        $str .= $this->reporter->col($data->terms, 60, '20', false, $border, '', 'L', $font, $fontsize2, '');
-        $str .= $this->reporter->col($data->invdate, 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
-        $str .= $this->reporter->col($data->due, 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
-        $str .= $this->reporter->col(isset ($data->bal) && $data->bal <> 0 ? number_format($data->bal, 2): '-', 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
-        $str .= $this->reporter->col($daysOverdue, 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
-        $str .= $this->reporter->col($agingBucket, 100, '20', false, $border, '', 'C', $font, $fontsize2, '');
-        $str .= $this->reporter->col($exception, 100, '20', false, $border, '', 'L', $font, $fontsize2, '');
-        $str .= $this->reporter->col('', 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
-        $str .= $this->reporter->endrow();
+            $this->countline($rowcols, $rowlens);
+            $str .= $this->reporter->startrow();
+            $str .= $this->reporter->col($data->docno, 80, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->client, 80, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->clientname, 150, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->addr, 100, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->agent, 100, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->terms, 60, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->invdate, 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
+            $str .= $this->reporter->col($data->due, 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
+            $str .= $this->reporter->col(isset($data->bal) && $data->bal <> 0 ? number_format($data->bal, 2) : '-', 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
+            $str .= $this->reporter->col($daysOverdue, 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
+            $str .= $this->reporter->col($agingBucket, 100, '20', false, $border, '', 'C', $font, $fontsize2, '');
+            $str .= $this->reporter->col($exception, 100, '20', false, $border, '', 'L', $font, $fontsize2, '');
+            $str .= $this->reporter->col('', 80, '20', false, $border, '', 'R', $font, $fontsize2, '');
+            $str .= $this->reporter->endrow();
         }
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->endtable();
 
-      return $str;
-
+        return $str;
     }
 
     function countline($col = [], $len = [], $commit = true)
@@ -309,7 +308,7 @@ class receivable_overdue_report
             foreach ($col as $key => $txt) {
                 $collen = isset($len[$key]) ? $len[$key] : 0;
                 if ($collen > 0) {
-                    array_push($arr, $this->reporter->fixcolumn([$txt], $collen, 0));  
+                    array_push($arr, $this->reporter->fixcolumn([$txt], $collen, 0));
                 }
             }
             $lines = $this->othersClass->getmaxcolumn($arr);  //whichever column wrapped into the most lines
@@ -324,5 +323,4 @@ class receivable_overdue_report
             return 1;
         }
     }
-
 }

@@ -32,10 +32,10 @@ class rr
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -49,12 +49,12 @@ class rr
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-      
+
     ]);
     data_set($col1, 'radioreporttype.options', [
       ['label' => 'RR', 'value' => 'RR', 'color' => 'red'],
       ['label' => 'AP Invoice', 'value' => 'AP', 'color' => 'red'],
-      
+
     ]);
     return array('col1' => $col1);
   }
@@ -123,7 +123,7 @@ class rr
 
   public function reportplotting($params, $data)
   {
-    
+
     if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_RR_layout($params, $data);
     } else {
@@ -143,7 +143,7 @@ class rr
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -157,7 +157,7 @@ class rr
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -166,7 +166,7 @@ class rr
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
-    
+
 
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
     PDF::SetFont($font, '', 9);
@@ -176,7 +176,7 @@ class rr
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(650, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
 
     PDF::SetFont($fontbold, '', $fontsize);
     $style = array(
@@ -184,7 +184,7 @@ class rr
       'padding' => 0,
     );
 
-    
+
 
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, 'A/P Invoice', '', 'L', false, 0);
@@ -202,7 +202,7 @@ class rr
     PDF::SetFont($font, '', 10);
     PDF::MultiCell(100, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 20, "Supplier : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
@@ -212,7 +212,7 @@ class rr
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 20, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
-    
+
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 20, "Address : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
@@ -254,7 +254,7 @@ class rr
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
 
     $qry = "select name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
@@ -268,14 +268,14 @@ class rr
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     $style = array(
       'border' => false,
       'padding' => 0,
     );
 
-    
+
     PDF::SetFont($font, '', 5);
 
     PDF::MultiCell(720, 0, '', 'TB');
@@ -383,7 +383,7 @@ class rr
 
     $detailresult = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
 
-    
+
 
     if ($detailresult[0]['line'] != null) {
 
@@ -461,7 +461,7 @@ class rr
   {
     $center = $params['params']['center'];
     $username = $params['params']['user'];
-    
+
     $qry = "select code,name,address,tel from center where code = '" . $center . "'";
     $headerdata = $this->coreFunctions->opentable($qry);
     $current_timestamp = $this->othersClass->getCurrentTimeStamp();
@@ -474,7 +474,7 @@ class rr
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/GOTHICB.TTF');
     }
 
-    
+
     PDF::SetTitle($this->modulename);
     PDF::SetAuthor('Solutionbase Corp.');
     PDF::SetCreator('Solutionbase Corp.');
@@ -483,7 +483,7 @@ class rr
     PDF::AddPage('p', [800, 1000]);
     PDF::SetMargins(40, 40);
 
-    
+
     $reporttimestamp = $this->reporter->setreporttimestamp($params, $username, $headerdata);
     PDF::SetFont($font, '', 9);
     PDF::MultiCell(0, 0, $reporttimestamp, '', 'L');
@@ -492,7 +492,7 @@ class rr
     PDF::SetFont($fontbold, '', 13);
     PDF::MultiCell(650, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
-    
+
 
     PDF::SetFont($fontbold, '', $fontsize);
     $style = array(
@@ -500,12 +500,12 @@ class rr
       'padding' => 0,
     );
 
-    
+
 
     PDF::SetFont($fontbold, '', 18);
-    
+
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0);
-    
+
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 0, "", '', 'L', false, 0, '',  '');
@@ -521,7 +521,7 @@ class rr
     PDF::SetFont($font, '', 10);
     PDF::MultiCell(100, 0, (isset($data[0]['docno']) ? $data[0]['docno'] : ''), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 20, "Supplier : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($font, '', $fontsize);
@@ -531,7 +531,7 @@ class rr
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 20, (isset($data[0]['dateid']) ? $data[0]['dateid'] : ''), 'B', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
-    
+
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 20, "Address : ", '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
@@ -542,7 +542,7 @@ class rr
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(100, 20, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), 'B', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    
+
 
     PDF::MultiCell(0, 0, "\n\n");
 
@@ -679,11 +679,11 @@ class rr
 
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col($this->modulename, '600', null, false, $border, '', 'L', $font, '18', 'B', '', '');
     $str .= $this->reporter->col('DOCUMENT # :', '120', null, false, $border, '', 'L', $font, '13', 'B', '', '');
     $str .= $this->reporter->col((isset($data[0]['docno']) ? $data[0]['docno'] : '') . QrCode::size(100)->generate($data[0]['docno'] . '-' . $data[0]['trno']), '100', null, false, $border, 'B', 'L', $font, '13', '', '', '') . '<br />';
-    
+
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable('800');
@@ -710,10 +710,10 @@ class rr
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->printline();
-    
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    
+
     $str .= $this->reporter->col('QTY', '50px', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('UNIT', '50px', null, false, $border, 'B', 'C', $font, '12', 'B', '30px', '8px');
     $str .= $this->reporter->col('D E S C R I P T I O N', '400px', null, false, $border, 'B', 'L', $font, '12', 'B', '30px', '8px');
@@ -767,7 +767,7 @@ class rr
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
         $str .= $this->default_header($params, $data);
-        
+
         $str .= $this->reporter->printline();
         $page = $page + $count;
       }
@@ -814,7 +814,7 @@ class rr
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
-    
+
     $str .= $this->reporter->endreport();
 
     return $str;

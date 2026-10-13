@@ -34,10 +34,10 @@ class is
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -275,14 +275,14 @@ class is
     // write2DBarcode(code, type, x, y, width, height, style, align)
 
     PDF::MultiCell(0, 0, "\n");
-  
+
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($font, '', 12);
     PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n\n\n", '', 'C');
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '40', '20', 120, 65);
-  
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '40', '20', 120, 65);
+
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 16);
@@ -297,7 +297,7 @@ class is
     PDF::MultiCell(0, 30, "", '', 'L');
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(80, 15, "WAREHOUSE", '', 'L', false, 0, '',  '');
-   
+
     PDF::MultiCell(400, 15, ':  ' . (isset($data[0]['whname']) ? $data[0]['whname'] : ''), 'B', 'L', false, 0, '',  '');
     PDF::MultiCell(20, 15, "", '', 'L', false, 0, '',  '');
     PDF::MultiCell(55, 15, "DATE", '', 'L', false, 0, '',  '');
@@ -475,8 +475,8 @@ class is
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(0, 0, $headerdata[0]->address . "\n" . $headerdata[0]->tel . "\n\n\n", '', 'C');
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '45', '35', 100, 40);
-   
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '45', '35', 100, 40);
+
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
     PDF::MultiCell(520, 0, $this->modulename, '', 'L', false, 0, '',  '100');
@@ -545,7 +545,7 @@ class is
 
     if (!empty($data)) {
       for ($i = 0; $i < count($data); $i++) {
-      
+
         $arr_barcode = $this->reporter->fixcolumn([$data[$i]['barcode']], '16', 0);
         $arr_itemname = $this->reporter->fixcolumn([$data[$i]['itemname']], '40', 0);
         $arr_qty = $this->reporter->fixcolumn([number_format($data[$i]['qty'], $decimalqty)], '13', 0);
@@ -565,7 +565,7 @@ class is
           PDF::MultiCell(125, 0, (isset($arr_ext[$r]) ? $arr_ext[$r] : ''), '', 'R', false, 1, '', '', false, 1);
         }
 
-        
+
         $totalext += $data[$i]['ext'];
 
         if (intVal($i) + 1 == $page) {

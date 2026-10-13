@@ -75,11 +75,11 @@ class on
   ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -191,7 +191,7 @@ class on
     $orderby = "order by dateid desc, docno desc";
 
     $translimit = $this->companysetup->gettransactionlimit($config['params']);
-    if ($searchfilter == "") $limit = 'limit '.$translimit;
+    if ($searchfilter == "") $limit = 'limit ' . $translimit;
     $lstat = "case ifnull(head.lockdate,'') when '' then 'DRAFT' else 'LOCKED' end";
     $lstatcolor = "case ifnull(head.lockdate,'') when '' then 'red' else 'green' end";
 

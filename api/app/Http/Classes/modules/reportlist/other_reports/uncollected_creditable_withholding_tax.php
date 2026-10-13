@@ -29,12 +29,12 @@ class uncollected_creditable_withholding_tax
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -169,10 +169,10 @@ class uncollected_creditable_withholding_tax
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
-    $str .= $this->reporter->col('Date : ' . strtoupper($start) . ' to ' . strtoupper($end), NULL, null, false, $border, '', 'L', $font, $fontsize, '', '','', '');
+    $str .= $this->reporter->col('Date : ' . strtoupper($start) . ' to ' . strtoupper($end), NULL, null, false, $border, '', 'L', $font, $fontsize, '', '', '', '');
 
     $str .= $this->reporter->col('Customer : ' . ($clientname != "" ? $clientname : 'ALL'), NULL, null, false, $border, '', 'L', $font, $fontsize, '', '', '', '');
-    $str .= $this->reporter->col('Branch : ' . ($branchname != "" ? $branchname : 'ALL'), NULL, null, false, $border, '', 'L', $font, $fontsize, '','', '', '');
+    $str .= $this->reporter->col('Branch : ' . ($branchname != "" ? $branchname : 'ALL'), NULL, null, false, $border, '', 'L', $font, $fontsize, '', '', '', '');
 
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();

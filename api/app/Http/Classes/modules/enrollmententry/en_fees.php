@@ -42,10 +42,10 @@ class en_fees
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -147,9 +147,9 @@ class en_fees
 
   public function checkFees($data, $type = 'update')
   {
-    $qry = "select line as value from en_fees where feescode='".$data['feescode']."'";
+    $qry = "select line as value from en_fees where feescode='" . $data['feescode'] . "'";
     if ($type == 'update') {
-      $qry = "select line as value from en_fees where feescode='".$data['feescode']."' and line<>".$data['line'];
+      $qry = "select line as value from en_fees where feescode='" . $data['feescode'] . "' and line<>" . $data['line'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check == '') return false;
@@ -169,12 +169,12 @@ class en_fees
       $data2 = [];
       if ($data[$key]['bgcolor'] != '') {
         foreach ($this->fields as $key2 => $value2) {
-           $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
+          $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
         if ($data[$key]['line'] == 0) {
           $check = $this->checkFees($data[$key], 'new');
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data[$key]['feescode'];
+            $msg .= "\n Duplicate entry for " . $data[$key]['feescode'];
           } else {
             $line = $this->coreFunctions->insertGetId($this->table, $data2);
             $this->logger->sbcmasterlog($data[$key]['line'], $config, ' CREATE - ' . $data[$key]['feescode']);
@@ -182,7 +182,7 @@ class en_fees
         } else {
           $check = $this->checkFees($data[$key]);
           if ($check) {
-            $msg .= "\n Duplicate entry for ".$data[$key]['feescode'];
+            $msg .= "\n Duplicate entry for " . $data[$key]['feescode'];
           } else {
             $data2['editdate'] = $this->othersClass->getCurrentTimeStamp();
             $data2['editby'] = $config['params']['user'];
@@ -192,7 +192,7 @@ class en_fees
       } // end if
     } // foreach
     $returndata = $this->loaddata($config);
-    return ['status' => true, 'msg' => 'All saved successfully. '.$msg, 'data' => $returndata];
+    return ['status' => true, 'msg' => 'All saved successfully. ' . $msg, 'data' => $returndata];
   } // end function 
 
   public function save($config)
@@ -205,12 +205,12 @@ class en_fees
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     foreach ($this->fields as $key => $value) {
-       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['line'] == 0) {
       $check = $this->checkFees($row, 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$row['feescode'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $row['feescode'], 'row' => []];
       } else {
         $line = $this->coreFunctions->insertGetId($this->table, $data);
         if ($line != 0) {
@@ -224,7 +224,7 @@ class en_fees
     } else {
       $check = $this->checkFees($row);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$row['feescode'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $row['feescode'], 'row' => []];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];

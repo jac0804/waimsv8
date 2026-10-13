@@ -34,9 +34,9 @@ class gj
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -44,18 +44,20 @@ class gj
     $this->reporter = new SBCPDF;
   }
 
-  public function createreportfilter($config){
-    $fields = ['radioprint', 'prepared','approved', 'received','print'];
-    $col1 = $this->fieldClass->create($fields);           
+  public function createreportfilter($config)
+  {
+    $fields = ['radioprint', 'prepared', 'approved', 'received', 'print'];
+    $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'radioprint.options', [
       ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
       // ['label' => 'excel', 'value' => 'excel', 'color' => 'red']
     ]);
-    
-    return array('col1'=>$col1);
+
+    return array('col1' => $col1);
   }
 
-  public function reportparamsdata($config){
+  public function reportparamsdata($config)
+  {
     return $this->coreFunctions->opentable("select 
       'PDFM' as print,
       '' as approved,
@@ -64,9 +66,10 @@ class gj
     ");
   }
 
-  public function report_default_query($filters){
+  public function report_default_query($filters)
+  {
     $trno = md5($filters['params']['dataid']);
-    $query="
+    $query = "
     select head.trno, date(head.dateid) as dateid, head.docno, 
     head.clientname, head.address, head.yourref, 
     left(coa.alias,2) as alias, coa.acno,
@@ -95,15 +98,17 @@ class gj
     return $result;
   }
 
-  public function reportplotting($params, $data) {
-    if($params['params']['dataparams']['print'] == "default") {
+  public function reportplotting($params, $data)
+  {
+    if ($params['params']['dataparams']['print'] == "default") {
       return $this->default_gj_layout($params, $data);
-    } else if($params['params']['dataparams']['print'] == "PDFM") {
+    } else if ($params['params']['dataparams']['print'] == "PDFM") {
       return $this->default_GJ_PDF($params, $data);
     }
   }
 
-  public function rpt_gj_header_default($config,$result){
+  public function rpt_gj_header_default($config, $result)
+  {
     $center = $config['params']['center'];
     $username = $config['params']['user'];
 
@@ -119,30 +124,30 @@ class gj
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-    $str .= $this->reporter->col('GENERAL JOURNAL','600',null,false,'1px solid ','','L','Century Gothic','18','B','','');
-    $str .= $this->reporter->col('DOCUMENT # :','100',null,false,'1px solid ','','L','Century Gothic','13','B','','');
-    $str .= $this->reporter->col((isset($result[0]->docno)? $result[0]->docno:''),'100',null,false,'1px solid ','B','L','Century Gothic','13','','','').'<br />';
+    $str .= $this->reporter->col('GENERAL JOURNAL', '600', null, false, '1px solid ', '', 'L', 'Century Gothic', '18', 'B', '', '');
+    $str .= $this->reporter->col('DOCUMENT # :', '100', null, false, '1px solid ', '', 'L', 'Century Gothic', '13', 'B', '', '');
+    $str .= $this->reporter->col((isset($result[0]->docno) ? $result[0]->docno : ''), '100', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '13', '', '', '') . '<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('CUSTOMER/SUPPLIER: ','80',null,false,'1px solid ','','L','Century Gothic','12','B','30px','4px');
-    $str .= $this->reporter->col((isset($result[0]->clientname)? $result[0]->clientname:''),'520',null,false,'1px solid ','B','L','Century Gothic','12','','30px','4px');
-    $str .= $this->reporter->col('DATE : ','40',null,false,'1px solid ','','L','Century Gothic','12','B','','');
-    $str .= $this->reporter->col((isset($result[0]->dateid)? $result[0]->dateid:''),'160',null,false,'1px solid ','B','R','Century Gothic','12','','','');
+    $str .= $this->reporter->col('CUSTOMER/SUPPLIER: ', '80', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '30px', '4px');
+    $str .= $this->reporter->col((isset($result[0]->clientname) ? $result[0]->clientname : ''), '520', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '12', '', '30px', '4px');
+    $str .= $this->reporter->col('DATE : ', '40', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+    $str .= $this->reporter->col((isset($result[0]->dateid) ? $result[0]->dateid : ''), '160', null, false, '1px solid ', 'B', 'R', 'Century Gothic', '12', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('ADDRESS : ','80',null,false,'1px solid ','','L','Century Gothic','12','B','30px','4px');
-    $str .= $this->reporter->col((isset($result[0]->address)? $result[0]->address:''),'520',null,false,'1px solid ','B','L','Century Gothic','12','','30px','4px');
-    $str .= $this->reporter->col('REF. :','40',null,false,'1px solid ','','L','Century Gothic','12','B','','');
-    $str .= $this->reporter->col((isset($result[0]->yourref)? $result[0]->yourref:''),'160',null,false,'1px solid ','B','R','Century Gothic','12','','','');
+    $str .= $this->reporter->col('ADDRESS : ', '80', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '30px', '4px');
+    $str .= $this->reporter->col((isset($result[0]->address) ? $result[0]->address : ''), '520', null, false, '1px solid ', 'B', 'L', 'Century Gothic', '12', '', '30px', '4px');
+    $str .= $this->reporter->col('REF. :', '40', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+    $str .= $this->reporter->col((isset($result[0]->yourref) ? $result[0]->yourref : ''), '160', null, false, '1px solid ', 'B', 'R', 'Century Gothic', '12', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     $str .= $this->reporter->begintable('800');
-    $str .= $this->reporter->startrow(null,null,false,'1px solid ','','R','Century Gothic','10','','','4px');
+    $str .= $this->reporter->startrow(null, null, false, '1px solid ', '', 'R', 'Century Gothic', '10', '', '', '4px');
     $str .= $this->reporter->pagenumber('Page');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
@@ -152,17 +157,18 @@ class gj
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
     //($txt='',$w=null,$h=null, $bg=false,$b=false,$b_='', $al='', $f='', $fs='',$fw='',$fc='',$pad='',$m='')
-    $str .= $this->reporter->col('ACCT.#','75',null,false,'1px solid ','B','C','Century Gothic','12','B','30px','8px');
-    $str .= $this->reporter->col('ACCOUNT NAME','350',null,false,'1px solid ','B','C','Century Gothic','12','B','30px','8px');
-    $str .= $this->reporter->col('REFERENCE&nbsp#','75',null,false,'1px solid ','B','C','Century Gothic','12','B','30px','8px');
-    $str .= $this->reporter->col('DATE','75',null,false,'1px solid ','B','C','Century Gothic','12','B','30px','8px');
-    $str .= $this->reporter->col('DEBIT','75',null,false,'1px solid ','B','C','Century Gothic','12','B','30px','8px');
-    $str .= $this->reporter->col('CREDIT','75',null,false,'1px solid ','B','C','Century Gothic','12','B','30px','8px');
-    $str .= $this->reporter->col('CLIENT','75',null,false,'1px solid ','B','C','Century Gothic','12','B','30px','8px');
+    $str .= $this->reporter->col('ACCT.#', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('ACCOUNT NAME', '350', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('REFERENCE&nbsp#', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('DATE', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('DEBIT', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('CREDIT', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
+    $str .= $this->reporter->col('CLIENT', '75', null, false, '1px solid ', 'B', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     return $str;
   }
 
-  public function default_gj_layout($config, $result){
+  public function default_gj_layout($config, $result)
+  {
     $center = $config['params']['center'];
     $username = $config['params']['user'];
 
@@ -171,74 +177,74 @@ class gj
     $approved = $config['params']['dataparams']['approved'];
 
     $str = '';
-    $count=35;
-    $page=35;
+    $count = 35;
+    $page = 35;
 
     $str .= $this->reporter->beginreport();
-    $str .= $this->rpt_gj_header_default($config,$result);
-    
+    $str .= $this->rpt_gj_header_default($config, $result);
 
-    $totaldb=0;
-    $totalcr=0;
+
+    $totaldb = 0;
+    $totalcr = 0;
     foreach ($result as $key => $data) {
-      $debit=number_format($data->db,2);
+      $debit = number_format($data->db, 2);
       $debit = $debit < 0 ? '-' : $debit;
-      $credit=number_format($data->cr,2);
+      $credit = number_format($data->cr, 2);
       $credit = $credit < 0 ? '-' : $credit;
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col($data->acno,'75',null,false,'1px solid ','','C','Century Gothic','11','','','2px');
-      $str .= $this->reporter->col($data->acnoname,'350',null,false,'1px solid ','','L','Century Gothic','11','','','2px');
-      $str .= $this->reporter->col($data->ref,'75',null,false,'1px solid ','','C','Century Gothic','11','','','2px');
-      $str .= $this->reporter->col($data->postdate,'75',null,false,'1px solid ','','C','Century Gothic','11','','','2px');
-      $str .= $this->reporter->col($debit,'75',null,false,'1px solid ','','R','Century Gothic','11','','','2px');
-      $str .= $this->reporter->col($credit,'75',null,false,'1px solid ','','R','Century Gothic','11','','','2px');
-      $str .= $this->reporter->col($data->client,'75',null,false,'1px solid ','','C','Century Gothic','11','','','2px');
-      $totaldb=$totaldb+$data->db;
-      $totalcr=$totalcr+$data->cr;
-      if($this->reporter->linecounter==$page){
+      $str .= $this->reporter->col($data->acno, '75', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '2px');
+      $str .= $this->reporter->col($data->acnoname, '350', null, false, '1px solid ', '', 'L', 'Century Gothic', '11', '', '', '2px');
+      $str .= $this->reporter->col($data->ref, '75', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '2px');
+      $str .= $this->reporter->col($data->postdate, '75', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '2px');
+      $str .= $this->reporter->col($debit, '75', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '2px');
+      $str .= $this->reporter->col($credit, '75', null, false, '1px solid ', '', 'R', 'Century Gothic', '11', '', '', '2px');
+      $str .= $this->reporter->col($data->client, '75', null, false, '1px solid ', '', 'C', 'Century Gothic', '11', '', '', '2px');
+      $totaldb = $totaldb + $data->db;
+      $totalcr = $totalcr + $data->cr;
+      if ($this->reporter->linecounter == $page) {
         $str .= $this->reporter->endtable();
         $str .= $this->reporter->page_break();
 
-       $str .= $this->rpt_gj_header_default($config,$result);
+        $str .= $this->rpt_gj_header_default($config, $result);
         $str .= $this->reporter->endrow();
-         $str .= $this->reporter->printline();
-        $page=$page + $count;
+        $str .= $this->reporter->printline();
+        $page = $page + $count;
       }
-    }  
-         
+    }
+
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('','75',null,false,'1px dotted ','T','C','Century Gothic','12','B','','2px');
-    $str .= $this->reporter->col('','75',null,false,'1px dotted ','T','C','Century Gothic','12','B','','2px');
-    $str .= $this->reporter->col('','75',null,false,'1px dotted ','T','C','Century Gothic','12','B','','2px');
-    $str .= $this->reporter->col('GRAND TOTAL :','350',null,false,'1px dotted ','T','R','Century Gothic','12','B','30px','2px');
-    $str .= $this->reporter->col(number_format($totaldb,2),'75',null,false,'1px dotted ','T','R','Century Gothic','12','B','','2px');
-    $str .= $this->reporter->col(number_format($totalcr,2),'75',null,false,'1px dotted ','T','R','Century Gothic','12','B','','2px');
-    $str .= $this->reporter->col('','75',null,false,'1px dotted ','T','C','Century Gothic','12','B','30px','8px');
+    $str .= $this->reporter->col('', '75', null, false, '1px dotted ', 'T', 'C', 'Century Gothic', '12', 'B', '', '2px');
+    $str .= $this->reporter->col('', '75', null, false, '1px dotted ', 'T', 'C', 'Century Gothic', '12', 'B', '', '2px');
+    $str .= $this->reporter->col('', '75', null, false, '1px dotted ', 'T', 'C', 'Century Gothic', '12', 'B', '', '2px');
+    $str .= $this->reporter->col('GRAND TOTAL :', '350', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '12', 'B', '30px', '2px');
+    $str .= $this->reporter->col(number_format($totaldb, 2), '75', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '12', 'B', '', '2px');
+    $str .= $this->reporter->col(number_format($totalcr, 2), '75', null, false, '1px dotted ', 'T', 'R', 'Century Gothic', '12', 'B', '', '2px');
+    $str .= $this->reporter->col('', '75', null, false, '1px dotted ', 'T', 'C', 'Century Gothic', '12', 'B', '30px', '8px');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-            
+
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->printline();
     $str .= $this->reporter->endtable();
     $str .= '<br/><br/>';
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Prepared By : ','266',null,false,'1px solid ','','L','Century Gothic','12','','','');
-    $str .= $this->reporter->col('Approved By :','266',null,false,'1px solid ','','C','Century Gothic','12','','','');
-    $str .= $this->reporter->col('Received By :','266',null,false,'1px solid ','','R','Century Gothic','12','','','');
+    $str .= $this->reporter->col('Prepared By : ', '266', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', '', '', '');
+    $str .= $this->reporter->col('Approved By :', '266', null, false, '1px solid ', '', 'C', 'Century Gothic', '12', '', '', '');
+    $str .= $this->reporter->col('Received By :', '266', null, false, '1px solid ', '', 'R', 'Century Gothic', '12', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-        
+
     $str .= '<br/>';
     $str .= $this->reporter->begintable('800');
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col($prepared,'266',null,false,'1px solid ','','L','Century Gothic','12','B','','');
-    $str .= $this->reporter->col($approved,'266',null,false,'1px solid ','','C','Century Gothic','12','B','','');
-    $str .= $this->reporter->col($received,'266',null,false,'1px solid ','','R','Century Gothic','12','B','','');
+    $str .= $this->reporter->col($prepared, '266', null, false, '1px solid ', '', 'L', 'Century Gothic', '12', 'B', '', '');
+    $str .= $this->reporter->col($approved, '266', null, false, '1px solid ', '', 'C', 'Century Gothic', '12', 'B', '', '');
+    $str .= $this->reporter->col($received, '266', null, false, '1px solid ', '', 'R', 'Century Gothic', '12', 'B', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
-        
+
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->endreport();
     return $str;
@@ -282,7 +288,7 @@ class gj
     PDF::SetFont($fontbold, '', 14);
     PDF::MultiCell(0, 0, strtoupper($headerdata[0]->name), '', 'C');
     PDF::SetFont($fontbold, '', 13);
-    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address)."\n".strtoupper($headerdata[0]->tel)."\n\n\n", '', 'C');
+    PDF::MultiCell(0, 0, strtoupper($headerdata[0]->address) . "\n" . strtoupper($headerdata[0]->tel) . "\n\n\n", '', 'C');
 
     // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
     PDF::SetFont($fontbold, '', 18);
@@ -361,23 +367,23 @@ class gj
         $acnoname = $data[$i]['acnoname'];
         $ref = $data[$i]['ref'];
         $postdate = $data[$i]['postdate'];
-        $debit = number_format($data[$i]['db'],$decimalcurr);
-        $credit = number_format($data[$i]['cr'],$decimalcurr);
+        $debit = number_format($data[$i]['db'], $decimalcurr);
+        $credit = number_format($data[$i]['cr'], $decimalcurr);
         $client = $data[$i]['client'];
         $debit = $debit < 0 ? '-' : $debit;
         $credit = $credit < 0 ? '-' : $credit;
 
-        $arr_acno = $this->reporter->fixcolumn([$acno],'16',0);
-        $arr_acnoname = $this->reporter->fixcolumn([$acnoname],'40',0);
-        $arr_ref = $this->reporter->fixcolumn([$ref],'16',0);
-        $arr_postdate = $this->reporter->fixcolumn([$postdate],'16',0);
-        $arr_debit = $this->reporter->fixcolumn([$debit],'13',0);
-        $arr_credit = $this->reporter->fixcolumn([$credit],'13',0);
-        $arr_client = $this->reporter->fixcolumn([$client],'16',0);
+        $arr_acno = $this->reporter->fixcolumn([$acno], '16', 0);
+        $arr_acnoname = $this->reporter->fixcolumn([$acnoname], '40', 0);
+        $arr_ref = $this->reporter->fixcolumn([$ref], '16', 0);
+        $arr_postdate = $this->reporter->fixcolumn([$postdate], '16', 0);
+        $arr_debit = $this->reporter->fixcolumn([$debit], '13', 0);
+        $arr_credit = $this->reporter->fixcolumn([$credit], '13', 0);
+        $arr_client = $this->reporter->fixcolumn([$client], '16', 0);
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_client]);
 
-        for($r = 0; $r < $maxrow; $r++) {
+        for ($r = 0; $r < $maxrow; $r++) {
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(90, 0, (isset($arr_acno[$r]) ? $arr_acno[$r] : ''), '', 'L', false, 0, '', '', true, 1);
           PDF::MultiCell(160, 0, (isset($arr_acnoname[$r]) ? $arr_acnoname[$r] : ''), '', 'L', false, 0, '', '', false, 1);
@@ -391,14 +397,14 @@ class gj
 
         $totaldb += $data[$i]['db'];
         $totalcr += $data[$i]['cr'];
-    
+
         if (intVal($i) + 1 == $page) {
           $this->default_GJ_header_PDF($params, $data);
           $page += $count;
         }
       }
     }
-    
+
 
     PDF::MultiCell(700, 0, "", "T");
     PDF::SetFont($fontbold, '', $fontsize);
@@ -428,5 +434,4 @@ class gj
 
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
-
 }

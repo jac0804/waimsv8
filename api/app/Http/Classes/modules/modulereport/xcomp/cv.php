@@ -34,9 +34,9 @@ class cv
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -87,7 +87,7 @@ class cv
           break;
       }
     } else if ($config['params']['dataparams']['print'] == "PDFM") {
-      
+
       switch ($config['params']['dataparams']['reporttype']) {
         case '0': // VOUCHER
 
@@ -945,7 +945,7 @@ class cv
       PDF::MultiCell(80, $ewt_height, $key, 'LRB', '', false, 0);
 
       switch ($data['head'][0]['month']) {
-          // case '1': case '2': case '3':
+        // case '1': case '2': case '3':
         case '1':
         case '4':
         case '7':
@@ -955,7 +955,7 @@ class cv
           PDF::MultiCell(95, $ewt_height, '', 'LRB', '', false, 0);
           $totalwtx1 +=  $data['detail'][$key]['oamt'];
           break;
-          // case '4': case '5': case '6':
+        // case '4': case '5': case '6':
         case '2':
         case '5':
         case '8':
@@ -1166,7 +1166,7 @@ class cv
       $fontbold = TCPDF_FONTS::addTTFfont(database_path() . '/images/fonts/verdanab.ttf');
     }
 
-    if($companyid == 28){ //xcomp
+    if ($companyid == 28) { //xcomp
       $font = "helvetica";
     }
 
@@ -1202,12 +1202,12 @@ class cv
       $year = "<span style='letter-spacing:10px; margin-right:-7px'>" . date('Y', strtotime($data2[$i]['postdate'])) . "</span>";
       // PDF::MultiCell(253, 0, $params['params']['dataparams']['approved'], '', 'L', false, 0);
       // PDF::setFontSpacing(2);
-      
-        // PDF::writeHTML($addressparagraph, true, false, true, false, '');
+
+      // PDF::writeHTML($addressparagraph, true, false, true, false, '');
       PDF::SetFont($font, '', 11);
-      PDF::MultiCell(50, 0, $month, '', 'R', false, 0, '505', '40',true,0,true);
-      PDF::MultiCell(50, 0, $day, '', 'C', false, 0, '565', '',true,0,true);
-      PDF::MultiCell(50, 0, $year, '', 'C', false, 1, '', '',true,0,true);
+      PDF::MultiCell(50, 0, $month, '', 'R', false, 0, '505', '40', true, 0, true);
+      PDF::MultiCell(50, 0, $day, '', 'C', false, 0, '565', '', true, 0, true);
+      PDF::MultiCell(50, 0, $year, '', 'C', false, 1, '', '', true, 0, true);
 
       PDF::MultiCell(720, 5, "\n", '', 'L', false);
 

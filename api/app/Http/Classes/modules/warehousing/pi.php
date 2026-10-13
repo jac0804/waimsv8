@@ -45,11 +45,11 @@ class pi
     private $reporter;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -83,8 +83,18 @@ class pi
         $compatible = 11;
 
         $getcols = [
-            'action', 'barcode', 'partno', 'subcode', 'itemname', 'uom', 'dqty', 'amt',
-            'brand_desc', 'model_name', 'cl_name', 'compatible'
+            'action',
+            'barcode',
+            'partno',
+            'subcode',
+            'itemname',
+            'uom',
+            'dqty',
+            'amt',
+            'brand_desc',
+            'model_name',
+            'cl_name',
+            'compatible'
         ];
         $stockbuttons = ['view'];
         $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);

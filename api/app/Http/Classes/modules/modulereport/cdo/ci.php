@@ -33,9 +33,9 @@ class ci
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -422,7 +422,6 @@ class ci
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(30, 10, '', '', 'L', false, 0);
         PDF::MultiCell(295, 10, (isset($data[0]['address']) ? $data[0]['address'] : ''), '', 'L', false, 0);
-
     }
 
     public function invoice_ci_PDF($params, $data)
@@ -521,7 +520,7 @@ class ci
             $vat = $totalext / 1.12 * 0.12;
             $netVat = $totalext / 1.12;
             $vatsales = $totalext - $vat;
-            if ($ewtrate !=0){
+            if ($ewtrate != 0) {
                 $withholdingTax = $netVat * ($ewtrate / 100);
             }
             $sales1 = $totalext;

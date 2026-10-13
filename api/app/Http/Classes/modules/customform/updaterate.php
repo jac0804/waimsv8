@@ -28,10 +28,10 @@ class updaterate
     public $issearchshow = false;
     public $showclosebtn = true;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->coreFunctions = new coreFunctions;
         $this->companysetup = new companysetup;
         $this->othersClass = new othersClass;
@@ -96,6 +96,11 @@ class updaterate
 
         $divid = $this->coreFunctions->getfieldvalue('ddhead', 'divid', 'trno=?', array($trno));
 
+        $prevrate = $this->coreFunctions->getfieldvalue('divinfo', 'salary', 'divid=?', array($divid));
+        if ($prevrate === '' || $prevrate === null) {
+            $prevrate = 0;
+        }
+
         $data = array(
             'salary' => $rate,
             'editby' => $user,
@@ -113,7 +118,7 @@ class updaterate
         $this->coreFunctions->sbcupdate('dddetail', $detailData, array('trno' => $trno));
 
         $config['params']['doc'] = 'DD';
-        $this->logger->sbcwritelog($trno, $config, 'HEAD', 'UPDATE RATE - New Rate:' . $rate . ' (applied to all employees under this DDO)');
+        $this->logger->sbcwritelog($trno, $config, 'HEAD', 'UPDATE RATE - New Rate:' . $rate . '=>' . $prevrate . ' (applied to all employees under this DDO)');
 
         return array('status' => true, 'msg' => 'Rate successfully updated for all employees.', 'reloadhead' => true);
     }

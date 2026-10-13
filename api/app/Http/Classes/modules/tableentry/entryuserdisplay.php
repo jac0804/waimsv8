@@ -42,10 +42,10 @@ class entryuserdisplay
   private $reportheader;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -158,7 +158,7 @@ class entryuserdisplay
       if (!empty($data[$key]['bgcolor'])) {
         foreach ($this->fields as $key2 => $field) {
           $value = isset($data[$key][$field]) ? $data[$key][$field] : null;
-          $data2[$field] = $this->othersClass->sanitizekeyfieldFast($field, $value,$lookups);
+          $data2[$field] = $this->othersClass->sanitizekeyfieldFast($field, $value, $lookups);
         }
         if (empty(trim($data2['userid']))) {
           return ['status' => false, 'msg' => 'Saving failed. Please complete the empty userid.'];
@@ -318,11 +318,11 @@ class entryuserdisplay
     $data = [];
     $row = $config['params']['row'];
     $companyid = $config['params']['companyid'];
-    
+
     $dateTables = [$this->table];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     $row['usergrp'] = isset($row['groupname']) ? $row['groupname'] : ''; // FIX: map groupname to usergrp
     $data['usergrp'] = $row['usergrp']; // FIX: update data array with correct usergrp value

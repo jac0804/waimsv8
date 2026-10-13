@@ -51,11 +51,11 @@ class cc
     private $helpClass;
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -196,17 +196,44 @@ class cc
         $void = 14;
 
         $column =  [
-            'action', 'rrqty', 'uom', 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname',
-            'subamenityname', 'wh', 'ref', 'rem', 'qa', 'void'
+            'action',
+            'rrqty',
+            'uom',
+            'project',
+            'phasename',
+            'housemodel',
+            'blk',
+            'lot',
+            'amenityname',
+            'subamenityname',
+            'wh',
+            'ref',
+            'rem',
+            'qa',
+            'void'
         ];
         $sortcolumn =  [
-            'action', 'rrqty', 'uom', 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname',
-            'subamenityname', 'wh', 'ref', 'rem', 'qa', 'void'
+            'action',
+            'rrqty',
+            'uom',
+            'project',
+            'phasename',
+            'housemodel',
+            'blk',
+            'lot',
+            'amenityname',
+            'subamenityname',
+            'wh',
+            'ref',
+            'rem',
+            'qa',
+            'void'
         ];
 
         $tab = [
             $this->gridname => [
-                'gridcolumns' => $column, 'sortcolumns' => $sortcolumn,
+                'gridcolumns' => $column,
+                'sortcolumns' => $sortcolumn,
                 'headgridbtns' => []
             ]
         ];

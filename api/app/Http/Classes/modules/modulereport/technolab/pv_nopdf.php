@@ -31,9 +31,9 @@ class pv
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -82,9 +82,9 @@ class pv
       case 0: // VOUCHER
         $str = $this->rpt_DEFAULT_CCVOUCHER_LAYOUT1($data, $config);
         break;
-        // case 1:
-        //   $str = $this->rpt_DEFAULT_CCVOUCHER_LAYOUT2($data,$config);
-        //   break;
+      // case 1:
+      //   $str = $this->rpt_DEFAULT_CCVOUCHER_LAYOUT2($data,$config);
+      //   break;
       case 2:
         $str = $this->rpt_CV_WTAXREPORT($data, $config);
         break;

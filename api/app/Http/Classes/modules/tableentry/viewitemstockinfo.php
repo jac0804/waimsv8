@@ -34,10 +34,10 @@ class viewitemstockinfo
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -255,11 +255,11 @@ class viewitemstockinfo
         where s.trno='" . $trno . "'";
         break;
       default:
-      $filter = '';
-      if($hstock == 'glstock'){
-        $filter = " and s.cline = 0 ";
-      }
-       
+        $filter = '';
+        if ($hstock == 'glstock') {
+          $filter = " and s.cline = 0 ";
+        }
+
         $addf = "";
         $companyid = $config['params']['companyid'];
         if ($config['params']['doc'] == "TS") {

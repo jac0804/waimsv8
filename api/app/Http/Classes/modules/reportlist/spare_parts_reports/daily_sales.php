@@ -30,12 +30,12 @@ class daily_sales
     public $directprint = false;
     public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
     }
 
@@ -62,7 +62,7 @@ class daily_sales
         $fields = ['print'];
         $col3 = $this->fieldClass->create($fields);
 
-        return ['col1' => $col1,'col2' => $col2,'col3' => $col3];
+        return ['col1' => $col1, 'col2' => $col2, 'col3' => $col3];
     }
 
     public function paramsdata($config)
@@ -131,7 +131,7 @@ class daily_sales
                     where head.dateid between '$start' and '$end' and  head.doc in ('ci','CM')  $filter 
                 ) as a
                 group by dateid";
-            break;
+                break;
             case 'unposted': // unposted
                 $query = " select dateid,sum(total) as total
                 from (
@@ -143,7 +143,7 @@ class daily_sales
                      
                 ) as a
                 group by dateid";
-            break;
+                break;
             case 'all': // all
                 $query = " select dateid,sum(total) as total
                 from (
@@ -160,10 +160,10 @@ class daily_sales
                     where head.dateid between '$start' and '$end' and  head.doc in ('ci','CM')  $filter 
                 ) as a
                 group by dateid";
-            break;
+                break;
         }
 
-        
+
         return $query;
     }
 
@@ -251,7 +251,7 @@ class daily_sales
         $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
         $whname     = $config['params']['dataparams']['whname'];
         $posttype  = $config['params']['dataparams']['posttype'];
-        
+
         switch ($posttype) {
             case 'posted':
                 $posttype = "POSTED";

@@ -29,9 +29,24 @@ class entrytimecarddetails
   private $othersClass;
   public $style = 'width:100%;';
   private $fields = [
-    'dateid', 'daytype', 'shiftcode', 'schedin', 'schedout', 'schedbrkin',
-    'schedbrkout', 'actualin', 'actualout', 'actualbrkin', 'actualbrkout',
-    'reghrs', 'absdays', 'latehrs', 'underhrs', 'othrs', 'ndiffs', 'ndiffhrs'
+    'dateid',
+    'daytype',
+    'shiftcode',
+    'schedin',
+    'schedout',
+    'schedbrkin',
+    'schedbrkout',
+    'actualin',
+    'actualout',
+    'actualbrkin',
+    'actualbrkout',
+    'reghrs',
+    'absdays',
+    'latehrs',
+    'underhrs',
+    'othrs',
+    'ndiffs',
+    'ndiffhrs'
     // , , 
     // , , brk1stin, brk1stout, brk2ndin, 
     // brk2ndout, abrk1stin, abrk1stout, abrk2ndin, abrk2ndout, 
@@ -44,10 +59,10 @@ class entrytimecarddetails
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -65,9 +80,25 @@ class entrytimecarddetails
   public function createTab($config)
   {
     $tab = [$this->gridname => ['gridcolumns' => [
-      'action', 'dateid', 'daytype', 'shiftcode', 'schedin', 'schedbrkout', 'schedbrkin',
-      'schedout', 'actualin', 'actualbrkout', 'actualbrkin', 'actualout', 'reghrs', 'absdays',
-      'latehrs', 'underhrs', 'othrs', 'ndiffs', 'ndiffhrs'
+      'action',
+      'dateid',
+      'daytype',
+      'shiftcode',
+      'schedin',
+      'schedbrkout',
+      'schedbrkin',
+      'schedout',
+      'actualin',
+      'actualbrkout',
+      'actualbrkin',
+      'actualout',
+      'reghrs',
+      'absdays',
+      'latehrs',
+      'underhrs',
+      'othrs',
+      'ndiffs',
+      'ndiffhrs'
     ]]];
 
     $stockbuttons = ['save'];

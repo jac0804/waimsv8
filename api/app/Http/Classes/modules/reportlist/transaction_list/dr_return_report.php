@@ -30,12 +30,12 @@ class dr_return_report
   public $directprint = false;
   public $reportParams = ['orientation' => 'p', 'format' => 'legal', 'layoutSize' => '800'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -288,7 +288,7 @@ class dr_return_report
     $str .= $this->reporter->beginreport($layoutsize);
     $str .= $this->header_transaction_list($config);
     $total = 0;
-  
+
 
     foreach ($result as $key => $data) {
       $str .= $this->reporter->begintable('1000');

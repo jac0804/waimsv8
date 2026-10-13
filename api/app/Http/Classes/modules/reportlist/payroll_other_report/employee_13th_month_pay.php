@@ -35,18 +35,18 @@ class employee_13th_month_pay
   // layoutsize: reportWidth
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '700'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
   public function createHeadField($config)
   {
-    
+
     $companyid = $config['params']['companyid'];
     $fields = ['radioprint', 'dclientname', 'divrep', 'deptrep'];
 
@@ -66,9 +66,9 @@ class employee_13th_month_pay
     }
 
     $fields = ['start', 'end', 'radioreporttype'];
-    
+
     if ($companyid == 68) {
-      $fields = ['start', 'end','tpaygroup','radioreporttype'];
+      $fields = ['start', 'end', 'tpaygroup', 'radioreporttype'];
     }
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'start.required', true);
@@ -125,7 +125,7 @@ class employee_13th_month_pay
 
     $reporttype     = $config['params']['dataparams']['reporttype'];
     switch ($companyid) {
-      case '68':// JDA
+      case '68': // JDA
         switch ($reporttype) {
           case '0': // SUMMARY
             return $this->JDA_SUMMARY_Layout($config);
@@ -136,7 +136,7 @@ class employee_13th_month_pay
             break;
         }
         break;
-      
+
       default:
         switch ($reporttype) {
           case '0': // SUMMARY
@@ -149,7 +149,6 @@ class employee_13th_month_pay
         }
         break;
     }
-    
   }
   public function RT_query($config)
   {
@@ -173,7 +172,7 @@ class employee_13th_month_pay
     }
   }
 
-  
+
   // public function JDA_query($config)
   // {
   //   $companyid = $config['params']['companyid'];
@@ -340,7 +339,7 @@ class employee_13th_month_pay
     return $this->coreFunctions->opentable($query);
   }
 
-  
+
   public function JDA_SUMMARY_QRY($config)
   {
     // QUERY
@@ -413,8 +412,8 @@ class employee_13th_month_pay
     $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
 
-    
-    
+
+
     $payid     = $config['params']['dataparams']['paygroupid'];
     $payname     = $config['params']['dataparams']['tpaygroup'];
 
@@ -803,7 +802,7 @@ class employee_13th_month_pay
     return $str;
   }
 
-  
+
   private function display_JDA_Header($config)
   {
 
@@ -827,7 +826,7 @@ class employee_13th_month_pay
     $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $reporttype     = $config['params']['dataparams']['reporttype'];
 
-    
+
     $payid     = $config['params']['dataparams']['paygroupid'];
     $payname     = $config['params']['dataparams']['tpaygroup'];
 
@@ -877,7 +876,7 @@ class employee_13th_month_pay
     }
     $str .= $this->reporter->endrow();
 
-    
+
     $str .= $this->reporter->startrow();
     if ($payid == 0 || $payid == '') {
       $str .= $this->reporter->col('PAY GROUP : ALL GROUPS', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
@@ -886,7 +885,7 @@ class employee_13th_month_pay
     }
 
     $str .= $this->reporter->col('', NULL, null, false, $border, '', 'L', $font, '10', '', '', '', '');
-  
+
     $str .= $this->reporter->endrow();
 
     $str .= $this->reporter->endtable();
@@ -919,7 +918,7 @@ class employee_13th_month_pay
     return $str;
   }
 
-  
+
   public function JDA_SUMMARY_Layout($config)
   {
 
@@ -948,7 +947,7 @@ class employee_13th_month_pay
     $str .= $this->reporter->beginreport($layoutsize);
 
     $str .= $this->display_JDA_Header($config);
-  
+
 
 
     // $str .= $this->reporter->begintable($layoutsize);

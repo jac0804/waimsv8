@@ -41,9 +41,9 @@ class sales_per_customer_per_item
 
   public $reportParams = ['orientation' => 'p', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -312,13 +312,13 @@ class sales_per_customer_per_item
       $opt = " sum($option) as sales";
     }
 
-    if($companyid == 47){//kstar
+    if ($companyid == 47) { //kstar
       $itemname = " concat(item.itemname,' ',item.color,' ',item.sizeid) as itemname ";
     }
 
     $query = "select docno,client, clientname, barcode, itemname,$opt, amt as price,shipto,yourref, ourref,dateid,agentname
               from (select 'u' as tr, head.trno, head.doc, head.docno, head.client, head.clientname, item.barcode, 
-                          ".$itemname.", stock.iss as qty, stock.amt, stock.ext as sales, head.shipto, yourref, ourref, head.dateid,ag.clientname as agentname
+                          " . $itemname . ", stock.iss as qty, stock.amt, stock.ext as sales, head.shipto, yourref, ourref, head.dateid,ag.clientname as agentname
                     from lahead as head 
                     left join lastock as stock on stock.trno=head.trno 
                     left join client on client.client=head.client
@@ -330,7 +330,7 @@ class sales_per_customer_per_item
                     union all
                     select 'p' as tr, head.trno, head.doc, head.docno, 
                     client.client, head.clientname, item.barcode, 
-                    ".$itemname.", stock.iss as qty, stock.amt, stock.ext as sales, head.shipto, yourref, ourref, head.dateid,ag.clientname as agentname
+                    " . $itemname . ", stock.iss as qty, stock.amt, stock.ext as sales, head.shipto, yourref, ourref, head.dateid,ag.clientname as agentname
                     from glhead as head 
                     left join glstock as stock on stock.trno=head.trno 
                     left join client on client.clientid=head.clientid

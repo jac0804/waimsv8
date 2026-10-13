@@ -37,9 +37,9 @@ class pl
   private $logger;
   private $reporter;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -106,7 +106,7 @@ class pl
             left join client on client.client = hpl.client
             where head.pltrno = '$trno' and num.center='" . $center . "'
             group by head.docno,date(head.dateid),it.itemname,it.sizeid,stock.uom,
-            hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address,hpl.amount";      
+            hpl.doc,hpl.docno,hpl.dateid,hpl.trno , client.clientname,hpl.address,hpl.amount";
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
     return $result;
   } //end fn
@@ -313,10 +313,10 @@ class pl
     return PDF::Output($this->modulename . '.pdf', 'S');
   }
 
-  
-   //Isinasara ang kasalukuyang page (continuation footer + page number),
-   //pagkatapos ay nagbubukas ng bagong page na may header.
-   // Ibinabalik ang starting Y para sa item rows sa bagong page.
+
+  //Isinasara ang kasalukuyang page (continuation footer + page number),
+  //pagkatapos ay nagbubukas ng bagong page na may header.
+  // Ibinabalik ang starting Y para sa item rows sa bagong page.
 
   private function roosevelt_pl_newpage($params, $data, $tablehead = 0)
   {

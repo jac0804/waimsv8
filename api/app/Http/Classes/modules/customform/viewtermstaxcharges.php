@@ -31,10 +31,10 @@ class viewtermstaxcharges
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -93,10 +93,9 @@ class viewtermstaxcharges
           data_set($col1, 'dvattype.lookupclass', 'customvattype');
           data_set($col1, 'dvattype.type', 'lookup');
         }
-       
+
         data_set($col1, 'dvattype.label', 'Taxes And Charge');
         data_set($col1, 'refresh.label', 'save');
-        
       }
     }
 

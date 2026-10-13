@@ -34,9 +34,9 @@ class customer
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -50,7 +50,7 @@ class customer
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'radioprint.options', [
             ['label' => 'PDF', 'value' => 'PDFM', 'color' => 'red'],
-            
+
         ]);
 
         return array('col1' => $col1);
@@ -384,7 +384,7 @@ class customer
     //DEFAULT LAYOUT
     public function reportdefaultAR($config, $data)
     {
-        
+
 
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -584,7 +584,7 @@ class customer
 
     public function reportdefaultAP($config, $data)
     {
-        
+
 
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -776,7 +776,7 @@ class customer
 
     public function reportdefaultPDC($config, $data)
     {
-        
+
 
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -968,7 +968,7 @@ class customer
 
     public function reportdefaultRC($config, $data)
     {
-        
+
 
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -1161,7 +1161,7 @@ class customer
 
     public function reportdefaultSTOCK($config, $data)
     {
-        
+
 
         $center   = $config['params']['center'];
         $username = $config['params']['user'];
@@ -1483,7 +1483,7 @@ class customer
             } //end if
 
             PDF::SetFont($font, '', $fontsize);
-            
+
             PDF::MultiCell(110, 15, $data->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(70, 15, $data->dateid, '', 'C', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(110, 15, $data->agent, '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1505,7 +1505,7 @@ class customer
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize);
-        
+
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1664,7 +1664,7 @@ class customer
             $balance = $balance < 0 ? '-' : $balance;
 
             PDF::SetFont($font, '', $fontsize);
-            
+
             PDF::MultiCell(110, 15, $data->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(70, 15, $data->dateid, '', 'C', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(110, 15, $data->agent, '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1686,7 +1686,7 @@ class customer
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize);
-        
+
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1846,7 +1846,7 @@ class customer
             $debit = $debit < 0 ? '-' : $debit;
 
             PDF::SetFont($font, '', $fontsize);
-            
+
             PDF::MultiCell(110, 15, $data1->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(70, 15, date('Y-m-d', strtotime($data1->checkdate)), '', 'C', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(110, 15, $data1->agentname, '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -1867,7 +1867,7 @@ class customer
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize);
-        
+
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -2026,7 +2026,7 @@ class customer
             $balance = number_format($data->bal, 2);
             $balance = $balance < 0 ? '-' : $balance;
             PDF::SetFont($font, '', $fontsize);
-            
+
             PDF::MultiCell(110, 15, $data->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(70, 15, $data->dateid, '', 'C', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(110, 15, $data->agent, '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -2049,7 +2049,7 @@ class customer
 
         PDF::MultiCell(0, 0, "\n");
         PDF::SetFont($fontbold, '', $fontsize);
-        
+
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(70, 15, '', '', 'C', 0, 0, '', '', true, 0, true, false);
         PDF::MultiCell(110, 15, '', '', 'L', 0, 0, '', '', true, 0, true, false);
@@ -2210,7 +2210,7 @@ class customer
             $isqty = $isqty < 0 ? '-' : $isqty;
 
             PDF::SetFont($font, '', $fontsize);
-            
+
             PDF::MultiCell(110, 15, $data1->docno, '', 'L', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(70, 15, date('Y-m-d', strtotime($data1->dateid)), '', 'C', 0, 0, '', '', true, 0, true, false);
             PDF::MultiCell(110, 15, $data1->barcode, '', 'L', 0, 0, '', '', true, 0, true, false);

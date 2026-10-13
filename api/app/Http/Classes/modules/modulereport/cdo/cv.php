@@ -39,9 +39,9 @@ class cv
     private $logger;
     private $reporter;
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -123,11 +123,11 @@ class cv
     {
         $username = $this->coreFunctions->datareader("select name as value from useraccess where username =? ", [$config['params']['user']]);
         $approved = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'approved' and doc =? limit 1 ", [$config['params']['doc']]);
-        $received = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'received' and doc =? and userid = ? ", [$config['params']['doc'],$config['params']['user']]);
-        $checked = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'checked' and doc =? and userid = ? ", [$config['params']['doc'],$config['params']['user']]);
-        $payor = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'payor' and doc =? and userid = ? ", [$config['params']['doc'],$config['params']['user']]);
-        $tin = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'tin' and doc =? and userid = ? ", [$config['params']['doc'],$config['params']['user']]);
-        $position = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'position' and doc =? and userid = ? ", [$config['params']['doc'],$config['params']['user']]);
+        $received = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'received' and doc =? and userid = ? ", [$config['params']['doc'], $config['params']['user']]);
+        $checked = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'checked' and doc =? and userid = ? ", [$config['params']['doc'], $config['params']['user']]);
+        $payor = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'payor' and doc =? and userid = ? ", [$config['params']['doc'], $config['params']['user']]);
+        $tin = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'tin' and doc =? and userid = ? ", [$config['params']['doc'], $config['params']['user']]);
+        $position = $this->coreFunctions->datareader("select fieldvalue as value from signatories where fieldname = 'position' and doc =? and userid = ? ", [$config['params']['doc'], $config['params']['user']]);
 
         return $this->coreFunctions->opentable(
             "select 

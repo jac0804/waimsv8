@@ -62,11 +62,11 @@ class tr
   private $sbcscript;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -210,26 +210,42 @@ class tr
     if ($tr_btndisapprove_access == 0) {
       unset($headgridbtns[2]);
     }
-    $action = 0;
-    $reqqty = 1;
-    $rrcost = 2;
-    $ext = 3;
-    $rrqty = 4;
-    $qa = 5;
-    $uom = 6;
-    $rem = 7;
-    $wh = 8;
-    $itemname = 9;
-    $barcode = 10;
+    // $action = 0;
+    // $reqqty = 1;
+    // $rrcost = 2;
+    // $ext = 3;
+    // $rrqty = 4;
+    // $qa = 5;
+    // $uom = 6;
+    // $rem = 7;
+    // $wh = 8;
+    // $itemname = 9;
+    // $barcode = 10;
+
+    $columns = ['action', 'reqqty', 'rrcost', 'ext', 'rrqty', 'qa', 'uom', 'rem', 'wh', 'loc', 'itemname', 'barcode'];
+    foreach ($columns as $key => $value) {
+      $$value = $key;
+    }
+
+
     $tab = [
       $this->gridname => [
-        'gridcolumns' => ['action', 'reqqty', 'rrcost', 'ext', 'rrqty', 'qa', 'uom', 'rem', 'wh', 'itemname', 'barcode'],
+        'gridcolumns' => [],
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => $headgridbtns
       ]
     ];
+
     $stockbuttons = ['save', 'delete', 'showbalance'];
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
+
+    if ($companyid == 68) { //jda
+      $obj[0][$this->gridname]['columns'][$loc]['label'] = 'Location';
+      $obj[0][$this->gridname]['columns'][$loc]['readonly'] = false;
+      $obj[0][$this->gridname]['columns'][$loc]['type'] = 'editlookup';
+    } else {
+      $obj[0][$this->gridname]['columns'][$loc]['type'] = 'coldel';
+    }
 
     if ($companyid == 39) { //cbbsi
       $obj[0][$this->gridname]['columns'][$ext]['label'] = 'Amount';
@@ -912,6 +928,11 @@ class tr
       $rem = $config['params']['data']['rem'];
     }
 
+    $loc = '';
+    if (isset($config['params']['data']['loc'])) {
+      $loc = $config['params']['data']['loc'];
+    }
+
     $line = 0;
     if ($action == 'insert') {
       $qry = "select line as value from " . $this->stock . " where trno=? order by line desc limit 1";
@@ -967,6 +988,10 @@ class tr
       'rem' => $rem
 
     ];
+
+    if ($companyid == 68) { //jda
+      $data['loc'] = $loc;
+    }
 
     foreach ($data as $key => $value) {
       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);

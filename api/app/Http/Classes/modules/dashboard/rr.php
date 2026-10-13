@@ -30,10 +30,10 @@ class rr
   public $showclosebtn = true;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -119,7 +119,7 @@ class rr
     $classid = $config['params']['dataparams']['classid'];
     $filter = " and date(apledger.dateid) >='$date'";
     $filter2 = " and date(head.dateid) >='$date'";
-    if ($companyid == 47){//kstar
+    if ($companyid == 47) { //kstar
       $filter = " and date(apledger.dateid) ='$date' ";
       $filter2 = " and date(head.dateid) ='$date' ";
     }
@@ -165,13 +165,13 @@ class rr
     $data = $this->coreFunctions->opentable($qry);
     return ['status' => true, 'msg' => 'Successfully loaded.', 'data' => $data];
   }
-  public function checkdoc($doc,$companyid)
+  public function checkdoc($doc, $companyid)
   {
     $url = '';
     switch (strtolower($doc)) {
       case 'rr':
         $folderloc = 'purchase';
-        if($companyid == 47){ // kstar
+        if ($companyid == 47) { // kstar
           $folderloc = 'kitchenstar';
         }
         $url = "/module/" . $folderloc . "/";

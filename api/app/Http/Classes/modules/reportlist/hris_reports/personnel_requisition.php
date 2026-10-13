@@ -32,12 +32,12 @@ class personnel_requisition
 
   public $reportParams = ['orientation' => 'l', 'format' => 'letter', 'layoutSize' => '1000'];
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->reporter = new SBCPDF;
   }
 
@@ -221,10 +221,11 @@ class personnel_requisition
       // if ($deptid != 0) {
       //   $filter1 .= " and d.clientid = $deptid";
       // }
-      if ($deptname !=''){
-          if ($deptid != 0) {
-            $filter1 .= " and d.clientid = $deptid";
-      }}
+      if ($deptname != '') {
+        if ($deptid != 0) {
+          $filter1 .= " and d.clientid = $deptid";
+        }
+      }
       $query = "select '' as client,head.docno,date(head.dateid) as dateid, head.dept, personnel, dateneed, job, 
                      head.class, headcount, hpref, agerange,gpref, `rank`, empstat.line as empstatusid, empstat.empstatus as empstatus, reason, remark, refx, qualification,d.clientname as deptname, em.clientname as personnelname, head.empid, jh.jobtitle 
               from personreq as head

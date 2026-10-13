@@ -37,10 +37,10 @@ class entryparticulars
   private $logger;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -128,7 +128,7 @@ class entryparticulars
     $companyid = $config['params']['companyid'];
     $dateTables = [$this->table];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
-    
+
     $data = $config['params']['data'];
     foreach ($data as $key => $value) {
       $data2 = [];
@@ -178,12 +178,12 @@ class entryparticulars
     $userid = $config['params']['adminid'];
     $data = [];
     $row = $config['params']['row'];
-    
+
     $companyid = $config['params']['companyid'];
     $dateTables = [$this->table];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
     foreach ($this->fields as $key => $value) {
-      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value],$lookups);
+      $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }
     if ($row['line'] == 0) {
       $qry = "select line as value from " . $this->table . " where trno=? order by line desc limit 1";

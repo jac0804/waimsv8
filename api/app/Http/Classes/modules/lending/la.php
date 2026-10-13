@@ -81,11 +81,11 @@ class la
     public $labellocked = 'For Review';
 
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->btnClass = new buttonClass;
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -1352,19 +1352,19 @@ class la
     } //end function
 
     public function createdistribution($config)
-  {
-    $companyid = $config['params']['companyid'];
-    $trno = $config['params']['trno'];
-    $status = true;
-    $entry = [];
-    $pf = 0;
+    {
+        $companyid = $config['params']['companyid'];
+        $trno = $config['params']['trno'];
+        $status = true;
+        $entry = [];
+        $pf = 0;
 
-    $dateTables = ['ladetail'];
-    $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
+        $dateTables = ['ladetail'];
+        $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
+        $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
 
-    $qry = 'select head.dateid,head.client,dinfo.principal,dinfo.interest,dinfo.pfnf,terms.days,head.tax
+        $qry = 'select head.dateid,head.client,dinfo.principal,dinfo.interest,dinfo.pfnf,terms.days,head.tax
     from ' . $this->head . ' as head
     left join client on client.client = head.client
     left join heahead as app on app.trno=head.aftrno
@@ -1374,198 +1374,198 @@ class la
     where head.trno=?';
 
 
-    $stock = $this->coreFunctions->opentable($qry, [$trno]);
-    $tax = 0;
-    if (!empty($stock)) {
-      $aracct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['AR1']);//principal
-      $revacct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['AP1']);
-      $arintacct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['AR2']);//interest
-      $revintacct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['SA2']);
-      $arpfacct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['AR3']);//others
-      $revpfacct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['SA3']);
-      $vatacct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['TX2']);
-      $vat = floatval($stock[0]->tax);
-      $tax1 = 0;
-      $tax2 = 0;
-      if ($vat !== 0) {
-        $tax1 = 1 + ($vat / 100);
-        $tax2 = $vat / 100;
-      }
-
-      $cr = 0;
-      $day = date("d", strtotime($stock[0]->dateid));
-      $mnth = date("m", strtotime($stock[0]->dateid));
-      $yr = date("Y", strtotime($stock[0]->dateid));
-
-      $tprincipal=0;
-      $tinterest =0;
-      $tpfnf =0;
-   
-        $balmons = $stock[0]->days;
-        $rdate = strtotime($stock[0]->dateid);  
-        $i=1;
-        $y=1;
-        foreach ($stock as $k => $v) {
-            $pdate = date("Y-m-d", strtotime("+$y month", $rdate));
-            if($stock[$k]->principal){
-                $d['trno'] = $trno;
-                $d['line'] = $i;
-                $d['acnoid'] = $aracct;
-                $d['client'] = $stock[$k]->client;
-                $d['postdate'] = $pdate;
-                $d['db'] = $stock[$k]->principal;
-                $d['cr'] = 0;
-
-                $locale = 'en_US';
-                $nf = new \NumberFormatter($locale, \NumberFormatter::ORDINAL);
-                $d['rem'] = $nf->format($y) . ' MA';
-                $this->acctg = $this->othersClass->upsertdetail($this->acctg, $d, $config);
-                $i += 1;
-                $tprincipal = $tprincipal + $stock[$k]->principal;
-            }  
-
-            if($stock[$k]->interest){
-                $d['trno'] = $trno;
-                $d['line'] = $i;
-                $d['acnoid'] = $arintacct;
-                $d['client'] = $stock[$k]->client;
-                $d['postdate'] = $pdate;
-                $d['db'] = $stock[$k]->interest;
-                $d['cr'] = 0;
-
-                $locale = 'en_US';
-                $nf = new \NumberFormatter($locale, \NumberFormatter::ORDINAL);
-                $d['rem'] = $nf->format($y) . ' Interest';
-                $this->acctg = $this->othersClass->upsertdetail($this->acctg, $d, $config);
-                $i += 1;
-                $tinterest = $tinterest + $stock[$k]->interest;
+        $stock = $this->coreFunctions->opentable($qry, [$trno]);
+        $tax = 0;
+        if (!empty($stock)) {
+            $aracct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['AR1']); //principal
+            $revacct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['AP1']);
+            $arintacct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['AR2']); //interest
+            $revintacct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['SA2']);
+            $arpfacct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['AR3']); //others
+            $revpfacct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['SA3']);
+            $vatacct = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['TX2']);
+            $vat = floatval($stock[0]->tax);
+            $tax1 = 0;
+            $tax2 = 0;
+            if ($vat !== 0) {
+                $tax1 = 1 + ($vat / 100);
+                $tax2 = $vat / 100;
             }
-            
-            if($stock[$k]->pfnf){
+
+            $cr = 0;
+            $day = date("d", strtotime($stock[0]->dateid));
+            $mnth = date("m", strtotime($stock[0]->dateid));
+            $yr = date("Y", strtotime($stock[0]->dateid));
+
+            $tprincipal = 0;
+            $tinterest = 0;
+            $tpfnf = 0;
+
+            $balmons = $stock[0]->days;
+            $rdate = strtotime($stock[0]->dateid);
+            $i = 1;
+            $y = 1;
+            foreach ($stock as $k => $v) {
+                $pdate = date("Y-m-d", strtotime("+$y month", $rdate));
+                if ($stock[$k]->principal) {
+                    $d['trno'] = $trno;
+                    $d['line'] = $i;
+                    $d['acnoid'] = $aracct;
+                    $d['client'] = $stock[$k]->client;
+                    $d['postdate'] = $pdate;
+                    $d['db'] = $stock[$k]->principal;
+                    $d['cr'] = 0;
+
+                    $locale = 'en_US';
+                    $nf = new \NumberFormatter($locale, \NumberFormatter::ORDINAL);
+                    $d['rem'] = $nf->format($y) . ' MA';
+                    $this->acctg = $this->othersClass->upsertdetail($this->acctg, $d, $config);
+                    $i += 1;
+                    $tprincipal = $tprincipal + $stock[$k]->principal;
+                }
+
+                if ($stock[$k]->interest) {
+                    $d['trno'] = $trno;
+                    $d['line'] = $i;
+                    $d['acnoid'] = $arintacct;
+                    $d['client'] = $stock[$k]->client;
+                    $d['postdate'] = $pdate;
+                    $d['db'] = $stock[$k]->interest;
+                    $d['cr'] = 0;
+
+                    $locale = 'en_US';
+                    $nf = new \NumberFormatter($locale, \NumberFormatter::ORDINAL);
+                    $d['rem'] = $nf->format($y) . ' Interest';
+                    $this->acctg = $this->othersClass->upsertdetail($this->acctg, $d, $config);
+                    $i += 1;
+                    $tinterest = $tinterest + $stock[$k]->interest;
+                }
+
+                if ($stock[$k]->pfnf) {
+                    $d['trno'] = $trno;
+                    $d['line'] = $i;
+                    $d['acnoid'] = $arpfacct;
+                    $d['client'] = $stock[$k]->client;
+                    $d['postdate'] = $pdate;
+                    $d['db'] = $stock[$k]->pfnf;
+                    $d['cr'] = 0;
+
+                    $locale = 'en_US';
+                    $nf = new \NumberFormatter($locale, \NumberFormatter::ORDINAL);
+                    $d['rem'] = $nf->format($y) . ' PF & NF';
+                    $this->acctg = $this->othersClass->upsertdetail($this->acctg, $d, $config);
+                    $i += 1;
+                    $tpfnf = $tpfnf + $stock[$k]->pfnf;
+                }
+                $y += 1;
+            }
+
+            //output entry  
+            if ($stock[0]->tax != 0) {
+                $tax = (($tprincipal + $tinterest + $tpfnf) / 1.12) * .12;
+            }
+
+            if ($tax != 0) {
+                //tax
                 $d['trno'] = $trno;
                 $d['line'] = $i;
-                $d['acnoid'] = $arpfacct;
+                $d['acnoid'] = $vatacct;
                 $d['client'] = $stock[$k]->client;
-                $d['postdate'] = $pdate;
-                $d['db'] = $stock[$k]->pfnf;
-                $d['cr'] = 0;
-
-                $locale = 'en_US';
-                $nf = new \NumberFormatter($locale, \NumberFormatter::ORDINAL);
-                $d['rem'] = $nf->format($y) . ' PF & NF';
+                $d['postdate'] = $stock[0]->dateid;
+                $d['db'] = 0;
+                $d['cr'] = $tax;
+                $d['rem'] = '';
                 $this->acctg = $this->othersClass->upsertdetail($this->acctg, $d, $config);
                 $i += 1;
-                $tpfnf = $tpfnf + $stock[$k]->pfnf;
             }
-          $y+=1;
-        }
-  
-        //output entry  
-        if ($stock[0]->tax != 0) {
-          $tax = (($tprincipal+$tinterest+$tpfnf) / 1.12) * .12;
-        }
-  
-        if ($tax != 0) {
-          //tax
-          $d['trno'] = $trno;
-          $d['line'] = $i;
-          $d['acnoid'] = $vatacct;
-          $d['client'] = $stock[$k]->client;
-          $d['postdate'] = $stock[0]->dateid;
-          $d['db'] = 0;
-          $d['cr'] = $tax;
-          $d['rem'] = '';
-          $this->acctg = $this->othersClass->upsertdetail($this->acctg, $d, $config);
-          $i += 1;
-        }
-  
-        
-        //principal
-        if($tprincipal!=0){
-            $d['trno'] = $trno;
-            $d['line'] = $i;
-            $d['acnoid'] = $revacct;
-            $d['client'] =  $stock[$k]->client;
-            $d['postdate'] = $stock[0]->dateid;
-            $d['db'] = 0;
-            $d['cr'] = $tprincipal/$tax1;
-            $d['rem'] = '';
-            //array_push($det, $d);
-            $this->acctg = $this->othersClass->upsertdetail($this->acctg, $d, $config);
-            $i += 1;
-        }
-        
-  
-        //unearned int.
-        if($tinterest!=0){
-            $d['trno'] = $trno;
-            $d['line'] = $i;
-            $d['acnoid'] = $revintacct;
-            $d['client'] = $stock[$k]->client;
-            $d['postdate'] = $stock[0]->dateid;
-            $d['db'] = 0;
-            $d['cr'] = $tinterest/$tax1;
-            $d['rem'] = '';
-            //array_push($det, $d);
-            $this->acctg = $this->othersClass->upsertdetail($this->acctg, $d, $config);
-            $i += 1;
-        }
-       
-  
-        //pfnf
-        if ($tpfnf != 0) {
-            $d['trno'] = $trno;
-            $d['line'] = $i;
-            $d['acnoid'] = $revpfacct;
-            $d['client'] =  $stock[$k]->client;
-            $d['postdate'] = $stock[0]->dateid;
-            $d['db'] = 0;
-            $d['cr'] = $tpfnf/$tax1;
-            $d['rem'] = '';
-            //array_push($det, $d);
-            $this->acctg = $this->othersClass->upsertdetail($this->acctg, $d, $config);
-            $i += 1;
-          }
-      }
-  
-    if (!empty($this->acctg)) {
-      $current_timestamp = $this->othersClass->getCurrentTimeStamp();
-      foreach ($this->acctg as $key => $value) {
-        foreach ($value as $key2 => $value2) {
-            $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
-        }
-        $this->acctg[$key]['editdate'] = $current_timestamp;
-        $this->acctg[$key]['editby'] = $config['params']['user'];
-        $this->acctg[$key]['encodeddate'] = $current_timestamp;
-        $this->acctg[$key]['encodedby'] = $config['params']['user'];
-        $this->acctg[$key]['trno'] = $config['params']['trno'];
-        $this->acctg[$key]['db'] = round($this->acctg[$key]['db'], 2);
-        $this->acctg[$key]['cr'] = round($this->acctg[$key]['cr'], 2);
-      }
-      if ($this->coreFunctions->sbcinsert($this->detail, $this->acctg) == 1) {
-        $this->logger->sbcwritelog($trno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION SUCCESS');
-        $status = true;
-      } else {
-        $this->logger->sbcwritelog($trno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION FAILED');
-        $status = false;
-      }
 
-      //checking for 0.01 discrepancy
-      $variance = $this->coreFunctions->datareader("select sum(db-cr) as value from " . $this->detail . " where trno=?", [$trno], '', true);
-      if (abs($variance) == 0.01) {
-        $taxamt = $this->coreFunctions->datareader("select d.cr as value from " . $this->detail . " as d left join coa on coa.acnoid=d.acnoid where d.trno=? and coa.alias='TX2'", [$trno], '', true);
-        if ($taxamt != 0) {
-          $salesentry = $this->coreFunctions->opentable("select d.line from " . $this->detail . " as d left join coa on coa.acnoid=d.acnoid where d.trno=? and left(coa.alias,2)='SA'  order by d.line desc limit 1", [$trno]);
-          if ($salesentry) {
-            $this->coreFunctions->execqry("update " . $this->detail . " set cr=cr+" . $variance . " where trno=" . $trno . " and line=" . $salesentry[0]->line);
-            $this->logger->sbcwritelog($trno, $config, 'DETAILS', 'FORCE BALANCE WITH 0.01 VARIANCE');
-          }
-        }
-      }
-    }
 
-    return $status;
-  } //end function
+            //principal
+            if ($tprincipal != 0) {
+                $d['trno'] = $trno;
+                $d['line'] = $i;
+                $d['acnoid'] = $revacct;
+                $d['client'] =  $stock[$k]->client;
+                $d['postdate'] = $stock[0]->dateid;
+                $d['db'] = 0;
+                $d['cr'] = $tprincipal / $tax1;
+                $d['rem'] = '';
+                //array_push($det, $d);
+                $this->acctg = $this->othersClass->upsertdetail($this->acctg, $d, $config);
+                $i += 1;
+            }
+
+
+            //unearned int.
+            if ($tinterest != 0) {
+                $d['trno'] = $trno;
+                $d['line'] = $i;
+                $d['acnoid'] = $revintacct;
+                $d['client'] = $stock[$k]->client;
+                $d['postdate'] = $stock[0]->dateid;
+                $d['db'] = 0;
+                $d['cr'] = $tinterest / $tax1;
+                $d['rem'] = '';
+                //array_push($det, $d);
+                $this->acctg = $this->othersClass->upsertdetail($this->acctg, $d, $config);
+                $i += 1;
+            }
+
+
+            //pfnf
+            if ($tpfnf != 0) {
+                $d['trno'] = $trno;
+                $d['line'] = $i;
+                $d['acnoid'] = $revpfacct;
+                $d['client'] =  $stock[$k]->client;
+                $d['postdate'] = $stock[0]->dateid;
+                $d['db'] = 0;
+                $d['cr'] = $tpfnf / $tax1;
+                $d['rem'] = '';
+                //array_push($det, $d);
+                $this->acctg = $this->othersClass->upsertdetail($this->acctg, $d, $config);
+                $i += 1;
+            }
+        }
+
+        if (!empty($this->acctg)) {
+            $current_timestamp = $this->othersClass->getCurrentTimeStamp();
+            foreach ($this->acctg as $key => $value) {
+                foreach ($value as $key2 => $value2) {
+                    $this->acctg[$key][$key2] = $this->othersClass->sanitizekeyfieldFast($key2, $value2, $lookups);
+                }
+                $this->acctg[$key]['editdate'] = $current_timestamp;
+                $this->acctg[$key]['editby'] = $config['params']['user'];
+                $this->acctg[$key]['encodeddate'] = $current_timestamp;
+                $this->acctg[$key]['encodedby'] = $config['params']['user'];
+                $this->acctg[$key]['trno'] = $config['params']['trno'];
+                $this->acctg[$key]['db'] = round($this->acctg[$key]['db'], 2);
+                $this->acctg[$key]['cr'] = round($this->acctg[$key]['cr'], 2);
+            }
+            if ($this->coreFunctions->sbcinsert($this->detail, $this->acctg) == 1) {
+                $this->logger->sbcwritelog($trno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION SUCCESS');
+                $status = true;
+            } else {
+                $this->logger->sbcwritelog($trno, $config, 'DETAILS', 'AUTOMATIC ACCOUNTING DISTRIBUTION FAILED');
+                $status = false;
+            }
+
+            //checking for 0.01 discrepancy
+            $variance = $this->coreFunctions->datareader("select sum(db-cr) as value from " . $this->detail . " where trno=?", [$trno], '', true);
+            if (abs($variance) == 0.01) {
+                $taxamt = $this->coreFunctions->datareader("select d.cr as value from " . $this->detail . " as d left join coa on coa.acnoid=d.acnoid where d.trno=? and coa.alias='TX2'", [$trno], '', true);
+                if ($taxamt != 0) {
+                    $salesentry = $this->coreFunctions->opentable("select d.line from " . $this->detail . " as d left join coa on coa.acnoid=d.acnoid where d.trno=? and left(coa.alias,2)='SA'  order by d.line desc limit 1", [$trno]);
+                    if ($salesentry) {
+                        $this->coreFunctions->execqry("update " . $this->detail . " set cr=cr+" . $variance . " where trno=" . $trno . " and line=" . $salesentry[0]->line);
+                        $this->logger->sbcwritelog($trno, $config, 'DETAILS', 'FORCE BALANCE WITH 0.01 VARIANCE');
+                    }
+                }
+            }
+        }
+
+        return $status;
+    } //end function
 
     //  to follow posting
     public function posttrans($config)
@@ -1578,12 +1578,12 @@ class la
         if ($this->othersClass->isposted($config)) {
             return ['status' => false, 'msg' => 'Posting failed. Transaction has already been posted.'];
         }
-        
+
         if (!$this->createdistribution($config)) {
             return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. Problems in creating accounting entries.'];
-          } else {
+        } else {
             return $this->othersClass->posttransacctg($config);
-          }
+        }
     } //end function
 
     public function unposttrans($config)

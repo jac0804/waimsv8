@@ -30,7 +30,7 @@ class postingapv
   private $logger;
   private $sqlquery;
   public $expirystatus = ['readonly' => false, 'show' => false, 'showdate' => true];
-  
+
   public $prefix = '';
   public $head = 'lahead';
   public $hhead = 'glhead';
@@ -58,21 +58,21 @@ class postingapv
   public $showfilter = false;
   public $showcreatebtn = false;
   private $reporter;
-    public $showfilterlabel = [
-        // ['val' => 'open', 'label' => 'Open', 'color' => 'primary'],
-        // ['val' => 'draft', 'label' => 'Pending', 'color' => 'primary'],
-        // ['val' => 'posted', 'label' => 'For Checking', 'color' => 'primary'],
-        // ['val' => 'complete', 'label' => 'Completed', 'color' => 'primary'],
-        // ['val' => 'cancelled', 'label' => 'Cancelled', 'color' => 'primary'],
-        // ['val' => 'all', 'label' => 'All', 'color' => 'primary']
-    ];
+  public $showfilterlabel = [
+    // ['val' => 'open', 'label' => 'Open', 'color' => 'primary'],
+    // ['val' => 'draft', 'label' => 'Pending', 'color' => 'primary'],
+    // ['val' => 'posted', 'label' => 'For Checking', 'color' => 'primary'],
+    // ['val' => 'complete', 'label' => 'Completed', 'color' => 'primary'],
+    // ['val' => 'cancelled', 'label' => 'Cancelled', 'color' => 'primary'],
+    // ['val' => 'all', 'label' => 'All', 'color' => 'primary']
+  ];
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -100,7 +100,7 @@ class postingapv
     // foreach ($gridcolumns as $key => $value) {
     //     $$value = $key;
     // }
-    
+
     // $obj = $this->tabClass->createtab($tab, $stockbuttons);
     // $obj[0][$this->gridname]['columns'][$dateid]['type'] = 'label';
     // $obj[0][$this->gridname]['columns'][$docno]['type'] = 'label';
@@ -112,21 +112,21 @@ class postingapv
     // $obj[0][$this->gridname]['columns'][$action]['btns']['pickerdropall']['action'] = 'tableentrystatus';
     // $obj[0][$this->gridname]['columns'][$action]['btns']['pickerdropall']['confirmlabel'] = 'Are you sure you want to post this transaction?';
     // return $obj;
-    
 
-     $getcols = ['action', 'dateid', 'docno', 'clientname', 'rem'];
-     $stockbuttons = ['pickerdropall'];
 
-     foreach ($getcols as $key => $value) {
+    $getcols = ['action', 'dateid', 'docno', 'clientname', 'rem'];
+    $stockbuttons = ['pickerdropall'];
+
+    foreach ($getcols as $key => $value) {
       $$value = $key;
     }
     $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
-    
-   
+
+
     $cols[$action]['btns']['pickerdropall']['label'] = 'Post';
     $cols[$action]['btns']['pickerdropall']['confirm'] = true;
     $cols[$action]['btns']['pickerdropall']['confirmlabel'] = 'Are you sure you want to post this transaction?';
-    
+
     return $cols;
   }
 
@@ -135,7 +135,7 @@ class postingapv
     $center = $config['params']['center'];
     $qry = "select head.trno, head.docno, date(head.dateid) as dateid, head.clientname ,'tableentries/tableentry/postingapv' as url,head.rem
     from lahead as head left join cntnum on cntnum.trno=head.trno 
-    where head.doc='PV'  and head.lockdate is not null and cntnum.center ='".$center."'
+    where head.doc='PV'  and head.lockdate is not null and cntnum.center ='" . $center . "'
     order by dateid,docno";
     $data = $this->coreFunctions->opentable($qry);
 
@@ -181,27 +181,27 @@ class postingapv
 
   public function createHeadField($config)
   {
-    $fields = ['lblchoice','tasktitle'];
+    $fields = ['lblchoice', 'tasktitle'];
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'lblchoice.label',  'Task');
     data_set($col1, 'tasktitle.label',  '');
 
-    $fields = ['lblanswer','startdate'];
+    $fields = ['lblanswer', 'startdate'];
     $col2 = $this->fieldClass->create($fields);
-     data_set($col2, 'lblanswer.label',  'Start Date');
-     data_set($col2, 'startdate.label',  '');
+    data_set($col2, 'lblanswer.label',  'Start Date');
+    data_set($col2, 'startdate.label',  '');
 
-    $fields = ['lblbank','enddate'];
+    $fields = ['lblbank', 'enddate'];
     $col3 = $this->fieldClass->create($fields);
-     data_set($col3, 'lblbank.label',  'End Date');
-     data_set($col3, 'enddate.label',  '');
-    return array('col1' => $col1,'col2' => $col2,'col3' => $col3);
+    data_set($col3, 'lblbank.label',  'End Date');
+    data_set($col3, 'enddate.label',  '');
+    return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3);
   }
 
   public function newclient($config)
   {
     // $data = $this->resetdata($config, $config['newclient']);
-      $data = [];
+    $data = [];
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }
 
@@ -220,14 +220,14 @@ class postingapv
     $center = $config['params']['center'];
     $qry = "select head.trno, head.docno, date(head.dateid) as dateid, head.clientname ,'tableentries/tableentry/postingapv' as url,head.rem
     from lahead as head left join cntnum on cntnum.trno=head.trno 
-    where head.doc='PV'  and head.lockdate is not null and cntnum.center ='".$center."'
+    where head.doc='PV'  and head.lockdate is not null and cntnum.center ='" . $center . "'
     order by dateid,docno";
     $head = $this->coreFunctions->opentable($qry);
     if (!empty($head)) {
-      return  ['reloadtableentry' => true,'head' => $head, 'isnew' => false, 'status' => true, 'msg' => '', 'islocked' => false, 'isposted' => false, 'qq' => $trno];
+      return  ['reloadtableentry' => true, 'head' => $head, 'isnew' => false, 'status' => true, 'msg' => '', 'islocked' => false, 'isposted' => false, 'qq' => $trno];
     } else {
       $head = $this->resetdata($config);
-      return ['reloadtableentry' => true,'status' => false, 'isnew' => true, 'head' => $head, 'msg' => 'Data Fetched Failed, either somebody already deleted the transaction or modified...'];
+      return ['reloadtableentry' => true, 'status' => false, 'isnew' => true, 'head' => $head, 'msg' => 'Data Fetched Failed, either somebody already deleted the transaction or modified...'];
     }
   }
 
@@ -242,33 +242,33 @@ class postingapv
     $msg = '';
     // $trno=0;
 
-    if($isupdate){
+    if ($isupdate) {
       $trno = $head['trno']; // trno on tmhead
-       $line = $head['line'];
-    }   
-     
+      $line = $head['line'];
+    }
+
     $dateTables = ['lahead'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-      foreach ($this->fields as $key) {
+    foreach ($this->fields as $key) {
       // if (isset($head[$key]) || is_null($head[$key]))
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-           $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         } //end if
       }
     }
 
-    
-    // if ($isupdate) {
-      $this->coreFunctions->logConsole($trno.'trno update');
-      $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-      $data['editby'] = $config['params']['user'];
-      $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $trno,'line' => $line]);
-    
 
-    return ['status' => $msg == '' ? true : false, 'msg' => $msg,'trno'=>$trno, 'line' => $line];
+    // if ($isupdate) {
+    $this->coreFunctions->logConsole($trno . 'trno update');
+    $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+    $data['editby'] = $config['params']['user'];
+    $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $trno, 'line' => $line]);
+
+
+    return ['status' => $msg == '' ? true : false, 'msg' => $msg, 'trno' => $trno, 'line' => $line];
   } // end function
 
 
@@ -277,29 +277,29 @@ class postingapv
     return '';
   }
 
-   public function stockstatusposted($config)
+  public function stockstatusposted($config)
   {
     return $this->completetask($config);
   }
 
 
-   public function completetask($config){
+  public function completetask($config)
+  {
     $path = 'App\Http\Classes\modules\payable\pv';
     $config['params']['trno'] = $config['params']['row']['trno'];
     $stat =  app($path)->posttrans($config);
     $doc = $config['params']['doc'];
     //$data=$this->loaddata($config);
     $config['params']['doc'] = $doc;
-    if($stat['status']){
-        return ['status'=> true,'msg'=>'Posted Successfully','action' => 'reloadlisting'];
-        //return $this->loaddata($config);
-    }else{
-        return ['status'=> false,'msg'=>$stat['msg'],'action' => 'reloadlisting'];
+    if ($stat['status']) {
+      return ['status' => true, 'msg' => 'Posted Successfully', 'action' => 'reloadlisting'];
+      //return $this->loaddata($config);
+    } else {
+      return ['status' => false, 'msg' => $stat['msg'], 'action' => 'reloadlisting'];
     }
-
   }
 
-    private function getstockselect($clientid,$config)
+  private function getstockselect($clientid, $config)
   {
     $sqlselect = "";
     return $sqlselect;
@@ -307,7 +307,7 @@ class postingapv
 
   public function openstock($clientid, $config)
   {
-    $sqlselect = $this->getstockselect($clientid,$config);
+    $sqlselect = $this->getstockselect($clientid, $config);
     return  $sqlselect;
   }
 
@@ -317,7 +317,7 @@ class postingapv
   } //end function
 
 
- // -> print function
+  // -> print function
   public function reportsetup($config)
   {
     // $txtfield = $this->createreportfilter();
@@ -338,7 +338,7 @@ class postingapv
     // $data = $this->report_default_query($config['params']['dataid']);
     // $str = $this->reportplotting($config, $data);
 
-     $companyid = $config['params']['companyid'];
+    $companyid = $config['params']['companyid'];
     $this->logger->sbcviewreportlog($config);
     $config['params']['trno'] = $config['params']['dataid'];
     $dataparams = $config['params']['dataparams'];

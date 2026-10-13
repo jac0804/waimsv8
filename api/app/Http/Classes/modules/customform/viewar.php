@@ -31,10 +31,10 @@ class viewar
 
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -87,7 +87,7 @@ class viewar
 
     if ($companyid != 29) { //not sbc
       $obj[0][$this->gridname]['columns'][$vat]['type'] = 'coldel';
-    }else {
+    } else {
       $obj[0][$this->gridname]['columns'][$vat]['style'] = "width:105px;whiteSpace: normal;min-width:105px;";
     }
 

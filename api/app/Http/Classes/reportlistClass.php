@@ -56,7 +56,7 @@ class reportlistClass
     $classname = __NAMESPACE__ . '\\modules\\reportlist\\' . $path . '\\' . $code;
     try {
       $this->config['classname'] = $classname;
-      $this->config['docmodule'] = new $classname;
+      $this->config['docmodule'] = new $classname($params);
       $this->config['reportdir'] = ['path' => $path, 'code' => $code];
 
       if (isset($this->config['params']['logintype'])) {

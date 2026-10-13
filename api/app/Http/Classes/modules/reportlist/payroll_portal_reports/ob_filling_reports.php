@@ -32,12 +32,12 @@ class ob_filling_reports
     private $payrollcommon;
     public $reportParams = ['orientation' => 'l', 'format' => 'letter', 'layoutSize' => '1500'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->reporter = new SBCPDF;
         $this->payrollcommon = new payrollcommon;
     }
@@ -285,7 +285,7 @@ class ob_filling_reports
       left join client as iniapp2 on iniapp2.email = ob.initialapprovedby2 and iniapp2.email <> ''
       $leftjoin
        where $status date(ifnull(ob.dateid,ob.dateid2)) between '" . $start . "' and '" . $end . "' $filteremp $filter order by cl.clientname, date(ifnull(ob.dateid,ob.dateid2))";
-       return $query;
+        return $query;
     }
     public function ob_detailed($config, $line)
     {

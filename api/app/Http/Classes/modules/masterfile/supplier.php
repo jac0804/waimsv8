@@ -96,11 +96,11 @@ class supplier
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -143,7 +143,7 @@ class supplier
     // $tel = 7;
     // $fax = 8;
     // $contact = 9;
-    $getcols = ['action', 'listclient', 'listclientname', 'listaddr', 'accountno','notes', 'cat_name', 'businessnature', 'tel', 'fax', 'contact'];
+    $getcols = ['action', 'listclient', 'listclientname', 'listaddr', 'accountno', 'notes', 'cat_name', 'businessnature', 'tel', 'fax', 'contact'];
     foreach ($getcols as $key => $value) {
       $$value = $key;
     }

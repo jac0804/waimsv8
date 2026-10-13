@@ -31,10 +31,10 @@ class pieceentry
   public $issearchshow = false;
   public $showclosebtn = false;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -59,7 +59,15 @@ class pieceentry
   {
     $tab = [$this->gridname => [
       'gridcolumns' => [
-        'action', 'dateid', 'empname', 'dname', 'dqty', 'drate', 'daddon', 'ext', 'batch'
+        'action',
+        'dateid',
+        'empname',
+        'dname',
+        'dqty',
+        'drate',
+        'daddon',
+        'ext',
+        'batch'
       ]
     ]];
 
@@ -191,8 +199,11 @@ class pieceentry
 
     if ($checkings) {
       return [
-        'clientid' => $checkings, 'status' => false, 'msg' => 'Already have transaction...',
-        'action' => 'load',  'griddata' => ['entrygrid' => $data]
+        'clientid' => $checkings,
+        'status' => false,
+        'msg' => 'Already have transaction...',
+        'action' => 'load',
+        'griddata' => ['entrygrid' => $data]
       ];
     } else {
       return ['status' => true, 'msg' => 'Successfully loaded.', 'action' => 'load', 'griddata' => ['entrygrid' => $data]];
@@ -226,10 +237,10 @@ class pieceentry
         $fields = ['empid', 'empname', 'dcode', 'dname', 'drate', 'dqty', 'daddon', 'damt', 'dateid', 'rem', 'diqty'];
         foreach ($fields as $key) {
           $data[$key] = $head[$key];
-          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key],$lookups);
+          $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
         }
         $data['damt'] = ($data['dqty'] * $data['drate']) + $data['daddon'];
-        $data['damt'] = $this->othersClass->sanitizekeyfieldFast('damt', $data['damt'],$lookups);
+        $data['damt'] = $this->othersClass->sanitizekeyfieldFast('damt', $data['damt'], $lookups);
         $this->coreFunctions->sbcinsert($this->head, $data);
         return $this->loaddata($config);
         break;

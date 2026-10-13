@@ -32,10 +32,10 @@ class undertime
     public $showclosebtn = true;
     public $fields = ['status', 'status2', 'approverem', 'approvedby', 'approvedby2', 'approvedate', 'approvedate2', 'disapprovedby', 'disapprovedby2', 'disapprovedate', 'disapprovedate2', 'catid'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
-        $this->tabClass = new tabClass;
+        $this->fieldClass = new txtfieldClass($params);
+        $this->tabClass = new tabClass($params);;
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;

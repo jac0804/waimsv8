@@ -1731,7 +1731,20 @@ class sqlquery
               break;
           }
           break;
-
+        case 72: //hahsy
+          switch ($doc) {
+            case 'DA':
+              $addedfields .= ",ifnull(icat.name,'') as categoryname,ifnull(item.payqty,0) as payqty, ifnull(item.payrate,0) as payrate";
+              break;
+            default:
+              goto default_left_join_here;
+              if ($isclientitem) {
+                $joins = " left join client as supp on supp.clientid=item.supplier ";
+              }
+              break;
+          }
+          
+         break;   
         default:
           default_left_join_here:
           if ($isclientitem) {
@@ -4101,6 +4114,11 @@ class sqlquery
           if ($trno == 0) {
             $condition = " and head.approvedate is not null";
             $addfield = " , '$whcode' as descode , '$whname' as desname";
+          } else {
+            $condition = " and head.wh='" . $wh . "' ";
+            if ($client != '') {
+              $condition .= " and head.client='" . $client . "' ";
+            }
           }
           if (isset($config['params']['addedparams'][2])) {
             if (floatval($config['params']['addedparams'][2]) != 0) {

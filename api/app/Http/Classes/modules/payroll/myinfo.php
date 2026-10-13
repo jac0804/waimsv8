@@ -119,11 +119,11 @@ class myinfo
   private $reporter;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
     $this->btnClass = new buttonClass;
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -772,7 +772,7 @@ class myinfo
       if (array_key_exists($key, $head)) {
         $dataContact[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataContact[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataContact[$key],$lookups);
+          $dataContact[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataContact[$key], $lookups);
         } //end if  
       }
     }
@@ -781,7 +781,7 @@ class myinfo
       if (array_key_exists($key, $head)) {
         $dataOther[$key] = $head[$key];
         if (!in_array($key, $this->except)) {
-          $dataOther[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataOther[$key],$lookups);
+          $dataOther[$key] = $this->othersClass->sanitizekeyfieldFast($key, $dataOther[$key], $lookups);
         } //end if  
       }
     }

@@ -44,10 +44,10 @@ class jo
   private $othersClass;
   private $logger;
   private $reporter;
-  
-  public function __construct()
+
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
+    $this->fieldClass = new txtfieldClass($params);
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -171,8 +171,8 @@ class jo
       PDF::MultiCell(0, 0, "\n");
     }
 
-    PDF::Image($this->companysetup->getlogopath($params['params']).'sbc.png', '25', '40', 100, 55);
-   
+    PDF::Image($this->companysetup->getlogopath($params['params']) . 'sbc.png', '25', '40', 100, 55);
+
 
     $left = '10';
     $top = '';
@@ -245,7 +245,7 @@ class jo
 
     $arr_projname = $this->reporter->fixcolumn([$data[0]['projectname']], 110);
     $maxrowproj = $this->othersClass->getmaxcolumn([$arr_projname]);
-  
+
 
     for ($k = 0; $k < $maxrowproj; $k++) {
       if ($k == 0) {

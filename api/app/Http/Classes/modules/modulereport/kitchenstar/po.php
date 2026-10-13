@@ -39,9 +39,9 @@ class po
 
     public $reportParams = ['orientation' => 'l', 'format' => 'letter', 'layoutSize' => '1300'];
 
-    public function __construct()
+    public function __construct($params = null)
     {
-        $this->fieldClass = new txtfieldClass;
+        $this->fieldClass = new txtfieldClass($params);
         $this->companysetup = new companysetup;
         $this->coreFunctions = new coreFunctions;
         $this->othersClass = new othersClass;
@@ -142,7 +142,7 @@ class po
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
 
-        $str .= $this->reporter->col('PO # :   '.(isset($data[0]['docno']) ? $data[0]['docno'] : ''), '220', null, false, $border, '', 'L', $font, '12', 'B', '', '', '');
+        $str .= $this->reporter->col('PO # :   ' . (isset($data[0]['docno']) ? $data[0]['docno'] : ''), '220', null, false, $border, '', 'L', $font, '12', 'B', '', '', '');
         $str .= $this->reporter->col('', '110', null, false, $border, '', 'L', $font, '12', '', '', '', '');
         $str .= $this->reporter->col('', '120', null, false, $border, '', 'L', $font, '12', '', '', '', '');
         $str .= $this->reporter->col('', '100', null, false, $border, '', 'L', $font, '12', '', '', '', '');

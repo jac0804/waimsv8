@@ -33,10 +33,10 @@ class viewacctginfo
   public $issearchshow = true;
   public $showclosebtn = true;
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->coreFunctions = new coreFunctions;
     $this->companysetup = new companysetup;
     $this->othersClass = new othersClass;
@@ -388,15 +388,15 @@ class viewacctginfo
 
     $tablename = 'detailinfo';
     $tbl = 'ladetail';
-    
-   
+
+
     if ($isvewt !== '0' && ($isewt !== '0' || $isvat !== '0')) {
       $msg = 'Already tagged as VEWT, remove tagging for EWT/VAT';
       return ['status' => false, 'msg' => $msg, 'data' => []];
     }
 
     foreach ($data as $key => $v) {
-       $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
+      $data[$key] = $this->othersClass->sanitizekeyfieldFast($key, $data[$key], $lookups);
     }
 
     if ($rem !== '' && $trno == 0 && $line == 0) {

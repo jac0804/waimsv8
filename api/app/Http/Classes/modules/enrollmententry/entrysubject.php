@@ -36,10 +36,10 @@ class entrysubject
   private $logger;
 
 
-  public function __construct()
+  public function __construct($params = null)
   {
-    $this->fieldClass = new txtfieldClass;
-    $this->tabClass = new tabClass;
+    $this->fieldClass = new txtfieldClass($params);
+    $this->tabClass = new tabClass($params);;
     $this->companysetup = new companysetup;
     $this->coreFunctions = new coreFunctions;
     $this->othersClass = new othersClass;
@@ -124,7 +124,7 @@ class entrysubject
     if ($row['line'] == 0) {
       $check = $this->checkSubject($data, 'new');
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$row['subjectname'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $row['subjectname'], 'row' => []];
       } else {
         $line = $this->coreFunctions->insertGetId($this->table, $data);
         $this->logger->sbcmasterlog($data['subjectmain'], $config, ' CREATE EQUIVALENT SUBJECT - ' . $row['subjectname']);
@@ -138,7 +138,7 @@ class entrysubject
     } else {
       $check = $this->checkSubject($data);
       if ($check) {
-        return ['status' => false, 'msg' => 'Duplicate entry for '.$row['subjectname'], 'row' => []];
+        return ['status' => false, 'msg' => 'Duplicate entry for ' . $row['subjectname'], 'row' => []];
       } else {
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
@@ -154,9 +154,9 @@ class entrysubject
 
   public function checkSubject($data, $type = 'update')
   {
-    $qry = "select line as value from en_subjectequivalent where subjectmain=".$data['subjectmain']." and subjectid=".$data['subjectid'];
+    $qry = "select line as value from en_subjectequivalent where subjectmain=" . $data['subjectmain'] . " and subjectid=" . $data['subjectid'];
     if ($type == 'update') {
-      $qry = "select line as value from en_subjectequivalent where subjectmain=".$data['subjectmain']." and subjectid=".$data['subjectid']." and line<>".$data['line'];
+      $qry = "select line as value from en_subjectequivalent where subjectmain=" . $data['subjectmain'] . " and subjectid=" . $data['subjectid'] . " and line<>" . $data['line'];
     }
     $check = $this->coreFunctions->datareader($qry);
     if ($check != '') return true;
