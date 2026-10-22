@@ -528,6 +528,10 @@ class trigger
     $sdate2 = 'End Date';
     $strdate1 = 'Start Date';
     $strdate2 = 'End Date';
+
+    $ocied = 'IED';
+    $ocinterest = 'Interest';
+    $ocarrastre = 'Arrastre';
     switch ($companyid) {
       case 19:
         $crref = 'Request Order No.';
@@ -539,6 +543,11 @@ class trigger
       case 43: //mighty
         $strdate1 = 'Arrived/Dispatch Arrive Date';
         $strdate2 = 'Arrived/Dispatch Depart Date';
+        break;
+      case 71: //buenatech
+        $ocied = 'BOC';
+        $ocinterest = 'VAT';
+        $ocarrastre = 'Purchase';
         break;
       case 72: //hahsy
         $strdate1 = 'Receiving Date';
@@ -638,8 +647,20 @@ class trigger
       'conaddr' => ['conaddr' => []],
       'JO docno' => ['pdtrno' => [true, "docno", "hpdhead", "trno"]],
       'lot' => ['lot' => []],
-      'expiry' => ['expiry' => []]
+      'expiry' => ['expiry' => []],
+      // OTHER CHARGES (RR)
+      $ocied => ['ied' => []],
+      'Bank Charges' => ['bankcharges' => []],
+      $ocinterest => ['interest' => []],
+      'Broker Fee' => ['brokerfee' => []],
+      $ocarrastre => ['arrastre' => []]
     ];
+
+    if ($companyid == 71) {
+      $fields['Supplier'] = ['supplierid' => [true, 'concat(client,"~",clientname)', 'client', 'clientid']];
+      $fields['Percentage'] = ['charges' => []];
+      $fields['Brokerage'] = ['brokerage' => []];
+    }
 
     $this->settriggerlogs('lahead_update', 'AFTER UPDATE', 'lahead', 'table_log', $fields, 'trno', 'HEAD');
     //END OF LAHEAD TRIGGER ====================================================================================================================================
