@@ -917,7 +917,7 @@ class ru
       }
     }
 
-    $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+    $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
 
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
@@ -973,17 +973,6 @@ class ru
     if ($this->companysetup->isinvonly($config['params'])) {
       return $this->othersClass->posttranstock($config);
     } else {
-      $checkacct = $this->othersClass->checkcoaacct(['AP1', 'IN1', 'PD1', 'TX1']);
-
-      if ($checkacct != '') {
-        return ['trno' => $trno, 'status' => false, 'msg' => 'Accounts not yet setup:' . $checkacct];
-      }
-
-      $checkcontra = $this->coreFunctions->getfieldvalue("lahead", "contra", "trno=?", [$trno]);
-      if ($checkcontra == '') {
-        return ['trno' => $trno, 'status' => false, 'msg' => 'Missing AP Account'];
-      }
-
       $return = $this->othersClass->posttranstock($config);
       if ($this->companysetup->getisproject($config['params'])) {
         if ($return['status']) {

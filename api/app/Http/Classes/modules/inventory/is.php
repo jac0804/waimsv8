@@ -373,30 +373,14 @@ class is
     $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
     $islocation = $this->companysetup->getislocation($config['params']);
     $locname = $this->companysetup->getlocname($config['params']);
-    // $action = 0;
-    // $itemdesc = 1;
-    // $rrqty = 2;
-    // $uom = 3;
-    // $kgs = 4;
-    // $rrcost = 5;
-    // $cost = 6;
-    // $ext = 7;
-    // $wh = 8;
-    // $whname = 9;
-    // $loc = 10;
-    // $expiry = 11;
-    // $rem = 12;
-    // $pallet = 13;
-    // $location = 14;
-    // $stock_projectname = 15;
-    // $subcode = 16;
-    // $partno = 17;
-    // $boxcount = 18;
-    // $itemname = 19;
-    // $barcode = 20;
 
     $column = ['action', 'itemdescription', 'rrqty', 'uom', 'kgs', 'rrcost', 'cost', 'ext', 'wh', 'whname', 'loc', 'expiry', 'rem', 'pallet', 'location', 'serialno', 'stock_projectname', 'subcode', 'partno', 'boxcount', 'itemname', 'barcode'];
     $sortcolumn = ['action', 'itemdescription', 'rrqty', 'uom', 'kgs', 'rrcost', 'cost', 'ext', 'wh', 'whname', 'loc', 'expiry', 'rem', 'pallet', 'location', 'serialno', 'stock_projectname', 'subcode', 'partno', 'boxcount', 'itemname', 'barcode'];
+
+    if ($companyid == 67) { //yulick
+      $column = ['action', 'itemdescription', 'rrqty', 'boxcount', 'uom', 'kgs', 'rrcost', 'cost', 'ext', 'wh', 'whname', 'loc', 'expiry', 'rem', 'pallet', 'location', 'serialno', 'stock_projectname', 'subcode', 'partno', 'itemname', 'barcode'];
+      $sortcolumn = ['action', 'itemdescription', 'rrqty', 'boxcount', 'uom', 'kgs', 'rrcost', 'cost', 'ext', 'wh', 'whname', 'loc', 'expiry', 'rem', 'pallet', 'location', 'serialno', 'stock_projectname', 'subcode', 'partno', 'itemname', 'barcode'];
+    }
 
     switch ($systemtype) {
       case 'REALESTATE':
@@ -483,6 +467,8 @@ class is
         }
         break;
     }
+
+    if ($companyid == 67) array_push($stockbuttons, 'entryweighdetails'); //yulick
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
@@ -610,18 +596,6 @@ class is
       }
     }
 
-    // if ($companyid == 50) { //unitech
-    //   $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
-    //   $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
-    //   $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-    // }
-
-    // if ($companyid == 68) { //jda
-    //   $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
-    //   $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-    // }
-
-
     if ($companyid == 60) { //transpower
       $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 250px;whiteSpace: normal;min-width:250px;max-width:250px;';
       $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
@@ -651,7 +625,16 @@ class is
     if (!$this->companysetup->getserial($config['params'])) {
       $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
     } else {
-      $obj[0]['inventory']['columns'][$serialno]['type'] = 'label';
+      $obj[0]['inventory']['columns'][$serialno]['type'] = 'textarea';
+      $obj[0]['inventory']['columns'][$serialno]['readonly'] = true;
+      $obj[0]['inventory']['columns'][$serialno]['style'] = 'text-align: left; width: 150px;whiteSpace: normal;min-width:150px;max-width:150px;';
+      if ($companyid == 40) { //cdo
+        $obj[0]['inventory']['columns'][$serialno]['label'] = 'Engine/Chassis #';
+      }
+    }
+
+    if ($companyid == 67) { //yulick
+      $obj = $this->othersClass->yulick_boxcountCol($obj, $this->gridname, $action, $boxcount, 'entryweighdetails');
     }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -1072,6 +1055,14 @@ class is
     $serialno = ",'' as serialno";
     if ($isserial) {
       $serialno = ",ifnull((select ifnull(group_concat(concat('Serial: ',rr.serial) separator '\\n\\r'),'') from serialin as rr where rr.trno=stock.trno and rr.line=stock.line),'') as serialno";
+      if ($companyid == 40) { //cdo
+        $serialno = ",ifnull((select ifnull(group_concat(concat('Engine/Chassis#: ',rr.serial,'/',rr.chassis,'\\n','Color: ',rr.color) separator '\\n\\r'),'') from serialin as rr where rr.trno=stock.trno and rr.line=stock.line),'') as serialno";
+      }
+    }
+
+    $defaultfields = ", round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount, 'true' as iscatchwt";
+    if ($companyid == 67) { // yulick
+      $defaultfields = ", ifnull((select count(sline) from serialin where trno=stock.trno and line=stock.line),0) as boxcount, if(item.iscatchwt,'false','true') as iscatchwt ";
     }
 
     $sqlselect = "select item.brand as brand,
@@ -1113,12 +1104,10 @@ class is
     prj.name as stock_projectname,
     stock.projectid as projectid,
     item.subcode, item.partno, 
-    round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount,
-    concat(item.itemname,'\\n',ifnull(brand.brand_desc,''),'\\r\\n',ifnull(mm.model_name,''),'\\r\\n',ifnull(i.itemdescription,'')) as itemdescription,
-       
+    concat(item.itemname,'\\n',ifnull(brand.brand_desc,''),'\\r\\n',ifnull(mm.model_name,''),'\\r\\n',ifnull(i.itemdescription,'')) as itemdescription,       
     stock.phaseid, ps.code as phasename,  stock.modelid, hm.model as housemodel,stock.blklotid, bl.blk, bl.lot,
      prj.code as project,
-     amen.line as amenity, amen.description as amenityname,  subamen.line as subamenity, subamen.description as subamenityname " . $serialno;
+     amen.line as amenity, amen.description as amenityname,  subamen.line as subamenity, subamen.description as subamenityname " . $serialno . $defaultfields;
     return $sqlselect;
   }
 
@@ -1145,7 +1134,7 @@ class is
     left join projectmasterfile as prj on prj.line = stock.projectid
     left join frontend_ebrands as brand on brand.brandid = item.brand
     left join iteminfo as i on i.itemid  = item.itemid
-
+   
     left join phase as ps on ps.line = stock.phaseid
     left join housemodel as hm on hm.line = stock.modelid
     left join blklot as bl on bl.line = stock.blklotid
@@ -1194,7 +1183,6 @@ class is
   left join projectmasterfile as prj on prj.line = stock.projectid
   left join frontend_ebrands as brand on brand.brandid = item.brand
   left join iteminfo as i on i.itemid  = item.itemid
-
   left join phase as ps on ps.line = stock.phaseid
     left join housemodel as hm on hm.line = stock.modelid
     left join blklot as bl on bl.line = stock.blklotid

@@ -389,7 +389,7 @@ class payrollappClass
                                 case 'BATCH':
                                 case 'HOLIDAY':
                                 case 'HOLIDAYLOC':
-                                case 'TMSHIFTS';
+                                case 'TMSHIFTS':
                                     if ($this->coreFunctions->execqry("delete from " . strtolower($value->module) . " where line=" . $value->docno)) {
                                         $this->coreFunctions->execqry("update paydeletelogs set isdeleted=1 where module='" . $value->module . "' and docno='" . $value->docno . "'");
                                         $delstatus = true;
@@ -398,7 +398,7 @@ class payrollappClass
                                         $msg .= $value->line . '. Failed to delete ' . $value->module . ' - ' . $value->docno . '. ';
                                     }
                                     break;
-                                case 'LEAVESETUP';
+                                case 'LEAVESETUP':
                                     $sql = "select trno, docno from leavesetup where trno=" . $value->docno;
                                     $delLeaveSetup = $this->coreFunctions->opentable($sql);
                                     if (!empty($delLeaveSetup)) {

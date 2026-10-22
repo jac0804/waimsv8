@@ -518,6 +518,11 @@ class cm
     $column = ['action', 'itemdescription', 'rrqty', 'uom', 'kgs', 'isamt', 'disc', 'ext', 'cost', 'wh', 'whname', 'ref', 'loc', 'expiry', 'rem', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount'];
     $sortcolumn = ['action', 'itemdescription', 'rrqty', 'uom', 'kgs', 'isamt', 'disc', 'ext', 'cost', 'wh', 'whname', 'ref', 'loc', 'expiry', 'rem', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount'];
 
+    if ($companyid == 67) { //yulick
+      $column = ['action', 'itemdescription', 'rrqty', 'boxcount', 'uom', 'kgs', 'isamt', 'disc', 'ext', 'cost', 'wh', 'whname', 'ref', 'loc', 'expiry', 'rem', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode'];
+      $sortcolumn = ['action', 'itemdescription', 'rrqty', 'boxcount', 'uom', 'kgs', 'isamt', 'disc', 'ext', 'cost', 'wh', 'whname', 'ref', 'loc', 'expiry', 'rem', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode'];
+    }
+
     if ($companyid == 60) { //transpower
       $position = array_search('isamt', $column) + 1; // position right after isamt
       array_splice($column, $position, 0, 'agentamt'); // insert agentamt sa $column 0 means walang tatanggalin, insert lang 
@@ -607,6 +612,8 @@ class cm
 
         break;
     }
+
+    if ($companyid == 67) array_push($stockbuttons, 'entryweighdetails'); //yulick
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
@@ -731,6 +738,10 @@ class cm
 
     if (!$islocation) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    }
+
+    if ($companyid == 67) { //yulick
+      $obj = $this->othersClass->yulick_boxcountCol($obj, $this->gridname, $action, $boxcount, 'entryweighdetails');
     }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -1234,6 +1245,10 @@ class cm
         break;
     }
 
+    $defaultfields = ", round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount, 'true' as iscatchwt";
+    if ($companyid == 67) { // yulick
+      $defaultfields = ", ifnull((select count(sline) from serialin where trno=stock.trno and line=stock.line),0) as boxcount, if(item.iscatchwt,'false','true') as iscatchwt ";
+    }
 
     $sqlselect = "select item.brand as brand,
     ifnull(mm.model_name,'') as model,
@@ -1277,8 +1292,8 @@ class cm
     prj.code as project,
      amen.line as amenity, amen.description as amenityname,  subamen.line as subamenity, subamen.description as subamenityname,
 
-    item.subcode, item.partno, round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount,
-    concat(item.itemname,'\\n',ifnull(brand.brand_desc,''),'\\r\\n',ifnull(mm.model_name,''),'\\r\\n',ifnull(i.itemdescription,'')) as itemdescription,stock.ckrefx,stock.cklinex $addfield
+    item.subcode, item.partno, 
+    concat(item.itemname,'\\n',ifnull(brand.brand_desc,''),'\\r\\n',ifnull(mm.model_name,''),'\\r\\n',ifnull(i.itemdescription,'')) as itemdescription,stock.ckrefx,stock.cklinex $addfield $defaultfields
     ";
     return $sqlselect;
   }

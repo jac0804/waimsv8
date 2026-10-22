@@ -53,6 +53,10 @@ class material_issuance_report
     } else {
       array_push($fields, 'dclientname', 'dcentername', 'reportusers', 'approved');
 
+      if ($companyid == 68) { //JDA
+        array_push($fields, 'project');
+      }
+
       if ($companyid == 8) { //maxipro
         array_push($fields, 'project', 'subprojectname');
       }
@@ -475,6 +479,15 @@ class material_issuance_report
     $fcenter    = $config['params']['dataparams']['center'];
     $filter = "";
 
+    if ($config['params']['companyid'] == 68) { //jda
+      $project  = $config['params']['dataparams']['project'];
+      $projectid  = $config['params']['dataparams']['projectid'];
+
+      if ($project != "") {
+        $filter .= " and head.projectid = '" . $projectid . "' ";
+      }
+    }
+
     if ($config['params']['companyid'] == 19) { //housegem
       $client     = $config['params']['dataparams']['client'];
       $clientid     = $config['params']['dataparams']['truckid'];
@@ -550,6 +563,10 @@ class material_issuance_report
     }
     if ($config['params']['companyid'] == 43) { //mighty
       $addjoin .= "left join projectmasterfile as proj on proj.line=head.projectid";
+    }
+    
+    if ($config['params']['companyid'] == 68) { //jda
+      $addjoin .= "left join projectmasterfile as project on project.line = head.projectid";
     }
 
 

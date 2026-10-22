@@ -984,7 +984,7 @@ class pv
     }
 
     if ($companyid == 56) { //homeworks
-      $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+      $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
       $data['invoicedate'] = '';
     }
 

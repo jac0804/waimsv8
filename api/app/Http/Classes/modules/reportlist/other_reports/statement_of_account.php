@@ -375,6 +375,7 @@ class statement_of_account
     $filter = "";
     $code = "";
     $addfield = "";
+    $clientname = "client.clientname";
 
     switch ($customerfilter) {
       case '0':
@@ -391,6 +392,10 @@ class statement_of_account
         break;
     }
 
+    if($companyid == 67) {
+      $clientname = "case when client.isparentname = 1 then parent.clientname else client.clientname end as clientname" ;
+    }
+
     if ($companyid == 68) {
       $addfield .= ", client.tin";
     }
@@ -398,13 +403,14 @@ class statement_of_account
     //   $addfield .= ", client.area, datediff('" . $asof . "', head.dateid) as elapse ";
     // }
 
-    $query = "select head.trno,'p' as tr, 1 as trsort, client.client, client.clientname, client.addr,head.terms,
+    $query = "select head.trno,'p' as tr, 1 as trsort, client.client, $clientname, client.addr,head.terms,
     date(ar.dateid) as docdate, ar.docno as refno, ar.ref as applied, ar.db as debit, client.tel,
     ar.cr as credit, (ar.bal) as balance, ag.client as agent, ag.clientname as agentname, head.due, head.yourref, head.rem,
     (case when head.doc='sj' then 'sales' else (case when head.doc='cm' then 'return' else 'adjustment' end) end) as trcode $addfield
-    from (((glhead as head 
+    from ((((glhead as head 
     left join arledger as ar on ar.trno=head.trno)
     left join client on client.clientid=head.clientid)
+    left join client as parent on parent.client = client.grpcode)
     left join coa on coa.acnoid=ar.acnoid)
     left join client as ag on ag.clientid=ar.agentid
     left join cntnum as num on num.trno = head.trno
@@ -2724,12 +2730,12 @@ class statement_of_account
 
 
           $str .= $this->reporter->startrow();
-          $str .= $this->reporter->col('Important: This statement is presumed correct unless otherwise notified within fifteen (15) days of receipt', null, '50px', false, $border, 'LR', 'C', $font, '10', 'BI', '', '');
+          $str .= $this->reporter->col('', null, '50px', false, $border, '', 'C', $font, '10', 'BI', '', '');
           $str .= $this->reporter->endrow();
 
           $str .= $this->reporter->startrow();
 
-          $str .= $this->reporter->col('<br>', null, null, false, $border, 'LRB', 'C', $font, '10', '', '', 'BI');
+          $str .= $this->reporter->col('<br>', null, null, false, $border, '', 'C', $font, '10', '', '', 'BI');
           $str .= $this->reporter->endrow();
           $str .= $this->reporter->endtable();
 

@@ -108,10 +108,10 @@ class stockcard
     'ledger' as typeofreport,
     '' as start,
     '' as end,
-    '' as wh,
+    '" . $whname . "' as wh,
     '" . $whid . "' as whid,
     '' as loc,
-    '' as uom,
+    '" . $uom ."' as uom,
     '' as approved,
     '' as received";
 
@@ -147,20 +147,21 @@ class stockcard
   public function QUERY_LEDGER($config)
   {
     ini_set('memory_limit', '-1');
-    $center     = $config['params']['center'];
-    $username   = $config['params']['user'];
-    $itemid     = $config['params']['dataid'];
+    $center = $config['params']['center'];
+    $username = $config['params']['user'];
+    $itemid = $config['params']['dataid'];
 
-    $start      = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
-    $end        = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
+    $start = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
+    $end = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $reporttype = $config['params']['dataparams']['typeofreport'];
-    $whby       = $config['params']['dataparams']['wh'];
-    $whid       = $config['params']['dataparams']['whid'];
-    $uom       = $config['params']['dataparams']['uom'];
-    $location   = $config['params']['dataparams']['loc'];
+    $whby = $config['params']['dataparams']['wh'];
+    $whid = $config['params']['dataparams']['whid'];
+    $uom = $config['params']['dataparams']['uom'];
+    $location = $config['params']['dataparams']['loc'];
 
     $whbyfield = '';
-    if ($whby != '') $whbyfield = " and stock.whid=" . $whid;
+    if ($whby != '')
+      $whbyfield = " and stock.whid=" . $whid;
 
     $loc = '';
     if ($location != '') {
@@ -170,7 +171,7 @@ class stockcard
     $query = "select '' as expiry, '' as posted,  itemname,  barcode, 0 as trno, '' as doc, 'beginning bal.' as docno,null as  dateid, 
     0 as cost, 0 as rrcost, 0 as qty,'' as yourref, '' as ourref,0 as  amt, 0 as iss, '' as disc, md5(itemid) as itemid,'' as  wh, '' as loc, 
     '' as type, '' as isimport, 0 as line, 0 as cur, '' as forex, 0 as factor, '' as rem, '' as encoded, '' as client, '' as clientname, '' as addr, 
-    '' as tel,'' as  email, '' as tin, '' as mobile, '' as contact, '' as fax,'' as headrem, sum(qty-iss) as bal 
+    '' as tel,'' as  email, '' as tin, '' as mobile, '' as contact, '' as fax,'' as headrem, sum(qty-iss) as bal, 0 as isqty2 
     from (select '' as expiry, '' as posted,item.itemname,item.barcode,head.trno as trno,head.doc as doc,head.docno as docno,
     left(head.dateid,10) as dateid,
     round(case when uom.factor <= 1 then ifnull((stock.cost / (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0) else ifnull((stock.cost * (case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)),0) end,2) as cost,
@@ -228,7 +229,7 @@ class stockcard
     stock.disc as disc,item.itemid as itemid,wh.client as wh,stock.loc as loc,0 as type,
     head.isimport as isimport,stock.line as line,head.cur as cur,head.forex as forex,head.factor as factor,
     stock.rem as rem,stock.encodeddate as encoded,
-    client.client,client.clientname,client.addr,client.tel,client.email,client.tin,client.mobile,client.contact,client.fax,head.rem as headrem,0 as bal
+    client.client,client.clientname,client.addr,client.tel,client.email,client.tin,client.mobile,client.contact,client.fax,head.rem as headrem,0 as bal, stock.isqty2 as isqty2
     from glhead as head
     left join glstock as stock on stock.trno=head.trno
     left join item on item.itemid=stock.itemid
@@ -249,7 +250,7 @@ class stockcard
     stock.disc as disc,item.itemid as itemid,wh.client as wh,stock.loc as loc,0 as type,
     head.isimport as isimport,stock.line as line,head.cur as cur,head.forex as forex,head.factor as factor,
     stock.rem as rem,stock.encodeddate as encoded,
-    client.client,client.clientname,client.addr,client.tel,client.email,client.tin,client.mobile,client.contact,client.fax,head.rem as headrem,0 as bal
+    client.client,client.clientname,client.addr,client.tel,client.email,client.tin,client.mobile,client.contact,client.fax,head.rem as headrem,0 as bal, stock.isqty2 as isqty2
     from lahead as head
     left join lastock as stock on stock.trno=head.trno
     left join item on item.itemid=stock.itemid
@@ -261,7 +262,7 @@ class stockcard
     group by stock.expiry, item.itemname, item.barcode, head.trno, head.doc, head.docno, head.dateid, head.rem, stock.disc, item.itemid, wh.client, 
     stock.loc, head.isimport, stock.line, head.cur, head.forex, head.factor, stock.rem, stock.encodeddate, client.client, client.clientname, 
     client.addr, client.tel, client.email, client.tin, client.mobile, client.contact, client.fax, uom.factor, stock.cost, stock.rrcost, 
-    stock.qty, stock.amt, stock.iss, head.yourref, head.ourref order by dateid,trno";
+    stock.qty, stock.amt, stock.iss, stock.isqty2, head.yourref, head.ourref order by dateid,trno";
 
     return $query;
   }
@@ -686,7 +687,7 @@ class stockcard
     PDF::SetSubject($this->modulename . ' Module Report');
     PDF::setPageUnit('px');
     PDF::AddPage('p', [800, 1000]);
-    // PDF::SetMargins(40, 40);
+    PDF::SetMargins(40, 40);
 
     $font = "";
     $fontbold = "";
@@ -716,19 +717,19 @@ class stockcard
     }
 
     PDF::SetFont($fontbold, '', 11);
-    PDF::MultiCell(100, 0, 'BARCODE: ', '', 'L', false, 0);
+    PDF::MultiCell(70, 0, 'BARCODE: ', '', 'L', false, 0);
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(370, 0, $barcode, '', 'L', false, 0);
+    PDF::MultiCell(400, 0, $barcode, '', 'L', false, 0);
 
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(100, 0, "DATE RANGE: ", '', 'L', false, 0, '',  '');
+    PDF::MultiCell(80, 0, "DATE RANGE: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(150, 0, $start . ' TO ' . $end, '', 'L', false);
+    PDF::MultiCell(170, 0, $start . ' TO ' . $end, '', 'L', false);
 
     PDF::SetFont($fontbold, '', $fontsize);
-    PDF::MultiCell(100, 0, "ITEM NAME: ", '', 'L', false, 0, '',  '');
+    PDF::MultiCell(70, 0, "ITEM NAME: ", '', 'L', false, 0, '',  '');
     PDF::SetFont($font, '', $fontsize);
-    PDF::MultiCell(600, 0, $itemname, '', 'L', false, 1, '',  '');
+    PDF::MultiCell(630, 0, $itemname, '', 'L', false, 1, '',  '');
 
     $sql = "select factor from uom where itemid = '$itemid' and uom = '$uom'";
     $uomfactor = $this->coreFunctions->opentable($sql);
@@ -753,13 +754,13 @@ class stockcard
     PDF::MultiCell(720, 0, '', 'T');
 
     PDF::SetFont($font, '', 11);
-    PDF::MultiCell(75, 0, "DATE", 'TLB', 'C', false, 0);
-    PDF::MultiCell(200, 0, "CLIENTNAME", 'TLB', 'C', false, 0);
-    PDF::MultiCell(65, 0, "EXPIRY", 'TLB', 'C', false, 0);
-    PDF::MultiCell(100, 0, "DOCUMENT#", 'TLB', 'C', false, 0);
-    PDF::MultiCell(70, 0, "QTY IN", 'TLB', 'C', false, 0);
-    PDF::MultiCell(70, 0, "QTY OUT", 'TBL', 'C', false, 0);
-    PDF::MultiCell(70, 0, "BALANCE", 'TLB', 'C', false, 0);
+    PDF::MultiCell(70, 0, "DATE", 'TLB', 'C', false, 0);
+    PDF::MultiCell(180, 0, "CLIENTNAME", 'TLB', 'C', false, 0);
+    PDF::MultiCell(140, 0, "DOCUMENT#", 'TLB', 'C', false, 0);
+    PDF::MultiCell(65, 0, "QTY IN", 'TLB', 'C', false, 0);
+    PDF::MultiCell(65, 0, "QTY OUT", 'TBL', 'C', false, 0);
+    PDF::MultiCell(65, 0, "OOS QTY", 'TLB', 'C', false, 0);
+    PDF::MultiCell(65, 0, "BALANCE", 'TLB', 'C', false, 0);
     PDF::MultiCell(70, 0, "PARTICULAR", 'TLRB', 'C', false);
   }
 
@@ -794,6 +795,7 @@ class stockcard
 
       $bal = 0;
       $totaliss = 0;
+      $totaloos = 0;
       $totalqty = 0;
       $tobal = 0;
       $bal = 0;
@@ -808,6 +810,7 @@ class stockcard
       foreach ($data as $key => $value) {
         $qty = $value->qty;
         $iss = $value->iss;
+        $isqty2 = $value->isqty2;
 
         if ($i == 0) {
           $bal = $value->bal;
@@ -816,7 +819,7 @@ class stockcard
           }
         } else {
           // var_dump($bal);
-          $bal = $bal - $iss;
+          $bal = $bal - $iss - $isqty2;
           $bal = $bal + $qty;
         } //end if
 
@@ -845,6 +848,7 @@ class stockcard
           $docno = $value->docno;
           $qty = number_format($qty, $qtydec);
           $iss = number_format($iss, $qtydec);
+          $oos = number_format($isqty2, $qtydec);
           $balance = number_format($tobal, $qtydec);
           $qty = $qty < 0 ? '-' : $qty;
           $iss = $iss < 0 ? '-' : $iss;
@@ -856,25 +860,26 @@ class stockcard
           $arr_dateid = $this->reporter->fixcolumn([$dateid], '15', 0);
           $arr_clientname = $this->reporter->fixcolumn([$clientname], '16', 0);
           $arr_expiry = $this->reporter->fixcolumn([$expiry], '16', 0);
-          $arr_docno = $this->reporter->fixcolumn([$docno], '18', 0);
+          $arr_docno = $this->reporter->fixcolumn([$docno], '25', 0);
           $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
           $arr_iss = $this->reporter->fixcolumn([$iss], '13', 0);
+          $arr_oos = $this->reporter->fixcolumn([$oos], '13', 0);
           $arr_balance = $this->reporter->fixcolumn([$balance], '13', 0);
           $arr_rem = $this->reporter->fixcolumn([$rem], '13', 0);
 
-          $maxrow = $this->othersClass->getmaxcolumn([$arr_dateid, $arr_clientname, $arr_expiry, $arr_docno, $arr_qty, $arr_iss, $arr_balance, $arr_rem]);
+          $maxrow = $this->othersClass->getmaxcolumn([$arr_dateid, $arr_clientname, $arr_expiry, $arr_docno, $arr_qty, $arr_iss, $arr_oos, $arr_balance, $arr_rem]);
 
           for ($r = 0; $r < $maxrow; $r++) {
             PDF::SetFont($font, '', $fontsize);
 
             PDF::SetFont($font, '', 11);
-            PDF::MultiCell(75, 0, '', '', 'C', false, 0);
-            PDF::MultiCell(200, 0, (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'L', false, 0);
-            PDF::MultiCell(65, 0, '', '', 'C', false, 0);
+            PDF::MultiCell(70, 0, '', '', 'C', false, 0);
+            PDF::MultiCell(180, 0, (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'L', false, 0);
             PDF::MultiCell(100, 0, '', '', 'C', false, 0);
-            PDF::MultiCell(70, 0, '', '', 'R', false, 0);
-            PDF::MultiCell(70, 0, '', '', 'R', false, 0);
-            PDF::MultiCell(70, 0, (isset($arr_balance[$r]) ? $arr_balance[$r] : '-'), '', 'R', false, 0);
+            PDF::MultiCell(65, 0, '', '', 'R', false, 0);
+            PDF::MultiCell(65, 0, '', '', 'R', false, 0);
+            PDF::MultiCell(65, 0, '', '', 'C', false, 0);
+            PDF::MultiCell(65, 0, (isset($arr_balance[$r]) ? $arr_balance[$r] : '-'), '', 'R', false, 0);
             PDF::MultiCell(70, 0, '', '', 'R', false);
           }
         } else {
@@ -885,6 +890,7 @@ class stockcard
           $docno = $value->docno;
           $qty = number_format($qty, $qtydec);
           $iss = number_format($iss, $qtydec);
+          $oos = number_format($isqty2, $qtydec);
           $balance = number_format($tobal, $qtydec);
           $qty = $qty < 0 ? '-' : $qty;
           $iss = $iss < 0 ? '-' : $iss;
@@ -896,28 +902,30 @@ class stockcard
           $arr_dateid = $this->reporter->fixcolumn([$dateid], '15', 0);
           $arr_clientname = $this->reporter->fixcolumn([$clientname], '16', 0);
           $arr_expiry = $this->reporter->fixcolumn([$expiry], '16', 0);
-          $arr_docno = $this->reporter->fixcolumn([$docno], '13', 0);
+          $arr_docno = $this->reporter->fixcolumn([$docno], '25', 0);
           $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
           $arr_iss = $this->reporter->fixcolumn([$iss], '13', 0);
+          $arr_oos = $this->reporter->fixcolumn([$oos], '13', 0);
           $arr_balance = $this->reporter->fixcolumn([$balance], '13', 0);
           $arr_rem = $this->reporter->fixcolumn([$rem], '13', 0);
 
-          $maxrow = $this->othersClass->getmaxcolumn([$arr_dateid, $arr_clientname, $arr_expiry, $arr_docno, $arr_qty, $arr_iss, $arr_balance, $arr_rem]);
+          $maxrow = $this->othersClass->getmaxcolumn([$arr_dateid, $arr_clientname, $arr_expiry, $arr_docno, $arr_qty, $arr_iss, $arr_oos, $arr_balance, $arr_rem]);
 
           for ($r = 0; $r < $maxrow; $r++) {
             PDF::SetFont($font, '', $fontsize);
-            PDF::MultiCell(75, 0, (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', false, 0);
-            PDF::MultiCell(200, 0, (isset($arr_clientname[$r]) ? $arr_clientname[$r] : ''), '', 'L', false, 0);
-            PDF::MultiCell(65, 0, (isset($arr_expiry[$r]) ? $arr_expiry[$r] : ''), '', 'C', false, 0);
-            PDF::MultiCell(100, 0, (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'C', false, 0);
-            PDF::MultiCell(70, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : '-'), '', 'R', false, 0);
-            PDF::MultiCell(70, 0, (isset($arr_iss[$r]) ? $arr_iss[$r] : '-'), '', 'R', false, 0);
-            PDF::MultiCell(70, 0, (isset($arr_balance[$r]) ? $arr_balance[$r] : '-'), '', 'R', false, 0);
+            PDF::MultiCell(70, 0, (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', false, 0);
+            PDF::MultiCell(180, 0, (isset($arr_clientname[$r]) ? $arr_clientname[$r] : ''), '', 'L', false, 0);
+            PDF::MultiCell(140, 0,"SJSCB000000000000030", '', 'C', false, 0);
+            PDF::MultiCell(65, 0, (isset($arr_qty[$r]) ? $arr_qty[$r] : '-'), '', 'R', false, 0);
+            PDF::MultiCell(65, 0, (isset($arr_iss[$r]) ? $arr_iss[$r] : '-'), '', 'R', false, 0);
+            PDF::MultiCell(65, 0, (isset($arr_oos[$r]) ? $arr_oos[$r] : '-'), '', 'C', false, 0);
+            PDF::MultiCell(65, 0, (isset($arr_balance[$r]) ? $arr_balance[$r] : '-'), '', 'R', false, 0);
             PDF::MultiCell(70, 0, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'R', false);
           }
         } //end if
         $totaliss += $iss;
         $totalqty += $qty;
+        $totaloos += $isqty2;
         $i++;
 
         switch ($companyid) {
@@ -928,7 +936,7 @@ class stockcard
             }
             break;
           default:
-            if (PDF::getY() > 800) {
+            if (PDF::getY() > 830) {
               $this->PDF_LEDGER_HEADER($config, $data);
             }
             break;
@@ -936,13 +944,13 @@ class stockcard
       }
 
       PDF::SetFont($fontbold, '', 11);
-      PDF::MultiCell(75, 0, "", '', 'C', false, 0);
+      PDF::MultiCell(70, 0, "", '', 'C', false, 0);
       PDF::MultiCell(200, 0, "", '', 'C', false, 0);
-      PDF::MultiCell(65, 0, "", '', 'C', false, 0);
-      PDF::MultiCell(100, 0, 'TOTAL QTY : ', 'T', 'R', false, 0);
-      PDF::MultiCell(70, 0, number_format($totalqty, $qtydec), 'T', 'R', false, 0);
-      PDF::MultiCell(70, 0, number_format($totaliss, $qtydec), 'T', 'R', false, 0);
-      PDF::MultiCell(70, 0, number_format($tobal, $qtydec), 'T', 'R', false, 0);
+      PDF::MultiCell(140, 0, 'TOTAL QTY : ', 'T', 'R', false, 0);
+      PDF::MultiCell(65, 0, number_format($totalqty, $qtydec), 'T', 'R', false, 0);
+      PDF::MultiCell(65, 0, number_format($totaliss, $qtydec), 'T', 'R', false, 0);
+      PDF::MultiCell(65, 0, number_format($totaloos, $qtydec), 'T', 'R', false, 0);
+      PDF::MultiCell(65, 0, number_format($tobal, $qtydec), 'T', 'R', false, 0);
       PDF::MultiCell(70, 0, "", '', 'R', false);
 
 
@@ -1019,24 +1027,23 @@ class stockcard
       // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0)
 
       PDF::SetFont($fontbold, '', 17);
-      PDF::MultiCell(700, 0, 'STOCKCARD RECEIVING', '', 'L', false);
+      PDF::MultiCell(720, 0, 'STOCKCARD RECEIVING', '', 'L', false);
 
 
 
       PDF::SetFont($font, '', $fontsize);
-      PDF::MultiCell(150, 0, "View Accounts from : ", '', 'L', false, 0, '',  '');
+      PDF::MultiCell(120, 0, "View Accounts from : ", '', 'L', false, 0, '',  '');
       PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(200, 0, $start . ' TO ' . $end, '', 'L', false, 0);
+      PDF::MultiCell(180, 0, $start . ' TO ' . $end, '', 'L', false, 0);
       PDF::SetFont($font, '', $fontsize);
       PDF::MultiCell(75, 0, "View By Unit : ", '', 'L', false, 0, '',  '');
-
       PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(200, 0, $uom, '', 'L', false);
+      PDF::MultiCell(250, 0, $uom, '', 'L', false);
 
       PDF::SetFont($font, '', 11);
-      PDF::MultiCell(100, 0, 'Item Code: ', '', 'L', false, 0);
+      PDF::MultiCell(75, 0, 'Item Code: ', '', 'L', false, 0);
       PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(200, 0, (isset($data[0]->barcode) ? $data[0]->barcode : ''), '', 'L', false, 0);
+      PDF::MultiCell(225, 0, (isset($data[0]->barcode) ? $data[0]->barcode : ''), '', 'L', false, 0);
       PDF::MultiCell(100, 0, 'Price Levels ', '', 'L', false);
 
       $hmaxrow = 1;
@@ -1054,21 +1061,21 @@ class stockcard
 
         PDF::SetFont($font, '', 11);
         if ($r == 0) {
-          PDF::MultiCell(100, 0, 'Item Name: ', '', 'L', false, 0);
+          PDF::MultiCell(70, 0, 'Item Name: ', '', 'L', false, 0);
         } else {
-          PDF::MultiCell(100, 0, '', '', 'L', false, 0);
+          PDF::MultiCell(70, 0, '', '', 'L', false, 0);
         }
         PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(200, 0, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0);
+        PDF::MultiCell(230, 0, ' ' . (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0);
 
         PDF::SetFont($font, '', 11);
         if ($r == 0) {
-          PDF::MultiCell(100, 0, 'Retail: ', '', 'L', false, 0);
+          PDF::MultiCell(40, 0, 'Retail: ', '', 'L', false, 0);
         } else {
           PDF::MultiCell(100, 0, '', '', 'L', false, 0);
         }
         PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(100, 0, ' ' . (isset($arr_priceretail[$r]) ? $arr_priceretail[$r] : ''), '', 'L', false, 0);
+        PDF::MultiCell(160, 0, ' ' . (isset($arr_priceretail[$r]) ? $arr_priceretail[$r] : ''), '', 'L', false, 0);
 
         PDF::SetFont($font, '', 11);
         if ($r == 0) {
@@ -1090,36 +1097,6 @@ class stockcard
       $arr_discwhole = $this->reporter->fixcolumn([$discwhole], '10', 0);
 
       $hmaxrow = $this->othersClass->getmaxcolumn([$arr_brand, $arr_pricewhole, $arr_discwhole]);
-      for ($r = 0; $r < $hmaxrow; $r++) {
-
-        PDF::SetFont($font, '', 11);
-        if ($r == 0) {
-          PDF::MultiCell(100, 0, 'Brand: ', '', 'L', false, 0);
-        } else {
-          PDF::MultiCell(100, 0, '', '', 'L', false, 0);
-        }
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(200, 0, ' ' . (isset($arr_brand[$r]) ? $arr_brand[$r] : ''), '', 'L', false, 0);
-
-        PDF::SetFont($font, '', 11);
-        if ($r == 0) {
-          PDF::MultiCell(100, 0, 'Wholesale: ', '', 'L', false, 0);
-        } else {
-          PDF::MultiCell(100, 0, '', '', 'L', false, 0);
-        }
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(100, 0, ' ' . (isset($arr_pricewhole[$r]) ? $arr_pricewhole[$r] : ''), '', 'L', false, 0);
-
-        PDF::SetFont($font, '', 11);
-        if ($r == 0) {
-          PDF::MultiCell(100, 0, 'Disc 2:', '', 'L', false, 0);
-        } else {
-          PDF::MultiCell(100, 0, '', '', 'L', false, 0);
-        }
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(100, 0, ' ' . (isset($arr_discwhole[$r]) ? $arr_discwhole[$r] : ''), '', 'L', false);
-      }
-
 
       $model = $data[0]->model;
       $pricegrp1 = number_format($data[0]->pricegrp1, 2);
@@ -1130,36 +1107,6 @@ class stockcard
       $arr_discgrp1 = $this->reporter->fixcolumn([$discgrp1], '10', 0);
 
       $hmaxrow = $this->othersClass->getmaxcolumn([$arr_model, $arr_pricegrp1, $arr_discgrp1]);
-      for ($r = 0; $r < $hmaxrow; $r++) {
-
-        PDF::SetFont($font, '', 11);
-        if ($r == 0) {
-          PDF::MultiCell(100, 0, 'Model: ', '', 'L', false, 0);
-        } else {
-          PDF::MultiCell(100, 0, '', '', 'L', false, 0);
-        }
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(200, 0, ' ' . (isset($arr_model[$r]) ? $arr_model[$r] : ''), '', 'L', false, 0);
-
-        PDF::SetFont($font, '', 11);
-        if ($r == 0) {
-          PDF::MultiCell(100, 0, 'Group 1: ', '', 'L', false, 0);
-        } else {
-          PDF::MultiCell(100, 0, '', '', 'L', false, 0);
-        }
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(100, 0, ' ' . (isset($arr_pricegrp1[$r]) ? $arr_pricegrp1[$r] : ''), '', 'L', false, 0);
-
-        PDF::SetFont($font, '', 11);
-        if ($r == 0) {
-          PDF::MultiCell(100, 0, 'Disc 3:', '', 'L', false, 0);
-        } else {
-          PDF::MultiCell(100, 0, '', '', 'L', false, 0);
-        }
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(100, 0, ' ' . (isset($arr_discgrp1[$r]) ? $arr_discgrp1[$r] : ''), '', 'L', false);
-      }
-
 
       $part = $data[0]->part;
       $pricegrp2 = number_format($data[0]->pricegrp2, 2);
@@ -1170,57 +1117,6 @@ class stockcard
       $arr_discgrp2 = $this->reporter->fixcolumn([$discgrp2], '10', 0);
 
       $hmaxrow = $this->othersClass->getmaxcolumn([$arr_part, $arr_pricegrp2, $arr_discgrp2]);
-      for ($r = 0; $r < $hmaxrow; $r++) {
-
-        PDF::SetFont($font, '', 11);
-        if ($r == 0) {
-          PDF::MultiCell(100, 0, 'Part#: ', '', 'L', false, 0);
-        } else {
-          PDF::MultiCell(100, 0, '', '', 'L', false, 0);
-        }
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(200, 0, ' ' . (isset($arr_part[$r]) ? $arr_part[$r] : ''), '', 'L', false, 0);
-
-        PDF::SetFont($font, '', 11);
-        if ($r == 0) {
-          PDF::MultiCell(100, 0, 'Group 2: ', '', 'L', false, 0);
-        } else {
-          PDF::MultiCell(100, 0, '', '', 'L', false, 0);
-        }
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(100, 0, ' ' . (isset($arr_pricegrp2[$r]) ? $arr_pricegrp2[$r] : ''), '', 'L', false, 0);
-
-        PDF::SetFont($font, '', 11);
-        if ($r == 0) {
-          PDF::MultiCell(100, 0, 'Disc 4:', '', 'L', false, 0);
-        } else {
-          PDF::MultiCell(100, 0, '', '', 'L', false, 0);
-        }
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(100, 0, ' ' . (isset($arr_discgrp2[$r]) ? $arr_discgrp2[$r] : ''), '', 'L', false);
-      }
-
-      PDF::SetFont($font, '', 11);
-      PDF::MultiCell(100, 0, 'Size: ', '', 'L', false, 0);
-      PDF::SetFont($fontbold, '', $fontsize);
-      PDF::MultiCell(300, 0, (isset($data[0]->sizeid) ? $data[0]->sizeid : ''), '', 'L', false, 0);
-
-      if ((isset($data[0]->isinactive) ? $data[0]->isinactive : '') == 1) {
-        PDF::SetFont($fontbold, '', 11);
-        PDF::MultiCell(50, 0, 'Inactive', '', 'L', false, 0);
-      } else {
-        PDF::SetFont($font, '', 11);
-        PDF::MultiCell(50, 0, 'Inactive', '', 'L', false, 0);
-      }
-
-      PDF::MultiCell(100, 0, '', '', 'L', false, 0);
-      if ((isset($data[0]->isimport) ? $data[0]->isimport : '') == 1) {
-        PDF::SetFont($fontbold, '', $fontsize);
-        PDF::MultiCell(70, 0, 'Imported', '', 'L', false);
-      } else {
-        PDF::SetFont($font, '', $fontsize);
-        PDF::MultiCell(70, 0, 'Imported', '', 'L', false);
-      }
 
       PDF::MultiCell(0, 0, "\n");
       PDF::MultiCell(200, 0, 'Run Date :' . date('M-d-Y h:i:s a', time()), '', 'L', false);
@@ -1239,7 +1135,7 @@ class stockcard
       PDF::MultiCell(65, 0, "Purch. Cost", 'B', 'C', false, 0);
       PDF::MultiCell(75, 0, "Landed Cost", 'B', 'C', false, 0);
       PDF::MultiCell(50, 0, "Discount", 'B', 'C', false, 0);
-      PDF::MultiCell(40, 0, "Qty", 'B', 'C', false, 0);
+      PDF::MultiCell(60, 0, "Qty", 'B', 'C', false, 0);
       PDF::MultiCell(55, 0, "Status", 'B', 'C', false);
 
       $totalqty = 0;
@@ -1266,7 +1162,7 @@ class stockcard
         $totalstatus += $status;
 
 
-        $arr_docno = $this->reporter->fixcolumn([$docno], '13', 0);
+        $arr_docno = $this->reporter->fixcolumn([$docno], '15', 0);
         $arr_dateid = $this->reporter->fixcolumn([$dateid], '10', 0);
         $arr_clientname = $this->reporter->fixcolumn([$clientname], '30', 0);
         $arr_forex = $this->reporter->fixcolumn([$forex], '10', 0);
@@ -1278,16 +1174,15 @@ class stockcard
 
         $maxrow = $this->othersClass->getmaxcolumn([$arr_docno, $arr_dateid, $arr_clientname, $arr_forex, $arr_rrcost, $arr_cost, $arr_disc, $arr_qty, $arr_status]);
         for ($r = 0; $r < $maxrow; $r++) {
-
           PDF::SetFont($font, '', $fontsize);
           PDF::MultiCell(100, 15, ' ' . (isset($arr_docno[$r]) ? $arr_docno[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(60, 15, ' ' . (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(195, 15, ' ' . (isset($arr_clientname[$r]) ? $arr_clientname[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(65, 15, ' ' . (isset($arr_dateid[$r]) ? $arr_dateid[$r] : ''), '', 'C', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(195, 15, ' ' . (isset($arr_clientname[$r]) ? $arr_clientname[$r] : ''), '', 'L', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(60, 15, ' ' . (isset($arr_forex[$r]) ? $arr_forex[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(65, 15, ' ' . (isset($arr_rrcost[$r]) ? $arr_rrcost[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(75, 15, ' ' . (isset($arr_cost[$r]) ? $arr_cost[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(50, 15, ' ' . (isset($arr_disc[$r]) ? $arr_disc[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
-          PDF::MultiCell(40, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
+          PDF::MultiCell(55, 15, ' ' . (isset($arr_qty[$r]) ? $arr_qty[$r] : ''), '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'M', false);
           PDF::MultiCell(55, 15, ' ' . (isset($arr_status[$r]) ? $arr_status[$r] : ''), '', 'R', false, 1, '',  '', true, 0, false, true, 0, 'M', false);
         }
       }
@@ -1300,7 +1195,7 @@ class stockcard
       PDF::MultiCell(65, 0, '', '', 'C', false, 0);
       PDF::MultiCell(75, 0, 'Grand Total', '', 'C', false, 0);
       PDF::MultiCell(50, 0, '', '', 'C', false, 0);
-      PDF::MultiCell(40, 0, number_format($totalqty, 2), '', 'R', false, 0);
+      PDF::MultiCell(60, 0, number_format($totalqty, 2), '', 'R', false, 0);
       PDF::MultiCell(55, 0, number_format($totalstatus, 2), '', 'R', false);
 
       PDF::MultiCell(0, 0, "\n\n\n");

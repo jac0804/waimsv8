@@ -38,7 +38,7 @@ class stockcard
   private $stockselect;
 
   private $fields = ['barcode', 'picture', 'itemname', 'uom', 'wh', 'payrate', 'payqty', 'cost',  'itemrem', 'shortname', 'part', 'model', 'class', 'subclass', 'brand', 'groupid', 'critical', 'reorder', 'category', 'subcat', 'body', 'sizeid', 'color', 'asset', 'liability', 'revenue',  'expense', 'salesreturn', 'isinactive',  'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial', 'markup', 'foramt', 'supplier', 'partno', 'subcode', 'packaging', 'islabor', 'dqty', 'ispositem', 'isprintable', 'projectid', 'moq', 'mmoq', 'linkdept', 'tqty', 'isofficesupplies', 'noncomm', 'isgeneric', 'othcode', 'item_length', 'item_width', 'item_height', 'israwmat', 'barcodeid', 'avecost', 'channel', 'isnonserial', 'iswireitem', 'startwire', 'endwire',  'maximum', 'aveleadtime', 'maxleadtime', 'minimum', 'isreversewireitem', 'isfg', 'lastpr', 'defcost', 'commrate', 'carton', 'cbm', 'iscatchwt'];
-  private $iteminfo = ['volume', 'weight', 'engine', 'serialno', 'renewaldate', 'chassisno', 'endinsured', 'dateacquired', 'warrantyend', 'leasedate', 'disposaldate'];
+  private $iteminfo = ['volume', 'weight', 'wt', 'engine', 'serialno', 'renewaldate', 'chassisno', 'endinsured', 'dateacquired', 'warrantyend', 'leasedate', 'disposaldate'];
 
   private $except = ['itemid', 'itemrem'];
   private $blnfields = ['isinactive', 'isvat', 'isimport', 'fg_isfinishedgood', 'fg_isequipmenttool', 'isnoninv', 'isserial', 'islabor', 'ispositem', 'isprintable', 'isofficesupplies', 'noncomm', 'isgeneric', 'israwmat', 'isnonserial', 'iswireitem', 'isreversewireitem', 'isfg', 'iscatchwt'];
@@ -1437,7 +1437,7 @@ class stockcard
         break;
       case 67: //yulick
         $data[0]['uom'] = 'KG';
-        $data[0]['ismarkup'] = '0';
+        $data[0]['iscatchwt'] = '0';
         break;
       default:
         $data[0]['uom'] = 'PCS';
@@ -1567,7 +1567,7 @@ class stockcard
     $data[0]['item_height'] = '';
     $data[0]['volume'] = '';
     $data[0]['weight'] = '';
-    $data[0]['wt'] = 0;
+    $data[0]['wt'] = 0.00;
     $data[0]['engine'] = '';
     $data[0]['serialno'] = '';
     $data[0]['renewaldate'] = '';
@@ -1597,8 +1597,6 @@ class stockcard
     $data[0]['defcost'] = 0;
     $data[0]['commrate'] = 0;
     $data[0]['carton'] = 0;
-
-
     return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
   }
 
@@ -1609,6 +1607,7 @@ class stockcard
     $center = $config['params']['center'];
     $companyid = $config['params']['companyid'];
     $filter = '';
+    $addfield = "";
 
     if ($companyid == 10 || $companyid == 12) { //afti & afti usd
       $filter = ' and item.isoutsource =0 ';
@@ -1627,6 +1626,10 @@ class stockcard
     $head = [];
 
     $fields = 'item.itemid, item.barcode as docno';
+
+    if ($companyid == 67) { // yulick
+      $addfield = ", ifnull(round(info.wt, 2), 0) as wt";
+    }
 
     foreach ($this->fields as $key => $value) {
       if ($value == 'markup') {
@@ -1666,7 +1669,7 @@ class stockcard
         '' as drevenue,
         '' as dsalesreturn, coalesce(round(amt/ nullif(cbm, 0), 2), 0) as cbm2, shortname, coalesce(round(amt / nullif(cbm, 0) * 28, 2), 0) AS container,
         ifnull(dept.clientname,'') as deptname, '' as dwhname, item.wh, ifnull(wh.clientname, '') as whname, 
-        item.linkdept,item.avecost,item.maximum,item.aveleadtime,item.maxleadtime,item.dlock,format(info.wt, 2) as wt";
+        item.linkdept,item.avecost,item.maximum,item.aveleadtime,item.maxleadtime,item.dlock $addfield";
 
     $qry = $qryselect . " from item
         left join part_masterfile as pmaster on pmaster.part_id = item.part
@@ -1747,12 +1750,6 @@ class stockcard
         if (array_key_exists($key, $head)) {
           $iteminfo[$key] = $head[$key];
           $iteminfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $iteminfo[$key], $lookups);
-        }
-
-        if ($companyid == 67) { //yulick
-          if (array_key_exists('wt', $head)) {
-            $iteminfo['wt'] = floatval($head['wt']);
-          }
         }
       } //end if 
     }
@@ -1906,6 +1903,8 @@ class stockcard
             $iteminfo['itemid'] = $itemid;
             $this->coreFunctions->sbcinsert("iteminfo", $iteminfo);
           } else {
+            $iteminfo['editdate'] = $this->othersClass->getCurrentTimeStamp();
+            $iteminfo['editby'] = $config['params']['user'];
             $this->coreFunctions->sbcupdate('iteminfo', $iteminfo, ['itemid' => $head['itemid']]);
           }
           break;

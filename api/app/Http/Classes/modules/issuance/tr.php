@@ -230,7 +230,7 @@ class tr
 
     $tab = [
       $this->gridname => [
-        'gridcolumns' => [],
+        'gridcolumns' =>  $columns,
         'computefield' => ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'],
         'headgridbtns' => $headgridbtns
       ]

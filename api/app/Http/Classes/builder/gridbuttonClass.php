@@ -11,6 +11,7 @@ class gridbuttonClass
 
   private $gridbuttons = [];
   private $headgridbuttons = [];
+  private $params = null;
 
   public function getgridbuttons()
   {
@@ -24,7 +25,10 @@ class gridbuttonClass
     return $this->headgridbuttons;
   }
 
-  public function __construct() {} //end function
+  public function __construct($params = null)
+  {
+    $this->params = $params;
+  } //end function
 
   public function buttonsArray()
   {
@@ -32,6 +36,7 @@ class gridbuttonClass
     //viewacctg - lookupclass
     //viewdistribution - ledgerclass
     //icon - google icon
+
     $this->headgridbuttons = [
       'viewacctg' => [
         'label' => 'View Accounting Entry',
@@ -475,6 +480,7 @@ class gridbuttonClass
       'delete' => [
         'name' => 'delete',
         'icon' => 'delete',
+        'label' => 'delete',
         'class' => 'btnstockdelete',
         'action' => 'deleteitem',
         'access' => 'deleteitem',
@@ -792,7 +798,26 @@ class gridbuttonClass
         'access' => 'edititem',
         'color' => 'orange'
       ],
-
+      'entryweighdetails' => [
+        'name' => 'tableentry',
+        'label' => 'Weigth details',
+        'icon' => 'scale',
+        'action' => 'tableentry',
+        'class' => 'btnviewcvitems',
+        'lookupclass' => 'entryweighdetails',
+        'access' => 'edititem',
+        'color' => 'primary'
+      ],
+      'entryweighdetails_out' => [
+        'name' => 'tableentry',
+        'label' => 'Weigth details',
+        'icon' => 'scale',
+        'action' => 'tableentry',
+        'class' => 'btnviewcvitems',
+        'lookupclass' => 'entryweighdetails_out',
+        'access' => 'edititem',
+        'color' => 'red'
+      ],
       'viewprinfo' => [
         'name' => 'tableentry',
         'label' => 'PR Info',

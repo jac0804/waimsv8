@@ -1743,8 +1743,8 @@ class sqlquery
               }
               break;
           }
-          
-         break;   
+
+          break;
         default:
           default_left_join_here:
           if ($isclientitem) {
@@ -4048,6 +4048,7 @@ class sqlquery
     $companyid = $config['params']['companyid'];
     $condition = '';
     $addfield = "";
+    $filter = [];
     switch ($doc) {
       case 'SS':
       case 'ST':
@@ -4078,8 +4079,6 @@ class sqlquery
       $client = $filter[0]->dept;
       $wh = $filter[0]->client;
     }
-
-
 
     switch ($doc) {
       case 'SS':
@@ -4114,11 +4113,6 @@ class sqlquery
           if ($trno == 0) {
             $condition = " and head.approvedate is not null";
             $addfield = " , '$whcode' as descode , '$whname' as desname";
-          } else {
-            $condition = " and head.wh='" . $wh . "' ";
-            if ($client != '') {
-              $condition .= " and head.client='" . $client . "' ";
-            }
           }
           if (isset($config['params']['addedparams'][2])) {
             if (floatval($config['params']['addedparams'][2]) != 0) {
@@ -4163,7 +4157,6 @@ class sqlquery
             where stock.qty>stock.qa " . $condition . " group by head.doc,head.docno,head.dateid,head.trno,head.yourref,head.cur,head.forex,head.wh";
     }
     $data = $this->coreFunctions->opentable($qry);
-    $this->coreFunctions->LogConsole($qry);
     return $data;
   }
 
@@ -4205,8 +4198,9 @@ class sqlquery
       switch ($doc) {
         case 'SS':
         case 'TS':
-        case 'ST';
-          $filter = $this->coreFunctions->opentable("select client as dept,wh as client from lahead where trno=?", [$trno]);
+        case 'ST':
+          // $filter = $this->coreFunctions->opentable("select client as dept,wh as client from lahead where trno=?", [$trno]);
+          $filter = $this->coreFunctions->opentable("select head.client,client.client as dept from lahead as head left join client on client.clientid=head.deptid where head.trno=?", [$trno]);
           break;
         case 'PR':
           $filter = $this->coreFunctions->opentable("select client as dept, wh as client from prhead where trno=?", [$trno]);
@@ -7590,45 +7584,46 @@ class sqlquery
     $center = $config['params']['center'];
 
     if ($doc == 'UE' || $doc = 'ST') { //buenatech
-      $condition = " and jo.isproduce<>1 "; //picked in produce item
-      $condition2 = "";
+      $condition = ""; 
+      $condition2 ="";
       $qfield = "jos.qa";
       if ($doc == 'ST') {
-        $condition2 = " and joh.isproduce<>1 and jos.tsqa<>jos.qty";
+        $condition = " and jos.tsqa<>jos.qty";
         $qfield = "jos.tsqa";
       }
 
       if ($doc == 'UE') {
-        $condition2 = " and jos.qa<>jos.qty";
+        $condition = " and jo.prodqa<>jo.qty";
+        $condition2 =" and jos.qa<>jos.qty";
       }
 
       $lookupclass = $config['params']['lookupclass'];
       switch ($lookupclass) {
         case 'pendingjoheaddetail':
           $pdtrno = isset($config['params']['addedparams'][0]) ? $config['params']['addedparams'][0] : 0;
-          $qry = "select jo.trno,date(jo.dateid) as dateid,jo.docno,it.barcode,it.itemname,jo.qty,jo.uom,jo.isproduce,jo.rem,jo.wh from hpdhead as jo
+          $qry = "select jo.trno,date(jo.dateid) as dateid,jo.docno,it.barcode,it.itemname,jo.qty-jo.prodqa as qty,jo.uom,jo.isproduce,jo.rem,jo.wh from hpdhead as jo
             left join item as it on it.itemid=jo.itemid
-            left join transnum as num on num.trno=jo.trno where num.center=? $condition";
+            left join transnum as num on num.trno=jo.trno where num.center=? $condition ";
           $params = [$center];
           break;
         case 'pendingjobtndetail':
         case 'issuemultipleexpiry':
           $jotrno = $this->coreFunctions->getfieldvalue("lahead", 'pdtrno', 'trno=?', [$config['params']['trno']]);
-          $qry = "select joh.trno,date(joh.dateid) as dateid,joh.docno,it.barcode,it.itemname, jos.qty,jos.uom,
+          $qry = "select jo.trno,date(jo.dateid) as dateid,jo.docno,it.barcode,it.itemname, jos.qty,jos.uom,
                   concat(jos.trno,jos.line) as keyid,jos.trno as refx,jos.line as linex,wh.clientid as whid,
                   FORMAT(jos.rrqty," . $this->companysetup->getdecimal('qty', $config['params']) . ") as isqty,
                   FORMAT(jos.qty," . $this->companysetup->getdecimal('qty', $config['params']) . ") as iss,
                   FORMAT(jos.rrcost," . $this->companysetup->getdecimal('price', $config['params']) . ") as amt,jos.disc,
                   FORMAT(jos.ext," . $this->companysetup->getdecimal('currency', $config['params']) . ") as ext,wh.client as wh,jos.uom,it.itemid,
                   FORMAT(($qfield / case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as qa,
-                  FORMAT(((jos.qty-$qfield)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pending,jos.loc,joh.yourref,
-                  jos.rem,joh.client,jos.line
-            from hpdhead as joh
-            left join hpdstock as jos on jos.trno=joh.trno
+                  FORMAT(((jos.qty-$qfield)/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end)," . $this->companysetup->getdecimal('qty', $config['params']) . ") as pending,jos.loc,jo.yourref,
+                  jos.rem,jo.client,jos.line
+            from hpdhead as jo
+            left join hpdstock as jos on jos.trno=jo.trno
             left join item as it on it.itemid=jos.itemid
             left join client as wh on wh.client=jos.wh
             left join uom on uom.itemid=it.itemid and uom.uom=jos.uom
-            left join transnum as num on num.trno=joh.trno where  num.center=? and  joh.trno=$jotrno and  jos.void = 0 $condition2";
+            left join transnum as num on num.trno=jo.trno where  num.center=? and  jo.trno=$jotrno and  jos.void = 0 $condition $condition2";
           $params = [$center];
           break;
       }
@@ -7657,6 +7652,7 @@ class sqlquery
           and stock.void = 0 ";
       $params = [$project,  $subproject,  $client, $stageid, $center];
     }
+ 
     $data = $this->coreFunctions->opentable($qry, $params);
     return $data;
   } // end function

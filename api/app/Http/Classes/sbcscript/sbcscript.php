@@ -930,7 +930,7 @@ class sbcscript
             state.reportobject.txtfield.col2.dacnoname.style = shownStyle;
             state.reportobject.txtfield.col2.ddeptname.style = shownStyle;
             state.reportobject.txtfield.col2.ddeptname.required = true;
-          } else {
+        } else {
             state.reportobject.txtfield.col2.dacnoname.style = hiddenStyle;
             state.reportobject.txtfield.col2.ddeptname.style = hiddenStyle;
             state.reportobject.txtfield.col2.ddeptname.required = false;
@@ -941,6 +941,48 @@ class sbcscript
             state.reportdata.params.dacnoname = "";
             state.reportdata.params.contra = "";
             state.reportdata.params.acnoname = "";
+          }
+        }
+      '
+    ];
+  }
+
+  public function pricelist_report($config)
+  {
+    return [
+      'report' => '
+        console.log("pricelist script", payload.field, payload.value);
+        const transition = "transition: max-height 0.8s ease, opacity 0.6s ease;";
+        const hiddenStyle = "max-height:0;opacity:0;overflow:hidden;margin:0;padding:0;pointer-events:none;" + transition;
+        const shownStyle = "max-height:100px;opacity:1;overflow:visible;pointer-events:auto;" + transition;
+
+        if (state.rtBackup === undefined) {
+          state.rtBackup = {
+            options: state.reportobject.txtfield.col3.radioreporttype.options,
+            label: state.reportobject.txtfield.col3.radioreporttype.label
+          };
+        }
+
+        if (payload.field === undefined) {
+          // initial load: hide Category Option
+          state.reportobject.txtfield.col3.radioreporttype.options = [];
+          state.reportobject.txtfield.col3.radioreporttype.label = "";
+          state.reportobject.txtfield.col3.radioreporttype.style = hiddenStyle;
+          state.reportobject.txtfield.col3.radioreporttype.required = false;
+        } else if (payload.field === "poption" || payload.field === "radiooption") {
+          if (Number(payload.value) === 1) {
+            // Item Category selected: show All Items / New Arrival
+            state.reportobject.txtfield.col3.radioreporttype.options = state.rtBackup.options;
+            state.reportobject.txtfield.col3.radioreporttype.label = state.rtBackup.label;
+            state.reportobject.txtfield.col3.radioreporttype.style = shownStyle;
+            state.reportobject.txtfield.col3.radioreporttype.required = true;
+          } else {
+            state.reportobject.txtfield.col3.radioreporttype.options = [];
+            state.reportobject.txtfield.col3.radioreporttype.label = "";
+            state.reportobject.txtfield.col3.radioreporttype.style = hiddenStyle;
+            state.reportobject.txtfield.col3.radioreporttype.required = false;
+            // reset only the dependent field, not poption
+            state.reportdata.params.reporttype = 0;
           }
         }
       '
@@ -1000,6 +1042,15 @@ class sbcscript
                console.log(state.reportdata.params.end);
           }
         }
+      '
+    ];
+  }
+
+  public function entryweighdetails($config)
+  {
+    return [
+      'tableentryload' => '
+        console.log("--tableentryload called");
       '
     ];
   }

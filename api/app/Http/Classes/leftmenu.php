@@ -2416,6 +2416,7 @@ class leftmenu
                 break;
             case 67: //yulick
                 $qry .= ",(5944,1,'Allow Click for Approval','',0,'\\40424','\\404',0,'0',0," . $params['levelid'] . ")";
+                $qry .= ",(6067,1,'Allow View Dashboard PR Subject for Approval','',0,'\\40425','\\404',0,'0',0," . $params['levelid'] . ")";
                 break;
         }
 
@@ -3119,6 +3120,9 @@ class leftmenu
 
         $folder = 'receivable';
         switch ($params['companyid']) {
+            case 10:
+                $folder = 'afti';
+                break;
             case 55: //lending afli
                 $folder = 'lending';
                 break;
@@ -5476,6 +5480,9 @@ class leftmenu
         (1594,1,'Allow Click Delete Button Leave Application','',0,'\\200304','\\2003',0,0,0," . $params['levelid'] . ") ,
         (1595,1,'Allow View Leave Application','',0,'\\200305','\\2003',0,0,0," . $params['levelid'] . ") ,
         (1596,1,'Allow Click Edit Button Leave Application','',0,'\\200306','\\2003',0,0,0," . $params['levelid'] . ")";
+        if ($params['companyid'] == 58) { //cdohris
+            $qry .= ", (6069,0,'Allow To Cancel Approved Application','',0,'\\200306','\\2003',0,'0',0," . $params['levelid'] . ")";
+        }
         $this->insertattribute($params, $qry);
         return "($sort,$p,'leaveapplication','/ledgergrid/payroll/leaveapplication','Leave Application','fa fa-calendar-alt sub_menu_ico',1590," . $params['levelid'] . ")";
     } //end function
@@ -6320,7 +6327,11 @@ class leftmenu
 
 
         if ($this->companysetup->getserial($params)) {
-            $qry .= ",(2999,0,'Allow Access enter Serial','',0,'\\815','$parent',0,'0',0," . $params['levelid'] . ")";
+            $serialLabel = 'Allow Access enter Serial';
+            if ($params['companyid'] == 67) { //yulick
+                $serialLabel = 'Allow Access enter item catch weight';
+            }
+            $qry .= ",(2999,0,'" . $serialLabel . "','',0,'\\815','$parent',0,'0',0," . $params['levelid'] . ")";
         }
 
         if ($params['companyid'] == 6) { //mitsukoshi

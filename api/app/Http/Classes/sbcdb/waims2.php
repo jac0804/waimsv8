@@ -1623,7 +1623,7 @@ class waims2
     $this->coreFunctions->sbcaddcolumngrp(["omso", "homso"], ["rem"], "varchar(200) NOT NULL DEFAULT ''");
 
 
-    _20240917Here:
+    _20240917Here: //add new fields after this
     $this->coreFunctions->sbcaddcolumngrp(
       ["headinfotrans", "hheadinfotrans"],
       ["deadline", "pdeadline", "sentdate", "pickupdate", "printdate", "checkdate", "releasetoap", "loaddate"],
@@ -4569,11 +4569,11 @@ class waims2
 
 
 
-    $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["itemid"], "int(10) NOT NULL DEFAULT '0'", 0); 
-    $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["whid"], "int(11) NOT NULL DEFAULT '0'", 0); 
+    $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["itemid"], "int(10) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["whid"], "int(11) NOT NULL DEFAULT '0'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["amount", "restday", "night", "holiday", "adjustmnt", "thirteenmos", "admin", "canteen", "cacanteen", "cahahsy", "charge"], "decimal(18,4) NOT NULL DEFAULT '0'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["pcswork"], "decimal(18,2) NOT NULL DEFAULT '0'", 0);
-  
+
     $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["trno"], "bigint(20) unsigned NOT NULL DEFAULT '0'", 0);
     $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["editdate", "encodeddate"], "datetime DEFAULT NULL", 1);
     $this->coreFunctions->sbcaddcolumngrp(["piecetrans"], ["editby", "encodedby"], "varchar(20) NOT NULL DEFAULT ''", 1);
@@ -4587,7 +4587,8 @@ class waims2
     $this->coreFunctions->sbcaddcolumngrp(["section"], ['deptid'], "int(11) NOT NULL DEFAULT '0'");
     $this->coreFunctions->sbcaddcolumngrp(["section"], ["createdate"], "datetime DEFAULT NULL");
     $this->coreFunctions->sbcaddcolumngrp(["section"], ["createby"], "varchar(150) NOT NULL DEFAULT ''");
-    
+    $this->coreFunctions->sbcaddcolumngrp(["attendee"], ['curtrno'], "int(11) NOT NULL DEFAULT '0'");
+
     $qry = "CREATE TABLE hpiecetrans like piecetrans";
     $this->coreFunctions->sbccreatetable("hpiecetrans", $qry);
 
@@ -4609,5 +4610,10 @@ class waims2
 
     $this->coreFunctions->sbcaddcolumngrp(["lahead", "glhead"], ["lot", "expiry"], "varchar(150) NOT NULL DEFAULT ''", 0);
     $this->coreFunctions->sbcaddcolumngrp(["pdhead", "hpdhead"], ["prodqa"], "decimal(18,6) NOT NULL DEFAULT '0.000000'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["projectmasterfile"], ["drprefix", "siprefix", "crprefix"], "varchar(5) NOT NULL DEFAULT ''");
+    $this->coreFunctions->sbcaddcolumngrp(["projectmasterfile"], ["isnonvat"], "tinyint(1) NOT NULL DEFAULT 0");
+    $this->coreFunctions->sbcaddcolumngrp(["item"], ["isnewarrival"], "TINYINT(1) NOT NULL DEFAULT '0'", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["lastock", "glstock"], ["ewtcode", "ewtrate"], "varchar(15) NOT NULL DEFAULT ''", 0);
+    $this->coreFunctions->sbcaddcolumngrp(["ophead","hophead"], ["industryid"], "int(10) NOT NULL DEFAULT '0'", 0);
   }
 }

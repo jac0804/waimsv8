@@ -56,7 +56,10 @@ class entryproject
     'reconfee',
     'empid',
     'paygroupid',
-    'isinactive'
+    'isinactive',
+    'drprefix',
+    'siprefix',
+    'crprefix'
   ];
   public $showclosebtn = false;
   private $reporter;
@@ -98,29 +101,8 @@ class entryproject
     $companyid = $config['params']['companyid'];
     $systemtype = $this->companysetup->getsystemtype($config['params']);
 
-    $action = 0;
-    $code = 1;
-    $group = 3;
-    $name = 2;
-    $address = 4;
-    $isho = 5;
-    $agentname = 6;
-    $comrate = 7;
-    $asset_stockgroup = 8;
-    $liability_stockgroup = 9;
-    $expense_stockgroup = 10;
-    $revenue_stockgroup = 11;
-    $tin = 12;
-    $color = 13;
-    $rate = 14;
-    $minimum = 15;
-    $surcharge = 16;
-    $reconfee = 17;
-    $empname = 18;
-    $paygroup = 19;
-    $isinactive = 20;
 
-    $tab = [$this->gridname => ['gridcolumns' => [
+    $columns = [
       'action',
       'code',
       'name',
@@ -141,8 +123,18 @@ class entryproject
       'reconfee',
       'empname',
       'paygroup',
-      'isinactive'
-    ]]];
+      'isinactive',
+      'drprefix',
+      'siprefix',
+      'crprefix',
+      'isvat'
+    ];
+
+    foreach ($columns as $key => $value) {
+      $$value = $key;
+    }
+
+    $tab = [$this->gridname => ['gridcolumns' => $columns]];
 
     $stockbuttons = ['save', 'delete'];
     if ($systemtype == 'REALESTATE') array_push($stockbuttons, 'addphase');
@@ -171,7 +163,7 @@ class entryproject
         $obj[0][$this->gridname]['columns'][$expense_stockgroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$revenue_stockgroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$address]['type'] = "coldel";
-        $obj[0][$this->gridname]['columns'][$group]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$groupid]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$color]['type'] = 'coldel';
 
         $obj[0][$this->gridname]['columns'][$rate]['type'] = 'coldel';
@@ -180,6 +172,11 @@ class entryproject
         $obj[0][$this->gridname]['columns'][$reconfee]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$paygroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$isinactive]['type'] = "coldel";
+
+        $obj[0][$this->gridname]['columns'][$drprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$siprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$crprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$isvat]['type'] = "coldel";
         break;
       case 10: //afti
       case 12: //afti usd
@@ -201,6 +198,11 @@ class entryproject
         $obj[0][$this->gridname]['columns'][$surcharge]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$reconfee]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$paygroup]['type'] = "coldel";
+        
+        $obj[0][$this->gridname]['columns'][$drprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$siprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$crprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$isvat]['type'] = "coldel";
         break;
       case 26: //bee healthy
         $obj[0][$this->gridname]['columns'][$action]['style'] = "width:50px;whiteSpace: normal;min-width:50px;";
@@ -215,7 +217,7 @@ class entryproject
         $obj[0][$this->gridname]['columns'][$liability_stockgroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$expense_stockgroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$revenue_stockgroup]['type'] = "coldel";
-        $obj[0][$this->gridname]['columns'][$group]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$groupid]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$color]['type'] = 'coldel';
 
         $obj[0][$this->gridname]['columns'][$rate]['type'] = 'coldel';
@@ -224,6 +226,11 @@ class entryproject
         $obj[0][$this->gridname]['columns'][$reconfee]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$paygroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$isinactive]['type'] = "coldel";
+
+        $obj[0][$this->gridname]['columns'][$drprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$siprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$crprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$isvat]['type'] = "coldel";
         break;
       case 35: //aquamax
         $obj[0][$this->gridname]['columns'][$action]['style'] = "width:50px;whiteSpace: normal;min-width:50px;";
@@ -238,7 +245,7 @@ class entryproject
         $obj[0][$this->gridname]['columns'][$revenue_stockgroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$address]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$tin]['type'] = "coldel";
-        $obj[0][$this->gridname]['columns'][$group]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$groupid]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$color]['type'] = 'coldel';
 
         $obj[0][$this->gridname]['columns'][$rate]['label'] = 'Rate/cu.m.';
@@ -246,6 +253,11 @@ class entryproject
         $obj[0][$this->gridname]['columns'][$isho]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$paygroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$isinactive]['type'] = "coldel";
+
+        $obj[0][$this->gridname]['columns'][$drprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$siprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$crprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$isvat]['type'] = "coldel";
         break;
       case 43: //mighty
         $obj[0][$this->gridname]['columns'][$action]['style'] = "width:50px;whiteSpace: normal;min-width:50px;";
@@ -259,7 +271,7 @@ class entryproject
         $obj[0][$this->gridname]['columns'][$revenue_stockgroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$address]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$tin]['type'] = "coldel";
-        $obj[0][$this->gridname]['columns'][$group]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$groupid]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$color]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$rate]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$minimum]['type'] = 'coldel';
@@ -277,6 +289,11 @@ class entryproject
         $obj[0][$this->gridname]['columns'][$paygroup]['action'] = "lookupsetup";
         $obj[0][$this->gridname]['columns'][$paygroup]['lookupclass'] = "lookuppaygroup";
         $obj[0][$this->gridname]['columns'][$isinactive]['type'] = "coldel";
+
+        $obj[0][$this->gridname]['columns'][$drprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$siprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$crprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$isvat]['type'] = "coldel";
         break;
       case 39: //cbbsi
         $obj[0][$this->gridname]['columns'][$action]['style'] = "width:50px;whiteSpace: normal;min-width:50px;";
@@ -289,7 +306,7 @@ class entryproject
         $obj[0][$this->gridname]['columns'][$liability_stockgroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$expense_stockgroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$revenue_stockgroup]['type'] = "coldel";
-        $obj[0][$this->gridname]['columns'][$group]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$groupid]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$color]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$rate]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$minimum]['type'] = 'coldel';
@@ -299,6 +316,34 @@ class entryproject
         $obj[0][$this->gridname]['columns'][$empname]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$paygroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$isinactive]['type'] = "coldel";
+
+        $obj[0][$this->gridname]['columns'][$drprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$siprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$crprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$isvat]['type'] = "coldel";
+        break;
+      case 67: //yulic
+        $obj[0][$this->gridname]['columns'][$action]['style'] = "width:50px;whiteSpace: normal;min-width:50px;";
+        $obj[0][$this->gridname]['columns'][$code]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
+        $obj[0][$this->gridname]['columns'][$name]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
+        $obj[0][$this->gridname]['columns'][$agentname]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$comrate]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$asset_stockgroup]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$liability_stockgroup]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$expense_stockgroup]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$revenue_stockgroup]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$address]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$tin]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$groupid]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$color]['type'] = 'coldel';
+        $obj[0][$this->gridname]['columns'][$rate]['type'] = 'coldel';
+        $obj[0][$this->gridname]['columns'][$minimum]['type'] = 'coldel';
+        $obj[0][$this->gridname]['columns'][$surcharge]['type'] = 'coldel';
+        $obj[0][$this->gridname]['columns'][$reconfee]['type'] = 'coldel';
+        $obj[0][$this->gridname]['columns'][$empname]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$paygroup]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$isinactive]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$isvat]['label'] = "Non Vat";
         break;
       default:
         $obj[0][$this->gridname]['columns'][$action]['style'] = "width:50px;whiteSpace: normal;min-width:50px;";
@@ -312,7 +357,7 @@ class entryproject
         $obj[0][$this->gridname]['columns'][$revenue_stockgroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$address]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$tin]['type'] = "coldel";
-        $obj[0][$this->gridname]['columns'][$group]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$groupid]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$color]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$rate]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$minimum]['type'] = 'coldel';
@@ -321,6 +366,11 @@ class entryproject
         $obj[0][$this->gridname]['columns'][$empname]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$paygroup]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$isinactive]['type'] = "coldel";
+
+        $obj[0][$this->gridname]['columns'][$drprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$siprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$crprefix]['type'] = "coldel";
+        $obj[0][$this->gridname]['columns'][$isvat]['type'] = "coldel";
         break;
     }
 
@@ -394,6 +444,10 @@ class entryproject
     $data['paygroupid'] = 0;
     $data['paygroup'] = '';
     $data['isinactive'] = 'false';
+    $data['drprefix'] = '';
+    $data['siprefix'] = '';
+    $data['crprefix'] = '';
+    $data['isvat'] = 'false';
     return $data;
   }
 
@@ -408,7 +462,8 @@ class entryproject
     ifnull(rev.acnoid,0) as revenueid, ifnull(rev.acnoname,'') as revenue_stockgroup,
     head.agentid, ifnull(ag.clientname,'') as agentname, head.comrate,head.tin, head.address,head.groupid, head.color,
     format(head.rate,2) as rate, format(head.minimum,2) as minimum, head.surcharge, format(head.reconfee,2) as reconfee,
-    ifnull(emp.clientname,'') as empname,ifnull(head.empid,0) as empid,pg.paygroup,ifnull(pg.line,0) as paygroupid,(case when head.isinactive=0 then 'false' else 'true' end) as isinactive";
+    ifnull(emp.clientname,'') as empname,ifnull(head.empid,0) as empid,pg.paygroup,ifnull(pg.line,0) as paygroupid,(case when head.isinactive=0 then 'false' else 'true' end) as isinactive,
+    head.drprefix,head.siprefix,head.crprefix,(case when head.isnonvat=0 then 'false' else 'true' end) as isvat";
     return $qry;
   }
 
@@ -457,8 +512,7 @@ class entryproject
           return ['status' => false, 'msg' => $msg];
         }
         $data2['isho'] = $this->othersClass->sanitizekeyfieldFast('isho', $data[$key]['isho'], $lookups);
-
-
+        $data2['isnonvat'] = $this->othersClass->sanitizekeyfieldFast('isvat', $data[$key]['isvat'], $lookups);
 
         if ($data[$key]['line'] == 0) {
 
@@ -543,6 +597,10 @@ class entryproject
     if (trim($row['name'] == '')) {
       $msg = 'Name is empty';
       return ['status' => false, 'msg' => $msg];
+    }
+
+    if($companyid == 67){ //yulic
+      $data['isnonvat'] = $this->othersClass->sanitizekeyfieldFast('isvat', $row['isvat'], $lookups);
     }
 
     if ($row['line'] == 0) {

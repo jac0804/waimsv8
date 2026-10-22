@@ -354,11 +354,11 @@ class commonsbc
       $filter_bref = " and bref='" . $prefix . "'";
     }
 
-    $yr =0;
+    $yr = 0;
     if ($this->companysetup->getdocyr($config['params'])) {
       $yr = floatval($this->coreFunctions->datareader("select yr as value FROM profile where psection ='$doc' and doc ='SED'"));
     }
-    
+
     if (floatval($yr) <> 0) {
       $last = $this->coreFunctions->opentable("select bref FROM $table where doc='$doc' and yr = " . $yr . " and center='$center'" . $filter_bref . " order by trno desc limit 1");
     } else {
@@ -916,6 +916,39 @@ class commonsbc
       return empty($prefixes);
     } else {
       return $prefixes;
+    }
+  }
+
+  public function getPrefixesYulick($doc, $config)
+  {
+    switch ($doc) {
+      case 'SJ':
+        if (isset($config['params']['dataparams'])) {
+          $projectid = $config['params']['dataparams']['projectid'];
+          $doctype = $config['params']['dataparams']['print'];
+        } else {
+          $projectid = $config['params']['head']['projectid'];
+          $doctype = substr($config['params']['head']['docno'], 0, strcspn($config['params']['head']['docno'], '0123456789'));
+        }
+
+        $prefixfield = '';
+        if ($doctype  == 'DR') {
+          $prefixfield = 'drprefix';
+        } else if ($doctype == 'SI') {
+          $prefixfield = 'siprefix';
+        }
+        $prefixes = $this->coreFunctions->datareader("select " . $prefixfield . " as value from projectmasterfile where line=" . $projectid);
+        return  explode(",", $prefixes);
+        break;
+      case 'CR':
+        if (isset($config['params']['dataparams'])) {
+          $projectid = $config['params']['dataparams']['projectid'];
+        } else {
+          $projectid = $config['params']['head']['projectid'];
+        }
+        $prefixes = $this->coreFunctions->datareader("select crprefix as value from projectmasterfile where line=" . $projectid);
+        return  explode(",", $prefixes);
+        break;
     }
   }
 

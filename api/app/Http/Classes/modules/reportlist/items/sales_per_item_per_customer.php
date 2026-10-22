@@ -55,12 +55,26 @@ class sales_per_item_per_customer
         data_set($col1, 'industry.action', 'lookupindustry');
         break;
       case 21: //kinggeorge
-        array_push($fields, 'brandname', 'stockgrp', 'agentname', 'customer', 'dwhname');
+        array_push($fields, 'brandname', 'stockgrp', 'agentname', 'customer', 'dwhname', 'selectprefix');
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'customer.lookupclass', 'oscustomer');
         data_set($col1, 'customer.type', 'lookup');
         data_set($col1, 'customer.action', 'lookupclient');
         data_set($col1, 'customer.readonly', true);
+        data_set($col1, 'selectprefix.type', 'qselect');
+        data_set($col1, 'selectprefix.label', 'Price Group');
+        data_set($col1, 'selectprefix.options', array(
+          ['label' => 'ALL', 'value' => ''],
+          ['label' => 'R', 'value' => 'R'],
+          ['label' => 'W', 'value' => 'W'],
+          ['label' => 'A', 'value' => 'A'],
+          ['label' => 'B', 'value' => 'B'],
+          ['label' => 'C', 'value' => 'C'],
+          ['label' => 'D', 'value' => 'D'],
+          ['label' => 'E', 'value' => 'E'],
+          ['label' => 'F', 'value' => 'F'],
+          ['label' => 'G', 'value' => 'G'],
+        ));
         break;
       case 23: //labsol cebu
       case 41: //labsol manila
@@ -93,7 +107,7 @@ class sales_per_item_per_customer
     data_set($col2, 'radiosalescustomerperitem.options', array(
       ['label' => 'Amount', 'value' => 'ext', 'color' => 'orange'],
       ['label' => 'Quantity', 'value' => 'iss', 'color' => 'orange'],
-      ['label' => 'Both', 'value' => 'both', 'color' => 'orange']
+      ['label' => 'Both', 'value' => 'both', 'color' => 'orange'],
     ));
 
     data_set($col2, 'radioposttype.options', array(
@@ -147,7 +161,8 @@ class sales_per_item_per_customer
       '' as ddeptname, 
       '' as dept, 
       '' as deptname,
-      '' as industry";
+      '' as industry,
+      '' as selectprefix";
 
     return $this->coreFunctions->opentable($paramstr);
   }
@@ -167,6 +182,7 @@ class sales_per_item_per_customer
   public function reportplotting($config)
   {
     $companyid = $config['params']['companyid'];
+    $option = $config['params']['dataparams']['options'];
 
     switch ($companyid) {
       case 21: //kinggeorge
@@ -394,6 +410,7 @@ class sales_per_item_per_customer
         where sa.ext <> 0 
         group by brand,size,model,barcode, itemname, client, clientname,category,subcatname $addedfields $grpfield
         order by itemname, clientname";
+
         break;
     }
     return $query;
@@ -415,6 +432,11 @@ class sales_per_item_per_customer
     $agentname = $config['params']['dataparams']['agentname'];
     $clientname = $config['params']['dataparams']['customer'];
     $wh = $config['params']['dataparams']['wh'];
+
+    $pricegroup = isset($config['params']['dataparams']['selectprefix']) ? $config['params']['dataparams']['selectprefix'] : '';
+    if (is_array($pricegroup)) {
+      $pricegroup = isset($pricegroup['value']) ? $pricegroup['value'] : '';
+    }
 
     $filter = "";
 
@@ -456,6 +478,10 @@ class sales_per_item_per_customer
       $filter .= " and stock.whid=" . $whid;
     }
 
+    if ($pricegroup != "") {
+      $filter .= " and client.class='" . addslashes($pricegroup) . "'";
+    }
+
 
     $filter1 = "";
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
@@ -485,6 +511,11 @@ class sales_per_item_per_customer
       $field = "sum($option) as sales";
     }
 
+    if ($companyid == 21) { //kinggeorge: customer tagging + discount
+      $field .= ", client.class as tagging, stock.disc";
+      $grpfield .= ",client.class,stock.disc";
+    }
+
     $itemname = ", item.itemname";
 
     if ($companyid == 47) { //kstar
@@ -496,9 +527,10 @@ class sales_per_item_per_customer
       case 0: // posted
 
         $query = "select left(head.dateid,10) as dateid,'p' as tr, head.docno, $field,
-                         head.clientname,stock.itemid, $itemname
+                         head.clientname,stock.itemid $itemname
                   from glhead as head
                   left join glstock as stock on stock.trno=head.trno
+                  left join client on client.clientid=head.clientid
                   left join item on item.itemid=stock.itemid
                   where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$startdate' and '$enddate'
                         $filter $filter_p $filter1
@@ -509,7 +541,7 @@ class sales_per_item_per_customer
       case 1: // unposted
 
         $query = "select left(head.dateid,10) as dateid,'u' as tr, head.docno,$field,
-                         head.clientname,stock.itemid,  $itemname
+                         head.clientname,stock.itemid  $itemname
                   from lahead as head
                   left join lastock as stock on stock.trno=head.trno
                   left join client on client.client=head.client
@@ -523,16 +555,17 @@ class sales_per_item_per_customer
 
       default:
         $query = "select left(head.dateid,10) as dateid,'p' as tr, head.docno, $field,
-                         head.clientname,stock.itemid, $itemname
+                         head.clientname,stock.itemid $itemname
                   from glhead as head
                   left join glstock as stock on stock.trno=head.trno
+                  left join client on client.clientid=head.clientid
                   left join item on item.itemid=stock.itemid
                   where head.doc in ('sj','mj','sd','se','sf') and date(head.dateid) between '$startdate' and '$enddate'
                         $filter $filter_p $filter1
                   group by head.dateid,head.docno,head.clientname,stock.itemid,item.itemname $grpfield
                   union all
                   select left(head.dateid,10) as dateid,'u' as tr, head.docno,$field,
-                         head.clientname,stock.itemid, $itemname
+                         head.clientname,stock.itemid $itemname
                   from lahead as head
                   left join lastock as stock on stock.trno=head.trno
                   left join client on client.client=head.client
@@ -1018,6 +1051,14 @@ class sales_per_item_per_customer
     return $str;
   }
 
+  private function kinggeorge_widths($option)
+  {
+    if ($option == 'both') {
+      return ['item' => 160, 'cust' => 160, 'tag' => 100, 'date' => 85, 'doc' => 115, 'qty' => 90, 'amt' => 100, 'tot' => 100, 'disc' => 90];
+    }
+    return ['item' => 215, 'cust' => 205, 'tag' => 125, 'date' => 100, 'doc' => 125, 'amt' => 125, 'disc' => 105];
+  }
+
   private function kinggeorge_header($config)
   {
     $border = '1px solid';
@@ -1026,22 +1067,16 @@ class sales_per_item_per_customer
 
     $center     = $config['params']['center'];
     $username   = $config['params']['user'];
-    $companyid = $config['params']['companyid'];
 
     $startdate = date("Y-m-d", strtotime($config['params']['dataparams']['start']));
     $enddate = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $option      = $config['params']['dataparams']['options'];
     $barcode     = $config['params']['dataparams']['barcode'];
     $categoryname  = $config['params']['dataparams']['categoryname'];
-    $subcatname =  $config['params']['dataparams']['subcat'];
+    $subcatname =  $config['params']['dataparams']['subcatname'];
     $wh = $config['params']['dataparams']['wh'];
 
-    if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-      $indus   = $config['params']['dataparams']['industry'];
-      if ($indus == "") {
-        $indus = 'ALL';
-      }
-    }
+    $w = $this->kinggeorge_widths($option);
 
     $str = '';
     $layoutsize = '1000';
@@ -1055,51 +1090,21 @@ class sales_per_item_per_customer
     $str .= '<br/><br/>';
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-
     $str .= $this->reporter->col('SALES PER ITEM PER CUSTOMER', null, null, false, $border, '', '', $font, '18', 'B', '', '') . '<br />';
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
+    // filters on one line (widths total 1000)
+    $optlabel = ($option == 'ext') ? 'AMOUNT' : strtoupper($option);
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('Date Range : ' . $startdate . ' - ' . $enddate, '300', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-    if ($barcode == '') {
-      $str .= $this->reporter->col('Item : ALL', '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-    } else {
-      $str .= $this->reporter->col('Item :' . $barcode, '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-    }
-    if ($option == 'ext') {
-      $str .= $this->reporter->col('Option : AMOUNT', '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-    } else {
-      $str .= $this->reporter->col('Option :' . strtoupper($option), '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-    }
-
-    if ($categoryname == '') {
-      $str .= $this->reporter->col('Category : ALL', '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-    } else {
-      $str .= $this->reporter->col('Category : ' . strtoupper($categoryname), '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-    }
-
-    if ($subcatname == '') {
-      $str .= $this->reporter->col('Sub-Category: ALL',  '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-    } else {
-      $subcatname =  $config['params']['dataparams']['subcatname'];
-      $str .= $this->reporter->col('Sub-Category : ' . strtoupper($subcatname), '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-    }
-
-    if ($categoryname == '') {
-      $str .= $this->reporter->col('Category : ALL', '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-    } else {
-      $str .= $this->reporter->col('Category : ' . strtoupper($categoryname), '100', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-    }
-
-    if ($wh == '') {
-      $str .= $this->reporter->col('Warehouse : ALL', '200', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-    } else {
-      $str .= $this->reporter->col('Warehouse : ' . strtoupper($wh), '200', null, false, $border, '', 'L', $font, $font_size, '', '', '');
-    }
-
-    $str .= $this->reporter->pagenumber('Page', null, null, '', $border, '', 'R', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Date Range : ' . $startdate . ' - ' . $enddate, '250', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Item : ' . ($barcode == '' ? 'ALL' : $barcode), '80', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Option : ' . $optlabel, '150', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Category : ' . ($categoryname == '' ? 'ALL' : strtoupper($categoryname)), '120', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Sub-Category : ' . ($subcatname == '' ? 'ALL' : strtoupper($subcatname)), '170', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('Warehouse : ' . ($wh == '' ? 'ALL' : strtoupper($wh)), '130', null, false, $border, '', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->pagenumber('Page', '100', null, '', $border, '', 'R', $font, $font_size, '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
@@ -1108,30 +1113,35 @@ class sales_per_item_per_customer
     $str .= $this->reporter->begintable($layoutsize);
     $str .= $this->reporter->startrow();
 
-    $str .= $this->reporter->col('ITEM NAME', '225', null, false, $border, 'B', 'C', $font, '12', 'B', '', '', '');
-    $str .= $this->reporter->col('CUSTOMER NAME', '200', null, false, $border, 'B', 'L', $font, '12', 'B', '', '', '');
-    $str .= $this->reporter->col('DATE', '125', null, false, $border, 'B', 'L', $font, '12', 'B', '', '', '');
-    $str .= $this->reporter->col('DOCUMENT #', '125', null, false, $border, 'B', 'L', $font, '12', 'B', '', '', '');
+    $str .= $this->reporter->col('ITEM NAME', $w['item'], null, false, $border, 'B', 'L', $font, '12', 'B', '', '', '');
+    $str .= $this->reporter->col('CUSTOMER NAME', $w['cust'], null, false, $border, 'B', 'L', $font, '12', 'B', '', '', '');
+    $str .= $this->reporter->col('CUSTOMER TAGGING', $w['tag'], null, false, $border, 'B', 'C', $font, '12', 'B', '', '', '');
+    $str .= $this->reporter->col('DATE', $w['date'], null, false, $border, 'B', 'L', $font, '12', 'B', '', '', '');
+    $str .= $this->reporter->col('DOCUMENT #', $w['doc'], null, false, $border, 'B', 'L', $font, '12', 'B', '', '', '');
 
     switch ($option) {
       case 'iss':
-        $str .= $this->reporter->col('QUANTITY', '125', null, false, $border, 'B', 'R', $font, '12', 'B', '', '', '');
+        $str .= $this->reporter->col('QUANTITY', $w['amt'], null, false, $border, 'B', 'R', $font, '12', 'B', '', '', '');
         break;
       case 'ext':
-        $str .= $this->reporter->col('AMOUNT', '125', null, false, $border, 'B', 'R', $font, '12', 'B', '', '', '');
+        $str .= $this->reporter->col('AMOUNT', $w['amt'], null, false, $border, 'B', 'R', $font, '12', 'B', '', '', '');
         break;
 
-      default:
-        $str .= $this->reporter->col('QUANTITY', '125', null, false, $border, 'B', 'R', $font, '12', 'B', '', '', '');
-        $str .= $this->reporter->col('AMOUNT', '125', null, false, $border, 'B', 'R', $font, '12', 'B', '', '', '');
-        $str .= $this->reporter->col('TOTAL', '125', null, false, $border, 'B', 'R', $font, '12', 'B', '', '', '');
+      default: // both
+        $str .= $this->reporter->col('QUANTITY', $w['qty'], null, false, $border, 'B', 'R', $font, '12', 'B', '', '', '');
+        $str .= $this->reporter->col('AMOUNT', $w['amt'], null, false, $border, 'B', 'R', $font, '12', 'B', '', '', '');
+        $str .= $this->reporter->col('TOTAL', $w['tot'], null, false, $border, 'B', 'R', $font, '12', 'B', '', '', '');
         break;
     }
+
+    $str .= $this->reporter->col('DISCOUNT RATE', $w['disc'], null, false, $border, 'B', 'R', $font, '12', 'B', '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
 
     return $str;
   }
+
+
 
   public function kinggeorge_layout($config)
   {
@@ -1140,7 +1150,8 @@ class sales_per_item_per_customer
     $font = $this->companysetup->getrptfont($config['params']);
     $result = $this->reportDefault($config);
     $option      = $config['params']['dataparams']['options'];
-    $option      = $config['params']['dataparams']['options'];
+
+    $w = $this->kinggeorge_widths($option);
 
     $count = 42;
     $page = 41;
@@ -1164,34 +1175,40 @@ class sales_per_item_per_customer
     foreach ($result as $key => $data) {
       $str .= $this->reporter->startrow();
       $str .= $this->reporter->addline();
-      if ($item == $data->itemname) {
-      } else {
-        // Item Description | Customer Name | Amount | Quantity | Total
-        $str .= $this->reporter->col($data->itemname, '225', null, false, '1px dotted ', 'T', 'L', $font, $font_size, 'B', 'b', '');
-        $str .= $this->reporter->col('', '200', null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
-        $str .= $this->reporter->col('', '125', null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
-        $str .= $this->reporter->col('', '125', null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
-        $str .= $this->reporter->col('', '125', null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
+      if ($item != $data->itemname) {
+        // Item row
+        $str .= $this->reporter->col($data->itemname, $w['item'], null, false, '1px dotted ', 'T', 'L', $font, $font_size, 'B', 'b', '');
+        $str .= $this->reporter->col('', $w['cust'], null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
+        $str .= $this->reporter->col('', $w['tag'], null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
+        $str .= $this->reporter->col('', $w['date'], null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
+        $str .= $this->reporter->col('', $w['doc'], null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
         if ($option == 'both') {
-          $str .= $this->reporter->col('', '125', null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
-          $str .= $this->reporter->col('', '125', null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
+          $str .= $this->reporter->col('', $w['qty'], null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
+          $str .= $this->reporter->col('', $w['amt'], null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
+          $str .= $this->reporter->col('', $w['tot'], null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
+        } else {
+          $str .= $this->reporter->col('', $w['amt'], null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
         }
+        $str .= $this->reporter->col('', $w['disc'], null, false, '1px dotted ', 'T', 'C', 'B', '10', 'B', '', '');
       }
 
       $str .= $this->reporter->endrow();
 
+      // Detail row
       $str .= $this->reporter->startrow();
-      $str .= $this->reporter->col('', '225', null, false, $border, '', 'L', $font, $font_size, '', '', '0px 0px 0px 50px');
-      $str .= $this->reporter->col($data->clientname, '200', null, false, $border, '', 'L', $font, $font_size, '', '', '5px');
-      $str .= $this->reporter->col($data->dateid, '125', null, false, $border, '', 'L', $font, $font_size, '', '', '5px');
-      $str .= $this->reporter->col($data->docno, '125', null, false, $border, '', 'L', $font, $font_size, '', '', '5px');
+      $str .= $this->reporter->col('', $w['item'], null, false, $border, '', 'L', $font, $font_size, '', '', '0px 0px 0px 50px');
+      $str .= $this->reporter->col($data->clientname, $w['cust'], null, false, $border, '', 'L', $font, $font_size, '', '', '5px');
+      $str .= $this->reporter->col($data->tagging, $w['tag'], null, false, $border, '', 'C', $font, $font_size, '', '', '5px');
+      $str .= $this->reporter->col($data->dateid, $w['date'], null, false, $border, '', 'L', $font, $font_size, '', '', '5px');
+      $str .= $this->reporter->col($data->docno, $w['doc'], null, false, $border, '', 'L', $font, $font_size, '', '', '5px');
       if ($option == 'both') {
-        $str .= $this->reporter->col(number_format($data->qty, 2), '125', null, false, $border, '', 'R', $font, $font_size, '', '', '5px');
-        $str .= $this->reporter->col(number_format($data->sales, 2), '125', null, false, $border, '', 'R', $font, $font_size, '', '', '5px');
-        $str .= $this->reporter->col(number_format($data->sales * $data->qty, 2), '125', null, false, $border, '', 'R', $font, $font_size, '', '', '5px');
+        $str .= $this->reporter->col(number_format($data->qty, 2), $w['qty'], null, false, $border, '', 'R', $font, $font_size, '', '', '5px');
+        $str .= $this->reporter->col(number_format($data->sales, 2), $w['amt'], null, false, $border, '', 'R', $font, $font_size, '', '', '5px');
+        $str .= $this->reporter->col(number_format($data->sales * $data->qty, 2), $w['tot'], null, false, $border, '', 'R', $font, $font_size, '', '', '5px');
       } else {
-        $str .= $this->reporter->col(number_format($data->sales, 2), '125', null, false, $border, '', 'R', $font, $font_size, '', '', '5px');
+        $str .= $this->reporter->col(number_format($data->sales, 2), $w['amt'], null, false, $border, '', 'R', $font, $font_size, '', '', '5px');
       }
+      $str .= $this->reporter->col($data->disc, $w['disc'], null, false, $border, '', 'R', $font, $font_size, '', '', '5px');
 
       $str .= $this->reporter->endrow();
 
@@ -1211,18 +1228,21 @@ class sales_per_item_per_customer
       }
     }
 
+    // Grand total
     $str .= $this->reporter->startrow();
-    $str .= $this->reporter->col('', '225', null, false, $border, 'T', 'L', $font, $font_size, '', '', '0px 0px 0px 50px');
-    $str .= $this->reporter->col('GRANDTOTAL:', '200', null, false, $border, 'T', 'L', $font, $font_size, '', '', '0px 0px 0px 50px');
-    $str .= $this->reporter->col('', '125', null, false, $border, 'T', 'L', $font, $font_size, '', '', '0px 0px 0px 50px');
-    $str .= $this->reporter->col('', '125', null, false, $border, 'T', 'L', $font, $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col('', $w['item'], null, false, $border, 'T', 'L', $font, $font_size, '', '', '0px 0px 0px 50px');
+    $str .= $this->reporter->col('GRANDTOTAL:', $w['cust'], null, false, $border, 'T', 'L', $font, $font_size, 'B', '', '5px');
+    $str .= $this->reporter->col('', $w['tag'], null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('', $w['date'], null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
+    $str .= $this->reporter->col('', $w['doc'], null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
     if ($option == 'both') {
-      $str .= $this->reporter->col(number_format($ordtotal, 2), '125', null, false, $border, 'T', 'R', $font, $font_size, 'B', '', '5px');
-      $str .= $this->reporter->col(number_format($salestotal, 2), '125', null, false, $border, 'T', 'R', $font, $font_size, 'B', '', '5px');
-      $str .= $this->reporter->col(number_format($tototal, 2), '125', null, false, $border, 'T', 'R', $font, $font_size, 'B', '', '5px');
+      $str .= $this->reporter->col(number_format($ordtotal, 2), $w['qty'], null, false, $border, 'T', 'R', $font, $font_size, 'B', '', '5px');
+      $str .= $this->reporter->col(number_format($salestotal, 2), $w['amt'], null, false, $border, 'T', 'R', $font, $font_size, 'B', '', '5px');
+      $str .= $this->reporter->col(number_format($tototal, 2), $w['tot'], null, false, $border, 'T', 'R', $font, $font_size, 'B', '', '5px');
     } else {
-      $str .= $this->reporter->col(number_format($salestotal, 2), '125', null, false, $border, 'T', 'R', $font, $font_size, 'B', '', '5px');
+      $str .= $this->reporter->col(number_format($salestotal, 2), $w['amt'], null, false, $border, 'T', 'R', $font, $font_size, 'B', '', '5px');
     }
+    $str .= $this->reporter->col('', $w['disc'], null, false, $border, 'T', 'L', $font, $font_size, '', '', '');
     $str .= $this->reporter->endrow();
     $str .= $this->reporter->endtable();
     $str .= $this->reporter->printline();
@@ -1231,4 +1251,5 @@ class sales_per_item_per_customer
 
     return $str;
   }
+
 }//end class

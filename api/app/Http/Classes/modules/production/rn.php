@@ -1061,9 +1061,9 @@ class rn
         $loc = isset($config['params']['data']['loc']) ? $config['params']['data']['loc'] : '';
         $checkloc = json_decode(json_encode($this->coreFunctions->opentable("select distinct loc from rrstatus where loc='" . $loc . "'")), true);
 
-        if (empty($checkloc[0]['loc'])) {
-          $msg = 'Batch does not match';
-        }
+        // if (empty($checkloc[0]['loc'])) {
+        //   $msg = 'Batch does not match';
+        // }
       }
       return ['inventory' => $data, 'status' => true, 'msg' => $msg];
     }

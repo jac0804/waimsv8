@@ -384,22 +384,37 @@ class cr
     PDF::SetFont($font, '', 5);
     PDF::MultiCell(720, 0, '', 'T');
 
-    PDF::SetFont($font, 'B', 12);
-    if ($companyid == 50) { //unitech
-      PDF::MultiCell(90, 0, "CHECK NO.", '', 'L', false, 0);
-    } else {
-      PDF::MultiCell(90, 0, "ACCOUNT NO.", '', 'L', false, 0);
-    }
-    PDF::MultiCell(160, 0, "ACCOUNT NAME", '', 'C', false, 0);
-    PDF::MultiCell(115, 0, "REFERENCE #", '', 'L', false, 0);
-    PDF::MultiCell(75, 0, "DATE", '', 'C', false, 0);
-    PDF::MultiCell(85, 0, "DEBIT", '', 'R', false, 0);
-    PDF::MultiCell(85, 0, "CREDIT", '', 'R', false, 0);
-    PDF::MultiCell(10, 0, "", '', 'R', false, 0);
-    if ($companyid == 50) { //unitech
-      PDF::MultiCell(100, 0, "NOTES", '', 'C', false);
-    } else {
-      PDF::MultiCell(100, 0, "CLIENT", '', 'C', false);
+    switch ($companyid) {
+      case 68: // jda
+        PDF::SetFont($font, 'B', 12);
+        PDF::MultiCell(90, 0, "ACCOUNT NO.", '', 'L', false, 0);
+        PDF::MultiCell(160, 0, "ACCOUNT NAME", '', 'C', false, 0);
+        PDF::MultiCell(110, 0, "REFERENCE #", '', 'L', false, 0);
+        PDF::MultiCell(60, 0, "DATE", '', 'C', false, 0);
+        PDF::MultiCell(70, 0, "DEBIT", '', 'R', false, 0);
+        PDF::MultiCell(70, 0, "CREDIT", '', 'R', false, 0);
+        PDF::MultiCell(10, 0, "", '', 'R', false, 0);
+        PDF::MultiCell(130, 0, "CLIENT", '', 'C', false);
+        break;
+      default:
+        PDF::SetFont($font, 'B', 12);
+        if ($companyid == 50) { //unitech
+          PDF::MultiCell(90, 0, "CHECK NO.", '', 'L', false, 0);
+        } else {
+          PDF::MultiCell(90, 0, "ACCOUNT NO.", '', 'L', false, 0);
+        }
+        PDF::MultiCell(160, 0, "ACCOUNT NAME", '', 'C', false, 0);
+        PDF::MultiCell(115, 0, "REFERENCE #", '', 'L', false, 0);
+        PDF::MultiCell(75, 0, "DATE", '', 'C', false, 0);
+        PDF::MultiCell(85, 0, "DEBIT", '', 'R', false, 0);
+        PDF::MultiCell(85, 0, "CREDIT", '', 'R', false, 0);
+        PDF::MultiCell(10, 0, "", '', 'R', false, 0);
+        if ($companyid == 50) { //unitech
+          PDF::MultiCell(100, 0, "NOTES", '', 'C', false);
+        } else {
+          PDF::MultiCell(100, 0, "CLIENT", '', 'C', false);
+        }
+        break;
     }
 
     PDF::SetFont($font, '', 5);
@@ -485,6 +500,7 @@ class cr
         $debit = number_format($data[$i]['db'], $decimalcurr);
         $credit = number_format($data[$i]['cr'], $decimalcurr);
         $client = $data[$i]['client'];
+        $clientname = $data[$i]['clientname'];
         $debit = $debit < 0 ? '-' : $debit;
         $credit = $credit < 0 ? '-' : $credit;
 
@@ -495,31 +511,51 @@ class cr
         $arr_debit = $this->reporter->fixcolumn([$debit], '13', 0);
         $arr_credit = $this->reporter->fixcolumn([$credit], '13', 0);
         $arr_client = $this->reporter->fixcolumn([$client], '16', 0);
+        $arr_clientname = $this->reporter->fixcolumn([$clientname], '30', 0);
         $arr_checkno = $this->reporter->fixcolumn([$checkno], '16', 0);
         $arr_rem = $this->reporter->fixcolumn([$rem], '16', 0);
 
-        if ($companyid == 50) { //unitech
-          $maxrow = $this->othersClass->getmaxcolumn([$arr_checkno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_rem]);
-        } else {
-          $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_client]);
+        switch ($companyid) {
+          case 68: //jda
+            $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_clientname]);
+            break;
+          case 50: // unitech
+            $maxrow = $this->othersClass->getmaxcolumn([$arr_checkno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_rem]);
+            break;
+          default:
+            $maxrow = $this->othersClass->getmaxcolumn([$arr_acno, $arr_acnoname, $arr_ref, $arr_postdate, $arr_debit, $arr_credit, $arr_client]);
+            break;
         }
+
         for ($r = 0; $r < $maxrow; $r++) {
-          PDF::SetFont($font, '', $fontsize);
-          if ($companyid == 50) { //unitech
-            PDF::MultiCell(90, 0, (isset($arr_checkno[$r]) ? $arr_checkno[$r] : ''), '', 'L', false, 0, '', '', true, 1);
-          } else {
+          if ($companyid == 68) { // 68
+            PDF::SetFont($font, '', $fontsize);
             PDF::MultiCell(90, 0, (isset($arr_acno[$r]) ? $arr_acno[$r] : ''), '', 'L', false, 0, '', '', true, 1);
-          }
-          PDF::MultiCell(160, 0, (isset($arr_acnoname[$r]) ? $arr_acnoname[$r] : ''), '', 'L', false, 0, '', '', false, 1);
-          PDF::MultiCell(115, 0, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'L', false, 0, '', '', false, 1);
-          PDF::MultiCell(75, 0, (isset($arr_postdate[$r]) ? $arr_postdate[$r] : ''), '', 'C', false, 0, '', '', false, 1);
-          PDF::MultiCell(85, 0, (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), '', 'R', false, 0, '', '', false, 1);
-          PDF::MultiCell(85, 0, (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', false, 0, '', '', false, 1);
-          PDF::MultiCell(10, 0, '', '', 'R', false, 0, '', '', false, 1);
-          if ($companyid == 50) { //unitech
-            PDF::MultiCell(100, 0, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'L', false, 1, '', '', false, 1);
-          } else {
-            PDF::MultiCell(100, 0, (isset($arr_client[$r]) ? $arr_client[$r] : ''), '', 'L', false, 1, '', '', false, 1);
+            PDF::MultiCell(160, 0, (isset($arr_acnoname[$r]) ? $arr_acnoname[$r] : ''), '', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(110, 0, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(60, 0, (isset($arr_postdate[$r]) ? $arr_postdate[$r] : ''), '', 'C', false, 0, '', '', false, 1);
+            PDF::MultiCell(70, 0, (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), '', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(70, 0, (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(10, 0, '', '', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(150, 0, (isset($arr_clientname[$r]) ? $arr_clientname[$r] : ''), '', 'L', false, 1, '', '', false, 1);
+          }else {
+            PDF::SetFont($font, '', $fontsize);
+            if ($companyid == 50) { //unitech
+              PDF::MultiCell(90, 0, (isset($arr_checkno[$r]) ? $arr_checkno[$r] : ''), '', 'L', false, 0, '', '', true, 1);
+            } else {
+              PDF::MultiCell(90, 0, (isset($arr_acno[$r]) ? $arr_acno[$r] : ''), '', 'L', false, 0, '', '', true, 1);
+            }
+            PDF::MultiCell(160, 0, (isset($arr_acnoname[$r]) ? $arr_acnoname[$r] : ''), '', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(115, 0, (isset($arr_ref[$r]) ? $arr_ref[$r] : ''), '', 'L', false, 0, '', '', false, 1);
+            PDF::MultiCell(75, 0, (isset($arr_postdate[$r]) ? $arr_postdate[$r] : ''), '', 'C', false, 0, '', '', false, 1);
+            PDF::MultiCell(85, 0, (isset($arr_debit[$r]) ? $arr_debit[$r] : ''), '', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(85, 0, (isset($arr_credit[$r]) ? $arr_credit[$r] : ''), '', 'R', false, 0, '', '', false, 1);
+            PDF::MultiCell(10, 0, '', '', 'R', false, 0, '', '', false, 1);
+            if ($companyid == 50) { //unitech
+              PDF::MultiCell(100, 0, (isset($arr_rem[$r]) ? $arr_rem[$r] : ''), '', 'L', false, 1, '', '', false, 1);
+            } else {
+              PDF::MultiCell(100, 0, (isset($arr_client[$r]) ? $arr_client[$r] : ''), '', 'L', false, 1, '', '', false, 1);
+            }
           }
         }
 

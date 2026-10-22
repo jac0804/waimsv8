@@ -33,7 +33,7 @@ class tabClass
   {
     $this->othersClass = new othersClass;
     $this->gridcolumnClass = new gridcolumnClass;
-    $this->gridbuttonClass = new gridbuttonClass;
+    $this->gridbuttonClass = new gridbuttonClass($this->params);
 
 
 
@@ -1222,7 +1222,7 @@ class tabClass
         'label' => 'multiaction',
         'icon' => 'add_box',
         'class' => 'btntableentry btnaddrecord',
-        'lookupclass' => ['deletetriggers', 'dataupdatewaims', 'tableupdatewaims', 'tableupdatewaims2', 'tableupdatehms', 'tableupdateenrollment', 'tableupdatecustomersupport', 'tableupdatehris', 'tableupdatepayroll', 'tableupdatewarehousing', 'tableupdatedocumentmanagement', 'tableupdatefams', 'tableupdatevsched', 'tableupdatepos', 'tableupdatebms', 'tableupdateserv', 'tableupdateproductportal', 'reindex', 'createtriggers', 'modifyLengthField', 'cleardb_proc'], //,2023.01.20 FMM removed - 'modifyLengthField' - databases are already updated
+        'lookupclass' => ['deletetriggers', 'dataupdatewaims', 'tableupdatewaims', 'tableupdatewaims2', 'tableupdatehms', 'tableupdateenrollment', 'tableupdatecustomersupport', 'tableupdatehris', 'tableupdatepayroll', 'tableupdatewarehousing', 'tableupdatedocumentmanagement', 'tableupdatefams', 'tableupdatevsched', 'tableupdatepos', 'tableupdatebms', 'tableupdateserv', 'tableupdateproductportal', 'runmigrations', 'reindex', 'createtriggers', 'modifyLengthField', 'cleardb_proc'], //,2023.01.20 FMM removed - 'modifyLengthField' - databases are already updated
         'action' => 'multiaction',
         'access' => 'additem',
         'visible' => true

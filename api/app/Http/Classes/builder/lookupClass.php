@@ -10567,6 +10567,10 @@ class lookupClass
       array_push($cols, array('name' => 'sadesc', 'label' => 'SA #', 'align' => 'left', 'field' => 'sadesc', 'sortable' => true, 'style' => 'font-size:16px;'));
       array_push($cols, array('name' => 'podesc', 'label' => 'PO #', 'align' => 'left', 'field' => 'podesc', 'sortable' => true, 'style' => 'font-size:16px;'));
     }
+    
+    if ($companyid == 67 && $config['params']['doc'] == 'SJ') { //yulick
+      array_push($cols, array('name' => 'yourref', 'label' => 'PO #', 'align' => 'left', 'field' => 'yourref', 'sortable' => true, 'style' => 'font-size:16px;'));
+    }
 
     if ($systemtype == 'MANUFACTURING' ||($config['params']['lookupclass']=='pendingsopddetail')) {
       $lookupsetup['btns'] = [];
@@ -11224,7 +11228,7 @@ class lookupClass
     $lookupsetup = array(
       'type' => 'multi',
       'rowkey' => 'keyid',
-      'title' => 'List of Bounced Cheque Details',
+      'title' => 'List of Stock Request List Details',
       'btns' => ['summary' =>
       ['label' => 'Show Summary', 'lookupclass' => 'lookupsetup', 'action' => 'pendingtrsummary']],
       'style' => 'width:100%;max-width:100%;'
@@ -11232,7 +11236,7 @@ class lookupClass
 
     $plotsetup = array(
       'plottype' => 'callback',
-      'action' => 'getbouncedardetail'
+      'action' => 'gettrdetails'
     );
 
     // lookup columns
@@ -26221,26 +26225,47 @@ class lookupClass
 
   public function lookupsupplier($config)
   {
-    $plotting = array();
+    $companyid = $config['params']['companyid'];
 
-    $plotting = array('clientid' => 'clientid', 'supplier' => 'supplier', 'supplierid' => 'supplierid');
+    if ($companyid == 71) { // buenatech
+      $plotting = array(
+        'bclient' => 'sclient',
+        'bclientid' => 'supplierid',
+      );
+      // lookup columns
+      $cols = [
+        ['name' => 'sclient', 'label' => 'Code', 'align' => 'left', 'field' => 'sclient', 'sortable' => true, 'style' => 'font-size:16px;'],
+        ['name' => 'supplier', 'label' => 'Supplier Name', 'align' => 'left', 'field' => 'supplier', 'sortable' => true, 'style' => 'font-size:16px;']
+      ];
+    } else {
+      $plotting = array('clientid' => 'clientid', 'supplier' => 'supplier', 'supplierid' => 'supplierid');
+      // lookup columns
+      $cols = [
+        ['name' => 'supplier', 'label' => 'Supplier Name', 'align' => 'left', 'field' => 'supplier', 'sortable' => true, 'style' => 'font-size:16px;']
+      ];
+    }
+
     $lookupsetup = array(
       'type' => 'single',
-      'title' => 'LIST OF Supplier',
+      'title' => 'List of Supplier',
       'style' => 'width:900px;max-width:900px;'
     );
-    $plotsetup = array(
-      'plottype' => 'plothead',
-      'action' => '',
-      'plotting' => $plotting
-    );
-
-    // lookup columns
-    $cols = [
-      ['name' => 'supplier', 'label' => 'Supplier Name', 'align' => 'left', 'field' => 'supplier', 'sortable' => true, 'style' => 'font-size:16px;'],
-      ];
+    if ($companyid == 71) {
+      $plotsetup = array(
+        'plottype' => 'plotledger',
+        'action' => '',
+        'plotting' => $plotting
+      );
+    }else {
+      $plotsetup = array(
+        'plottype' => 'plothead',
+        'action' => '',
+        'plotting' => $plotting
+      );
+    }
 
     $qry = "select clientid as supplierid, client as sclient, clientname as supplier from client where issupplier = 1";
+
     $data = $this->coreFunctions->opentable($qry);
 
     return ['status' => true, 'msg' => 'ok', 'data' => $data, 'lookupsetup' => $lookupsetup, 'cols' => $cols, 'plotsetup' => $plotsetup];

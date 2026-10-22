@@ -606,7 +606,7 @@ class pr
     $obj[0]['inventory']['columns'][$itemname]['type'] = 'coldel';
     // $obj[0]['inventory']['columns'][$barcode]['label'] = 'Sample';
 
-    $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
+    if (isset($columns['loc'])) $obj[0]['inventory']['columns'][$loc]['label'] = $locname;
 
     if ($islocation) {
       $obj[0]['inventory']['columns'][$loc]['type'] = 'input';

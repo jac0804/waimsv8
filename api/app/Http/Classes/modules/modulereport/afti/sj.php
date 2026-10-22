@@ -172,7 +172,7 @@ class sj
             iteminfo.accessories,
             stockinfo.rem as inforem,
             sostock.isqty as soqty, 
-            head.vattype,head.ewtrate,
+            head.vattype,stock.ewtrate,
             sostock.voidqty,
             sostock.iss as iss,
             sostock.sjqa,
@@ -193,12 +193,12 @@ class sj
             where head.doc='sj' and head.trno='$trno' and stock.noprint = 0
              group by stock.trno, stock.line,stock.rem, item.barcode,
             item.itemname, stock.isqty, stock.uom, stock.isamt,stock.amt, stock.disc, stock.ext, brands.brand_desc,
-            iteminfo.itemdescription, iteminfo.accessories,stockinfo.rem,sostock.isqty,sostock.iss,head.vattype,ewtrate,m.model_name,sostock.voidqty,sostock.sjqa,uom.uom,uom.factor,stock.sortline,head.taxdef
+            iteminfo.itemdescription, iteminfo.accessories,stockinfo.rem,sostock.isqty,sostock.iss,head.vattype,stock.ewtrate,m.model_name,sostock.voidqty,sostock.sjqa,uom.uom,uom.factor,stock.sortline,head.taxdef
             
             union all
             select stock.trno, stock.line,stock.rem as srem, item.barcode,
             item.itemname, stock.isqty as qty, stock.uom, stock.isamt as amt, stock.disc, stock.ext,case uom.factor when 1 then stock.amt else stock.amt*uom.factor end as netamt, concat(brands.brand_desc,' (',m.model_name,')') as brand_desc,
-            iteminfo.itemdescription, iteminfo.accessories,stockinfo.rem as inforem,sostock.isqty as soqty, head.vattype,head.ewtrate,sostock.voidqty,sostock.iss as iss,sostock.sjqa,sostock.sjqa/uom.factor as qa,stock.sortline,uom.factor,head.taxdef
+            iteminfo.itemdescription, iteminfo.accessories,stockinfo.rem as inforem,sostock.isqty as soqty, head.vattype,stock.ewtrate,sostock.voidqty,sostock.iss as iss,sostock.sjqa,sostock.sjqa/uom.factor as qa,stock.sortline,uom.factor,head.taxdef
             from glhead as head
             left join glstock as stock on stock.trno=head.trno
             left join item on item.itemid=stock.itemid
@@ -212,7 +212,7 @@ class sj
             where head.doc='sj' and head.trno='$trno' and stock.noprint = 0 
              group by stock.trno, stock.line,stock.rem, item.barcode,
             item.itemname, stock.isqty, sostock.iss,stock.uom, stock.isamt,stock.amt, stock.disc, stock.ext, brands.brand_desc,
-            iteminfo.itemdescription, iteminfo.accessories,stockinfo.rem,sostock.isqty, head.vattype,head.ewtrate,m.model_name,sostock.voidqty,sostock.sjqa,uom.uom,uom.factor,stock.sortline,head.taxdef
+            iteminfo.itemdescription, iteminfo.accessories,stockinfo.rem,sostock.isqty, head.vattype,stock.ewtrate,m.model_name,sostock.voidqty,sostock.sjqa,uom.uom,uom.factor,stock.sortline,head.taxdef
             order by sortline,line";
         $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
         return $result;
@@ -679,6 +679,7 @@ class sj
         $totalctr = 0;
 
         $newpageadd = 0;
+        $ewt = 0;
         $datastock = $this->stockquery($trno);
 
         if (!empty($datastock)) {
@@ -792,17 +793,21 @@ class sj
                     $vatsales = $totalext + $linetotal;
                     $totalext = $totalext + $linetotal;
                 }
+
+                if ($datastock[$i]['ewtrate'] != 0) {
+                    $ewt = $ewt + ($linetotal *  ($datastock[$i]['ewtrate'] / 100));
+                }
             }
         }
 
-        $ewt = 0;
+        //$ewt = 0;
         $tamtdue = $totalext;
 
 
         if (!empty($datastock)) {
-            if ($datastock[0]['ewtrate'] != 0) {
-                $ewt = $vatsales *  ($datastock[0]['ewtrate'] / 100);
-            }
+            // if ($datastock[0]['ewtrate'] != 0) {
+            //     $ewt = $vatsales *  ($datastock[0]['ewtrate'] / 100);
+            // }
 
             if ($datastock[0]['vattype'] == 'VATABLE') {
                 if ($datastock[0]['taxdef'] != 0) {

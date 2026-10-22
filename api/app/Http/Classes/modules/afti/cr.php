@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Classes\modules\receivable;
+namespace App\Http\Classes\modules\afti;
 
 use Illuminate\Http\Request;
 use App\Http\Requests;
@@ -399,20 +399,6 @@ class cr
     ];
 
 
-    switch ($systype) {
-      case 'REALESTATE':
-        $project = 13;
-        $phasename = 14;
-        $housemodel = 15;
-        $blk = 16;
-        $lot = 17;
-        $amenityname = 18;
-        $subamenityname = 19;
-        array_push($column, 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname', 'subamenityname');
-
-        break;
-    }
-
     $companyid = $config['params']['companyid'];
     $tab = [
       $this->gridname => [
@@ -438,10 +424,10 @@ class cr
     $obj[0][$this->gridname]['columns'][$checkno]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px;';
 
 
-    $obj[0][$this->gridname]['columns'][$poref]['type'] = 'coldel';
-    $obj[0][$this->gridname]['columns'][$podate]['type'] = 'coldel';
-    $obj[0][$this->gridname]['columns'][$qtref]['type'] = 'coldel';
-    $obj[0][$this->gridname]['columns'][$lastdp]['type'] = 'coldel';
+    // $obj[0][$this->gridname]['columns'][$poref]['type'] = 'coldel';
+    // $obj[0][$this->gridname]['columns'][$podate]['type'] = 'coldel';
+    // $obj[0][$this->gridname]['columns'][$qtref]['type'] = 'coldel';
+    // $obj[0][$this->gridname]['columns'][$lastdp]['type'] = 'coldel';
     $obj[0][$this->gridname]['columns'][$client]['style'] = 'text-align: left;';
     $obj[0][$this->gridname]['columns'][$rem]['type'] = 'textarea';
 
@@ -468,7 +454,7 @@ class cr
   {
     $companyid = $config['params']['companyid'];
     $noeditdate = $this->othersClass->checkAccess($config['params']['user'], 4853);
-    $fields = ['docno', 'client', 'clientname', 'address'];
+    $fields = ['docno', 'client', 'clientname', 'crref'];
     if ($this->companysetup->crforcebal($config['params'])) {
       array_push($fields, 'dacnoname');
     }

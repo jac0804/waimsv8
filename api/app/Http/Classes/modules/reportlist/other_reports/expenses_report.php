@@ -49,6 +49,11 @@ class expenses_report
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'ddeptname.label', 'Department');
         break;
+      case 68:
+        array_push($fields, 'project');
+        $col1 = $this->fieldClass->create($fields);
+        data_set($col1, 'project.required', false);
+        break;
       default:
         $col1 = $this->fieldClass->create($fields);
         break;
@@ -90,7 +95,8 @@ class expenses_report
     '" . $defaultcenter[0]['dcentername'] . "' as dcentername,
     0 as deptid,
     '' as divname,
-    '' as ddeptname, '' as dept, '' as deptname";
+    '' as ddeptname, '' as dept, '' as deptname,
+    '' as project, 0 as projectid, '' as projectcode, '' as projectname";
 
     // if ($companyid == 10 || $companyid == 12) { //afti, afti usd
     //   $paramstr .= ", '' as ddeptname, '' as dept, '' as deptname";
@@ -179,6 +185,7 @@ class expenses_report
 
     $filter = "";
     $filter1 = "";
+    $leftjoin = '';
     if ($center != '') {
       $filter = " and cntnum.center='$center'";
     }
@@ -189,6 +196,15 @@ class expenses_report
       }
     }
 
+    if ($companyid == 68) { //jda
+      $project = $config['params']['dataparams']['project'];
+      $leftjoin = 'left join projectmasterfile as project on project.line = detail.projectid';
+      if ($project != "") {
+        $filter1 .= " and project.code = '" . $project . "'";
+      }
+    }
+
+
     switch ($isdetailed) {
       case '1': //detailed
         $query = "select docno,date(dateid) as dateid,clientname,acno,acnoname,snotes as description, sum(db-cr) as amount  from (
@@ -197,8 +213,9 @@ class expenses_report
         from lahead as head left join ladetail as detail on detail.trno=head.trno left join coa on coa.acnoid=detail.acnoid
         left join cntnum on cntnum.trno=head.trno
         left join detailinfo as info on info.trno = detail.trno and info.line = detail.line
+        $leftjoin
         where head.doc in ('cv','pv') and coa.cat='e' and head.dateid between '$start' and '$end' $filter $filter1 ) as exp
-        group by docno, dateid, clientname, hnotes, acno, acnoname, db, cr, snotes, postdate
+        group by docno, dateid, clientname,  acno, acnoname, db, cr, snotes
         order by dateid, docno";
         break;
       case '0': //summarized
@@ -208,6 +225,7 @@ class expenses_report
         from lahead as head left join ladetail as detail on detail.trno=head.trno 
         left join coa on coa.acnoid=detail.acnoid
         left join cntnum on cntnum.trno=head.trno
+        $leftjoin
         where head.doc in ('cv','pv') and coa.cat='e' and head.dateid between '$start' and '$end' $filter $filter1 ) as exp
         group by acno, acnoname
         order by acnoname";
@@ -232,6 +250,7 @@ class expenses_report
     $deptname = $config['params']['dataparams']['deptname'];
     $filter = "";
     $filter1 = "";
+    $leftjoin = '';
     if ($center != '') {
       $filter = " and cntnum.center='$center'";
     }
@@ -242,6 +261,15 @@ class expenses_report
       }
     }
 
+    if ($companyid == 68) { //jda
+      $project = $config['params']['dataparams']['project'];
+      $leftjoin = 'left join projectmasterfile as project on project.line = detail.projectid';
+      if ($project != "") {
+        $filter1 .= " and project.code = '" . $project . "'";
+      }
+    }
+
+
     switch ($isdetailed) {
       case '1': //detailed
         $query = "select docno,date(dateid) as dateid,clientname,acno,acnoname,snotes as description, sum(db-cr) as amount  from (
@@ -250,6 +278,7 @@ class expenses_report
         from glhead as head left join gldetail as detail on detail.trno=head.trno left join coa on coa.acnoid=detail.acnoid
         left join cntnum on cntnum.trno=head.trno
         left join detailinfo as info on info.trno = detail.trno and info.line = detail.line
+        $leftjoin
         where coa.cat='e' and head.dateid between '$start' and '$end' $filter $filter1) as exp
         group by docno, dateid, clientname, acno, acnoname, db, cr, snotes
         order by dateid, docno";
@@ -261,10 +290,12 @@ class expenses_report
         left join gldetail as detail on detail.trno=head.trno 
         left join coa on coa.acnoid=detail.acnoid
         left join cntnum on cntnum.trno=head.trno
+        $leftjoin
         where coa.cat='e' and date(head.dateid) 
         between '$start' and '$end' $filter $filter1) as exp
         group by acno, acnoname
         order by acnoname";
+        logger($query);
         break;
     }
     return $query;
@@ -284,6 +315,7 @@ class expenses_report
     $end         = date("Y-m-d", strtotime($config['params']['dataparams']['end']));
     $center      = $config['params']['dataparams']['center'];
 
+
     $filter = "";
     $filter1 = "";
     if ($center != '') {
@@ -301,6 +333,11 @@ class expenses_report
       if ($deptid != "" && $deptname != '') {
         $filter1 .= " and head.deptid = $dept";
       }
+    } elseif ($companyid == 68) { //jda
+      $project = $config['params']['dataparams']['project'];
+      if ($project != "") {
+        $filter1 .= " and project.code = '" . $project . "'";
+      }
     } else {
       $filter1 .= "";
     }
@@ -309,6 +346,8 @@ class expenses_report
     $selectjcdet = '';
     $selecthjcsum = '';
     $selecthjcdet = '';
+
+    $leftjoin = '';
 
     if ($companyid == 8) { //maxipro
       // posted
@@ -341,6 +380,10 @@ class expenses_report
     }
 
 
+      if($companyid == 68){
+        $leftjoin = 'left join projectmasterfile as project on project.line = detail.projectid';
+      }
+
     switch ($reporttype) {
       case 0: // summarized
         switch ($posttype) {
@@ -352,6 +395,7 @@ class expenses_report
             left join gldetail as detail on detail.trno=head.trno
             left join coa on coa.acnoid=detail.acnoid
             left join cntnum on cntnum.trno=head.trno
+            $leftjoin
             where head.doc in ('cv','pv') and coa.cat='e' and date(head.dateid) between '$start' and '$end' $filter $filter1 $selecthjcsum) as exp
             group by acno, acnoname
             union all
@@ -362,6 +406,7 @@ class expenses_report
             left join ladetail as detail on detail.trno=head.trno
             left join coa on coa.acnoid=detail.acnoid
             left join cntnum on cntnum.trno=head.trno
+            $leftjoin
             where head.doc in ('cv','pv') and coa.cat='e' and head.dateid between '$start' and '$end' $filter $filter1 $selectjcsum) as exp
             group by acno, acnoname)
             order by acnoname;";
@@ -377,6 +422,7 @@ class expenses_report
             from glhead as head left join gldetail as detail on detail.trno=head.trno left join coa on coa.acnoid=detail.acnoid
             left join cntnum on cntnum.trno=head.trno
             left join detailinfo as info on info.trno = detail.trno and info.line = detail.line
+            $leftjoin
             where head.doc in ('cv','pv') and coa.cat='e' and head.dateid between '$start' and '$end' $filter $filter1 $selecthjcdet) as exp
             group by docno, dateid, clientname, hnotes, acno, acnoname, db, cr, snotes, postdate
             union all
@@ -386,6 +432,7 @@ class expenses_report
             from lahead as head left join ladetail as detail on detail.trno=head.trno left join coa on coa.acnoid=detail.acnoid
             left join cntnum on cntnum.trno=head.trno
             left join detailinfo as info on info.trno = detail.trno and info.line = detail.line
+            $leftjoin
             where head.doc in ('cv','pv') and coa.cat='e' and head.dateid between '$start' and '$end' $filter $filter1 $selectjcdet) as exp
             group by docno, dateid, clientname, hnotes, acno, acnoname, db, cr, snotes, postdate
             order by dateid, docno;";

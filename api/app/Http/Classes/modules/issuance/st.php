@@ -491,11 +491,13 @@ class st
 
   public function posttrans($config)
   {
+    ini_set('max_execution_time', 0);
     return $this->othersClass->posttranstock($config);
   } //end function
 
   public function unposttrans($config)
   {
+    ini_set('max_execution_time', 0);
     return $this->othersClass->unposttranstock($config);
   } //end function
 

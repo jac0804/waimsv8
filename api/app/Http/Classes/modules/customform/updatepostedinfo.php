@@ -383,8 +383,10 @@ class updatepostedinfo
                         $weightin = isset($weightin) ? $weightin : 0;
                         $weightout = isset($weightout) ? $weightout : 0;
 
-                        $kilo = ($weightout - $weightin) / $qty;
-
+                        $kilo = 0;
+                        if ($qty != 0) {
+                            $kilo = ($weightout - $weightin) / $qty;
+                        }
 
                         $data = [
                             'editby' => $config['params']['user'],

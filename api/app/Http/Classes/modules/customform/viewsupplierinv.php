@@ -46,25 +46,17 @@ class viewsupplierinv
     $ispallet = $this->companysetup->getispallet($config['params']);
     $isexpiry = $this->companysetup->getisexpiry($config['params']);
 
-    $dateid = 0;
-    $docno = 1;
-    $barcode = 2;
-    $itemdesc = 3;
-    $rrqty = 4;
-    $isqty = 5;
-    $uom = 6;
-    $cost = 7;
-    $isamt = 8;
-    $loc = 9;
-    $pallet = 10;
-    $location = 11;
-    $ref = 12;
-    $plno = 13;
-    $shipmentno = 14;
-    $invoiceno = 15;
-
     $columns = ['dateid', 'docno', 'barcode', 'itemdesc', 'rrqty', 'isqty', 'uom', 'cost', 'isamt', 'loc', 'pallet', 'location', 'ref', 'plno', 'shipmentno', 'invoiceno'];
     $sortcolumn = ['dateid', 'docno', 'barcode', 'itemdesc', 'rrqty', 'isqty', 'uom', 'cost', 'isamt', 'loc', 'pallet', 'location', 'ref', 'plno', 'shipmentno', 'invoiceno'];
+    
+    if ($config['params']['companyid'] == 60) { // transpower
+      $columns = ['dateid', 'docno', 'barcode', 'itemdesc',  'rem', 'rrqty', 'isqty', 'uom', 'cost', 'isamt', 'loc', 'pallet', 'location', 'ref', 'plno', 'shipmentno', 'invoiceno'];
+      $sortcolumn = ['dateid', 'docno', 'barcode', 'itemdesc',  'rem', 'rrqty', 'isqty', 'uom', 'cost', 'isamt', 'loc', 'pallet', 'location', 'ref', 'plno', 'shipmentno', 'invoiceno'];
+    }
+
+    foreach ($columns as $key => $value) {
+      $$value = $key;
+    }
 
     $tab = [$this->gridname => ['gridcolumns' => $columns, 'sortcolumns' => $sortcolumn]];
 
@@ -87,6 +79,11 @@ class viewsupplierinv
     $obj[0][$this->gridname]['columns'][$isqty]['style'] = 'text-right';
     $obj[0][$this->gridname]['columns'][$cost]['style'] = 'text-right';
     $obj[0][$this->gridname]['columns'][$isamt]['style'] = 'text-right';
+
+    if ($config['params']['companyid'] == 60) { //transpower
+      $obj[0][$this->gridname]['columns'][$rem]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
+      $obj[0][$this->gridname]['columns'][$ref]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
+    }
 
     if ($viewcost == '0') {
       $obj[0][$this->gridname]['columns'][$cost]['type'] = 'coldel';
@@ -150,6 +147,14 @@ class viewsupplierinv
     $deccur = $this->companysetup->getdecimal('currency', $config['params']);
     $decqty = $this->companysetup->getdecimal('qty', $config['params']);
 
+    // default rem
+    $glrem = "glhead.rem";
+    $larem = "lahead.rem";
+    if ($companyid == 60) { //transpower
+      $glrem = "glstock.rem";
+      $larem = "lastock.rem";
+    }
+
     $qry = "select `glhead`.`trno` as `trno`,`glhead`.`doc` as `doc`,`glhead`.`clientid` as `clientid`,
           `glhead`.`docno` as `docno`,left(`glhead`.`dateid`,10) as `dateid`,
           `item`.`barcode` as `barcode`,`item`.`itemname` as `itemdesc`,`glstock`.`uom` as `uom`,
@@ -161,7 +166,7 @@ class viewsupplierinv
           glstock.loc as `loc`,client.client,client.clientname,client.addr,client.tel,client.email,client.tin,
           client.mobile,client.contact,client.rem,client.fax, glstock.kgs,
           (glstock.kgs * glstock.isamt) AS unitprice, (glstock.kgs * glstock.cost) AS unitcost,
-          ifnull(pallet.name,'') as pallet, ifnull(location.loc,'') as location, '' as plno, '' as shipmentno, '' as invoiceno, glstock.ref
+          ifnull(pallet.name,'') as pallet, ifnull(location.loc,'') as location, '' as plno, '' as shipmentno, '' as invoiceno, glstock.ref," . $glrem . " as rem
           from ((`glstock`
           left join `glhead` on((`glstock`.`trno` = `glhead`.`trno`)))
           left join `item` on((`item`.`itemid` = `glstock`.`itemid`)))
@@ -182,7 +187,7 @@ class viewsupplierinv
           lastock.loc as `loc`,client.client,client.clientname,client.addr,client.tel,client.email,
           client.tin,client.mobile,client.contact,client.rem,client.fax, lastock.kgs,
           (lastock.kgs * lastock.isamt) AS unitprice, (lastock.kgs * lastock.cost) AS unitcost,
-          ifnull(pallet.name,'') as pallet, ifnull(location.loc,'') as location, '' as plno, '' as shipmentno, '' as invoiceno, lastock.ref
+          ifnull(pallet.name,'') as pallet, ifnull(location.loc,'') as location, '' as plno, '' as shipmentno, '' as invoiceno, lastock.ref," . $larem . " as rem
           from ((`lastock`
           left join `lahead` on((`lastock`.`trno` = `lahead`.`trno`)))
           left join `client` on((`client`.`client` = `lahead`.`client`)))
@@ -206,7 +211,7 @@ class viewsupplierinv
       glstock.loc as `loc`,client.client,client.clientname,client.addr,client.tel,client.email,client.tin,
       client.mobile,client.contact,client.rem,client.fax, glstock.kgs,
       (glstock.kgs * glstock.isamt) AS unitprice, (glstock.kgs * glstock.cost) AS unitcost,
-      ifnull(pallet.name,'') as pallet, ifnull(location.loc,'') as location, plh.plno, plh.shipmentno, plh.invoiceno, glstock.ref
+      ifnull(pallet.name,'') as pallet, ifnull(location.loc,'') as location, plh.plno, plh.shipmentno, plh.invoiceno, glstock.ref," . $glrem . " as rem
       from `lastock`  as glstock
       left join `lahead` as glhead on `glstock`.`trno` = `glhead`.`trno`
       left join `item` on `item`.`itemid` = `glstock`.`itemid`
@@ -228,7 +233,7 @@ class viewsupplierinv
       glstock.loc as `loc`,client.client,client.clientname,client.addr,client.tel,client.email,client.tin,
       client.mobile,client.contact,client.rem,client.fax, glstock.kgs,
       (glstock.kgs * glstock.isamt) AS unitprice, (glstock.kgs * glstock.cost) AS unitcost,
-      ifnull(pallet.name,'') as pallet, ifnull(location.loc,'') as location, plh.plno, plh.shipmentno, plh.invoiceno, glstock.ref
+      ifnull(pallet.name,'') as pallet, ifnull(location.loc,'') as location, plh.plno, plh.shipmentno, plh.invoiceno, glstock.ref," . $larem . " as rem
       from `glstock`  as glstock
       left join `glhead` as glhead on `glstock`.`trno` = `glhead`.`trno`
       left join `item` on `item`.`itemid` = `glstock`.`itemid`

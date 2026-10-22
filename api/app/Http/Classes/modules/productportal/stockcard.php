@@ -39,11 +39,11 @@ class stockcard
     private $stockselect;
     private $productportallookup;
 
-    private $fields = ['barcode', 'picture', 'itemname', 'model', 'brand', 'category', 'sizeid', 'partno', 'othcode', 'disc', 'itemrem', 'amt', 'carid', 'uom', 'model2'];
+    private $fields = ['barcode', 'picture', 'itemname', 'model', 'brand', 'category', 'sizeid', 'partno', 'othcode', 'disc', 'itemrem', 'amt', 'carid', 'uom', 'model2', 'isnewarrival', 'subcat'];
     private $iteminfo = ['fyear', 'kind', 'positionid'];
 
     private $except = ['itemid', 'itemrem'];
-    private $blnfields = [];
+    private $blnfields = ['isnewarrival'];
     private $acctg = [];
     public $showfilteroption = false;
     public $showfilter = false;
@@ -187,7 +187,7 @@ class stockcard
 
     public function createHeadField($config)
     {
-        $fields = ['barcode', 'itemname', 'brandname', 'categoryname', 'partno'];
+        $fields = ['barcode', 'itemname', 'brandname', 'categoryname','subcatname', 'partno'];
 
         $col1 = $this->fieldClass->create($fields);
         data_set($col1, 'barcode.lookupclass', 'lookupbarcode');
@@ -201,7 +201,7 @@ class stockcard
         data_set($col1, 'categoryname.action', 'lookupcategoryitemstockcard');
         data_set($col1, 'categoryname.lookupclass', 'lookupcategoryitemstockcard');
         data_set($col1, 'categoryname.class', 'cscscategocsryname sbccsreadonly');
-
+        data_set($col1, 'subcatname.label', 'Item Sub Category');
         $fields = ['carbrand', 'modelname', 'submodel', 'fyear', 'othcode', 'position', 'sizeid'];
         $col2 = $this->fieldClass->create($fields);
         data_set($col2, 'othcode.label', 'Equivalent No.');
@@ -231,6 +231,10 @@ class stockcard
         data_set($col3, 'rem.label', 'Remark');
 
         $fields = ['picture'];
+
+        if ($config['params']['companyid'] == 70) { //Sports Runner
+            array_push($fields, 'isnewarrival');
+        }
 
         $col4 = $this->fieldClass->create($fields);
 
@@ -271,6 +275,11 @@ class stockcard
         $data[0]['rem'] = '';
         $data[0]['picture'] = '';
 
+        $data[0]['isnewarrival'] = '0';
+
+        $data[0]['subcat'] = 0;
+        $data[0]['subcatname'] = '';
+
         $data[0]['uom'] = 'PCS';
         return  ['head' => $data, 'islocked' => false, 'isposted' => false, 'status' => true, 'isnew' => true, 'msg' => 'Ready for New Ledger'];
     }
@@ -304,7 +313,7 @@ class stockcard
                     $fields = $fields . ",format(item.$value,2) as amt";
                     break;
                 case 'picture':
-                    $fields = $fields . ',concat("/images/product/",item.partno,".PNG") as picture';
+                    $fields = $fields . ',concat("/images/product/",item.partno,".jpg") as picture';
                     break;
                 default:
                     $fields = $fields . ',item.' . $value;
@@ -320,13 +329,15 @@ class stockcard
         ifnull(mmaster.model_name,'') as modelname, item.model as model,
         ifnull(brand.brand_desc,'') as brandname, ifnull(item.brand,'') as brand,
         cat.line as category,item.uom,
-        cat.name as categoryname,item.partno,car.brand as carbrand,item.carid,pos.positions as position,info.positionid, ifnull(submodel.model_name,'') as submodel, item.model2";
+        cat.name as categoryname,item.partno,car.brand as carbrand,item.carid,pos.positions as position,info.positionid, ifnull(submodel.model_name,'') as submodel, item.model2,
+        ifnull(isc.name,'') as subcatname";
 
         $qry = $qryselect . " from item
         left join model_masterfile as mmaster on mmaster.model_id = item.model
         left join model_masterfile as submodel on submodel.model_id = item.model2
         left join frontend_ebrands as brand on brand.brandid = item.brand
         left join itemcategory as cat on cat.line = item.category
+        left join itemsubcategory as isc on isc.line = item.subcat
         left join iteminfo as info on info.itemid=item.itemid
         left join carbrand as car on car.id = item.carid
         left join positions as pos on pos.id = info.positionid
@@ -334,6 +345,9 @@ class stockcard
 
         $head = $this->coreFunctions->opentable($qry, [$itemid]);
         if (!empty($head)) {
+            foreach ($this->blnfields as $value) {
+                $head[0]->$value = $head[0]->$value ? "1" : "0";
+            }
             $viewdate = $this->othersClass->getCurrentTimeStamp();
             $viewby = $config['params']['user'];
             $this->coreFunctions->sbcupdate($this->head, ['viewdate' => $viewdate, 'viewby' => $viewby], ['itemid' => $itemid]);

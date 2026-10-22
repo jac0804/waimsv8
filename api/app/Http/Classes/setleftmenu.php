@@ -1390,7 +1390,7 @@ class setleftmenu
 
   public function productportal($config)
   {
-    $productportal = ['parentproductportal',  'brand', 'itemcategory', 'entrycrbrand', 'model', 'positions'];
+    $productportal = ['parentproductportal',  'brand', 'itemcategory', 'entrycrbrand', 'model', 'positions','itemsubcategory'];
     return ['productportal' => ['parent' => 50, 'modules' => $productportal]];
   }
 } // end class

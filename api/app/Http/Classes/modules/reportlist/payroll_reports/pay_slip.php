@@ -427,6 +427,7 @@ class pay_slip
     $filter1   = "";
     $filter2   = "";
     $filter3   = "";
+    $addfield = "";
 
     if ($client != "") {
       $filter .= " and e.client = '$client'";
@@ -449,10 +450,14 @@ class pay_slip
       $filter2 .= " and emp.level in $emplvl";
     }
 
+    if ($config['params']['companyid'] == 62){ // onesky
+      $addfield .= ", emp.classrate";
+    }
+
     $query = "SELECT e.clientname,e.client,d.divname,dept.clientname as deptname,year(p.dateid) as yr,date_format(batch.startdate,'%b %d, %y') as startd,
           date_format(batch.enddate,'%b %d, %y') as endd,
           p.dateid,batch.batch,p.batchid,date(batch.startdate) as startdate,date(batch.enddate) as enddate,
-          p.acnoid,pa.alias,p.db,p.cr,pa.codename,pa.uom,p.qty,pa.alias,emp.empid,p.qty2,pa.seq
+          p.acnoid,pa.alias,p.db,p.cr,pa.codename,pa.uom,p.qty,pa.alias,emp.empid,p.qty2,pa.seq $addfield
           FROM paytrancurrent as p LEFT JOIN employee AS emp ON emp.empid=p.empid
           left join client as e on e.clientid = emp.empid
           left join division as d on d.divid = emp.divid
@@ -464,7 +469,7 @@ class pay_slip
           SELECT e.clientname,e.client,d.divname,dept.clientname as deptname,year(p.dateid) as yr,date_format(batch.startdate,'%b %d, %y') as startd,
           date_format(batch.enddate,'%b %d, %y') as endd,
           p.dateid,batch.batch,p.batchid,date(batch.startdate) as startdate,date(batch.enddate) as enddate,
-          p.acnoid,pa.alias,p.db,p.cr,pa.codename,pa.uom,p.qty,pa.alias,emp.empid,p.qty2,pa.seq
+          p.acnoid,pa.alias,p.db,p.cr,pa.codename,pa.uom,p.qty,pa.alias,emp.empid,p.qty2,pa.seq $addfield
           FROM paytranhistory as p LEFT JOIN employee AS emp ON emp.empid=p.empid
           left join client as e on e.clientid = emp.empid
           left join division as d on d.divid = emp.divid
@@ -1174,6 +1179,9 @@ where empid = ? and batchid = ?";
     $filteraccIn = "";
     $orderby = " desc";
 
+    if ($config['params']['companyid'] == 62) { // onesky
+      $orderby = " asc";
+    }
 
     switch ($companyid) {
       case 53: //camera
@@ -1193,20 +1201,19 @@ where empid = ? and batchid = ?";
         break;
     }
 
-    $query = "select paytran.batchid,paytran.empid,acc.seq, acc.codename, paytran.qty, paytran.cr
+    $query = "select paytran.batchid,paytran.empid,acc.seq, acc.alias, acc.code, acc.codename, paytran.qty, paytran.cr
               from paytrancurrent as paytran
               left join employee as emp on emp.empid=paytran.empid
               left JOIN paccount as acc on acc.line=paytran.acnoid
               left join batch on batch.line=paytran.batchid
               where paytran.empid = ? and batch.line = ? and paytran.cr <>0 and batch.postdate is null $filteraccIn $filter
               union all
-              select paytran.batchid,paytran.empid,acc.seq, acc.codename, paytran.qty, paytran.cr
+              select paytran.batchid,paytran.empid,acc.seq, acc.alias, acc.code, acc.codename, paytran.qty, paytran.cr
               from paytranhistory as paytran
               left join employee as emp on emp.empid=paytran.empid
               left JOIN paccount as acc on acc.line=paytran.acnoid
               left join batch on batch.line=paytran.batchid
               where paytran.empid = ? and batch.line = ? and paytran.cr <> 0 and batch.postdate is not null  $filteraccIn $filter order by seq $orderby";
-
     return $this->coreFunctions->opentable($query, [$empid, $batch, $empid, $batch]);
   }
 
@@ -1225,6 +1232,10 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
   }
   public function dataearn($config, $empid, $batchid)
   {
+    $orderby = " seq desc";
+    if ($config['params']['companyid'] == 62) {
+      $orderby = " seq";
+    }
     switch ($config['params']['companyid']) {
       case 44: // stonepro
         $query = "
@@ -1297,7 +1308,7 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
           and pa.alias not in ('YIS','YIM','YIP','YSR','YER','YMR','YPR','MPF','MPFER','YSE', 'YME', 'YPE', 'LOAN', 'HDMFLOAN', 'SSSLOAN')
           GROUP BY batch.batch,p.batchid,
           p.acnoid,pa.alias,pa.codename,pa.uom,pa.code,emp.empid,pa.seq
-          order BY seq desc";
+          order BY $orderby";
         break;
     }
 
@@ -9753,6 +9764,9 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
     $qtyspecialun = 0;
     $qtylegalun = 0;
 
+    $workinghrs = 8;
+    $absentdays = 0;
+
     $i = 0;
     $c = 0;
     $page = 0;
@@ -9889,9 +9903,18 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
       if ($c == 0) {
         $c = $this->getcount($config, $data->empid, $config['params']['dataparams']['line']);
       }
+
       $pagebreak = false;
       $i = $i + 1;
       if ($i == $c) {
+        $absentdays = $qtyabsent / $workinghrs;
+        $absentamt  = $absent;
+
+        if ($data->classrate == 'D') {
+          $totalearn = $totalearn - $absentamt;
+          $totalded  = $totalded - $absentamt;
+        }
+
         $str .= "</br>";
         $str .= $this->reporter->begintable($layoutsize);
         $str .= $this->reporter->startrow();
@@ -9946,6 +9969,13 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
               if (strpos($val->codename, 'ALLOWANCE') !== false) {
                 $val->qty = 0;
               }
+              if ($val->alias == 'BSA') {
+                $val->qty = $val->qty / $workinghrs;
+                if ($data->classrate == 'D') {
+                  $val->qty = $val->qty - $absentdays;
+                  $val->db  = $val->db - $absentamt;
+                }
+              }
               $str .= $this->reporter->startrow();
               $str .= $this->reporter->col('', '5', '5', false, $border, '', 'C', $font, $font_size, '', '', '1');
               $str .= $this->reporter->col('' . $val->codename, '160', '5', false, $border, '', 'L', $font, $font_size, '', '', '1');
@@ -9969,13 +9999,26 @@ where paytran.empid = ? and batch.line = ? and (acc.istax = 1 or acc.code IN ('P
         $str .= $this->reporter->endrow();
         $str .= $this->reporter->endtable();
         $deduction = $this->getdeductionbreakdown($config, $data->empid, $data->batchid);
+        // var_dump($deduction);
         $str .= $this->reporter->begintable(330);
         foreach ($deduction as $key => $q) {
+          if ($data->classrate == 'D' && $q->alias == 'ABSENT') {
+            continue;
+          }
           if ($q->cr > 0) {
+            if ($q->alias == 'ABSENT') {
+              $q->qty = $q->qty / $workinghrs;
+            }
+
+            if ($q->alias== 'DEDUCTION' && $q->code != 'PT36') {
+              $qtydisplay = '-';
+            } else {
+              $qtydisplay = $q->qty == 0 ? '-' : number_format($q->qty, 2);
+            }
             $str .= $this->reporter->startrow();
             $str .= $this->reporter->col('', '5', '18', false, $border, '', 'L', $font, $font_size, '', '', '');
             $str .= $this->reporter->col('' . $q->codename, '150', '18', false, $border, '', 'L', $font, $font_size, '', '', '');
-            $str .= $this->reporter->col('' . $q->qty == 0 ? '-' : number_format($q->qty, 2), '70', '18', false, $border, '', 'R', $font, $font_size, '', '', '');
+            $str .= $this->reporter->col('' . $qtydisplay, '70', '18', false, $border, '', 'R', $font, $font_size, '', '', '');
             $str .= $this->reporter->col('' . $q->cr == 0 ? '-' : number_format($q->cr, 2), '100', '18', false, $border, '', 'R', $font, $font_size, '', '', '');
             $str .= $this->reporter->col('', '5', '18', false, $border, '', 'L', $font, $font_size, '', '', '');
             $str .= $this->reporter->endrow();

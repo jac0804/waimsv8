@@ -87,14 +87,14 @@ class entryfinancerates
         $obj[0][$this->gridname]['columns'][$dp]['align'] = "left";
 
         $obj[0][$this->gridname]['columns'][$interest]['readonly'] = false;
-        $obj[0][$this->gridname]['columns'][$interest]['style'] = "width:20px;whiteSpace: normal;min-width:20px; max-width: 20px;";
+        $obj[0][$this->gridname]['columns'][$interest]['style'] = "width:40px;whiteSpace: normal;min-width:40px; max-width: 40px;";
         $obj[0][$this->gridname]['columns'][$interest]['align'] = "left";
 
         $obj[0][$this->gridname]['columns'][$factor]['readonly'] = false;
         $obj[0][$this->gridname]['columns'][$factor]['align'] = "left";
 
         $obj[0][$this->gridname]['columns'][$penalty]['readonly'] = false;
-        $obj[0][$this->gridname]['columns'][$penalty]['style'] = "width:20px;whiteSpace: normal;min-width:20px; max-width: 20px;";
+        $obj[0][$this->gridname]['columns'][$penalty]['style'] = "width:40px;whiteSpace: normal;min-width:40px; max-width: 40px;";
         $obj[0][$this->gridname]['columns'][$penalty]['align'] = "left";
 
         $obj[0][$this->gridname]['columns'][$miscfee]['readonly'] = false;
@@ -206,7 +206,7 @@ class entryfinancerates
                     $data2['encodeddate'] = $this->othersClass->getCurrentTimeStamp();
                     $newline = $this->coreFunctions->insertGetId($this->table, $data2);
                     $config['params']['doc'] = 'ENTRYFINANCERATES';
-                    $this->logger->sbcmasterlog($newline, $config, ' CREATE - '
+                    $this->logger->sbcmasterlog($data2['itemid'] , $config, ' CREATE - '
                         . 'Terms -' . $data2['terms']
                         . ' | DP -' . $data2['dp']
                         . ' | Interest -' . $data2['interest']
@@ -262,7 +262,7 @@ class entryfinancerates
 
             if ($line != 0) {
                 $config['params']['doc'] = 'ENTRYFINANCERATES';
-                $this->logger->sbcmasterlog($line, $config, ' CREATE - '
+                $this->logger->sbcmasterlog($itemid, $config, ' CREATE - '
                     . 'Terms -' . $data['terms']
                     . ' | DP -' . $data['dp']
                     . ' | Interest -' . $data['interest']
@@ -308,7 +308,7 @@ class entryfinancerates
         $this->coreFunctions->execqry($qry, 'delete', [$row['line']]);
 
         $config['params']['doc'] = 'ENTRYFINANCERATES';
-        $this->logger->sbcdelmaster_log($row['line'], $config, 'REMOVE LINE: ' . $row['line'] . ' - ' . $row['terms']);
+        $this->logger->sbcdelmaster_log($row['itemid'], $config, 'REMOVE LINE: ' . $row['line'] . ' - ' . $row['terms']);
         return ['status' => true, 'msg' => 'Successfully deleted.'];
     }
 
@@ -380,13 +380,13 @@ class entryfinancerates
     if(pic='','blank_user.png',pic) as pic
     from " . $this->tablelogs . " as log
     left join useraccess as u on u.username=log.user
-    where log.doc = '" . $doc . "'
+    where log.doc = '" . $doc . "'  and log.trno = ".$trno."
     union all
     select trno, doc, task, log.user, dateid, 
     if(pic='','blank_user.png',pic) as pic
     from  " . $this->tablelogs_del . " as log
     left join useraccess as u on u.username=log.user
-    where log.doc = '" . $doc . "'";
+    where log.doc = '" . $doc . "' and log.trno = ".$trno;
 
         $qry = $qry . " order by dateid desc";
         $data = $this->coreFunctions->opentable($qry);

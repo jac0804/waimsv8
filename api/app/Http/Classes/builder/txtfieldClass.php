@@ -21448,6 +21448,16 @@ class txtfieldClass
                 'required' => false
             ),
 
+            'isnewarrival' => array(
+                'name' => 'isnewarrival',
+                'type' => 'checkbox',
+                'label' => 'New Arrival',
+                'class' => 'csisnewarrival',
+                'readonly' => true,
+                'style' => $this->style,
+                'required' => false
+            ),
+
 
         );
     }

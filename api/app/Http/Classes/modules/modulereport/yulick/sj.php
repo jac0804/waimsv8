@@ -50,6 +50,7 @@ class sj
     $this->commonsbc = new commonsbc;
   }
 
+  // Fit To Paper dapat ang setup sa printer
   public function createreportfilter($config)
   {
     $companyid = $config['params']['companyid'];
@@ -66,7 +67,7 @@ class sj
         ['label' => 'Agathon Trading', 'value' => '002', 'color' => 'red'],
         ['label' => 'Buena Gente Import Incorporated', 'value' => '003', 'color' => 'red'],
         ['label' => 'Cemceir Trading Corp', 'value' => '004', 'color' => 'red'],
-        ['label' => 'CG Agriventuires, Inc', 'value' => '005', 'color' => 'red'],
+        ['label' => 'CG Agriventures, Inc', 'value' => '005', 'color' => 'red'],
         ['label' => 'D`Oragons General Goods Company OPC', 'value' => '006', 'color' => 'red'],
         ['label' => 'Gabrien Food Company', 'value' => '007', 'color' => 'red'],
         ['label' => 'GCR Food Products Trading', 'value' => '008', 'color' => 'red'],
@@ -77,7 +78,7 @@ class sj
         ['label' => 'MMC Import Export Company', 'value' => '013', 'color' => 'red'],
         ['label' => 'Nevaeh Food Company', 'value' => '014', 'color' => 'red'],
         ['label' => 'Orokke Distribution Company LTD.', 'value' => '015', 'color' => 'red'],
-        ['label' => 'Shokuryo Philippines Inc.', 'value' => '016', 'color' => 'red'],
+        ['label' => 'Shokuryohin Philippines Inc.', 'value' => '016', 'color' => 'red'],
         ['label' => 'Yasui Kakaku Grocery OPC', 'value' => '017', 'color' => 'red'],
       ]);
     } else {
@@ -116,7 +117,7 @@ class sj
   {
     $trno = $config['params']['dataid'];
     $query = "select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,ifnull(nullif(stock.rem, ''), item.itemname) as subclass,
-            right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
+            right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client,case when client.isparentname = 1 then parentcode.clientname else  head.clientname end as clientname,
             head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
             item.itemname, stock.isqty as qty, stock.uom , stock.isamt as amt, stock.disc, stock.ext, head.agent,
             item.sizeid, ag.clientname as agname, item.brand,head.vattype, head.ewtrate,client.bstyle,client.registername,client.clientpref as conaddr,client.vendorname as rfno,
@@ -126,10 +127,11 @@ class sj
             left join item on item.itemid=stock.itemid
             left join client as ag on ag.client=head.agent
             left join client as wh on wh.client=head.wh
+            left join client as parentcode on client.grpcode = parentcode.client
             where head.doc='sj' and head.trno='$trno'
             UNION ALL
             select stock.line,stock.rem as srem,head.rem,date_format(head.dateid,'%m/%d') as monthid,ifnull(nullif(stock.rem, ''), item.itemname) as subclass,
-            right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client, client.clientname,
+            right(year(head.dateid),2) as year,left(head.dateid,10) as dateid, head.docno, client.client,case when client.isparentname = 1 then parentcode.clientname else  head.clientname end as clientname,
             head.address, head.terms, item.barcode, head.shipto, client.tin, head.yourref, head.ourref,
             item.itemname, stock.isqty as qty, stock.uom , stock.isamt as amt, stock.disc, stock.ext, ag.client as agent,
             item.sizeid, ag.clientname as agname, item.brand,head.vattype, head.ewtrate,client.bstyle,client.registername,client.clientpref as conaddr,client.vendorname as rfno,
@@ -139,6 +141,7 @@ class sj
             left join item on item.itemid=stock.itemid
             left join client as ag on ag.clientid=head.agentid
             left join client as wh on wh.clientid=head.whid
+            left join client as parentcode on client.grpcode = parentcode.client
             where head.doc='sj' and head.trno='$trno' order by line";
 
     $result = json_decode(json_encode($this->coreFunctions->opentable($query)), true);
@@ -794,7 +797,7 @@ class sj
         $ext = number_format($data[$i]['ext'], 2);
 
         $arr_barcode = $this->reporter->fixcolumn([$barcode], '15', 0);
-        $arr_subclass = $this->reporter->fixcolumn([$subclass], '35', 0);
+        $arr_subclass = $this->reporter->fixcolumn([$subclass], '25', 0);
         $arr_qty = $this->reporter->fixcolumn([$qty], '13', 0);
         $arr_uom = $this->reporter->fixcolumn([$uom], '13', 0);
         $arr_amt = $this->reporter->fixcolumn([$amt], '13', 0);
@@ -907,22 +910,28 @@ class sj
     // PDF::MultiCell(0, 0, "\n");
 
     $address = (isset($data[0]['address']) ? $data[0]['address'] : '');
+    $address = trim(preg_replace('/\s+/', ' ', $address)); // remove new lines/extra spaces
 
-    $arr_address = $this->reporter->fixcolumn([$address], '80', 0);
+    $arr_address = $this->reporter->fixcolumn([$address], '45', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
+    $maxrow = min($maxrow, 3); // two lines only, line 3 and beyond are never printed
 
-    PDF::SetXY(15, 163);
+    PDF::SetXY(15, ($maxrow > 1 ? 160 : 163));
     PDF::SetFont($fontbold, '', $fontsize);
     // PDF::MultiCell(85, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     for ($r = 0; $r < $maxrow; $r++) {
       if ($maxrow > 1) {
+        PDF::SetCellPaddings(0, 0, 0, 0);
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(85, 0, '', '', 'R', false, 0);
+        PDF::MultiCell(240, 0, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
+        PDF::SetCellPaddings(0, 0, 0, 0);
+      } else {
+        PDF::SetCellPaddings(0, 0, 0, 0);
         PDF::SetFont($font, '', 13);
         PDF::MultiCell(85, 0, '', '', 'R', false, 0);
         PDF::MultiCell(240, 0, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
-      } else {
-        PDF::SetFont($font, '', 11);
-        PDF::MultiCell(85, 20, '', '', 'R', false, 0);
-        PDF::MultiCell(240, 20, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
+        PDF::SetCellPaddings(0, 0, 0, 0);
       }
     }
 
@@ -1111,7 +1120,7 @@ class sj
     // PDF::MultiCell(200, 0, 'VENDOR CODE : '. (isset($data[0]['rem']) ? $data[0]['rem'] : ''), '', 'R', false, 0);
     PDF::MultiCell(200, 0, '', '', 'R');
 
-    PDF::SetY(512);
+    PDF::SetY(500);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 0, '', '', 'R', false, 0);
     PDF::MultiCell(213, 0, 'SODEXO : ' . (isset($data[0]['conaddr']) ? $data[0]['conaddr'] : ''), '', 'L', false, 0);
@@ -1215,22 +1224,28 @@ class sj
     // PDF::MultiCell(0, 0, "\n");
 
     $address = (isset($data[0]['address']) ? $data[0]['address'] : '');
+    $address = trim(preg_replace('/\s+/', ' ', $address)); // remove new lines/extra spaces
 
-    $arr_address = $this->reporter->fixcolumn([$address], '80', 0);
+    $arr_address = $this->reporter->fixcolumn([$address], '60', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
+    $maxrow = min($maxrow, 2); // two lines only, line 3 and beyond are never printed
 
-    PDF::SetXY(15, 145);
+    PDF::SetXY(15, ($maxrow > 1 ? 142.5 : 144.5));
     PDF::SetFont($fontbold, '', $fontsize);
     // PDF::MultiCell(85, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     for ($r = 0; $r < $maxrow; $r++) {
       if ($maxrow > 1) {
-        PDF::SetFont($font, '', 14);
+        PDF::SetCellPaddings(0, -2, 0, 0); // left,top,right,bottom
+        PDF::SetFont($font, '', 11);
         PDF::MultiCell(70, 20, '', '', 'R', false, 0);
         PDF::MultiCell(320, 20, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
+        PDF::SetCellPaddings(0, 0, 0, 0);
       } else {
+        PDF::SetCellPaddings(0, 0, 0, 0);
         PDF::SetFont($font, '', 13);
         PDF::MultiCell(70, 20, '', '', 'R', false, 0);
         PDF::MultiCell(320, 20, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
+        PDF::SetCellPaddings(0, 0, 0, 0);
       }
     }
 
@@ -1471,18 +1486,18 @@ class sj
 
     $registername = (isset($data[0]['registername']) ? $data[0]['registername'] : '');
 
-    $arr_registername = $this->reporter->fixcolumn([$registername], '80', 0);
+    $arr_registername = $this->reporter->fixcolumn([$registername], '40', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_registername]);
 
-    PDF::SetXY(15, 127);
+    PDF::SetXY(15, ($maxrow > 1 ? 130 : 137)); // two lines: move up, one line: stays
     PDF::SetFont($fontbold, '', $fontsize);
     for ($r = 0; $r < $maxrow; $r++) {
       if ($maxrow > 1) {
-        PDF::SetFont($font, '', 14);
-        PDF::MultiCell(105, 20, '', '', 'R', false, 0);
-        PDF::MultiCell(270, 20, (isset($arr_registername[$r]) ? $arr_registername[$r] : ''), '', 'L', false);
-      } else {
         PDF::SetFont($font, '', 13);
+        PDF::MultiCell(105, 15, '', '', 'R', false, 0);
+        PDF::MultiCell(270, 15, (isset($arr_registername[$r]) ? $arr_registername[$r] : ''), '', 'L', false);
+      } else {
+        PDF::SetFont($font, '', 14);
         PDF::MultiCell(105, 20, '', '', 'R', false, 0);
         PDF::MultiCell(270, 20, (isset($arr_registername[$r]) ? $arr_registername[$r] : ''), '', 'L', false);
       }
@@ -1494,20 +1509,22 @@ class sj
     // PDF::MultiCell(0, 0, "\n");
 
     $address = (isset($data[0]['address']) ? $data[0]['address'] : '');
+    $address = trim(preg_replace('/\s+/', ' ', $address)); // remove new lines/extra spaces
 
-    $arr_address = $this->reporter->fixcolumn([$address], '80', 0);
+    $arr_address = $this->reporter->fixcolumn([$address], '38', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
+    $maxrow = min($maxrow, 3); // three lines only, line 4 and beyond are never printed
 
-    PDF::SetXY(15, 158);
+    PDF::SetXY(15, ($maxrow > 1 ? 157 : 163)); // two lines: move up, one line: stays
     PDF::SetFont($fontbold, '', $fontsize);
     // PDF::MultiCell(85, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     for ($r = 0; $r < $maxrow; $r++) {
       if ($maxrow > 1) {
-        PDF::SetFont($font, '', 14);
-        PDF::MultiCell(100, 20, '', '', 'R', false, 0);
-        PDF::MultiCell(270, 20, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
+        PDF::SetFont($font, '', 13.5);
+        PDF::MultiCell(100, 10, '', '', 'R', false, 0);
+        PDF::MultiCell(270, 10, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
       } else {
-        PDF::SetFont($font, '', 13);
+        PDF::SetFont($font, '', 14);
         PDF::MultiCell(100, 20, '', '', 'R', false, 0);
         PDF::MultiCell(270, 20, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
       }
@@ -1694,13 +1711,13 @@ class sj
     $arr_rem = $this->reporter->fixcolumn([$rem], '80', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_rem]);
 
-    PDF::SetXY(15, 535);
+    PDF::SetXY(15, 538);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(100, 20, 'SODEXO IPMC : ', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(250, 20, (isset($data[0]['conaddr']) ? $data[0]['conaddr'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    PDF::SetXY(15, 565);
+    PDF::SetXY(15, 555);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(100, 20, 'VENDOR CODE : ', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
@@ -1740,7 +1757,7 @@ class sj
 
     $clientname = (isset($data[0]['clientname']) ? $data[0]['clientname'] : '');
 
-    $arr_clientname = $this->reporter->fixcolumn([$clientname], '80', 0);
+    $arr_clientname = $this->reporter->fixcolumn([$clientname], '40', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_clientname]);
 
     PDF::SetXY(15, 117);
@@ -1774,26 +1791,22 @@ class sj
     // PDF::MultiCell(0, 0, "\n");
 
     $address = (isset($data[0]['address']) ? $data[0]['address'] : '');
+    $address = trim(preg_replace('/\s+/', ' ', $address)); // remove new lines/extra spaces
 
-    $arr_address = $this->reporter->fixcolumn([$address], '80', 0);
+    $arr_address = $this->reporter->fixcolumn([$address], '42', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
+    $maxrow = min($maxrow, 2); // two lines only, line 3 and beyond are never printed
 
-    PDF::SetXY(15, 152);
+    PDF::SetXY(15, 153);
     PDF::SetFont($fontbold, '', $fontsize);
     // PDF::MultiCell(85, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     for ($r = 0; $r < $maxrow; $r++) {
-      if ($maxrow == 3) {
-        PDF::SetFont($font, '', 13);
-        PDF::MultiCell(60, 20, '', '', 'R', false, 0);
-        PDF::MultiCell(255, 20, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
-      } else if ($maxrow == 2) {
-        PDF::SetXY(15, 153);
-        PDF::SetFont($font, '', 11);
-        PDF::MultiCell(60, 20, '', '', 'R', false, 0);
-        PDF::MultiCell(255, 20, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
+      if ($maxrow == 2) {
+        PDF::SetFont($font, '', 12);
+        PDF::MultiCell(60, 0, '', '', 'R', false, 0);
+        PDF::MultiCell(255, 0, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
       } else {
-        PDF::SetXY(15, 153);
-        PDF::SetFont($font, '', 10);
+        PDF::SetFont($font, '', 13);
         PDF::MultiCell(60, 20, '', '', 'R', false, 0);
         PDF::MultiCell(255, 20, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
       }
@@ -2021,14 +2034,14 @@ class sj
 
     $clientname = (isset($data[0]['clientname']) ? $data[0]['clientname'] : '');
 
-    $arr_clientname = $this->reporter->fixcolumn([$clientname], '80', 0);
+    $arr_clientname = $this->reporter->fixcolumn([$clientname], '50', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_clientname]);
 
     PDF::SetXY(15, 144.5);
     PDF::SetFont($fontbold, '', $fontsize);
     for ($r = 0; $r < $maxrow; $r++) {
       if ($maxrow > 1) {
-        PDF::SetFont($font, '', 14);
+        PDF::SetFont($font, '', 12);
         PDF::MultiCell(70, 20, '', '', 'R', false, 0);
         PDF::MultiCell(360, 20, (isset($arr_clientname[$r]) ? $arr_clientname[$r] : ''), '', 'L', false);
       } else {
@@ -2042,16 +2055,16 @@ class sj
     PDF::MultiCell(120, 20, (isset($data[0]['dateid']) ? date('F j, Y', strtotime($data[0]['dateid'])) : ''), '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
     $registername = (isset($data[0]['registername']) ? $data[0]['registername'] : '');
-    $arr_registername = $this->reporter->fixcolumn([$registername], '80', 0);
+    $arr_registername = $this->reporter->fixcolumn([$registername], '30', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_registername]);
 
-    PDF::SetXY(15, 165);
+    PDF::SetXY(15, ($maxrow > 1 ? 159 : 165));
     PDF::SetFont($fontbold, '', $fontsize);
     for ($r = 0; $r < $maxrow; $r++) {
       if ($maxrow > 1) {
-        PDF::SetFont($font, '', 14);
-        PDF::MultiCell(117, 20, '', '', 'R', false, 0);
-        PDF::MultiCell(170, 20, (isset($arr_registername[$r]) ? $arr_registername[$r] : ''), '', 'L', false);
+        PDF::SetFont($font, '', 11);
+        PDF::MultiCell(117, 7, '', '', 'R', false, 0);
+        PDF::MultiCell(170, 7, (isset($arr_registername[$r]) ? $arr_registername[$r] : ''), '', 'L', false);
       } else {
         PDF::SetFont($font, '', 13);
         PDF::MultiCell(117, 20, '', '', 'R', false, 0);
@@ -2064,12 +2077,12 @@ class sj
     PDF::MultiCell(332, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(115, 20, (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    PDF::SetXY(15, 183);
+    PDF::SetXY(15, 184);
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(117, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(170, 20, (isset($data[0]['tin']) ? $data[0]['tin'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
-    PDF::SetXY(15, 183);
+    PDF::SetXY(15, 184);
     PDF::SetFont($font, '', $fontsize);
     PDF::MultiCell(332, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::MultiCell(115, 20, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
@@ -2077,16 +2090,19 @@ class sj
     // PDF::MultiCell(0, 0, "\n");
 
     $address = (isset($data[0]['address']) ? $data[0]['address'] : '');
-    $arr_address = $this->reporter->fixcolumn([$address], '80', 0);
-    $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
+    $address = trim(preg_replace('/\s+/', ' ', $address)); // remove new lines/extra spaces
 
-    PDF::SetXY(15, 203);
+    $arr_address = $this->reporter->fixcolumn([$address], '60', 0);
+    $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
+    $maxrow = min($maxrow, 2); // two lines only, line 3 and beyond are never printed
+
+    PDF::SetXY(15, ($maxrow > 1 ? 200 : 205));
     PDF::SetFont($fontbold, '', $fontsize);
     for ($r = 0; $r < $maxrow; $r++) {
       if ($maxrow > 1) {
-        PDF::SetFont($font, '', 14);
-        PDF::MultiCell(117, 20, '', '', 'R', false, 0);
-        PDF::MultiCell(330, 20, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
+        PDF::SetFont($font, '', 12);
+        PDF::MultiCell(117, 0, '', '', 'R', false, 0);
+        PDF::MultiCell(330, 0, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
       } else {
         PDF::SetFont($font, '', 13);
         PDF::MultiCell(117, 20, '', '', 'R', false, 0);
@@ -2363,18 +2379,21 @@ class sj
     // PDF::MultiCell(0, 0, "\n");
 
     $address = (isset($data[0]['address']) ? $data[0]['address'] : '');
-    $arr_address = $this->reporter->fixcolumn([$address], '80', 0);
-    $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
+    $address = trim(preg_replace('/\s+/', ' ', $address)); // remove new lines/extra spaces
 
-    PDF::SetXY(15, 198);
+    $arr_address = $this->reporter->fixcolumn([$address], '70', 0);
+    $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
+    $maxrow = min($maxrow, 2); // two lines only, line 3 and beyond are never printed
+
+    PDF::SetXY(15, ($maxrow > 1 ? 197 : 202));
     PDF::SetFont($fontbold, '', $fontsize);
     for ($r = 0; $r < $maxrow; $r++) {
       if ($maxrow > 1) {
-        PDF::SetFont($font, '', 12);
-        PDF::MultiCell(155, 20, '', '', 'R', false, 0);
-        PDF::MultiCell(400, 20, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
-      } else {
         PDF::SetFont($font, '', 11);
+        PDF::MultiCell(155, 0, '', '', 'R', false, 0);
+        PDF::MultiCell(400, 0, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
+      } else {
+        PDF::SetFont($font, '', 12);
         PDF::MultiCell(155, 20, '', '', 'R', false, 0);
         PDF::MultiCell(400, 20, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
       }
@@ -2585,7 +2604,7 @@ class sj
     PDF::SetFont($fontbold, '', $fontsize);
     for ($r = 0; $r < $maxrow; $r++) {
       if ($maxrow > 1) {
-        PDF::SetFont($font, '', 14);
+        PDF::SetFont($font, '', 12);
         PDF::MultiCell(75, 20, '', '', 'R', false, 0);
         PDF::MultiCell(300, 20, strtoupper((isset($arr_clientname[$r]) ? $arr_clientname[$r] : '')), '', 'L', false);
       } else {
@@ -2599,14 +2618,14 @@ class sj
     PDF::MultiCell(120, 20, (isset($data[0]['dateid']) ? date('F j, Y', strtotime($data[0]['dateid'])) : ''), '', 'L', false, 1, '', '', true, 0, false, true, 0, 'B', true);
 
     $registername = (isset($data[0]['registername']) ? $data[0]['registername'] : '');
-    $arr_registername = $this->reporter->fixcolumn([$registername], '80', 0);
+    $arr_registername = $this->reporter->fixcolumn([$registername], '60', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_registername]);
 
     PDF::SetXY(15, 166);
     PDF::SetFont($fontbold, '', $fontsize);
     for ($r = 0; $r < $maxrow; $r++) {
       if ($maxrow > 1) {
-        PDF::SetFont($font, '', 14);
+        PDF::SetFont($font, '', 12);
         PDF::MultiCell(125, 20, '', '', 'R', false, 0);
         PDF::MultiCell(220, 20, (isset($arr_registername[$r]) ? $arr_registername[$r] : ''), '', 'L', false);
       } else {
@@ -2622,18 +2641,22 @@ class sj
     PDF::MultiCell(200, 20, (isset($data[0]['tin']) ? $data[0]['tin'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     $address = (isset($data[0]['address']) ? $data[0]['address'] : '');
-    $arr_address = $this->reporter->fixcolumn([$address], '80', 0);
-    $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
+    $address = trim(preg_replace('/\s+/', ' ', $address)); // remove new lines/extra spaces
 
-    PDF::SetXY(15, 200);
+    $arr_address = $this->reporter->fixcolumn([$address], '60', 0);
+    $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
+    $maxrow = min($maxrow, 2); // two lines only, line 3 and beyond are never printed
+
+    // PDF::SetXY(15, 200);
+    PDF::SetXY(15, ($maxrow > 1 ? 197 : 200));
     PDF::SetFont($fontbold, '', $fontsize);
     for ($r = 0; $r < $maxrow; $r++) {
       if ($maxrow > 1) {
         PDF::SetFont($font, '', 12);
-        PDF::MultiCell(130, 20, '', '', 'R', false, 0);
-        PDF::MultiCell(355, 20, strtoupper((isset($arr_address[$r]) ? $arr_address[$r] : '')), '', 'L', false);
+        PDF::MultiCell(130, 0, '', '', 'R', false, 0);
+        PDF::MultiCell(355, 0, strtoupper((isset($arr_address[$r]) ? $arr_address[$r] : '')), '', 'L', false);
       } else {
-        PDF::SetFont($font, '', 11);
+        PDF::SetFont($font, '', 13);
         PDF::MultiCell(130, 20, '', '', 'R', false, 0);
         PDF::MultiCell(355, 20, strtoupper((isset($arr_address[$r]) ? $arr_address[$r] : '')), '', 'L', false);
       }
@@ -2792,10 +2815,10 @@ class sj
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(100, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(250, 20, (isset($data[0]['conaddr']) ? $data[0]['conaddr'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(250, 15, (isset($data[0]['rfno']) ? $data[0]['rfno'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(100, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(250, 20, (isset($data[0]['rfno']) ? $data[0]['rfno'] : '') . ' - ' . (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(250, 15, (isset($data[0]['conaddr']) ? $data[0]['conaddr'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
 
     //Right Side
     PDF::SetFont($fontbold, '', $fontsize2);
@@ -2848,10 +2871,14 @@ class sj
     PDF::SetFont($font, '', 10);
     PDF::MultiCell(50, 10, '', '', 'R', false, 0);
     PDF::MultiCell(295, 10, (isset($data[0]['tin']) ? $data[0]['tin'] : ''), '', 'L', false);
-    $address = (isset($data[0]['address']) ? $data[0]['address'] : '');
-    $arr_address = $this->reporter->fixcolumn([$address], '56', 0);
 
+    $address = (isset($data[0]['address']) ? $data[0]['address'] : '');
+    $address = trim(preg_replace('/\s+/', ' ', $address)); // remove new lines/extra spaces
+
+    $arr_address = $this->reporter->fixcolumn([$address], '56', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
+    $maxrow = min($maxrow, 2); // two lines only, line 3 and beyond are never printed
+
     for ($r = 0; $r < $maxrow; $r++) {
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(90, 8, '', '', 'R', false, 0);
@@ -3033,9 +3060,12 @@ class sj
 
 
     $address = (isset($data[0]['address']) ? $data[0]['address'] : '');
-    $arr_address = $this->reporter->fixcolumn([$address], '55', 0);
+    $address = trim(preg_replace('/\s+/', ' ', $address)); // remove new lines/extra spaces
 
+    $arr_address = $this->reporter->fixcolumn([$address], '60', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
+    $maxrow = min($maxrow, 2); // two lines only, line 3 and beyond are never printed
+
     for ($r = 0; $r < $maxrow; $r++) {
       PDF::SetFont($font, '', 9);
       PDF::MultiCell(90, 8, '', '', 'R', false, 0);
@@ -3116,10 +3146,11 @@ class sj
 
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(250, 20, (isset($data[0]['conaddr']) ? $data[0]['conaddr'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(250, 15, (isset($data[0]['rfno']) ? $data[0]['rfno'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
     PDF::SetFont($fontbold, '', $fontsize);
     PDF::MultiCell(50, 20, '', '', 'R', false, 0, '',  '', true, 0, false, true, 0, 'B', true);
-    PDF::MultiCell(250, 20, (isset($data[0]['rfno']) ? $data[0]['rfno'] : '') . ' - ' . (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+    PDF::MultiCell(250, 15, (isset($data[0]['conaddr']) ? $data[0]['conaddr'] : ''), '', 'L', false, 1, '',  '', true, 0, false, true, 0, 'B', true);
+
 
     if ($vattype == 'VATABLE') {
       $vat = $totalext / 1.12 * 0.12;
@@ -3187,8 +3218,8 @@ class sj
 
     PDF::SetFont($font, '', 11);
     PDF::MultiCell(75, 20, '', '', 'R', false, 0);
-    PDF::MultiCell(80, 20, (isset($data[0]['tin']) ? $data[0]['tin'] : ''), '', 'L', false, 0);
-    PDF::MultiCell(65, 20, '', '', 'R', false, 0);
+    PDF::MultiCell(90, 20, (isset($data[0]['tin']) ? $data[0]['tin'] : ''), '', 'L', false, 0);
+    PDF::MultiCell(55, 20, '', '', 'R', false, 0);
     PDF::MultiCell(110, 20, ' ' . (isset($data[0]['yourref']) ? $data[0]['yourref'] : ''), '', 'L', false, 0);
     PDF::MultiCell(20, 20, '', '', 'R', false, 0);
     PDF::MultiCell(80, 20, (isset($data[0]['terms']) ? $data[0]['terms'] : ''), '', 'L', false);
@@ -3595,18 +3626,15 @@ class sj
 
     PDF::SetY(112);
     $address = (isset($data[0]['address']) ? $data[0]['address'] : '');
+    $address = trim(preg_replace('/\s+/', ' ', $address)); // remove new lines/extra spaces
     $arr_address = $this->reporter->fixcolumn([$address], '40', 0);
     $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
+    $maxrow = min($maxrow, 2); // two lines only, line 3 and beyond are never printed
+
     for ($r = 0; $r < $maxrow; $r++) {
       PDF::SetFont($font, '', 9);
-      if ($r == 0) {
-        PDF::MultiCell(45, 10, '', '', 'R', false, 0);
-      } else {
-        $arr_address = $this->reporter->fixcolumn([$address], '50', 0);
-        $maxrow = $this->othersClass->getmaxcolumn([$arr_address]);
-        PDF::MultiCell(10, 10, '', '', 'R', false, 0);
-      }
-      PDF::MultiCell(200, 10, (isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
+      PDF::MultiCell(45, 0, '', '', 'R', false, 0);
+      PDF::MultiCell(200, 10, trim(isset($arr_address[$r]) ? $arr_address[$r] : ''), '', 'L', false);
     }
     PDF::SetFont($font, '',  $fontsize);
     PDF::SetXY(270, 110); //right

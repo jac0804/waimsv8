@@ -101,11 +101,13 @@ class uploadingutility
           ['label' => 'New Suppliers', 'value' => 'newsupplier', 'color' => 'green'],
           ['label' => 'New Agent', 'value' => 'newagent', 'color' => 'green'],
           ['label' => 'New Warehouses', 'value' => 'newwh', 'color' => 'green'],
+          ['label' => 'New Employees', 'value' => 'newemployee', 'color' => 'green'],
           ['label' => 'Update Supplier', 'value' => 'updatesupplier', 'color' => 'green'],
           ['label' => 'Update Items', 'value' => 'updateitem', 'color' => 'green'],
           ['label' => 'Update Customers', 'value' => 'updatecustomer', 'color' => 'green'],
           ['label' => 'Update Agent', 'value' => 'updateagent', 'color' => 'green'],
-          ['label' => 'Update Warehouses', 'value' => 'updatewh', 'color' => 'green']
+          ['label' => 'Update Warehouses', 'value' => 'updatewh', 'color' => 'green'],
+          ['label' => 'Update Employee', 'value' => 'updateemployee', 'color' => 'green'],
         ));
         break;
       case 59: //roosevelt
@@ -455,7 +457,7 @@ class uploadingutility
         break;
       case 70: //sportrunner
         $fields = [];
-        data_set($col1, 'uploadfilebybatch.addedparams', ['folder' => 'products', 'table' => 'uploadfilebybatch']);
+        data_set($col1, 'uploadfilebybatch.addedparams', ['folder' => 'product', 'table' => 'uploadfilebybatch']);
 
         break;
       case 56; //homeworks
@@ -482,13 +484,11 @@ class uploadingutility
     }
 
     switch ($config['params']['companyid']) {
-      case 64: //excelin
-        array_push($fields, 'downloadagentexcel');
-        break;
       case 19:
         array_push($fields, 'downloadagentexcel', 'downloademployeeexcel', 'downloadsupplieritemexcel');
         break;
       case 28:
+      case 64: //excelin
         array_push($fields, 'downloadagentexcel', 'downloademployeeexcel');
         break;
 

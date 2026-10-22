@@ -80,6 +80,10 @@ class entryitemcategory
       }
     }
 
+    if ($config['params']['companyid'] == 70) { //sportrunner
+      $stockbuttons = ['save', 'delete'];
+    }
+
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
     // action
     $obj[0][$this->gridname]['columns'][0]['style'] = "width:400px;whiteSpace: normal;min-width:400px;";

@@ -114,7 +114,9 @@ class entryserialin
   {
     $row = $config['params']['row'];
     $companyid = $config['params']['companyid'];
-    $isserial = $this->coreFunctions->getfieldvalue('item', 'isserial', 'itemid=?', [$row['itemid']]);
+    $serialfield = 'isserial';
+    $isserial = $this->coreFunctions->getfieldvalue('item', $serialfield, 'itemid=?', [$row['itemid']]);
+
     if ($isserial != '' && $isserial != 0) {
       $tbuttons = ['addserial', 'saveallentry'];
     } else {

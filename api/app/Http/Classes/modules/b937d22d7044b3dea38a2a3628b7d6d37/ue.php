@@ -45,7 +45,7 @@ class ue
   public $damt = 'rrcost';
   public $hamt = 'cost';
   public $defaultContra = 'IS1';
-  private $fields = ['trno', 'docno', 'dateid', 'yourref', 'ourref', 'rem', 'contra', 'projectid', 'client', 'clientname', 'pdtrno','qty','lot','expiry']; //'wh'
+  private $fields = ['trno', 'docno', 'dateid', 'yourref', 'ourref', 'rem', 'contra', 'client', 'clientname', 'pdtrno','qty','lot','expiry']; //'wh'
   private $except = ['trno', 'dateid'];
   private $acctg = [];
   public $showfilteroption = true;
@@ -416,7 +416,7 @@ class ue
     data_set($col1, 'dwhname2.required', true);
     data_set($col1, 'dwhname2.label', 'Destination Warehouse');
     data_set($col1, 'isacnoname.label', 'IS Account');
-    $fields = ['sodocno', 'barcode', 'itemname'];
+    $fields = ['sodocno', 'barcode', 'itemname',['qty', 'uom']];
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'itemname.class', 'sbccsreadonly');
     data_set($col2, 'itemname.label', 'Itemname');
@@ -430,9 +430,9 @@ class ue
     data_set($col2, 'sodocno.addedparams', ['pdtrno']);
     data_set($col2, 'barcode.class', 'sbccsreadonly');
     data_set($col2, 'barcode.type', 'input');
-    $fields = [['qty', 'uom'], ['yourref', 'ourref'], 'dprojectname',['lot', 'expiryday']];
+    data_set($col2, 'uom.class', 'sbccsreadonly');
+    $fields = [['yourref', 'ourref'], ['lot', 'expiryday']];
     $col3 = $this->fieldClass->create($fields);
-    data_set($col3, 'uom.class', 'sbccsreadonly');
     // data_set($col3, 'qty.class', 'sbccsreadonly');
     data_set($col3, 'expiryday.name', 'expiry');
     data_set($col3, 'expiryday.label', 'Expiry');
@@ -456,9 +456,9 @@ class ue
     // $data[0]['wh'] = $this->companysetup->getwh($params);
     // $name = $this->coreFunctions->getfieldvalue('client', 'clientname', 'client=?', [$data[0]['wh']]);
     // $data[0]['whname'] = $name;
-    $data[0]['projectcode'] = '';
-    $data[0]['projectid'] = 0;
-    $data[0]['projectname'] = '';
+    // $data[0]['projectcode'] = '';
+    // $data[0]['projectid'] = 0;
+    // $data[0]['projectname'] = '';
     $data[0]['forex'] = 1;
     $data[0]['wh2'] = $this->companysetup->getwh($params);
     $name1 = $this->coreFunctions->getfieldvalue('client', 'clientname', 'client=?', [$data[0]['wh2']]);
@@ -532,9 +532,6 @@ class ue
          warehouse.client as wh,
          warehouse.clientname as whname,
          '' as dwhname,
-         head.projectid,
-         ifnull(project.name,'') as projectname,ifnull(project.code,'') as projectcode,
-         '' as dprojectname,
          left(head.due,10) as due,
          client.groupid, jo.docno as sodocno, if(head.qty !=0,head.qty,jo.qty) as qty,jo.uom, it.itemname,it.barcode, 
          head.pdtrno, ifnull(head.lot,'') as lot, ifnull(head.expiry,'') as expiry";
@@ -544,7 +541,6 @@ class ue
         left join client on head.client = client.client
         left join client as warehouse on warehouse.client = head.wh
         left join coa on coa.acno=head.contra
-        left join projectmasterfile as project on project.line=head.projectid 
         left join hpdhead as jo on jo.trno=head.pdtrno
         left join item as it on it.itemid=jo.itemid
         where head.trno = ? and num.doc=? and num.center = ?
@@ -553,7 +549,6 @@ class ue
         left join client on head.clientid = client.clientid
         left join client as warehouse on warehouse.clientid = head.whid
         left join coa on coa.acno=head.contra
-        left join projectmasterfile as project on project.line=head.projectid
         left join hpdhead as jo on jo.trno=head.pdtrno
         left join item as it on it.itemid=jo.itemid
         where head.trno = ? and num.doc=? and num.center=? ";
@@ -638,29 +633,14 @@ class ue
       if (floatval($head['qty']) > floatval($joheadqty)) {
         return ['trno' => $head['trno'], 'status' => false, 'msg' => 'Saving failed. The qty inputed is greater than the JO qty.'];
       }
-
-      if ($newjotrno != $prevjotrno) {
-        if (!empty($prevjotrno)) {
-          $this->coreFunctions->sbcupdate('hpdhead', ['isproduce' => 0], ['trno' => $prevjotrno]);
-        }
-        $this->coreFunctions->sbcupdate('hpdhead', ['isproduce' => 1], ['trno' => $newjotrno]);
-      }
     }
     $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
     $this->recomputecost($head, $config);
   }  else {
-    // sa new transaction, bawal mag-return dito (di binabasa ng framework, masisira ang trno)
-    // kaya kung sobra ang qty, gawin na lang itong qty ng JO
-    $joheadqty = floatval($this->coreFunctions->getfieldvalue("hpdhead", 'qty', 'trno=?', [$head['pdtrno']]));
-    if (floatval($head['qty']) > $joheadqty) {
-      $data['qty'] = $joheadqty;
-    }
-
     $data['doc'] = $config['params']['doc'];
     $data['createdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['createby'] = $config['params']['user'];
     $this->coreFunctions->sbcinsert($this->head, $data);
-    $this->coreFunctions->sbcupdate('hpdhead', ['isproduce' => 1], ['trno' => $head['pdtrno']]);
     $this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' :  Destination WH - ' . $head['wh2name']);
   }
 } // end function
@@ -679,7 +659,6 @@ class ue
     $this->deleteallitem($config);
     $this->coreFunctions->execqry('delete from ' . $this->head . " where trno=?", 'delete', [$trno]);
     $this->coreFunctions->execqry('delete from ' . $this->tablenum . " where trno=?", 'delete', [$trno]);
-    $this->coreFunctions->execqry("update hpdhead set isproduce =0 where docno = ?", "update", [$jodocno]);
 
     $this->coreFunctions->execqry('delete from costing where trno=?', 'delete', [$trno]);
     $this->coreFunctions->execqry("delete from rrstatus where trno= ? ", 'delete', [$trno]);
@@ -793,10 +772,17 @@ class ue
     $pdtrno = $this->coreFunctions->getfieldvalue($this->head, 'pdtrno', 'trno=?', [$trno]);
 
     $jo = $this->coreFunctions->opentable("select itemid, qty, uom from hpdhead where trno=?", [$pdtrno]);
-
+   
     $itemid = $jo[0]->itemid;
-    $qty = $jo[0]->qty;
     $uom = $jo[0]->uom;
+
+    $qty = floatval($this->coreFunctions->getfieldvalue($this->head, 'qty', 'trno=?', [$trno]));
+    if ($qty == 0) {
+      $qty = floatval($jo[0]->qty);
+    }
+    if ($qty <= 0) {
+      return ['status' => false, 'msg' => 'Posting failed. Produced qty is zero.'];
+    }
 
     $wh = $this->coreFunctions->getfieldvalue($this->head, 'client', 'trno=?', [$trno]);
     $whid = $this->coreFunctions->getfieldvalue('client', 'clientid', 'client=?', [$wh]);
@@ -806,6 +792,8 @@ class ue
       $totalext = 0;
     }
 
+    $lot = $this->coreFunctions->getfieldvalue($this->head, 'lot', 'trno=?', [$trno]);
+    $expiry = $this->coreFunctions->getfieldvalue($this->head, 'expiry', 'trno=?', [$trno]);
     $cost = abs($totalext) / $qty;
 
     $config['params']['trno'] = $trno;
@@ -815,12 +803,11 @@ class ue
       'qty'    => $qty,
       'amt'    => $cost,
       'wh'     => $wh,
-      'loc'    => '',
-      'expiry' => '',
+      'loc'    => $lot,
+      'expiry' => $expiry,
       'rem'    => '',
     ];
 
-    // var_dump($config['params']['data']);
 
     $return = $this->additem('insert', $config, true);
 
@@ -860,30 +847,21 @@ class ue
     $jo = $this->coreFunctions->opentable("select itemid from hpdhead where trno=?", [$pdtrno]);
 
     $itemid = $jo[0]->itemid;
-
-    $checkrrstatus = $this->coreFunctions->getfieldvalue('rrstatus', 'bal', 'trno=? and itemid=? and whid=?', [$trno, $itemid, $whid]);
-
-    if ((float)$checkrrstatus == 0) {
-      return ['status' => false, 'msg' => 'Unposting failed. Transaction is already served.'];
-    }
-
+   
+    $result = $this->othersClass->unposttranstock($config);
     $existingheaditem = $this->coreFunctions->getfieldvalue($this->hstock, 'itemid', 'trno=? and itemid=?', [$trno, $itemid]);
 
     if ($existingheaditem != 0) {
-      $this->coreFunctions->execqry('delete from ' . $this->hstock . ' where trno=? and itemid=?', 'delete', [$trno, $itemid]);
-
-      $checkexist = $this->coreFunctions->getfieldvalue($this->hstock, 'itemid', 'trno=? and itemid=?', [$trno, $itemid]);
-
-      if ($checkexist == 0) {
-        $this->coreFunctions->execqry('delete from rrstatus where trno=? and itemid=? and whid=?', 'delete', [$trno, $itemid, $whid]);
-      }
+      $this->coreFunctions->execqry('delete from ' . $this->stock . ' where trno=? and itemid=?', 'delete', [$trno, $itemid]);
     }
-
-    $result = $this->othersClass->unposttranstock($config);
 
     // successful ang unpost → ibalik sa 0 ang prodqa ng JO
     if ($result['status'] == true) {
-      $this->coreFunctions->sbcupdate('hpdhead', ['prodqa' => 0], ['trno' => $pdtrno]);
+      $qty = $this->coreFunctions->datareader("select sum(qty) as value from glhead where doc= 'ue' and pdtrno = " . $pdtrno);
+      if(floatval($qty) == 0){
+        $qty = 0;
+      }
+      $this->coreFunctions->sbcupdate('hpdhead', ['prodqa' => $qty], ['trno' => $pdtrno]);
     }
 
     return $result;
@@ -1383,18 +1361,7 @@ class ue
               $computedata = $this->othersClass->computestock($cost2, $disc, $rrqty, $factor, $vat);
               $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost, 'rrcost' => $cost2, 'ext' => $computedata['ext']], ['trno' => $trno, 'line' => $line]);
               //$this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost], ['trno' => $trno, 'line' => $line]);
-              //CHECK BELOW COST
-              if ($this->companysetup->checkbelowcost($config['params'])) {
-                $belowcost = $this->othersClass->checkbelowcost($trno, $line, $config);
-                if ($belowcost == 1) {
-                  $msg = '(' . $item[0]->barcode . ') Is this free of charge? Please check.';
-                } elseif ($belowcost == 2) {
-                  $this->coreFunctions->sbcupdate($this->stock, [$this->dqty => 0, $this->hqty => 0, 'ext' => 0, 'editby' => 'BELOW COST', 'editdate' => $this->othersClass->getCurrentTimeStamp()], ['trno' => $trno, 'line' => $line]);
-                  $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-                  $this->logger->sbcwritelog($trno, $config, 'STOCK', 'BELOW COST - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:0.0', $setlog ? $this->tablelogs : '');
-                  $msg = "(" . $item[0]->barcode . ") You can't issue this item/s because it's BELOW COST!!!";
-                }
-              }
+              
             } else {
               $havestock = false;
               $this->coreFunctions->sbcupdate($this->stock, [$this->dqty => 0, $this->hqty => 0, 'ext' => 0, 'editby' => 'OUT_STOCK', 'editdate' => $this->othersClass->getCurrentTimeStamp()], ['trno' => $trno, 'line' => $line]);
@@ -1411,7 +1378,7 @@ class ue
           $this->setserveditems($refx, $linex, $companyid);
           $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
           $return = false;
-          $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than PD Qty.";
+          $msg = "(" . $item[0]->barcode . ") Qty Received is Greater than JO Qty.";
         }
         $this->othersClass->getcreditinfo($config, $this->head);
         $row = $this->openstockline($config);
@@ -1438,20 +1405,6 @@ class ue
             $this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost, 'rrcost' => $cost2, 'ext' => $computedata['ext']], ['trno' => $trno, 'line' => $line]);
             //$this->coreFunctions->sbcupdate($this->stock, ['cost' => $cost], ['trno' => $trno, 'line' => $line]);
 
-
-            //CHECK BELOW COST
-            if ($this->companysetup->checkbelowcost($config['params'])) {
-              $belowcost = $this->othersClass->checkbelowcost($trno, $line, $config);
-              if ($belowcost == 1) {
-                $msg = '(' . $item[0]->barcode . ') Is this free if charge? Please check.';
-              } elseif ($belowcost == 2) {
-                $this->coreFunctions->sbcupdate($this->stock, [$this->dqty => 0, $this->hqty => 0, 'ext' => 0, 'editby' => 'BELOW COST', 'editdate' => $this->othersClass->getCurrentTimeStamp()], ['trno' => $trno, 'line' => $line]);
-                $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
-                $this->logger->sbcwritelog($trno, $config, 'STOCK', 'BELOW COST - Line:' . $line . ' barcode:' . $item[0]->barcode . ' Qty' . $qty . ' Amt:' . $amt . ' Disc:' . $disc . ' wh:' . $wh . ' ext:0.0');
-                $msg = "(" . $item[0]->barcode . ") You can't issue this item/s because it's BELOW COST!!!";
-                $return = false;
-              }
-            }
           } else {
             $this->coreFunctions->sbcupdate($this->stock, [$this->dqty => 0, $this->hqty => 0, 'ext' => 0, 'editby' => 'OUT_STOCK', 'editdate' => $this->othersClass->getCurrentTimeStamp()], ['trno' => $trno, 'line' => $line]);
             $this->coreFunctions->execqry('delete from costing where trno=? and line=?', 'delete', [$trno, $line]);
@@ -1476,27 +1429,6 @@ class ue
       return ['status' => $return, 'msg' => $msg];
     }
   } // end function
-
-  // public function setserveditems($refx, $linex, $companyid = 0)
-  // {
-  //   if ($refx == 0) {
-  //     return 1;
-  //   }
-  //   $qry1 = "select stock." . $this->hqty . " from lahead as head left join lastock as
-  //   stock on stock.trno=head.trno where head.doc='UE' and stock.refx=" . $refx . " and stock.linex=" . $linex;
-
-  //   $qry1 = $qry1 . " union all select glstock." . $this->hqty . " from glhead left join glstock on glstock.trno=
-  //   glhead.trno where glhead.doc='UE' and glstock.refx=" . $refx . " and glstock.linex=" . $linex;
-
-  //   $qry2 = "select ifnull(sum(" . $this->hqty . "),0) as value from (" . $qry1 . ") as t";
-  //   $qty = $this->coreFunctions->datareader($qry2);
-  //   if ($qty == '') {
-  //     $qty = 0;
-  //   }
-  //   $result = $this->coreFunctions->execqry("update hpdstock set qa=" . $qty . " where trno=" . $refx . " and line=" . $linex, 'update');
-  //   return $result;
-  // }
-
 
   public function setserveditems($refx, $linex, $companyid = 0)
   {

@@ -199,7 +199,7 @@ class viewbillingshipping
         $head = strtolower($config['params']['doc']) . 'head';
         $hhead = 'h' . strtolower($config['params']['doc']) . 'head';
         $hleftjoin = " left join client on client.client = head.client";
-        $addfields = ",head.address1 as conaddr, head.cperson as contactname,head.contactno,if(head.rem2 !='',head.rem2,client.rem2) as rem2,ifnull(head.ispaymentnotif,'') as ispaymentnotif";
+        $addfields = ",head.address1 as conaddr, head.cperson as contactname,head.contactno,if(head.rem2 !='',head.rem2,ifnull(client.rem2,'')) as rem2,ifnull(head.ispaymentnotif,'') as ispaymentnotif";
         break;
     }
 

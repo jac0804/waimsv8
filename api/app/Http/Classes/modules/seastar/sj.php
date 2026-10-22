@@ -734,7 +734,7 @@ class sj
       }
     }
     if ($data['terms'] != '') {
-      $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+      $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
     } else {
       $data['due'] = null;
     }

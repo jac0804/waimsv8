@@ -84,7 +84,6 @@ class rr
     'billcontactid',
     'shipcontactid',
     'invoiceno',
-    'invoicedate',
     'ewt',
     'ewtrate',
     'driver',
@@ -1097,9 +1096,7 @@ class rr
 
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
-    if ($data['invoicedate'] == null) {
-      $data['invoicedate'] = '';
-    }
+    
     if ($isupdate) {
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
 
@@ -1376,6 +1373,17 @@ class rr
       if ($return['status']) {
         $this->updateprojmngmtap($config, $data);
       }
+    }
+
+    // reload the OTHER CHARGES customform so it reflects the unposted state
+    if ($return['status']) {
+        $return = array_merge($return, [
+            'reloadhead' => true,
+            'reloaddata' => true,
+            'reloadcustomform' => true,
+            'customform' => 'viewothercharges',
+            'trno' => $trno
+        ]);
     }
 
     return $return;
@@ -2941,12 +2949,6 @@ class rr
     $dateTables = ['ladetail'];
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
-    if (!$createapv) {
-      $generaveapv = $this->companysetup->isgenerateapv($config['params']);
-      if ($generaveapv) {
-        return true;
-      }
-    }
 
     $systype = $this->companysetup->getsystemtype($config['params']);
     $status = true;
@@ -2955,21 +2957,14 @@ class rr
     $periodic = $this->companysetup->getisperiodic($config['params']);
     $this->coreFunctions->execqry('delete from ' . $this->detail . ' where trno=?', 'delete', [$trno]);
     $fields = '';
-    if ($systype == 'REALESTATE') {
-      $fields = ', stock.projectid as sprojectid,stock.phaseid,stock.modelid,stock.blklotid,stock.amenityid,stock.subamenityid';
-    }
 
-    if ($createapv) {
-      $qry = "select head.dateid,client.client,head.tax,head.contra,head.cur,head.forex,stock.ext,wh.client as wh,ifnull(item.asset,'') as asset,ifnull(item.revenue,'') as revenue,
-            stock.rrcost,stock.cost,stock.disc,stock.rrqty,stock.qty,head.projectid,head.subproject,stock.stageid,stock.freight,head.ewtrate,head.ewt, ifnull(item.liability,'') as liability, client.isnonbdo, client.acctadvances
-            from glhead as head  left join glstock as stock on stock.trno=head.trno left join client as wh on wh.clientid=stock.whid left join item on item.itemid=stock.itemid LEFT JOIN client ON client.clientid=head.clientid
-            where head.trno=" . $config['params']['rrtrno'] . " and item.channel='OUTRIGHT'";
-    } else {
-      $qry = 'select head.dateid,head.client,head.tax,head.contra,head.cur,head.forex,stock.ext,wh.client as wh,ifnull(item.asset,"") as asset,ifnull(item.revenue,"") as revenue,
-            stock.rrcost,stock.cost,stock.disc,stock.rrqty,stock.qty,head.projectid,head.subproject,stock.stageid,stock.freight,head.ewtrate,head.ewt' . $fields . '
-            from ' . $this->head . ' as head  left join ' . $this->stock . ' as stock on stock.trno=head.trno left join client as wh on wh.clientid=stock.whid left join item on item.itemid=stock.itemid
+    $qry = 'select head.dateid,head.client,head.tax,head.contra,head.cur,head.forex,stock.ext,wh.client as wh,ifnull(item.asset,"") as asset,ifnull(item.revenue,"") as revenue,
+            stock.rrcost,stock.cost,stock.disc,stock.rrqty,stock.qty,head.projectid,head.subproject,stock.stageid,stock.freight,head.ewtrate,head.ewt,head.supplierid,
+            head.charges as percentage, head.brokerage,head.bankcharges,head.interest as vatamt,head.ied as boc,head.brokerfee,s.client as brsupp
+            from ' . $this->head . ' as head  left join ' . $this->stock . ' as stock on stock.trno=head.trno 
+            left join client as wh on wh.clientid=stock.whid left join item on item.itemid=stock.itemid
+            left join client as s on s.clientid = head.supplierid
             where head.trno=?';
-    }
 
     $stock = $this->coreFunctions->opentable($qry, [$trno]);
     $tax = 0;
@@ -2979,14 +2974,10 @@ class rr
     $delcharge = 0;
     $cost = 0;
     $lcost = 0;
+    $tcost = 0;
 
     if (!empty($stock)) {
-      if ($periodic) {
-        $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['PS1']); //Purchases acct under asset
-      } else {
-        $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['IN1']);
-        if ($companyid == 24 || $companyid == 69) $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['INS1']); //goodfound, cemphil
-      }
+      $invacct = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', ['IN1']);
 
       $vat = $stock[0]->tax;
       $tax1 = 0;
@@ -2995,7 +2986,6 @@ class rr
         $tax1 = 1 + ($vat / 100);
         $tax2 = $vat / 100;
       }
-
 
       if ($stock[0]->ewtrate != 0) {
         $ewt = $stock[0]->ewtrate / 100;
@@ -3010,6 +3000,7 @@ class rr
           $disc = ($stock[$key]->rrcost * $stock[$key]->rrqty) - ($this->othersClass->discount($stock[$key]->rrcost * $stock[$key]->rrqty, $stock[$key]->disc));
         }
 
+
         if ($vat != 0) {
           if ($isvatexpurch) {
             $tax = ($stock[$key]->ext * $tax2);
@@ -3019,10 +3010,11 @@ class rr
             $tax = $stock[$key]->ext - $tax;
           }
         }
-        $delcharge += $stock[$key]->freight;
 
+        
+        
         $cost = number_format($stock[$key]->cost * $stock[$key]->qty, 6, '.', '');
-
+        $tcost = $tcost + $cost;
         $params = [
           'client' => $stock[$key]->client,
           'acno' => $stock[$key]->contra,
@@ -3030,7 +3022,7 @@ class rr
           'wh' => $stock[$key]->wh,
           'date' => $stock[$key]->dateid,
           'inventory' => $stock[$key]->asset !== '' ? $stock[$key]->asset : $invacct,
-          'tax' =>  $tax,
+          'tax' =>  $stock[0]->vatamt == 0 ? $tax : 0,
           'discamt' => $disc,
           'cur' => $stock[$key]->cur,
           'forex' => $stock[$key]->forex,
@@ -3044,15 +3036,6 @@ class rr
           'lcost' => $lcost
         ];
 
-        if ($systype == 'REALESTATE') {
-          $params['projectid'] = $stock[$key]->sprojectid;
-          $params['phaseid'] = $stock[$key]->phaseid;
-          $params['modelid'] = $stock[$key]->modelid;
-          $params['blklotid'] = $stock[$key]->blklotid;
-          $params['amenityid'] = $stock[$key]->amenityid;
-          $params['subamenityid'] = $stock[$key]->subamenityid;
-        }
-
         //add new fields here
         if ($ewt != 0) {
           $params['ewt'] = $ewt;
@@ -3064,22 +3047,47 @@ class rr
         } else {
           $this->distribution($params, $config);
         }
+      }//end for
+
+      if($stock[0]->vatamt!=0){
+        $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['TX1']);
+        $entry = ['acnoid' => $acnoid, 'client' => $stock[0]->client, 'db' => $stock[0]->vatamt, 'cr' => 0, 'postdate' => $stock[0]->dateid, 'cur' => $stock[0]->cur, 'forex' =>$stock[0]->forex, 'fdb' => floatval($stock[0]->forex) == 1 ? 0 : $stock[0]->vatamt, 'fcr' => 0];
+        $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
 
-      if ($delcharge != 0) {
-        $qry = "select client,forex,dateid,cur,branch,deptid,contra from " . $this->head . " where trno = ?";
-        $d = $this->coreFunctions->opentable($qry, [$trno]);
-        $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['DC1']);
-        $entry = ['acnoid' => $acnoid, 'client' => $d[0]->client, 'db' => 0, 'cr' => $delcharge, 'postdate' => $d[0]->dateid, 'cur' => $d[0]->cur, 'forex' => $d[0]->forex, 'fcr' => floatval($d[0]->forex) == 1 ? 0 : $delcharge, 'fdb' => 0];
-        if ($systype == 'REALESTATE') {
-          $entry['projectid'] = $params['projectid'];
-          $entry['phaseid'] = $params['phaseid'];
-          $entry['modelid'] = $params['modelid'];
-          $entry['blklotid'] = $params['blklotid'];
-          $entry['amenityid'] = $params['amenityid'];
-          $entry['subamenityid'] = $params['subamenityid'];
-        }
+      if(($stock[0]->boc + $stock[0]->bankcharges) !=0){ //BOC AP
+        $boc = $this->companysetup->getbocsupplier($config['params']);
+        $boccharge = $stock[0]->boc + $stock[0]->bankcharges;
+        $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['AP1']);
+        $entry = ['acnoid' => $acnoid, 'client' => $boc, 'db' => 0, 'cr' => $boccharge, 'postdate' => $stock[0]->dateid, 'cur' => $stock[0]->cur, 'forex' =>$stock[0]->forex, 'fcr' => floatval($stock[0]->forex) == 1 ? 0 : $boccharge, 'fdb' => 0];
+        $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
+      }
 
+      if(($stock[0]->brokerage + $stock[0]->brokerfee) !=0){ //broker AP
+        $brsupp = $stock[0]->brsupp;
+        $brokerfee = $stock[0]->brokerage + $stock[0]->brokerfee;
+        $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['AP1']);
+        $entry = ['acnoid' => $acnoid, 'client' => $brsupp, 'db' => 0, 'cr' => $brokerfee, 'postdate' => $stock[0]->dateid, 'cur' => $stock[0]->cur, 'forex' =>$stock[0]->forex, 'fcr' => floatval($stock[0]->forex) == 1 ? 0 : $brokerfee, 'fdb' => 0];
+        $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
+
+        if($stock[0]->brokerage!=0){
+          $brsupp = $stock[0]->wh;
+          $brokerfee = $stock[0]->brokerage;
+          $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['BF1']);
+          $entry = ['acnoid' => $acnoid, 'client' => $brsupp, 'cr' => 0, 'db' => $brokerfee, 'postdate' => $stock[0]->dateid, 'cur' => $stock[0]->cur, 'forex' =>$stock[0]->forex, 'fdb' => floatval($stock[0]->forex) == 1 ? 0 : $brokerfee, 'fcr' => 0];
+          $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
+        }
+      }
+
+      if($tcost !=0){ //COS, Purchases EGC
+        $brsupp = $stock[0]->wh;
+        $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['CG1']);
+        $entry = ['acnoid' => $acnoid, 'client' => $brsupp, 'db' => 0, 'cr' => $tcost, 'postdate' => $stock[0]->dateid, 'cur' => $stock[0]->cur, 'forex' =>$stock[0]->forex, 'fcr' => floatval($stock[0]->forex) == 1 ? 0 : $tcost, 'fdb' => 0];
+        $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
+
+        $brsupp = $stock[0]->client;
+        $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['PL1']);
+        $entry = ['acnoid' => $acnoid, 'client' => $brsupp, 'db' => $tcost, 'cr' => 0, 'postdate' => $stock[0]->dateid, 'cur' => $stock[0]->cur, 'forex' =>$stock[0]->forex, 'fdb' => floatval($stock[0]->forex) == 1 ? 0 : $tcost, 'fcr' => 0];
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
     }
@@ -3108,25 +3116,11 @@ class rr
 
             if ($diff < 0) {
               $entry = ['acnoid' => $acnoid, 'client' => $d[0]->wh, 'db' => abs(round($diff, 2)), 'cr' => 0, 'postdate' => $d[0]->dateid, 'cur' => $d[0]->cur, 'forex' => $d[0]->forex, 'fcr' => 0, 'fdb' => 0, 'projectid' => $d[0]->projectid];
-              if ($systype == 'REALESTATE') {
-                $entry['projectid'] = $params['projectid'];
-                $entry['phaseid'] = $params['phaseid'];
-                $entry['modelid'] = $params['modelid'];
-                $entry['blklotid'] = $params['blklotid'];
-                $entry['amenityid'] = $params['amenityid'];
-                $entry['subamenityid'] = $params['subamenityid'];
-              }
+             
               $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
             } else {
               $entry = ['acnoid' => $acnoid, 'client' => $d[0]->wh, 'db' => 0, 'cr' => abs(round($diff, 2)), 'postdate' => $d[0]->dateid, 'cur' => $d[0]->cur, 'forex' => $d[0]->forex, 'fcr' => 0, 'fdb' => 0, 'projectid' => $d[0]->projectid];
-              if ($systype == 'REALESTATE') {
-                $entry['projectid'] = $params['projectid'];
-                $entry['phaseid'] = $params['phaseid'];
-                $entry['modelid'] = $params['modelid'];
-                $entry['blklotid'] = $params['blklotid'];
-                $entry['amenityid'] = $params['amenityid'];
-                $entry['subamenityid'] = $params['subamenityid'];
-              }
+             
               $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
             }
           }
@@ -3175,14 +3169,6 @@ class rr
             $entry['cr'] = 0;
           }
 
-          if ($systype == 'REALESTATE') {
-            $entry['projectid'] = $params['projectid'];
-            $entry['phaseid'] = $params['phaseid'];
-            $entry['modelid'] = $params['modelid'];
-            $entry['blklotid'] = $params['blklotid'];
-            $entry['amenityid'] = $params['amenityid'];
-            $entry['subamenityid'] = $params['subamenityid'];
-          }
           $qry = "select line as value from " . $this->detail . " where trno=? order by line desc limit 1";
           $line = $this->coreFunctions->datareader($qry, [$trno]);
           if ($line == '') {
@@ -3228,25 +3214,12 @@ class rr
     $cur = $params['cur'];
     $invamt = $params['cost'];
 
-    // $headertrno = $config['params']['trno'];
-    // $headerforex = $this->coreFunctions->getfieldvalue($this->head, 'forex', 'trno=?', [$headertrno]);
-    // $headerpercentage = $this->coreFunctions->getfieldvalue($this->head, 'charges', 'trno=?', [$headertrno]);
-    // $rrcost = isset($params['rrcost']) ? $params['rrcost'] : $params['cost'];
-    // $qty = isset($params['qty']) ? $params['qty'] : 1;
-    // $landed = $this->computeBuenatechLandedCost($rrcost, $headerforex, $headerpercentage, $qty);
-    // $invamt = $landed['ext'];
-    // $params['cost'] = $landed['ext'];
-    // $params['ext'] = $landed['ext'];
-    // $ext = number_format($params['ext'],$this->companysetup->getdecimal('currency', $config['params']),'.','');
-    // $ext = $landed['ext'];
-
     $ewt = isset($params['ewt']) ? $params['ewt'] : 0;
     $ext = $params['ext'];
     $excesstax =  isset($params['excesstax']) ? $params['excesstax'] : 0;
 
     if ($ewt != 0) {
       if ($params['tax'] != 0) {
-
         $ewt = round(($params['ext'] - $params['tax']) * $params['ewt'], 2);
         $ext = round($params['ext'] - $ewt, 2);
       } else {
@@ -3260,16 +3233,6 @@ class rr
       if (floatval($ext) != 0) {
         $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['acno']]);
         $entry = ['acnoid' => $acnoid, 'client' => $params['client'], 'db' => 0, 'cr' => ($ext * $forex), 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fdb' => 0, 'fcr' => floatval($forex) == 1 ? 0 : $ext, 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
-
-        if ($systype == 'REALESTATE') {
-          $entry['projectid'] = $params['projectid'];
-          $entry['phaseid'] = $params['phaseid'];
-          $entry['modelid'] = $params['modelid'];
-          $entry['blklotid'] = $params['blklotid'];
-          $entry['amenityid'] = $params['amenityid'];
-          $entry['subamenityid'] = $params['subamenityid'];
-        }
-
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
 
@@ -3279,14 +3242,6 @@ class rr
           $inputid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['PD1']);
           $entry = ['acnoid' => $inputid, 'client' => $params['client'], 'cr' => ($params['discamt'] * $forex), 'db' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fdb' => 0, 'fcr' => floatval($forex) == 1 ? 0 : ($params['discamt']), 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
 
-          if ($systype == 'REALESTATE') {
-            $entry['projectid'] = $params['projectid'];
-            $entry['phaseid'] = $params['phaseid'];
-            $entry['modelid'] = $params['modelid'];
-            $entry['blklotid'] = $params['blklotid'];
-            $entry['amenityid'] = $params['amenityid'];
-            $entry['subamenityid'] = $params['subamenityid'];
-          }
           $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
         }
       }
@@ -3297,15 +3252,6 @@ class rr
         $input = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['TX1']);
         $entry = ['acnoid' => $input, 'client' => $params['client'], 'cr' => 0, 'db' => ($params['tax'] * $forex), 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($params['tax']), 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
 
-        if ($systype == 'REALESTATE') {
-          $entry['projectid'] = $params['projectid'];
-          $entry['phaseid'] = $params['phaseid'];
-          $entry['modelid'] = $params['modelid'];
-          $entry['blklotid'] = $params['blklotid'];
-          $entry['amenityid'] = $params['amenityid'];
-          $entry['subamenityid'] = $params['subamenityid'];
-        }
-
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
 
@@ -3314,15 +3260,6 @@ class rr
         $ewtAlias = 'APWT1';
         $input = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', [$ewtAlias]);
         $entry = ['acnoid' => $input, 'client' => $params['client'], 'db' => 0, 'cr' => ($ewt * $forex), 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fdb' => 0, 'fcr' => floatval($forex) == 1 ? 0 : ($ewt), 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
-
-        if ($systype == 'REALESTATE') {
-          $entry['projectid'] = $params['projectid'];
-          $entry['phaseid'] = $params['phaseid'];
-          $entry['modelid'] = $params['modelid'];
-          $entry['blklotid'] = $params['blklotid'];
-          $entry['amenityid'] = $params['amenityid'];
-          $entry['subamenityid'] = $params['subamenityid'];
-        }
 
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
@@ -3333,14 +3270,6 @@ class rr
         $input = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['TX3']);
         $entry = ['acnoid' => $input, 'client' => $params['client'], 'db' => 0, 'cr' => ($excesstax * $forex), 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fdb' => 0, 'fcr' => floatval($forex) == 1 ? 0 : ($excesstax), 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
 
-        if ($systype == 'REALESTATE') {
-          $entry['projectid'] = $params['projectid'];
-          $entry['phaseid'] = $params['phaseid'];
-          $entry['modelid'] = $params['modelid'];
-          $entry['blklotid'] = $params['blklotid'];
-          $entry['amenityid'] = $params['amenityid'];
-          $entry['subamenityid'] = $params['subamenityid'];
-        }
 
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
@@ -3358,14 +3287,6 @@ class rr
       $entry = ['acnoid' => $acnoid, 'client' => $params['wh'], 'db' => $invamt + $freight, 'cr' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($invamt / $forex), 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
       $this->coreFunctions->LogConsole('INV ' . ($invamt + $freight));
 
-      if ($systype == 'REALESTATE') {
-        $entry['projectid'] = $params['projectid'];
-        $entry['phaseid'] = $params['phaseid'];
-        $entry['modelid'] = $params['modelid'];
-        $entry['blklotid'] = $params['blklotid'];
-        $entry['amenityid'] = $params['amenityid'];
-        $entry['subamenityid'] = $params['subamenityid'];
-      }
 
       $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
 
@@ -3373,14 +3294,6 @@ class rr
         $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'alias=?', ['CG1']);
         $entry = ['acnoid' => $acnoid, 'client' => $params['wh'], 'cr' => $invamt, 'db' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($invamt / $forex), 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
 
-        if ($systype == 'REALESTATE') {
-          $entry['projectid'] = $params['projectid'];
-          $entry['phaseid'] = $params['phaseid'];
-          $entry['modelid'] = $params['modelid'];
-          $entry['blklotid'] = $params['blklotid'];
-          $entry['amenityid'] = $params['amenityid'];
-          $entry['subamenityid'] = $params['subamenityid'];
-        }
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
     }

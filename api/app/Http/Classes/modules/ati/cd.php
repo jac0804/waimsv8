@@ -838,7 +838,7 @@ class cd
     }
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
-    $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+    $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
     if ($isupdate) {
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
     } else {

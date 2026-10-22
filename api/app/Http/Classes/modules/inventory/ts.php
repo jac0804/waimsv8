@@ -17,6 +17,7 @@ use App\Http\Classes\Logger;
 use App\Http\Classes\SBCPDF;
 use App\Http\Classes\builder\helpClass;
 use App\Http\Classes\sbcscript\sbcscript;
+use Exception;
 
 class ts
 {
@@ -427,38 +428,43 @@ class ts
     $islocation = $this->companysetup->getislocation($config['params']);
     $locname = $this->companysetup->getlocname($config['params']);
 
-    $action = 0;
-    $itemdesc = 1;
-    $isqty = 2;
-    $uom = 3;
-    $serial = 4;
-    $pnpcsr = 5;
-    $rrcost = 6;
-    $kgs = 7;
-    $isamt = 8;
-    $disc = 9;
-    $ext = 10;
-    $ext2 = 11;
-    $wh = 12;
-    $whname = 13;
-    $ref = 14;
-    $loc = 15;
-    $expiry = 16;
-    $loc2 = 17;
-    $rem = 18;
-    $location = 19;
-    $pallet = 20;
-    $location2 = 21;
-    $pallet2 = 22;
-    $itemname = 23;
-    $stock_projectname = 24;
-    $subcode = 25;
-    $partno = 26;
-    $boxcount = 27;
-    $barcode = 28;
+    // $action = 0;
+    // $itemdesc = 1;
+    // $isqty = 2;
+    // $uom = 3;
+    // $serial = 4;
+    // $pnpcsr = 5;
+    // $rrcost = 6;
+    // $kgs = 7;
+    // $isamt = 8;
+    // $disc = 9;
+    // $ext = 10;
+    // $ext2 = 11;
+    // $wh = 12;
+    // $whname = 13;
+    // $ref = 14;
+    // $loc = 15;
+    // $expiry = 16;
+    // $loc2 = 17;
+    // $rem = 18;
+    // $location = 19;
+    // $pallet = 20;
+    // $location2 = 21;
+    // $pallet2 = 22;
+    // $itemname = 23;
+    // $stock_projectname = 24;
+    // $subcode = 25;
+    // $partno = 26;
+    // $boxcount = 27;
+    // $barcode = 28;
 
     $column =  ['action', 'itemdescription', 'isqty', 'uom', 'serialno', 'pnp', 'rrcost', 'kgs', 'isamt', 'disc', 'ext', 'ext2', 'wh', 'whname', 'ref', 'loc', 'expiry', 'loc2', 'rem', 'location', 'pallet', 'location2', 'pallet2', 'itemname', 'stock_projectname', 'subcode', 'partno', 'boxcount', 'barcode'];
     $sortcolumn =  ['action', 'itemdescription', 'isqty', 'uom', 'serialno', 'pnp', 'rrcost', 'kgs', 'isamt', 'disc', 'ext', 'ext2', 'wh', 'whname', 'ref', 'loc', 'expiry', 'loc2', 'rem', 'location', 'pallet', 'location2', 'pallet2', 'itemname', 'stock_projectname', 'subcode', 'partno', 'boxcount', 'barcode'];
+
+    if ($companyid == 67) { //yulick
+      $column =  ['action', 'itemdescription', 'isqty', 'boxcount', 'uom', 'serialno', 'pnp', 'rrcost', 'kgs', 'isamt', 'disc', 'ext', 'ext2', 'wh', 'whname', 'ref', 'loc', 'expiry', 'loc2', 'rem', 'location', 'pallet', 'location2', 'pallet2', 'itemname', 'stock_projectname', 'subcode', 'partno', 'barcode'];
+      $sortcolumn =  ['action', 'itemdescription', 'isqty', 'boxcount', 'uom', 'serialno', 'pnp', 'rrcost', 'kgs', 'isamt', 'disc', 'ext', 'ext2', 'wh', 'whname', 'ref', 'loc', 'expiry', 'loc2', 'rem', 'location', 'pallet', 'location2', 'pallet2', 'itemname', 'stock_projectname', 'subcode', 'partno', 'barcode'];
+    }
 
     switch ($systemtype) {
       case 'REALESTATE':
@@ -487,6 +493,10 @@ class ts
     }
 
     $computefield = ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'];
+
+    foreach ($column as $key => $value) {
+      $$value = $key;
+    }
 
     $tab = [
       $this->gridname => [
@@ -535,6 +545,10 @@ class ts
             break;
         }
         break;
+    }
+
+    if ($companyid == 67) { //yulick
+      array_push($stockbuttons, 'entryweighdetails_out');
     }
 
     switch ($companyid) {
@@ -625,16 +639,16 @@ class ts
         $obj[0]['inventory']['columns'][$partno]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$subcode]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$boxcount]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$pnpcsr]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$pnp]['type'] = 'coldel';
         break;
       case 10: //afti
       case 12: //afti usd
         $obj[0]['inventory']['descriptionrow'] = [];
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'textarea';
-        $obj[0]['inventory']['columns'][$itemdesc]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$itemdesc]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:350px;max-width:350px;';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'textarea';
+        $obj[0]['inventory']['columns'][$itemdescription]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$itemdescription]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:350px;max-width:350px;';
         $obj[0]['inventory']['columns'][$rem]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$wh]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'lookup';
@@ -646,14 +660,14 @@ class ts
         $obj[0][$this->gridname]['columns'][$rrcost]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$ext2]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$isamt]['label'] = 'Unit Cost';
-        $obj[0]['inventory']['columns'][$pnpcsr]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$pnp]['type'] = 'coldel';
         break;
       case 23: //labsol cebu
       case 41: //labsol manila
       case 52: //technolab
         // $obj[0]['inventory']['columns'][$loc]['label'] = 'Lot/Serial#';
         $obj[0]['inventory']['columns'][$expiry]['label'] = 'Expiry/Mfr Date';
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$partno]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$subcode]['type'] = 'coldel';
@@ -662,7 +676,7 @@ class ts
         $obj[0][$this->gridname]['columns'][$rrcost]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$ext2]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$isamt]['label'] = 'Unit Cost';
-        $obj[0]['inventory']['columns'][$pnpcsr]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$pnp]['type'] = 'coldel';
         break;
       case 21: //kinggeorge
         $obj[0][$this->gridname]['columns'][$isamt]['type'] = 'coldel';
@@ -670,20 +684,20 @@ class ts
         $obj[0][$this->gridname]['columns'][$ext]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$rrcost]['readonly'] = true;
         $obj[0][$this->gridname]['columns'][$rrcost]['label'] = 'Cost';
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$partno]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$subcode]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$boxcount]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$isamt]['label'] = 'Unit Cost';
-        $obj[0]['inventory']['columns'][$pnpcsr]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$pnp]['type'] = 'coldel';
         break;
       case 32: //3m
         $obj[0]['inventory']['columns'][$isamt]['label'] = 'SRP';
         $obj[0]['inventory']['columns'][$rrcost]['readonly'] = true;
         $obj[0]['inventory']['columns'][$rrcost]['label'] = 'Unit Cost';
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$ext2]['type'] = 'coldel';
@@ -692,7 +706,7 @@ class ts
         $obj[0]['inventory']['columns'][$boxcount]['type'] = 'coldel';
         break;
       case 40: //cdo
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$rrcost]['type'] = 'coldel';
@@ -702,19 +716,19 @@ class ts
         $obj[0]['inventory']['columns'][$subcode]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$boxcount]['type'] = 'coldel';
 
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'textarea';
-        $obj[0]['inventory']['columns'][$serial]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$serial]['label'] = 'Engine/Chassis#';
-        $obj[0]['inventory']['columns'][$serial]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:250px;max-width:2350px;';
-        $obj[0]['inventory']['columns'][$pnpcsr]['type'] = 'textarea';
-        $obj[0]['inventory']['columns'][$pnpcsr]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$pnpcsr]['label'] = 'PNP/CSR#';
-        $obj[0]['inventory']['columns'][$pnpcsr]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:250px;max-width:2350px;';
+        $obj[0]['inventory']['columns'][$serialno]['type'] = 'textarea';
+        $obj[0]['inventory']['columns'][$serialno]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$serialno]['label'] = 'Engine/Chassis#';
+        $obj[0]['inventory']['columns'][$serialno]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:250px;max-width:2350px;';
+        $obj[0]['inventory']['columns'][$pnp]['type'] = 'textarea';
+        $obj[0]['inventory']['columns'][$pnp]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$pnp]['label'] = 'PNP/CSR#';
+        $obj[0]['inventory']['columns'][$pnp]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:250px;max-width:2350px;';
 
         $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
         break;
       default:
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
         $obj[0][$this->gridname]['columns'][$rrcost]['type'] = 'coldel';
@@ -726,14 +740,18 @@ class ts
           $obj[0]['inventory']['columns'][$subcode]['type'] = 'coldel';
           $obj[0]['inventory']['columns'][$boxcount]['type'] = 'coldel';
         }
-        $obj[0]['inventory']['columns'][$pnpcsr]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$pnp]['type'] = 'coldel';
         break;
     }
 
+    if ($companyid == 67) { //yulick
+      $obj = $this->othersClass->yulick_boxCountCol($obj, $this->gridname, $action, $boxcount, 'entryweighdetails_out');
+    }
+
     if (!$isserial) {
-      $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
+      $obj[0]['inventory']['columns'][$serialno]['type'] = 'coldel';
     } else {
-      $obj[0]['inventory']['columns'][$serial]['type'] = 'label';
+      $obj[0]['inventory']['columns'][$serialno]['type'] = 'label';
     }
 
     if ($viewcost == '0') {
@@ -834,7 +852,7 @@ class ts
         $fields = ['docno', 'client', 'clientname'];
         break;
     }
-    if ($companyid == 43) { //mighty
+    if ($companyid == 43 || $companyid == 68) { //mighty
       array_push($fields, 'ddeptname');
     }
 
@@ -845,7 +863,7 @@ class ts
     data_set($col1, 'docno.label', 'Transaction#');
     data_set($col1, 'client.condition', ['checkstock']);
 
-    if ($companyid == 43) { //MIGHTY
+    if ($companyid == 43 || $companyid == 68) { //MIGHTY
       data_set($col1, 'ddeptname.label', 'Dept Code');
     }
 
@@ -1187,6 +1205,8 @@ class ts
 
   public function posttrans($config)
   {
+    ini_set('max_execution_time', 0);
+
     $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
 
@@ -1208,6 +1228,8 @@ class ts
 
   public function unposttrans($config)
   {
+    ini_set('max_execution_time', 0);
+
     $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     if (!$this->othersClass->unpostingheadinfotrans($config)) {
@@ -1229,16 +1251,24 @@ class ts
       $qty_dec = 0;
     }
 
+    $defaultfields = ", round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount, 'true' as iscatchwt";
+
     $serialno = ",''";
+    $pnp = ",'' as pnp";
     if ($this->companysetup->getserial($config['params'])) {
       switch ($companyid) {
         case 40: //cdo
           $serialno = ",group_concat(concat('Engine/Chassis#: ',rr.serial,'/',rr.chassis,'\\n','Color: ',rr.color) separator '\\n\\r') as serialno";
+          $pnp = ",ifnull(group_concat(concat('PNP#: ',rr.pnp,' / CSR#: ',rr.csr) separator '\\n\\r'),'') as pnp";
           break;
         default:
           $serialno = ",group_concat(concat('Serial#: ',rr.serial) separator '\\n\\r') as serialno";
           break;
       }
+    }
+
+    if ($companyid == 67) { // yulick
+      $defaultfields = ", ifnull((select count(sline) from serialout where trno=stock.trno and line=stock.line),0) as boxcount, if(item.iscatchwt,'false','true') as iscatchwt ";
     }
 
     $sqlselect = "select item.brand as brand, ifnull(mm.model_name,'') as model,item.itemid,stock.trno,
@@ -1260,16 +1290,14 @@ class ts
                       ifnull(location.loc,'') as location,stock.palletid2,stock.locid2,
                       ifnull(pallet2.name,'') as pallet2,ifnull(location2.loc,'') as location2,
                       ifnull(uom.factor,1) as uomfactor,'' as bgcolor,'' as errcolor,
-                      prj.name as stock_projectname,stock.projectid as projectid,item.subcode, item.partno, 
-                      round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount,
+                      prj.name as stock_projectname,stock.projectid as projectid,item.subcode, item.partno,
                       concat(item.itemname,'\\n',ifnull(brand.brand_desc,''),'\\r\\n',ifnull(mm.model_name,''),'\\r\\n',
                       ifnull(i.itemdescription,'')) as itemdescription,
-                      ifnull(group_concat(concat('PNP#: ',rr.pnp,' / CSR#: ',rr.csr) separator '\\n\\r'),'') as pnp,
                       stock.phaseid, ps.code as phasename,  stock.modelid, hm.model as housemodel,
                       stock.blklotid, bl.blk, bl.lot,prj.code as project,amen.line as amenity, 
                       amen.description as amenityname,  subamen.line as subamenity, subamen.description as subamenityname,
                       stock.sorefx,stock.solinex
-                      " . $serialno;
+                      " . $serialno . $pnp . $defaultfields;
     return $sqlselect;
   }
 
@@ -1449,11 +1477,16 @@ class ts
       case 'getsosummary':
         return $this->getsosummary($config);
         break;
+      case 'addboxtogrid':
+        return $this->othersClass->yulick_addboxtogrid($config);
+        break;
       default:
-        return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];
+        return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ') in TS'];
         break;
     }
   }
+
+
 
 
   public function getsodetails($config)

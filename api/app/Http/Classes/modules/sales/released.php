@@ -288,7 +288,7 @@ class released
         where num.statid=41 and head.doc=? and num.center = ? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " $filtersearch
         and num.bref <> 'SJS' $group
         $orderby $limit";
-        $data = $this->coreFunctions->opentable($qry, [$doc, $center, $date1, $date2, $doc, $center, $date1, $date2]);
+        $data = $this->coreFunctions->opentable($qry, [$doc, $center, $date1, $date2]);
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
     }
 
@@ -841,7 +841,7 @@ class released
         where head.trno = ? and num.doc=? and num.center = ? and num.bref <> 'SJS'
         and head.lockdate is not null and num.postdate is null and num.statid=41 ";
 
-        $head = $this->coreFunctions->opentable($qry, [$trno, $doc, $center, $trno, $doc, $center]);
+        $head = $this->coreFunctions->opentable($qry, [$trno, $doc, $center]);
 
         if (!empty($head)) {
             $stock = $this->openstock($trno, $config);
@@ -898,7 +898,7 @@ class released
                 } //end if
             }
         }
-        $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+        $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
 
@@ -1120,7 +1120,7 @@ class released
     pallet.name,location.loc,uom.factor,head.forex,stock.rebate,
     prj.name,stock.projectid,stock.sgdrate,stock.noprint,brand.brand_desc,i.itemdescription order by sortline, line";
 
-        $stock = $this->coreFunctions->opentable($qry, [$trno, $trno]);
+        $stock = $this->coreFunctions->opentable($qry, [$trno]);
         return $stock;
     } //end function
 

@@ -138,6 +138,7 @@ class companysetup
   public $ismirrortrans = false;
   public $issuemultipleexpiry = false;
   public $islocation = false;
+  public $bocsupplier = '';
 
 
 
@@ -318,6 +319,7 @@ class companysetup
         $this->issuemultipleexpiry = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\buenatech\\";
         $this->locname = 'Lot#';
+        $this->bocsupplier = 'BOC000000000001';
         break;
       case 70: //sportrunner
         $this->clientlength = 15;
@@ -353,15 +355,13 @@ class companysetup
         $this->ispurchasedisc = false;
         $this->iseditsortline = true;
         $this->isdefaultuominout = true;
-        $this->multibranch = true;
-        $this->branchaccess = 1;
         $this->masterlimit = 500;
         $this->isglc = true;
         $this->ispr = true;
         $this->reportpath = "\Http\Classes\modules\modulereport\cemphil\\";
         $this->isfirstpageheader = true;
         $this->ismysql8 = true;
-        $this->locname = 'Brand';
+        $this->locname = 'Batch No';
         break;
       case 68: //JDA
         $this->clientlength = 15;
@@ -374,7 +374,7 @@ class companysetup
         $this->companyname = 'JDA';
         $this->systemtype = 'AIMSHRISPAYROLL';
         $this->checkbelowcost = true;
-        $this->isproject = false;
+        $this->isproject = true;
         $this->iscreateversion = false;
         $this->isfa = false;
         $this->ispricescheme = false;
@@ -3231,6 +3231,12 @@ class companysetup
   {
     $this->companylist($params);
     return $this->reportdateformat;
+  }
+
+  public function getbocsupplier($params)
+  {
+    $this->companylist($params);
+    return $this->bocsupplier;
   }
 
   // apply to all txtfields/grid column used in modules

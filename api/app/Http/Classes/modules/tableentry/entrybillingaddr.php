@@ -33,7 +33,6 @@ class entrybillingaddr
   public $tablelogs = 'masterfile_log';
   public $tablelogs_del = 'del_masterfile_log';
   private $fields = ['clientid', 'contact', 'contactno',  'addr',  'isbilling', 'isshipping', 'isinactive', 'addrtype',  'addrline1', 'addrline2',  'city',  'province', 'country', 'zipcode',   'fax',  'deptid',  'address1',  'cperson',  'contactno2'];
-  private $truckingf = ['clientid', 'addr'];
   public $showclosebtn = false;
   private $reporter;
   private $logger;
@@ -82,10 +81,6 @@ class entrybillingaddr
     $systemtype = $this->companysetup->getsystemtype($config['params']);
     $cols = ['action', 'isshipping', 'isbilling', 'isinactive', 'client', 'clientname', 'addr', 'addrtype', 'addrline1', 'addrline2', 'city', 'province', 'country', 'zipcode', 'contactno', 'fax', 'deptname', 'address1', 'cperson', 'contactno2'];
 
-    if ($companyid == 72 && $docx == 'CUSTOMER') { //hahsy
-      $cols = ['action', 'addr'];
-    }
-
     foreach ($cols as $key => $value) {
       $$value = $key;
     }
@@ -95,14 +90,10 @@ class entrybillingaddr
 
     $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
-    $obj[0][$this->gridname]['columns'][$addr]['type'] = "textarea";
-    $obj[0][$this->gridname]['columns'][$addr]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
-    $obj[0][$this->gridname]['columns'][$action]['btns']['save']['checkfield'] = "isallowed";
-    $obj[0][$this->gridname]['columns'][$action]['btns']['delete']['checkfield'] = "isallowed";
-    $obj[0][$this->gridname]['columns'][$action]['style'] = "width:120px;whiteSpace: normal;min-width:120px;";
-
-
-    if ($companyid != 72 && $docx != 'CUSTOMER') { // not hahsy
+   
+      $obj[0][$this->gridname]['columns'][$action]['btns']['save']['checkfield'] = "isallowed";
+      $obj[0][$this->gridname]['columns'][$action]['btns']['delete']['checkfield'] = "isallowed";
+      $obj[0][$this->gridname]['columns'][$action]['style'] = "width:120px;whiteSpace: normal;min-width:120px;";
 
       $obj[0][$this->gridname]['columns'][$isbilling]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
       $obj[0][$this->gridname]['columns'][$isshipping]['style'] = "width:60px;whiteSpace: normal;min-width:60px;";
@@ -110,7 +101,7 @@ class entrybillingaddr
 
       $obj[0][$this->gridname]['columns'][$client]['style'] = "width:180px;whiteSpace: normal;min-width:180px;";
       $obj[0][$this->gridname]['columns'][$clientname]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
-
+      $obj[0][$this->gridname]['columns'][$addr]['style'] = "width:200px;whiteSpace: normal;min-width:200px;";
       $obj[0][$this->gridname]['columns'][$addrtype]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
       $obj[0][$this->gridname]['columns'][$addrline1]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
       $obj[0][$this->gridname]['columns'][$addrline2]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
@@ -170,9 +161,14 @@ class entrybillingaddr
       }
 
 
-      if (strtoupper($config['params']['doc'] == 'CUSTOMER') && $companyid == 19) { //housegem
+      if (strtoupper($config['params']['doc'] == 'CUSTOMER') && $companyid == 19 || $companyid == 72) { //housegem and  hahsy
         $obj[0][$this->gridname]['columns'][$addr]['label'] = "Address";
         $obj[0][$this->gridname]['columns'][$addr]['style'] = "width:1000px;whiteSpace: normal;min-width:1000px;";
+
+        if($companyid==72){ //hahsy
+        $obj[0][$this->gridname]['columns'][$addr]['type'] = "textarea";
+        $obj[0][$this->gridname]['columns'][$addr]['style'] = "width:300px;whiteSpace: normal;min-width:300px;";
+        }
 
         $obj[0][$this->gridname]['columns'][$isbilling]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$isshipping]['type'] = "coldel";
@@ -197,12 +193,7 @@ class entrybillingaddr
         $obj[0][$this->gridname]['columns'][$cperson]['type'] = "coldel";
         $obj[0][$this->gridname]['columns'][$contactno2]['type'] = "coldel";
       }
-    } else { //hashi
-      $obj[0][$this->gridname]['columns'][$addr]['style'] = "width:500px;whiteSpace: normal;min-width:500px;";
-    }
-
-
-
+    
     $obj[0][$this->gridname]['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }
@@ -277,8 +268,6 @@ class entrybillingaddr
     $data['client'] = '';
     $data['clientname'] = '';
 
-    if ($companyid != 72 && $doc != 'CUSTOMER') { // not hahsy
-
       $data['contactno'] = '';
       $data['contact'] = '';
       $data['isbilling'] = 'false';
@@ -308,8 +297,7 @@ class entrybillingaddr
       $data['address1'] = '';
       $data['cperson'] = '';
       $data['contactno2'] = '';
-    }
-
+    
     return $data;
   }
 
@@ -344,10 +332,6 @@ class entrybillingaddr
       if ($data[$key]['bgcolor'] != '') {
 
         $sfields = $this->fields;
-        if ($companyid == 72 && $docx == 'CUSTOMER') { //hahsy
-          $sfields = $this->truckingf;
-        }
-
         foreach ($sfields as $key2 => $value2) {
           $data2[$value2] = $this->othersClass->sanitizekeyfieldFast($value2, $data[$key][$value2], $lookups);
         }
@@ -425,9 +409,6 @@ class entrybillingaddr
     $lookups = $this->othersClass->buildSanitizeLookups($config['params']['doc'], $companyid, [], false, $dateTables);
 
     $sfields = $this->fields;
-    if ($companyid == 72 && $docx == 'CUSTOMER') {
-      $sfields = $this->truckingf;
-    }
     foreach ($sfields as $key => $value) {
       $data[$value] = $this->othersClass->sanitizekeyfieldFast($value, $row[$value], $lookups);
     }

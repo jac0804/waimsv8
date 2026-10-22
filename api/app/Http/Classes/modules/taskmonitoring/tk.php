@@ -237,7 +237,7 @@ class tk
        '../taskmonitoring/' as url,'ledgergrid' as moduletype, if(d.userid = 0 and d.startdate is null and d.status not in (2,4),'false','true') as ismine,
 
        'TM' as doc,d.line,d.userid as assignedid,h.rem,case when d.isprio = 1 then 'bg-red-3' else '' end as bgcolor,
-       case when exists (select 1 from waims_attachments where trno = d.trno and tmline = d.line and doc = 'TM') then 'false' else 'true' end as isatt,
+       case when exists (select 1 from waims_attachments as a where a.trno = d.trno and a.tmline = d.line and a.doc = 'TM') then 'false' else 'true' end as isatt,
        case when exists (select 1 from tmdetail where trno = d.trno and line = d.line) then 'false' else 'true' end as isdetail $stat
     from tmhead as h
     left join client as c on c.clientid = h.clientid

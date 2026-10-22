@@ -197,9 +197,9 @@ class entryattendee
 
   public function createtabbutton($config)
   {
-    $tbuttons = ['addrecord', 'saveallentry', 'whlog'];
+    $tbuttons = ['refresh','addrecord', 'saveallentry', 'whlog'];
     $obj = $this->tabClass->createtabbutton($tbuttons);
-
+    $obj[0]['lookupclass'] = 'loaddata';
     return $obj;
   }
 
@@ -426,6 +426,12 @@ class entryattendee
 
     return ['status' => true, 'msg' => 'Successfully deleted.'];
   }
+  public function tableentrystatus($config)
+  {
+   $returndata = $this->loaddata($config);
+   return ['status' => true, 'msg' => 'Loaded successfully.', 'data' => $returndata];
+  } //end function
+
 
 
   private function loaddataperrecord($line, $doc)
@@ -502,26 +508,38 @@ class entryattendee
           $data2[$key]['officialemail'] = $value->officialemail;
 
           if ($value->optrno != 0) {
+            $curtrno = $value->optrno;
             $data2[$key]['optrno'] = $value->optrno;
-            $qry1 = "select docno,doc,trno from transnum where trno = " . $value->optrno;
+            
+            // $qry1 = "select docno,doc,trno from transnum where trno = " . $value->optrno;
+            // $xdata1 = $this->coreFunctions->opentable($qry1);
+            // $data2[$key]['docno'] = $xdata1[0]->docno;
 
+            if ($value->curtrno != 0){
+              $curtrno = $value->curtrno;            
+              $data2[$key]['curtrno'] = $value->curtrno; 
+            }
+
+            $qry1 = "select docno,doc,trno from transnum where trno = " . $curtrno;
             $xdata1 = $this->coreFunctions->opentable($qry1);
-
             $data2[$key]['docno'] = $xdata1[0]->docno;
 
             switch ($xdata1[0]->doc) {
               case 'QS':
-                $data2[$key]['saleremarks'] = $this->coreFunctions->datareader("select ifnull(rem,'') as value from 
-                (select rem,line from qscalllogs where trno = ? union all select rem,line from hqscalllogs where trno = ?) as a 
-                order by line desc limit 1", [$value->optrno, $value->optrno]);
+                // $data2[$key]['saleremarks'] = $this->coreFunctions->datareader("select ifnull(rem,'') as value from 
+                // (select rem,line from qscalllogs where trno = ? union all select rem,line from hqscalllogs where trno = ?) as a 
+                // order by line desc limit 1", [$value->optrno, $value->optrno]);
 
-                $data2[$key]['inqstatus'] = $this->coreFunctions->datareader("select ifnull(status,'') as value from 
-                (select status,line from qscalllogs where trno = ? union all select status,line from hqscalllogs where trno = ?) as a 
-                order by line desc limit 1", [$value->optrno, $value->optrno]);
+                // $data2[$key]['inqstatus'] = $this->coreFunctions->datareader("select ifnull(status,'') as value from 
+                // (select status,line from qscalllogs where trno = ? union all select status,line from hqscalllogs where trno = ?) as a 
+                // order by line desc limit 1", [$value->optrno, $value->optrno]);               
+                $data2[$key]['saleremarks'] = $this->coreFunctions->datareader("select ifnull(rem,'') as value  from calllogs where trno = ?  order by line desc limit 1", [$value->optrno]);
+                $data2[$key]['inqstatus'] = $this->coreFunctions->datareader("select ifnull(status,'') as value  from calllogs where trno = ?  order by line desc limit 1", [$value->optrno]);
                 break;
               case 'AO':
               case 'SQ':
-                $isposted = $this->othersClass->isposted2($value->optrno, 'transnum');
+                $isposted = $this->othersClass->isposted2($curtrno, 'transnum');
+                                
                 if ($isposted) {
                   $data2[$key]['saleremarks'] = 'PROCESSED';
                   $data2[$key]['inqstatus'] = '';
@@ -591,7 +609,7 @@ class entryattendee
       case
         when a.salesid != 0 then ag.clientname
         else a.salesperson
-      end as salesperson,a.status,a.officialwebsite,a.officialemail,num.docno, ifnull(a.optrno,0) as optrno,
+      end as salesperson,a.status,a.officialwebsite,a.officialemail,num.docno, ifnull(a.optrno,0) as optrno,ifnull(a.curtrno,0) as curtrno,
        '' as inqstatus";
     $select = $select . ",'' as bgcolor ";
     $qry = "select " . $select . "
@@ -636,25 +654,36 @@ class entryattendee
           $data2[$key]['officialemail'] = $value->officialemail;
 
           if ($value->optrno != 0) {
+            $curtrno = $value->optrno;
             $data2[$key]['optrno'] = $value->optrno;
-            $qry1 = "select docno,doc,trno from transnum where trno = " . $value->optrno;
+            
 
+            if ($value->curtrno != 0){
+              $curtrno = $value->curtrno;            
+              $data2[$key]['curtrno'] = $value->curtrno; 
+            }
+
+            $qry1 = "select docno,doc,trno from transnum where trno = " . $curtrno;
             $xdata1 = $this->coreFunctions->opentable($qry1);
+
             if (!empty($xdata1)) {
               $data2[$key]['docno'] = $xdata1[0]->docno;
 
               switch ($xdata1[0]->doc) {
                 case 'QS':
-                  $data2[$key]['saleremarks'] = $this->coreFunctions->datareader("select ifnull(rem ,'') as value from 
-                  (select concat(left(dateid,10),'/ ',probability,'/ ',rem) as rem,line from qscalllogs where trno = ? union all select concat(left(dateid,10),'/ ',probability,'/ ',rem) as rem,line from hqscalllogs where trno = ?) as a 
-                  order by line desc limit 1", [$value->optrno, $value->optrno]);
-                  $data2[$key]['inqstatus'] = $this->coreFunctions->datareader("select ifnull(status,'') as value from 
-                  (select status,line from qscalllogs where trno = ? union all select status,line from hqscalllogs where trno = ?) as a 
-                  order by line desc limit 1", [$value->optrno, $value->optrno]);
+                  // $data2[$key]['saleremarks'] = $this->coreFunctions->datareader("select ifnull(rem ,'') as value from 
+                  // (select concat(left(dateid,10),'/ ',probability,'/ ',rem) as rem,line from qscalllogs where trno = ? union all select concat(left(dateid,10),'/ ',probability,'/ ',rem) as rem,line from hqscalllogs where trno = ?) as a 
+                  // order by line desc limit 1", [$value->optrno, $value->optrno]);
+                  // $data2[$key]['inqstatus'] = $this->coreFunctions->datareader("select ifnull(status,'') as value from 
+                  // (select status,line from qscalllogs where trno = ? union all select status,line from hqscalllogs where trno = ?) as a 
+                  // order by line desc limit 1", [$value->optrno, $value->optrno]);
+                  $data2[$key]['saleremarks'] = $this->coreFunctions->datareader("select ifnull(concat(left(dateid,10),'/ ',rem),'') as value  from calllogs where trno = ?  order by line desc limit 1", [$value->optrno]);
+                  $data2[$key]['inqstatus'] = $this->coreFunctions->datareader("select ifnull(status,'') as value  from calllogs where trno = ?  order by line desc limit 1", [$value->optrno]);
                   break;
                 case 'AO':
                 case 'SQ':
-                  $isposted = $this->othersClass->isposted2($value->optrno, 'transnum');
+                  $isposted = $this->othersClass->isposted2($curtrno, 'transnum');
+                             
                   if ($isposted) {
                     $data2[$key]['saleremarks'] = 'PROCESSED';
                     $data2[$key]['inqstatus'] = '';

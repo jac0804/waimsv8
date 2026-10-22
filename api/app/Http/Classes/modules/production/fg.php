@@ -410,9 +410,11 @@ class fg
     }
     $col1 = $this->fieldClass->create($fields);
     data_set($col1, 'docno.label', 'Transaction#');
-    data_set($col1, 'pddocno.required', true);
-    data_set($col1, 'pddocno.condition', ['checkstock']);
-    data_set($col1, 'pdprocess.condition', ['checkstock']);
+    if (isset($col1['pddocno'])) {
+      data_set($col1, 'pddocno.required', true);
+      data_set($col1, 'pddocno.condition', ['checkstock']);
+      data_set($col1, 'pdprocess.condition', ['checkstock']);
+    }
 
     switch ($config['params']['companyid']) {
       case 69: //cemphil

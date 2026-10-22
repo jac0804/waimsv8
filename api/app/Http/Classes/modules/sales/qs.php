@@ -17,6 +17,7 @@ use App\Http\Classes\Logger;
 use App\Http\Classes\SBCPDF;
 use App\Http\Classes\builder\helpClass;
 use App\Http\Classes\modules\crm\ld;
+use App\Http\Controllers\Auth\LoginController;
 use Symfony\Component\VarDumper\VarDumper;
 
 class qs
@@ -340,8 +341,8 @@ class qs
       $instructiontab = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewinstructiontab']];
       $viewleadtimesetting = ['customform' => ['action' => 'customform', 'lookupclass' => 'viewleadtimesetting']];
 
-      $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entryqscalllog', 'label' => 'Call Log Entry']];
-      $call = $this->tabClass->createtab($tab, []);
+      // $tab = ['tableentry' => ['action' => 'tableentry', 'lookupclass' => 'entryqscalllog', 'label' => 'Call Log Entry']];
+      // $call = $this->tabClass->createtab($tab, []);
 
       $return['SHIPPING/BILLING ADDRESS'] = ['icon' => 'fa fa-map-marker-alt', 'customform' => $billshipdefault];
       $return['INSTRUCTION'] = ['icon' => 'fa fa-info', 'customform' => $instructiontab];
@@ -354,7 +355,7 @@ class qs
         $return['PROFORMA INVOICE'] = ['icon' => 'fa fa-receipt', 'customform' => $proformainvoice];
       }
 
-      $return['CALL LOG ENTRY'] = ['icon' => 'fa fa-envelope', 'tab' => $call];
+      // $return['CALL LOG ENTRY'] = ['icon' => 'fa fa-envelope', 'tab' => $call];
     }
 
     $tab = ['tableentry' => ['action' => 'documententry', 'lookupclass' => 'entrytransnumpicture', 'label' => 'Attachment', 'access' => 'view']];
@@ -798,7 +799,7 @@ class qs
     }
 
     if ($companyid != 10 && $companyid != 12) { // not aftech
-      $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+      $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
     }
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
@@ -1999,7 +2000,8 @@ class qs
 
     foreach ($data as $key => $value) {
       $this->setserveditems($data[$key]->refx, $data[$key]->linex, $this->hqty);
-      $this->coreFunctions->execqry("update attendee set optrno = ? where optrno =?", 'update', [$data[$key]->refx, $trno]);
+      $this->coreFunctions->execqry("update attendee set optrno = ? where curtrno =?", 'update', [$data[$key]->refx, $trno]);
+      $this->coreFunctions->execqry("update attendee set curtrno = 0 where curtrno =?", 'update', [$trno]);
     }
 
     $this->logger->sbcwritelog($trno, $config, 'STOCK', 'DELETED ALL ITEMS');
@@ -2026,7 +2028,8 @@ class qs
     foreach ($data as $key => $value) {
       if ($data[$key]->refx != 0) {
         $this->setserveditems($data[$key]->refx, $data[$key]->linex);
-        $this->coreFunctions->execqry("update attendee set optrno = ? where optrno =?", 'update', [$data[$key]->refx, $trno]);
+        $this->coreFunctions->execqry("update attendee set optrno = ? where curtrno =?", 'update', [$data[$key]->refx, $trno]);
+        $this->coreFunctions->execqry("update attendee set curtrno = 0 where curtrno =?", 'update', [ $trno]);
       }
     }
 
@@ -2076,7 +2079,7 @@ class qs
           round(stock.iss/ case when ifnull(uom.factor,0)=0 then 1 else uom.factor end,
           " . $this->companysetup->getdecimal('qty', $config['params']) . ") as rrqty,
           stock.disc, ifnull(st.line,0) as stageid,stock.projectid,head.deptid,head.designation as position,
-          head.industry,agent.tel as contactno,client.tin,
+          head.industryid,agent.tel as contactno,client.tin,
           client.billid,client.shipid,client.billcontactid,client.shipcontactid,stock.sgdrate, head.contactname,client.vattype,client.tax
           FROM hophead as head left join hopstock as stock on stock.trno=head.trno left join transnum on transnum.trno=head.trno 
           left join item on item.itemid=stock.itemid left join uom on uom.itemid=item.itemid and
@@ -2127,11 +2130,12 @@ class qs
               $config['params']['trno'] = $trno;
               $config['params']['line'] = $line;
               $this->coreFunctions->sbcupdate($this->stock, $data2, ['trno' => $trno, 'line' => $line]);
-              $this->setserveditems($data[$key2]->trno, $data[$key2]->line);
-              $this->coreFunctions->execqry("update attendee set optrno = ? where optrno =?", 'update', [$trno, $data[$key2]->trno]);
+              $this->setserveditems($data[$key2]->trno, $data[$key2]->line);              
               $row = $this->openstockline($config);
               $return = ['row' => $row, 'status' => true, 'msg' => 'Item was successfully added.'];
             }
+
+            $this->coreFunctions->execqry("update attendee set curtrno = ? where optrno =?", 'update', [$trno, $data[$key2]->trno]);
 
             $rem = $this->coreFunctions->getfieldvalue("hstockinfotrans", "rem", "trno=? and line =?", [$data[$key2]->trno, $data[$key2]->line]);
             if (strlen($rem) != 0) {

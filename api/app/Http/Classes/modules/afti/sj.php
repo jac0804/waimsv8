@@ -713,31 +713,31 @@ class sj
     $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
 
 
-    $action = 0;
-    $itemdesc = 1;
-    $serial = 2;
-    $isqty = 3;
-    $uom = 4;
-    $kgs = 5;
-    $isamt = 6;
-    $disc = 7;
-    $ext = 8;
-    $itemstatus = 9;
-    $cost = 10;
-    $markup = 11;
-    $rebate = 12;
-    $gprofit = 13;
-    $itemd = 14;
-    $wh = 15;
-    $whname = 16;
-    $ref = 17;
-    $loc = 18;
-    $expiry = 19;
-    $rem = 20;
-    $itemname = 21;
-    $stock_projectname = 22;
-    $noprint = 23;
-    $barcode = 24;
+    // $action = 0;
+    // $itemdesc = 1;
+    // $serial = 2;
+    // $isqty = 3;
+    // $uom = 4;
+    // $kgs = 5;
+    // $isamt = 6;
+    // $disc = 7;
+    // $ext = 8;
+    // $itemstatus = 9;
+    // $cost = 10;
+    // $markup = 11;
+    // $rebate = 12;
+    // $gprofit = 13;
+    // $itemd = 14;
+    // $wh = 15;
+    // $whname = 16;
+    // $ref = 17;
+    // $loc = 18;
+    // $expiry = 19;
+    // $rem = 20;
+    // $itemname = 21;
+    // $stock_projectname = 22;
+    // $noprint = 23;
+    // $barcode = 24;
 
 
     if ($inv) {
@@ -756,6 +756,7 @@ class sj
       'isamt',
       'disc',
       'ext',
+      'ewtcode',
       'itemstatus',
       'cost',
       'markup',
@@ -783,6 +784,7 @@ class sj
       'isamt',
       'disc',
       'ext',
+      'ewtcode',
       'itemstatus',
       'cost',
       'markup',
@@ -801,76 +803,16 @@ class sj
       'barcode'
     ];
 
-    switch ($systemtype) {
-      case 'REALESTATE':
-        $project = 24;
-        $phasename = 25;
-        $housemodel = 26;
-        $blk = 27;
-        $lot = 28;
-        $amenityname = 29;
-        $subamenityname = 30;
-        array_push($column, 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname', 'subamenityname');
-        array_push($sortcolumn, 'project', 'phasename', 'housemodel', 'blk', 'lot', 'amenityname', 'subamenityname');
-        break;
+
+    foreach ($column as $key => $value) {
+      $$value = $key;
     }
 
-    switch ($companyid) {
-      case 40: //cdo
-        $action = 0;
-        $itemdesc = 1;
-        $isqty = 2;
-        $uom = 3;
-        $serial = 4;
-        $color = 5;
-        $pnpcsr = 6;
-        $kgs = 7;
-        $isamt = 8;
-        $disc = 9;
-        $ext = 10;
-        $itemstatus = 11;
-        $cost = 12;
-        $markup = 13;
-        $rebate = 14;
-        $gprofit = 15;
-        $wh = 16;
-        $whname = 17;
-        $ref = 18;
-        $loc = 19;
-        $expiry = 20;
-        $rem = 21;
-        $itemname = 22;
-        $stock_projectname = 23;
-        $noprint = 24;
-        $barcode = 25;
-
-        $column = ['action', 'itemdescription',  'isqty', 'uom', 'serialno', 'color', 'pnp', 'kgs', 'isamt', 'disc', 'ext', 'itemstatus', 'cost', 'markup', 'rebate', 'gprofit', 'wh', 'whname', 'ref', 'loc', 'expiry', 'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
-        $sortcolumn = ['action', 'itemdescription',  'isqty', 'uom', 'serialno', 'color', 'pnp', 'kgs', 'isamt', 'disc', 'ext', 'itemstatus', 'cost', 'markup', 'rebate', 'gprofit', 'wh', 'whname', 'ref', 'loc', 'expiry', 'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
-        break;
-      case 60: //transpower
-        array_push($column, 'agentamt', 'startwire', 'endwire');
-        array_push($sortcolumn, 'agentamt', 'startwire', 'endwire');
-        break;
-    }
-
-    switch ($companyid) {
-      case 10: //afti
-        if ($makecr != 0) {
-          array_push($headgridbtns, 'makecv');
-        }
-        break;
-      case 43: //mighty
-        if ($trip_approve) array_push($headgridbtns, 'tripapproved');
-        if ($trip_disapprove) array_push($headgridbtns, 'tripdisapproved');
-
-        break;
+    if ($makecr != 0) {
+      array_push($headgridbtns, 'makecv');
     }
 
     $computefield = ['dqty' => $this->dqty, 'hqty' => $this->hqty, 'damt' => $this->damt, 'hamt' => $this->hamt, 'disc' => 'disc', 'total' => 'ext'];
-
-    if ($iskgs) {
-      $computefield['kgs'] = 'kgs';
-    }
 
     $tab = [
       $this->gridname => [
@@ -881,58 +823,13 @@ class sj
       ]
     ];
 
-    switch ($companyid) {
-      case 15: //nathina
-      case 17: //unihome
-      case 20: //proline
-      case 28: //xcomp
-      case 39: //CBBSI
-        if ($release) {
-          $tab['customform'] = ['event' => ['action' => 'customform', 'lookupclass' => 'sjrelease', 'access' => 'release'], 'label' => 'RELEASE'];
-        }
-        break;
-      case 19: //housegem
-        $tab['customform'] = ['event' => ['action' => 'customform', 'lookupclass' => 'viewotherinfo', 'access' => 'view'], 'label' => 'Delivery Details'];
-        $tab['multigrid2'] = ['action' => 'tableentry', 'lookupclass' => 'viewsostockinfo', 'label' => 'Truck Scale'];
-        break;
-      case 43: //mighty
-        if ($trip_tab) $tab['customform'] = ['event' => ['action' => 'customform', 'lookupclass' => 'tripdetails', 'access' => 'trip'], 'label' => 'TRIP'];
-        if ($arrived_tab) $tab['customform2'] = ['event' => ['action' => 'customform', 'lookupclass' => 'tripdetails2', 'access' => 'dispatched'], 'label' => 'DISPATCHED'];
-        break;
-      case 22: //eipi
-        $tab['tableentry'] = ['action' => 'tableentry', 'lookupclass' => 'tabheadinfo', 'label' => 'ADD FEES', 'checkchanges' => 'tableentry'];
-        break;
-      case 29: //sbc
-        $tab['tableentry'] = ['action' => 'tableentry', 'lookupclass' => 'sbcremarks', 'label' => 'SBC REMARKS', 'checkchanges' => 'tableentry'];
-        break;
-      case 37: // mega crystal
-        $tab['customform'] = ['event' => ['action' => 'customform', 'lookupclass' => 'sjrelease', 'access' => 'release'], 'label' => 'UPDATE INFO'];
-        break;
-    }
-
     if ($this->companysetup->getserial($config['params'])) {
-      if ($companyid == 28) { //xcomp
-        $stockbuttons = ['save', 'delete', 'showbalance'];
-      } else {
-        $stockbuttons = ['save', 'delete', 'serialout', 'showbalance'];
-      }
+      $stockbuttons = ['save', 'delete', 'serialout', 'showbalance'];
     } else {
-      if ($companyid == 21) { //kinggeorge
-        if ($allowviewbalance == 0) {
-          $stockbuttons = ['save', 'delete'];
-        } else {
-          $stockbuttons = ['save', 'delete', 'showbalance'];
-        }
-      } else {
-        $stockbuttons = ['save', 'delete', 'showbalance'];
-      }
+      $stockbuttons = ['save', 'delete', 'showbalance'];
     }
 
-    if ($companyid == 10) { //afti
-      array_push($stockbuttons, 'iteminfo');
-    } else {
-      array_push($stockbuttons, 'stockinfo');
-    }
+    array_push($stockbuttons, 'iteminfo');
 
     if ($this->companysetup->getiseditsortline($config['params'])) {
       array_push($stockbuttons, 'sortline');
@@ -951,181 +848,25 @@ class sj
     }
 
 
-    switch ($config['params']['companyid']) {
-      case 1: //vitaline
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
-        $obj[0]['inventory']['columns'][$barcode]['label'] = '';
-        $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
-
-        $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
-        break;
-      case 23: //labsol cebu
-      case 41: //labsol manila
-      case 52: //technolab
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'input';
-        $obj[0]['inventory']['columns'][$itemd]['label'] = 'Item Description';
-        $obj[0]['inventory']['columns'][$itemd]['readonly'] = false;
-
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
-        $obj[0]['inventory']['columns'][$barcode]['label'] = '';
-        $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
-
-        $obj[0]['inventory']['columns'][$loc]['label'] = 'Lot/Serial#';
-        $obj[0]['inventory']['columns'][$expiry]['label'] = 'Expiry/Mfr Date';
-        $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
-        break;
-      case 19: //housegem
-        $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left; width: 300px;whiteSpace: normal;min-width:300px;max-width:450px;';
-        $obj[0]['inventory']['columns'][$rem]['type'] = 'textarea';
-        $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$gprofit]['type'] = 'input';
-
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
-        $obj[0]['inventory']['columns'][$barcode]['label'] = '';
-        $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
-        break;
-      case 21: // kinggeorge
-        $obj[0]['inventory']['columns'][$noprint]['type'] = 'coldel';
-
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
-
-        $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
-        $obj[0]['inventory']['columns'][$barcode]['label'] = '';
-        $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
-        $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
-        break;
-      case 10: //afti
-      case 12: //afti usd
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'textarea';
-        $obj[0]['inventory']['columns'][$itemdesc]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$itemdesc]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:350px;max-width:350px;';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'lookup';
-        $obj[0]['inventory']['columns'][$serial]['lookupclass'] = 'lookupserialout';
-        $obj[0]['inventory']['columns'][$serial]['action'] = 'lookupserialout';
-        $obj[0]['inventory']['columns'][$serial]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$wh]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$whname]['type'] = 'lookup';
-        $obj[0]['inventory']['columns'][$whname]['lookupclass'] = 'whstock';
-        $obj[0]['inventory']['columns'][$whname]['action'] = 'lookupclient';
-        $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
-        $obj[0]['inventory']['columns'][$barcode]['label'] = '';
-        $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
-        $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
-        break;
-      case 40: //cdo
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
-        $obj[0]['inventory']['columns'][$barcode]['label'] = '';
-        $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
-
-        $obj[0]['inventory']['columns'][$color]['type'] = 'input';
-        $obj[0]['inventory']['columns'][$color]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$color]['style'] = 'text-align: left; width: 100px;whiteSpace: normal;min-width:100px;max-width:100px;';
-        //$obj[0]['inventory']['columns'][$serial]['type'] = 'textarea';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'lookup';
-        $obj[0]['inventory']['columns'][$serial]['lookupclass'] = 'lookupserialout';
-        $obj[0]['inventory']['columns'][$serial]['action'] = 'lookupserialout';
-        $obj[0]['inventory']['columns'][$serial]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$serial]['label'] = 'Engine/Chassis#';
-        $obj[0]['inventory']['columns'][$serial]['style'] = 'text-align: left; width: 300px;whiteSpace: normal;min-width:250px;max-width:2350px;';
-        $obj[0]['inventory']['columns'][$pnpcsr]['type'] = 'textarea';
-        $obj[0]['inventory']['columns'][$pnpcsr]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$pnpcsr]['label'] = 'PNP/CSR#';
-        $obj[0]['inventory']['columns'][$pnpcsr]['style'] = 'text-align: left; width: 300px;whiteSpace: normal;min-width:250px;max-width:2350px;';
-
-        $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
-        break;
-      case 69: //cemphil
-      case 24: //goodfound
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
-        $obj[0]['inventory']['columns'][$barcode]['label'] = '';
-        $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
-
-        $obj[0]['inventory']['columns'][$loc]['label'] = 'Batch No';
-        $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
-        $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-
-        if ($viewfieldsforgate2users == '0') {
-          $obj[0]['inventory']['columns'][$isamt]['type'] = 'coldel';
-          $obj[0]['inventory']['columns'][$disc]['type'] = 'coldel';
-          $obj[0]['inventory']['columns'][$ext]['type'] = 'coldel';
-          $obj[0]['inventory']['columns'][$cost]['type'] = 'coldel';
-          $obj[0]['inventory']['columns'][$markup]['type'] = 'coldel';
-        }
-        $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
-        break;
-
-      default:
-        $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$stock_projectname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$whname]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$serial]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
-        $obj[0]['inventory']['columns'][$barcode]['label'] = '';
-        $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$itemd]['type'] = 'coldel';
-
-        if (!$isexpiry) {
-          switch ($companyid) {
-            case 28: //xcomp
-              break;
-            case 50: //unitech
-              $obj[0]['inventory']['columns'][$loc]['label'] = 'Brand';
-              // $obj[0]['inventory']['columns'][$loc]['readonly'] = false;
-              break;
-            default:
-              $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
-              break;
-          }
-          $obj[0]['inventory']['columns'][$expiry]['type'] = 'coldel';
-        }
-        $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
-        break;
-    }
+    $obj[0]['inventory']['columns'][$itemdescription]['type'] = 'textarea';
+    $obj[0]['inventory']['columns'][$itemdescription]['readonly'] = true;
+    $obj[0]['inventory']['columns'][$itemdescription]['style'] = 'text-align: left; width: 350px;whiteSpace: normal;min-width:350px;max-width:350px;';
+    $obj[0]['inventory']['columns'][$serialno]['type'] = 'lookup';
+    $obj[0]['inventory']['columns'][$serialno]['lookupclass'] = 'lookupserialout';
+    $obj[0]['inventory']['columns'][$serialno]['action'] = 'lookupserialout';
+    $obj[0]['inventory']['columns'][$serialno]['readonly'] = true;
+    $obj[0]['inventory']['columns'][$wh]['type'] = 'coldel';
+    $obj[0]['inventory']['columns'][$whname]['type'] = 'lookup';
+    $obj[0]['inventory']['columns'][$whname]['lookupclass'] = 'whstock';
+    $obj[0]['inventory']['columns'][$whname]['action'] = 'lookupclient';
+    $obj[0]['inventory']['columns'][$barcode]['type'] = 'hidden';
+    $obj[0]['inventory']['columns'][$barcode]['label'] = '';
+    $obj[0]['inventory']['columns'][$itemstatus]['type'] = 'coldel';
+    $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
+    $obj[0]['inventory']['columns'][$ref]['lookupclass'] = 'refrr';
+    $obj[0]['inventory']['columns'][$gprofit]['type'] = 'coldel';
+    $obj[0]['inventory']['columns'][$rebate]['type'] = 'coldel';
+    $obj[0]['inventory']['columns'][$itemdesc]['type'] = 'coldel';
 
     if (!$access['changeamt']) {
       // 3 - isamt
@@ -1134,15 +875,6 @@ class sj
       $obj[0]['inventory']['columns'][$disc]['readonly'] = true;
     }
 
-    if ($systemtype == 'REALESTATE') {
-      $obj[0][$this->gridname]['columns'][$blk]['readonly'] = true;
-      $obj[0][$this->gridname]['columns'][$lot]['readonly'] = true;
-    }
-
-    if ($companyid == 59) { //roosevelt
-      $obj[0]['inventory']['columns'][$wh]['type'] = 'coldel';
-      $obj[0]['inventory']['columns'][$noprint]['type'] = 'coldel';
-    }
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }
@@ -1152,45 +884,11 @@ class sj
     $companyid = $config['params']['companyid'];
     $isserial = $this->companysetup->getserial($config['params']);
     $ispallet = $this->companysetup->getispallet($config['params']);
-    if ($isserial) {
-      if ($companyid == 10 || $companyid == 12) { //afti, afti usd
-        $tbuttons = ['additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingsq'];
-      } else {
-        $tbuttons = ['poserial', 'pendingso', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
-      }
-    } elseif ($ispallet) {
-      $tbuttons = ['poserial', 'additem', 'saveitem', 'deleteallitem'];
-    } else {
-      $tbuttons = [];
-      switch ($companyid) {
-        case 10:
-        case 12: //afti, afti usd
-          array_push($tbuttons, 'additem', 'saveitem', 'deleteallitem', 'pendingsq');
-          break;
-        case 60: //transpower
-          array_push($tbuttons, 'pendingpo', 'additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingso');
-          break;
-        default:
-          array_push($tbuttons, 'additem', 'quickadd', 'saveitem', 'deleteallitem', 'pendingso');
-          break;
-      }
-    }
+    $tbuttons= ['additem', 'saveitem', 'deleteallitem', 'pendingsq'];
 
     $obj = $this->tabClass->createtabbutton($tbuttons);
 
-    if ($isserial) {
-      if ($companyid == 10 || $companyid == 12) {
-        $obj[4]['addedparams'] = ['yourref'];
-      } else {
-        $obj[0]['label'] = 'SO Serial';
-        $obj[0]['lookupclass'] = 'soserial';
-        $obj[0]['action'] = 'soserial';
-      }
-    } elseif ($ispallet) {
-      $obj[0]['label'] = 'SO';
-      $obj[0]['lookupclass'] = 'sopallet';
-      $obj[0]['action'] = 'sopallet';
-    }
+    $obj[4]['addedparams'] = ['yourref'];
     return $obj;
   }
 
@@ -1202,90 +900,11 @@ class sj
 
     $fields = ['docno', 'client', 'clientname'];
 
-    if ($companyid != 10 && $companyid != 12) { //not afti & not afti usd
-      array_push($fields, 'address');
-    }
-
-    switch ($companyid) {
-      case 10: //afti
-        array_push($fields, 'dbranchname');
-        $col1 = $this->fieldClass->create($fields);
-        data_set($col1, 'client.lookupclass', 'customer10');
-        data_set($col1, 'dbranchname.required', true);
-        data_set($col1, 'clientname.type', 'textarea');
-        break;
-
-      case 14: //majesty
-        array_push($fields, 'dprojectname', 'salestype');
-        $col1 = $this->fieldClass->create($fields);
-        data_set($col1, 'client.lookupclass', 'customer');
-        break;
-
-      case 15: //nathina
-        array_push($fields, 'shipto');
-        $col1 = $this->fieldClass->create($fields);
-        data_set($col1, 'client.lookupclass', 'customer');
-        data_set($col1, 'shipto.type', 'ctextarea');
-        break;
-
-      case 16: //ati
-        array_push($fields, ['sadesc', 'podesc']);
-        $col1 = $this->fieldClass->create($fields);
-        data_set($col1, 'client.lookupclass', 'customer');
-        data_set($col1, 'client.required', false);
-        data_set($col1, 'sadesc.type', 'input');
-        data_set($col1, 'podesc.type', 'input');
-        break;
-
-      case 21: //kinggeorge
-        $col1 = $this->fieldClass->create($fields);
-        data_set($col1, 'client.lookupclass', 'customer');
-        data_set($col1, 'client.required', false);
-        break;
-
-      case 19: //housegem
-        array_push($fields, 'dprojectname');
-        $col1 = $this->fieldClass->create($fields);
-        data_set($col1, 'client.lookupclass', 'customer');
-        data_set($col1, 'client.required', false);
-        data_set($col1, 'address.type', 'lookup');
-        data_set($col1, 'address.lookupclass', 'lookupaddress');
-        data_set($col1, 'address.action', 'lookupaddress');
-        data_set($col1, 'address.class', 'sbccsreadonly');
-        data_set($col1, 'address.addedparams', ['client']);
-        break;
-
-      case 69: //cemphil
-      case 24: // goodfound
-        array_push($fields, 'dprojectname', ['hauler', 'driver'], ['weightin', 'weightintime']);
-        $col1 = $this->fieldClass->create($fields);
-        data_set($col1, 'client.lookupclass', 'customer');
-        data_set($col1, 'client.required', false);
-        data_set($col1, 'driver.label', 'Driver');
-        break;
-
-      case 29: //sbc main
-        array_push($fields, 'dprojectname');
-        $col1 = $this->fieldClass->create($fields);
-        data_set($col1, 'client.lookupclass', 'customer');
-        break;
-
-      default:
-        if ($systemtype == 'REALESTATE') {
-          array_push($fields, 'dprojectname', 'phase');
-          $col1 = $this->fieldClass->create($fields);
-          data_set($col1, 'client.lookupclass', 'customer');
-          data_set($col1, 'client.required', false);
-          data_set($col1, 'dprojectname.lookupclass', 'project');
-          data_set($col1, 'phase.addedparams', ['projectid']);
-        } else {
-          array_push($fields, 'dprojectname');
-          $col1 = $this->fieldClass->create($fields);
-          data_set($col1, 'client.lookupclass', 'customer');
-        }
-
-        break;
-    }
+    array_push($fields, 'dbranchname');
+    $col1 = $this->fieldClass->create($fields);
+    data_set($col1, 'client.lookupclass', 'customer10');
+    data_set($col1, 'dbranchname.required', true);
+    data_set($col1, 'clientname.type', 'textarea');
 
     data_set($col1, 'docno.label', 'Transaction#');
     if ($inv) {
@@ -1296,78 +915,16 @@ class sj
 
     // COL2
 
-    switch ($companyid) {
-      case 10: //afti
-        $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname', 'ddeptname'];
-        break;
-      case 11: //summit
-        $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname', 'ms_freight'];
-        break;
-      case 15: //nathina
-        $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname', 'dprojectname', 'mlcp_freight', 'ms_freight'];
-        break;
-      case 19: //hosegem
-        $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname', 'deldate', 'crref'];
-        break;
-      case 69: //cemphil
-      case 24: //goofound
-        array_push($fields, 'statname', ['plateno', 'licenseno'], ['weightout', 'weightouttime']);
-        break;
-      case 22: //eipi
-        $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname', 'shipto'];
-        break;
-      case 32: //3m
-        $fields = [['dateid', 'terms'], 'due', 'salestype', 'dacnoname', 'dwhname'];
-        break;
-      case 52: //technolab
-        $fields = ['invoiceno', ['dateid', 'terms'], 'due', 'dacnoname', 'dwhname'];
-        break;
-    }
+    $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname', 'ddeptname'];
 
-    if ($systemtype == 'REALESTATE') {
-      array_push($fields, 'housemodel', 'amenityname');
-    }
-
-    if ($companyid == 40) { //cdo
-      array_push($fields, 'interestrate');
-    }
 
     $col2 = $this->fieldClass->create($fields);
     data_set($col2, 'dacnoname.label', 'AR Account');
     data_set($col2, 'dacnoname.lookupclass', 'AR');
-    switch ($companyid) {
-      case 10: //afti
-        data_set($col2, 'ddeptname.label', 'Department');
-        data_set($col2, 'ddeptname.required', true);
-        break;
-      case 15: //nathina
-        data_set($col2, 'ms_freight.label', 'Other Charges');
-        break;
-      case 19: //housegem
-        data_set($col2, 'crref.label', 'Request Order No.');
-        break;
-      case 22: //eipi
-        data_set($col2, 'shipto.label', 'Delivered To');
-        break;
-      case 69: //cemphil
-      case 24: //goodfound
-        data_set($col2, 'statname.required', false);
-        break;
-      case 32: //3m
-        data_set($col2, 'salestype.lookupclass', 'sjtype');
-        break;
-      case 52: //technolab
-        data_set($col2, 'invoiceno.label', 'Invoice No.');
-        break;
-    }
+    data_set($col2, 'ddeptname.label', 'Department');
+    data_set($col2, 'ddeptname.required', true);
 
-    if ($systemtype == 'REALESTATE') {
-      data_set($col2, 'housemodel.addedparams', ['projectid']);
-    }
-
-    data_set($col2, 'statname.label', 'Type');
-    data_set($col2, 'statname.lookupclass', 'lookup_sjtype');
-
+ 
     //col3
 
     if ($inv) {
@@ -1376,95 +933,14 @@ class sj
       $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype', 'dagentname'];
     }
 
-    switch ($companyid) {
-      case 10: //afti
-        $fields = [['yourref', 'ourref'], ['cur', 'forex'], ['dvattype', 'taxdef'], 'dagentname', 'dewt'];
-        break;
-      case 69: //cemphil
-      case 24: //goodfound
-        $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype', 'dagentname', ['batchno', 'cwano'], 'cwatime', ['kilo', 'assignedlane']];
-        break;
-      case 22: //eipi
-        $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype', 'dagentname', 'dewt'];
-        break;
-      case 52: //technolab
-        $fields = [['yourref', 'ourref'], ['cur', 'forex'], 'dvattype', 'agentname'];
-        break;
-    }
-    if ($systemtype == 'REALESTATE') {
-      array_push($fields, ['blklot', 'lot'], 'subamenityname');
-    }
+    $fields = [['yourref', 'ourref'], ['cur', 'forex'], ['dvattype', 'taxdef'], 'dagentname', 'dewt'];
 
-    switch ($companyid) {
-      case 19:
-        array_push($fields, 'shipto');
-        break;
-      case 43: //mighty
-        array_push($fields, 'istrip');
-        break;
-      case 49: //hotmix
-        array_push($fields, 'commamt', 'commvat', 'netcomm');
-        break;
-      case 40: //cdo
-        array_push($fields, 'downpayment');
-        break;
-      case 52:
-      case 41: //technolab
-        array_push($fields, 'lblpaid');
-        break;
-      case 59: //roosevelt
-        array_push($fields, 'bpo', 'ctnsno', 'isreported');
-        break;
-    }
-
-
+    
     $col3 = $this->fieldClass->create($fields);
 
-    switch ($companyid) {
-      case 10: //afti
-      case 12: //afti usd
-        data_set($col3, 'yourref.label', 'Customer PO');
-        break;
-      case 19:
-        data_set($col3, 'shipto.label', 'Deliver To');
-        break;
-      case 69: //cemphil
-      case 24: //goodfound
-        data_set($col3, 'yourref.label', 'DR No.#');
-        data_set($col3, 'ourref.label', 'SI No.#');
-        break;
-      case 22: //EIPI
-        data_set($col3, 'ourref.label', 'Charge SI #');
-        data_set($col3, 'yourref.label', 'Reference No.');
-        break;
-      case 40: //cdo
-        data_set($col3, 'yourref.label', 'SI#');
-        break;
-      case 59: //roosevelt 
-        data_set($col3, 'ourref.label', 'SI#');
-        break;
-      default:
-        data_set($col3, 'yourref.label', 'PO#');
-        break;
-    }
+    data_set($col3, 'yourref.label', 'Customer PO');
 
-    if ($systemtype == 'REALESTATE') {
-      data_set($col3, 'blklot.addedparams', ['projectid', 'phaseid', 'modelid', 'fpricesqm']);
-      data_set($col3, 'subamenityname.addedparams', ['amenityid']);
-    }
-
-    $fields = ['rem', 'creditinfo'];
-    switch ($companyid) {
-      case 10: //afti
-        $fields = ['rem', 'creditinfo', ['lbltotal', 'ext'], ['lbltaxes', 'taxesandcharge'], ['lblgrandtotal', 'totalcash']];
-        break;
-      case 19: //housegem
-        $fields = ['rem', 'creditinfo', ['lblgrossprofit', 'grossprofit'], 'forwtinput', 'posted'];
-        break;
-      case 43: //mighty
-        array_push($fields, 'lblapproved');
-        break;
-    }
+    $fields = ['rem', 'creditinfo', ['lbltotal', 'ext'], ['lbltaxes', 'taxesandcharge'], ['lblgrandtotal', 'totalcash']];
 
     if ($this->companysetup->getistodo($config['params'])) {
       array_push($fields, 'donetodo');
@@ -1477,21 +953,12 @@ class sj
 
     $col4 = $this->fieldClass->create($fields);
 
-    if ($companyid == 10) { //afti
-      data_set($col4, 'ext.class', 'sbccsreadonly');
-      data_set($col4, 'ext.label', '');
-      data_set($col4, 'taxesandcharge.label', '');
-      data_set($col4, 'taxesandcharge.class', 'sbccsreadonly');
-      data_set($col4, 'totalcash.label', '');
-    }
-    if ($companyid == 43 || $this->companysetup->linearapproval($config['params'])) { //mighty
-      data_set($col4, 'lblapproved.type', 'label');
-      data_set($col4, 'lblapproved.label', 'APPROVED!');
-      data_set($col4, 'lblapproved.style', 'font-weight:bold;font-family:Century Gothic;color: green;');
-    }
+    data_set($col4, 'ext.class', 'sbccsreadonly');
+    data_set($col4, 'ext.label', '');
+    data_set($col4, 'taxesandcharge.label', '');
+    data_set($col4, 'taxesandcharge.class', 'sbccsreadonly');
+    data_set($col4, 'totalcash.label', '');
 
-    data_set($col4, 'grossprofit.label', '');
-    data_set($col4, 'posted.label', 'Done Loading');
 
 
     return array('col1' => $col1, 'col2' => $col2, 'col3' => $col3, 'col4' => $col4);
@@ -1521,26 +988,11 @@ class sj
     $data[0]['creditinfo'] = '';
     $data[0]['agentname'] = '';
 
-    switch ($params['companyid']) {
-      case 36: //rozlab
-        $data[0]['tax'] = 12;
-        $data[0]['vattype'] = 'VATABLE';
-        break;
-      case 22:
-        $data[0]['vattype'] = 'NON-VATABLE';
-        break;
-      default:
-        $data[0]['vattype'] = 'NON-VATABLE';
-        break;
-    }
+    $data[0]['vattype'] = 'NON-VATABLE';
 
     $data[0]['contra'] = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', [$this->defaultContra]);
     $data[0]['acnoname'] = $this->coreFunctions->getfieldvalue('coa', 'acnoname', 'acno=?', [$data[0]['contra']]);
-    if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound, cemphil
-      $data[0]['wh'] = 'WH0000000000002';
-    } else {
-      $data[0]['wh'] = $this->companysetup->getwh($params);
-    }
+    $data[0]['wh'] = $this->companysetup->getwh($params);
     $name = $this->coreFunctions->getfieldvalue('client', 'clientname', 'client=?', [$data[0]['wh']]);
     $data[0]['whname'] = $name;
     $data[0]['dwhname'] = '';
@@ -1636,31 +1088,14 @@ class sj
     $data[0]['creditinfo'] = '';
     $data[0]['agentname'] = '';
 
-    switch ($params['companyid']) {
-      case 36:
-      case 49:
-      case 59: //rozlab / hotmix//roosevelt
-        $data[0]['tax'] = 12;
-        $data[0]['vattype'] = 'VATABLE';
-        $data[0]['isreported'] = '0';
-        break;
-      default:
-        $data[0]['tax'] = 0;
-        $data[0]['vattype'] = 'NON-VATABLE';
-        break;
-    }
+    $data[0]['tax'] = 0;
+    $data[0]['vattype'] = 'NON-VATABLE';
 
-    if ($params['companyid'] == 49) { //hotmix
-      $this->defaultContra = "CA1";
-    }
+   
 
     $data[0]['contra'] = $this->coreFunctions->getfieldvalue('coa', 'acno', 'alias=?', [$this->defaultContra]);
     $data[0]['acnoname'] = $this->coreFunctions->getfieldvalue('coa', 'acnoname', 'acno=?', [$data[0]['contra']]);
-    if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound, cemphil
-      $data[0]['wh'] = 'WH0000000000002';
-    } else {
-      $data[0]['wh'] = $this->companysetup->getwh($params);
-    }
+    $data[0]['wh'] = $this->companysetup->getwh($params);
     $name = $this->coreFunctions->getfieldvalue('client', 'clientname', 'client=?', [$data[0]['wh']]);
     $data[0]['whname'] = $name;
     $data[0]['dwhname'] = '';
@@ -2056,7 +1491,7 @@ class sj
     if ($companyid == 19) { //housegem
       $data['due'] = $this->othersClass->computeterms($data['deldate'], $data['due'], $data['terms']);
     } else {
-      $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+      $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
     }
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
@@ -2379,40 +1814,12 @@ class sj
     $qty_dec = $this->companysetup->getdecimal('qty', $config['params']);
 
     $itemname = 'item.itemname,';
-    switch ($companyid) {
-      case 28: //xcomp
-        $itemname = "case when item.itemname like '%misc%' and stockinfo.itemdesc<>'' then stockinfo.itemdesc else item.itemname end as itemname,";
-        break;
-      case 61: //bytesized
-        $itemname = "if(stockinfo.itemdesc<>'',stockinfo.itemdesc,item.itemname) as itemname,";
-        break;
-    }
-
     $markup_field = "stock.Amt";
-    if ($companyid == 36) { //ROZLAB
-      $markup_field = "stock.cost";
-    }
-
+   
     $serialfield = '';
 
-    switch ($companyid) {
-      case 10: //afti
-      case 12: //afti usd
-        $qty_dec = 0;
-        $serialfield = ",ifnull(group_concat(rr.serial separator '\\n\\r'),'') as serialno";
-        break;
-      case 40: //cdo
-        $serialfield = ",ifnull(group_concat(concat(rr.serial,'/',rr.chassis) separator '\\n\\r'),'') as serialno ";
-        break;
-      case 52: //technolab
-      case 23: // labsol cebu
-      case 41: //labsol manila
-        $serialfield = ",stockinfo.itemdesc ";
-        break;
-      case 60: //transpower
-        $serialfield = ",stock.agentamt, stock.startwire, stock.endwire, stock.porefx, polinex ";
-        break;
-    }
+    $qty_dec = 0;
+    $serialfield = ",ifnull(group_concat(rr.serial separator '\\n\\r'),'') as serialno";
 
     $sqlselect = "select item.brand as brand,
     ifnull(mm.model_name,'') as model,
@@ -2463,7 +1870,7 @@ class sj
      amen.line as amenity, amen.description as amenityname,  subamen.line as subamenity, subamen.description as subamenityname,
 
     case when stock.noprint=0 then 'false' else 'true' end as noprint,
-    concat(item.itemname,'\\n',ifnull(brand.brand_desc,''),'\\r\\n',ifnull(mm.model_name,''),'\\r\\n',ifnull(i.itemdescription,'')) as itemdescription
+    concat(item.itemname,'\\n',ifnull(brand.brand_desc,''),'\\r\\n',ifnull(mm.model_name,''),'\\r\\n',ifnull(i.itemdescription,'')) as itemdescription,stock.ewtcode,stock.ewtrate
     " . $serialfield . ",ifnull(group_concat(concat('PNP#: ',rr.pnp,' / CSR#: ',rr.csr) separator '\\n\\r'),'') as pnp,stock.color";
 
     return $sqlselect;
@@ -2533,7 +1940,7 @@ class sj
     prj.name,stock.projectid,stock.sgdrate,stock.noprint,brand.brand_desc,i.itemdescription,stock.itemstatus, stock.isqty,stock.color,
 
     stock.phaseid, ps.code ,  stock.modelid, hm.model,stock.blklotid, bl.blk, bl.lot,
-     prj.code ,amen.line , amen.description ,  subamen.line , subamen.description 
+     prj.code ,amen.line , amen.description ,  subamen.line , subamen.description,stock.ewtcode,stock.ewtrate 
 
 
 
@@ -2571,7 +1978,7 @@ class sj
     pallet.name,location.loc,uom.factor,head.forex,stock.rebate,
     prj.name,stock.projectid,stock.sgdrate,stock.noprint,brand.brand_desc,i.itemdescription,stock.itemstatus, stock.isqty,stock.color,
      stock.phaseid, ps.code ,  stock.modelid, hm.model,stock.blklotid, bl.blk, bl.lot,
-     prj.code ,amen.line , amen.description ,  subamen.line , subamen.description 
+     prj.code ,amen.line , amen.description ,  subamen.line , subamen.description ,stock.ewtcode,stock.ewtrate
 
     order by sortline, line";
 
@@ -2641,7 +2048,7 @@ class sj
     pallet.name,location.loc,uom.factor,head.forex,stock.rebate,
     prj.name,stock.projectid,stock.sgdrate,stock.noprint,brand.brand_desc,i.itemdescription,stock.itemstatus, stock.isqty,stock.color,
      stock.phaseid, ps.code ,  stock.modelid, hm.model,stock.blklotid, bl.blk, bl.lot,
-     prj.code ,amen.line , amen.description ,  subamen.line , subamen.description 
+     prj.code ,amen.line , amen.description ,  subamen.line , subamen.description ,stock.ewtcode,stock.ewtrate
     ";
     $stock = $this->coreFunctions->opentable($qry, [$trno, $line]);
     return $stock;
@@ -3467,6 +2874,11 @@ class sj
     $palletid = isset($config['params']['data']['palletid']) ? $config['params']['data']['palletid'] : 0;
     $weight = isset($config['params']['data']['weight']) ? $config['params']['data']['weight'] : 0;
     $expiry = '';
+    $ewtrate ='';
+    $ewtcode = '';
+
+    $hewtcode =  $this->coreFunctions->getfieldvalue("lahead", 'ewt', 'trno=?', [$trno]);
+    $hewtrate = $this->coreFunctions->getfieldvalue("lahead", 'ewtrate', 'trno=?', [$trno]);
 
     if ($this->companysetup->getiskgs($config['params'])) {
       $kgs = isset($config['params']['data']['kgs']) ? $config['params']['data']['kgs'] : 1;
@@ -3487,6 +2899,15 @@ class sj
     $rem = isset($config['params']['data']['rem']) ? $config['params']['data']['rem'] : '';
     $poref = isset($config['params']['data']['poref']) ? $config['params']['data']['poref'] : '';
     $podate = isset($config['params']['data']['podate']) ? $config['params']['data']['podate'] : null;
+
+    if ($hewtcode!=''){
+      $ewtrate = $hewtrate;
+      $ewtcode = $hewtcode;
+    }else{
+      $ewtrate = isset($config['params']['data']['ewtrate']) ? $config['params']['data']['ewtrate'] : '';
+      $ewtcode = isset($config['params']['data']['ewtcode']) ? $config['params']['data']['ewtcode'] : '';
+    }
+   
 
     if ($companyid == 10) { //afti
       $sgdrate = $this->othersClass->getexchangerate('PHP', 'SGD');
@@ -3518,6 +2939,8 @@ class sj
       $line = $config['params']['data']['line'];
       $amt = $config['params']['data'][$this->damt];
       $qty = $config['params']['data'][$this->dqty];
+      $ewtrate = $config['params']['data']['ewtrate'];
+      $ewtcode = $config['params']['data']['ewtcode'];
       $config['params']['line'] = $line;
     }
 
@@ -3589,7 +3012,9 @@ class sj
       'locid' => $locid,
       'palletid' => $palletid,
       'rebate' => $rebate,
-      'noprint' => $noprint
+      'noprint' => $noprint,
+      'ewtcode' => $ewtcode,
+      'ewtrate' => $ewtrate
     ];
 
     $data['projectid'] = $projectid;

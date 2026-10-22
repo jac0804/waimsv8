@@ -122,6 +122,8 @@ class coaalias
     array_push($data, array('acno' => 'Creditable Withholding Tax (Consider as Receivable)', 'alias' => 'ARWT1'));
     array_push($data, array('acno' => 'Work in Process (Production)', 'alias' => 'WIP'));
     array_push($data, array('acno' => 'Raw Materials', 'alias' => 'RM'));
+    array_push($data, array('acno' => 'Purchases (revenue)', 'alias' => 'PL1'));// buenatech
+    array_push($data, array('acno' => 'Brokerage Fee(expense)', 'alias' => 'BF1'));//buenatech
     return $data;
   }
 } //end class

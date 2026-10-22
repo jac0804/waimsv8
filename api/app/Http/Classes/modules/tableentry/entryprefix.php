@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use DB;
 use Session;
+use Illuminate\Support\Facades\Schema;
 
 use Exception;
 
@@ -147,7 +148,7 @@ class entryprefix
     // }
 
     if ($config['params']['companyid'] == 60) { //transpower
-      if ($config['params']['user'] == 'sbc') array_push($tbuttons, 'updatepostatus');
+     // if ($config['params']['user'] == 'sbc') array_push($tbuttons, 'updatepostatus');
     }
 
     //2023.05.31
@@ -155,11 +156,16 @@ class entryprefix
     $obj[0]['label'] = "CHECK FIELDS";
 
 
-    if ($config['params']['companyid'] == 60) { //transpower
-      $obj[2]['label'] = "UPDATE LOWEST PRICE";
-      $obj[2]['action'] = "updatelowestprice";
-      $obj[2]['lookupclass'] = "updatelowestprice";
+    if (Schema::hasTable('migrations')) {
+      $obj[0]['lookupclass'] =  ['deletetriggers', 'runmigrations',  'reindex', 'createtriggers', 'modifyLengthField', 'cleardb_proc'];
     }
+
+
+    // if ($config['params']['companyid'] == 60) { //transpower
+    //   $obj[2]['label'] = "UPDATE LOWEST PRICE";
+    //   $obj[2]['action'] = "updatelowestprice";
+    //   $obj[2]['lookupclass'] = "updatelowestprice";
+    // }
     //2023.05.31
     // if ($config['params']['companyid'] == 21) {
     // $obj[2]['label'] = "REDISTRIBUTE MERCH INV";
@@ -286,6 +292,12 @@ class entryprefix
         return $this->updatepostatus();
         break;
 
+      case 'runmigrations':
+        $this->generatemigrationfile();
+        $this->runmigrations();
+        $this->coreFunctions->LogConsole('-- runmigrations completed');
+        break;
+
       case 'recalc':
         return $this->recalc($config);
         break;
@@ -332,6 +344,24 @@ class entryprefix
     $end = Carbon::parse($this->othersClass->getCurrentTimeStamp());
     $elapsed = $start->diffInSeconds($end);
     return ['status' => true, 'msg' => $config['params']['lookupclass2'] . ' - TABLES UPDATE. Execution time: ' . $elapsed . "sec(s)"];
+  }
+
+  private function runmigrations()
+  {
+    $this->coreFunctions->LogConsole('-- runmigrations');
+    \Artisan::call('waims:deploy');   // or ('migrate', ['--force' => true])
+    $msg = \Artisan::output();
+
+    return ['status' => true, 'msg' => $msg];
+  }
+
+  private function generatemigrationfile()
+  {
+    $this->coreFunctions->LogConsole('-- generatemigrationfile');
+    \Artisan::call('make:monthly-migration');   // or ('migrate', ['--force' => true])
+    $msg = \Artisan::output();
+
+    return ['status' => true, 'msg' => $msg];
   }
 
   private function updatelowestprice($config)

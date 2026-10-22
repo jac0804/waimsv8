@@ -361,35 +361,30 @@ class pr // class declaration
     /**
      * creates the column of the document listing and the buttons in the document listing. 
      */
-    public function createdoclisting() // creating of column in document listing
+    public function createdoclisting($config)
     {
-        $action = 0;
-        $liststatus = 1;
-        $listdocument = 2;
-        $listdate = 3;
-        $listclientname = 4;
-        $yourref = 5;
-        $ourref = 6;
-        $postdate = 7;
-        $listpostedby = 8;
-        $listcreateby = 9;
-        $listeditby = 10;
-        $listviewby = 11;
+        $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname', 'sectname', 'rem'];
 
-        $getcols = ['action', 'liststatus', 'listdocument', 'listdate', 'listclientname'];
+        foreach ($getcols as $key => $value) {
+            $$value = $key;
+        }
+
         $stockbuttons = ['view'];
         $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
 
         $cols[$action]['style'] = 'width:40px;whiteSpace: normal;min-width:40px;';
         $cols[$liststatus]['style'] = 'width:100px;whiteSpace: normal;min-width:100px;';
-        $cols[$liststatus]['name'] = 'statuscolor';
         $cols[$listclientname]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
-        $cols[$yourref]['align'] = 'text-left';
-        $cols[$ourref]['align'] = 'text-left';
-        $cols[$postdate]['label'] = 'Post Date';
+
+        $cols[$liststatus]['name'] = 'statuscolor';
+
+        $cols[$sectname]['label'] = 'Section';
+        $cols[$sectname]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;';
+        $cols[$sectname]['align'] = 'text-left';
+
+        $cols = $this->tabClass->delcollisting($cols);
         return $cols;
     }
-
     /**
      * this function is used to load the data in the document listing based on the parameters passed such as date, document type, item filter, and other parameters. 
      * it will return the data to be displayed in the document listing.
@@ -498,11 +493,13 @@ class pr // class declaration
         " . $lstatus . " as status, date(num.postdate) as postdate,
         head.createby,head.editby,head.viewby,num.postedby, 
         head.yourref, head.ourref,
+        s.sectname as sectname, head.rem as rem,
         case ifnull(head.lockdate,'') when '' then $lscolor else 'green' end as statuscolor  
         from " . $this->head . " as head 
         left join " . $this->tablenum . " as num on num.trno=head.trno 
         left join headinfotrans as hi on hi.trno = head.trno
         left join trxstatus as status on status.line = num.statid
+        left join section as s on s.sectid = head.sectid
         " . $join . "
         where head.doc=? and num.center=? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " " . $filtersearch . "
         union all
@@ -510,11 +507,13 @@ class pr // class declaration
         'POSTED' as status, date(num.postdate) as postdate,
         head.createby,head.editby,head.viewby, num.postedby, 
         head.yourref, head.ourref,
+        s.sectname as sectname, head.rem as rem,
         'grey' as statuscolor  
         from " . $this->hhead . " as head 
         left join " . $this->tablenum . " as num on num.trno=head.trno
         left join hheadinfotrans as hi on hi.trno = head.trno 
         left join trxstatus as status on status.line = num.statid
+        left join section as s on s.sectid = head.sectid
         " . $hjoin . "
         where head.doc=? and num.center=? and convert(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " " . $filtersearch . "
         order by date2 desc,docno desc $limit";

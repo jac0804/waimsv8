@@ -784,6 +784,12 @@ class dashboardClass
               $this->canvassforpo();
             }
 
+            if ($companyid == 67) { // yulick
+              if ($this->checksecurity(6067)) {
+                $this->forapprovalpr();
+              }
+            }
+
             if ($this->checksecurity(3719)) {
               $this->incomingdel();
             }
@@ -6021,4 +6027,39 @@ class dashboardClass
     $data = $this->coreFunctions->opentable($query);
     $this->config['sbclist']['gapplications'] = ['cols' => $cols, 'data' => $data, 'title' => $title, 'txtfield' => ['col1' => []], 'bgcolor' => 'bg-green-7', 'textcolor' => 'white'];
   }
+
+  public function forapprovalpr()
+  {
+    $center = $this->config['params']['center'];
+    $adminid = $this->config['params']['adminid'];
+    $getcols = ['action', 'docno', 'department', 'createdate'];
+    foreach ($getcols as $key => $value) {
+      $$value = $key;
+    }
+    $stockbuttons = ['jumpmodule'];
+    $cols = $this->tabClass->createdoclisting($getcols, $stockbuttons);
+    $cols[$action]['btns']['jumpmodule']['lookupclass'] = 'jumpmodule';
+    $cols[$action]['btns']['jumpmodule']['color'] = 'blue';
+    $cols[$action]['style'] = 'width:50px;whiteSpace: normal;min-width:50px;max-width:50px;';
+    $cols[$department]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;max-width:200px;';
+
+    $data = [];
+    $qry = "";
+
+    $allowapprovepr = $this->checksecurity(5944);
+
+    if($allowapprovepr) {
+        $qry = "select head.trno, head.doc, head.docno, head.clientname as department, date(head.dateid) as createdate,
+        '/module/a5ce0dd7c60273e71ccf80f476f58068/' as url, 'module' as moduletype, 'bg-red' as bgcolor
+        from prhead as head
+        left join transnum as num on num.trno = head.trno
+        left join headinfotrans as hi on hi.trno = head.trno
+        where num.postdate is null and head.lockdate is not null and hi.checkdate is null;";
+
+        $data = $this->coreFunctions->opentable($qry);
+    }
+
+    $this->config['sbclist']['forapprovalpr'] = ['cols' => $cols, 'data' => $data, 'title' => 'List of PR Subject for Approval', 'txtfield' => ['col1' => []], 'bgcolor' => 'bg-blue', 'textcolor' => 'white'];
+  }
+
 } // end class

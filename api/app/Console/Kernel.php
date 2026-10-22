@@ -24,6 +24,8 @@ class Kernel extends ConsoleKernel
         Commands\StandardMirror::class,
         Commands\StandardDLMirror::class,
         Commands\StandardUploadMirror::class,
+        Commands\MakeMonthlyMigration::class,
+        Commands\WaimsDeploy::class,
     ];
 
     /**

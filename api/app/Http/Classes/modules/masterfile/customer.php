@@ -1202,19 +1202,19 @@ class customer
         break;
       default:
         switch ($companyid) {
-            case 10://afti
-            case 12: //afti usd
-              if (floatval($editlimit) == 0) {
-                data_set($col2, 'bal.readonly', true);
-                data_set($col2, 'bal.class', 'sbccsreadonly');
-                data_set($col2, 'terms.type', 'input');
-                data_set($col2, 'terms.class', 'csterms sbccsreadonly');
-                data_set($col2, 'dvattype.type', 'input');
-                data_set($col2, 'dvattype.class', 'csdvattype sbccsreadonly');
-                data_set($col2, 'dewt.type', 'input');
-                data_set($col2, 'dewt.class', 'csdewt sbccsreadonly');
-              }
-              break;
+          case 10: //afti
+          case 12: //afti usd
+            if (floatval($editlimit) == 0) {
+              data_set($col2, 'bal.readonly', true);
+              data_set($col2, 'bal.class', 'sbccsreadonly');
+              data_set($col2, 'terms.type', 'input');
+              data_set($col2, 'terms.class', 'csterms sbccsreadonly');
+              data_set($col2, 'dvattype.type', 'input');
+              data_set($col2, 'dvattype.class', 'csdvattype sbccsreadonly');
+              data_set($col2, 'dewt.type', 'input');
+              data_set($col2, 'dewt.class', 'csdewt sbccsreadonly');
+            }
+            break;
           case 15: //nathina
             data_set($col2, 'acct.label', 'FB Name');
             break;
@@ -1339,13 +1339,10 @@ class customer
         array_push($fields, 'rem');
         break;
       case 67: //yulick
-        array_push($fields, 'isparentname');
+        array_push($fields, 'vendorname', 'clientpref', 'isparentname');
         break;
       case 59: //roosevelt
         array_push($fields, 'type', 'dparentcode', 'ar');
-        break;
-      case 67: //yulick
-        array_push($fields, 'clientpref', 'vendorname');
         break;
       case 72: //hahsy
         array_push($fields, 'rem');
@@ -1872,6 +1869,20 @@ class customer
         break;
     }
 
+    if ($companyid == 67) { //yulick
+      $isparentname = isset($head['isparentname']) ? $head['isparentname'] : '0';
+      $grpcode = isset($head['grpcode']) ? trim($head['grpcode']) : '';
+      if (($isparentname == '1' || $isparentname === true || $isparentname == 1) && $grpcode == '') {
+        return ['status' => false, 'msg' => 'Parent Code is required when is Print Parent Name in SJ/SOA is checked.', 'clientid' => isset($head['clientid']) ? $head['clientid'] : 0];
+      }
+
+      $clientcode = isset($head['client']) ? trim($head['client']) : '';
+      $clientnamex = isset($head['clientname']) ? trim($head['clientname']) : '';
+      if ($grpcode != '' && (strtolower($grpcode) == strtolower($clientcode) || strtolower($grpcode) == strtolower($clientnamex))) {
+        return ['status' => false, 'msg' => 'Parent Code must not be the same as the Customer Code or Customer Name.', 'clientid' => isset($head['clientid']) ? $head['clientid'] : 0];
+      }
+    }
+
     foreach ($this->fields as $key) {
       if (array_key_exists($key, $head)) {
         $data[$key] = $head[$key];
@@ -1888,11 +1899,11 @@ class customer
         $clientinfo[$key] = $this->othersClass->sanitizekeyfieldFast($key, $clientinfo[$key], $lookups);
       } //end if    
     }
-
-    $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
-    $data['editby'] = $config['params']['user'];
-    $data['dlock'] = $this->othersClass->getCurrentTimeStamp();
-    $data['ismirror'] = 0;
+    if ($isupdate) {
+      $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
+      $data['editby'] = $config['params']['user'];
+      $data['dlock'] = $this->othersClass->getCurrentTimeStamp();
+      $data['ismirror'] = 0;
 
       if ($companyid == 55) { //AFLI Lending
         $fullName = trim($head['lname'] . ', ' . $head['fname'] . ' ' . $head['mname']);

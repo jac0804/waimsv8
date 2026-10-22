@@ -110,7 +110,7 @@ class tr
     $query = "
     select head.docno, head.client, head.clientname, head.terms, head.yourref, head.ourref,
     head.address, date(head.dateid) as dateid, head.wh, whh.clientname as whname, head.rem,
-    item.barcode, item.itemname, stock.uom, wh.client as stockwh,
+    item.barcode, item.itemname, stock.uom, wh.client as stockwh,stock.loc,
     stock.rrqty, stock.qty, stock.qa, stock.reqqty, (stock.reqqty - stock.rrqty) as pending,
     stock.rem as remarks, item.itemid,( select date(rr.dateid) as rrdate from rrstatus as rr where rr.itemid=item.itemid and rr.bal<>0 order by rr.trno,line asc limit 1) as rrdate
     from htrhead as head
@@ -122,7 +122,7 @@ class tr
     union all
     select head.docno, head.client, head.clientname, head.terms, head.yourref, head.ourref,
     head.address, date(head.dateid) as dateid, head.wh, whh.clientname as whname, head.rem,
-    item.barcode, item.itemname, stock.uom, wh.client as stockwh,
+    item.barcode, item.itemname, stock.uom, wh.client as stockwh,stock.loc,
     stock.rrqty, stock.qty, stock.qa, stock.reqqty, (stock.reqqty - stock.rrqty) as pending,
     stock.rem as remarks, item.itemid,( select date(rr.dateid) as rrdate from rrstatus as rr where rr.itemid=item.itemid and rr.bal<>0 order by rr.trno,line asc limit 1) as rrdate
     from trhead as head
@@ -579,8 +579,12 @@ class tr
       $rem = $data[$i]['remarks'];
       $rrdate = $data[$i]['rrdate'];
 
+      if ($reporttype == '3') { //requisition form
+        $stockwh = isset($data[$i]['loc']) ? $data[$i]['loc'] : '';
+      }
+
       $arr_barcode = $this->reporter->fixcolumn([$barcode], '16', 0);
-      $arr_itemname = $this->reporter->fixcolumn([$itemname], '35', 0);
+      $arr_itemname = $this->reporter->fixcolumn([$itemname], '26', 0);
       $arr_uom = $this->reporter->fixcolumn([$uom], '16', 0);
       $arr_rrqty = $this->reporter->fixcolumn([$reqqty], '13', 0);
       $arr_stockwh = $this->reporter->fixcolumn([$stockwh], '16', 0);
@@ -593,7 +597,7 @@ class tr
         PDF::SetFont($font, '', $fontsize);
         PDF::MultiCell(100, 0, (isset($arr_barcode[$r]) ? $arr_barcode[$r] : ''), '', 'C', false, 0);
         PDF::MultiCell(200, 0, (isset($arr_itemname[$r]) ? $arr_itemname[$r] : ''), '', 'L', false, 0);
-        PDF::MultiCell(100, 0, (isset($arr_stockwh[$r]) ? $arr_stockwh[$r] : ''), '', 'C', false, 0);
+        PDF::MultiCell(100, 0, (isset($arr_stockwh[$r]) ? $arr_stockwh[$r] : ''), '', 'L', false, 0);
         PDF::MultiCell(50, 0, (isset($arr_uom[$r]) ? $arr_uom[$r] : ''), '', 'C', false, 0);
         PDF::MultiCell(70, 0, (isset($arr_rrqty[$r]) ? $arr_rrqty[$r] : ''), '', 'C', false, 0);
         PDF::MultiCell(100, 0, (isset($arr_rrdate[$r]) ? $arr_rrdate[$r] : ''), '', 'C', false, 0);

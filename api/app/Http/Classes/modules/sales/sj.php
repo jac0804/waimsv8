@@ -20,6 +20,8 @@ use App\Http\Classes\headClass;
 use App\Http\Classes\builder\helpClass;
 use Exception;
 
+use function PHPUnit\Framework\isNumeric;
+
 class sj
 {
   private $btnClass;
@@ -726,6 +728,12 @@ class sj
     );
 
     $buttons = $this->btnClass->create($btns);
+
+    if ($config['params']['companyid'] == 67) { //yulick
+      $buttons['new']['action'] = 'selectprefix';
+      $buttons['new']['access'] = 'save';
+    }
+
     $step1 = $this->helpClass->getFields(['btnnew', 'customer', 'dateid', 'terms', 'cswhname', 'yourref', 'cur', 'csrem', 'btnsave']);
     $step2 = $this->helpClass->getFields(['btnedit', 'customer', 'dateid', 'terms', 'cswhname', 'yourref', 'cur', 'csrem', 'btnsave']);
     $step3 = $this->helpClass->getFields(['btnadditem', 'btnquickadd', 'isqty', 'uom', 'isamt', 'disc', 'wh', 'btnstocksave', 'btnsaveitem']);
@@ -774,6 +782,40 @@ class sj
 
     return $buttons;
   } // createHeadbutton
+
+  public function createprefixfilter($config)
+  {
+
+    $center = $this->coreFunctions->opentable("select name, line from projectmasterfile order by code");
+    $list = array();
+    foreach ($center as $key => $value) {
+      array_push($list, ['label' => $value->name, 'value' => $value->line]);
+    }
+
+    $txtdata = $this->coreFunctions->opentable("select '' as selectprefix, '' as docno, 0 as projectid, '' as print");
+
+    $fields = ['selectprefix',  ['radioprint', 'docno'], 'print'];
+    $col1 = $this->fieldClass->create($fields);
+    data_set($col1, 'selectprefix.label', 'Select company');
+    data_set($col1, 'radioprint.label', 'Options');
+    data_set($col1, 'radioprint.options', [
+      ['label' => 'Delivery Receipt', 'value' => 'DR', 'color' => 'red'],
+      ['label' => 'Sales Invoice', 'value' => 'SI', 'color' => 'red'],
+    ]);
+    data_set($col1, 'selectprefix.options', $list);
+    data_set($col1, 'print.action', 'newdocno');
+    data_set($col1, 'print.label', 'Create transaction');
+    data_set($col1, 'print.style', 'width:100%;');
+    data_set($col1, 'docno.label', 'Document Series');
+    data_set($col1, 'docno.type', 'input');
+    data_set($col1, 'docno.required', true);
+
+    $txtfield =  array('col1' => $col1);
+
+    $style = 'width:400px;max-width:400px;';
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => 'Select company', 'data' => [], 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style];
+  }
+
 
   public function createtab2($access, $config)
   {
@@ -879,55 +921,11 @@ class sj
 
     switch ($companyid) {
       case 40: //cdo
-        // $action = 0;
-        // $itemdesc = 1;
-        // $isqty = 2;
-        // $uom = 3;
-        // $serial = 4;
-        // $color = 5;
-        // $pnpcsr = 6; --
-        // $kgs = 7;
-        // $isamt = 8;
-        // $disc = 9;
-        // $ext = 10;
-        // $itemstatus = 11;
-        // $cost = 12;
-        // $markup = 13;
-        // $rebate = 14;
-        // $gprofit = 15;
-        // $wh = 16;
-        // $whname = 17;
-        // $ref = 18;
-        // $loc = 19;
-        // $expiry = 20;
-        // $rem = 21;
-        // $itemname = 22;
-        // $stock_projectname = 23;
-        // $noprint = 24;
-        // $barcode = 25;
 
         $column = ['action', 'itemdescription',  'isqty', 'uom', 'serialno', 'color', 'pnp', 'kgs', 'isamt', 'disc', 'ext', 'itemstatus', 'cost', 'markup', 'rebate', 'gprofit', 'wh', 'ref', 'loc', 'expiry', 'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
         $sortcolumn = ['action', 'itemdescription',  'isqty', 'uom', 'serialno', 'color', 'pnp', 'kgs', 'isamt', 'disc', 'ext', 'itemstatus', 'cost', 'markup', 'rebate', 'gprofit', 'wh', 'ref', 'loc', 'expiry', 'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode'];
         break;
       case 60: //transpower
-        // $action = 0;
-        // $barcode = 1;
-        // $isqty = 2;
-        // $uom = 3;
-        // $itemname = 4;
-        // $rem = 5;
-        // $isamt = 6;
-        // $disc = 7;
-        // $agentamt = 8;
-        // $ext = 9;
-        // $startwire = 10;
-        // $endwire = 11;
-        // $cost = 12;
-        // $markup = 13;
-        // $wh = 14;
-        // $whname = 15;
-        // $ref = 16;
-
         $column = ['action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'agentamt', 'ext', 'startwire', 'endwire', 'cost', 'markup', 'wh', 'whname', 'ref'];
         $sortcolumn = ['action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'agentamt', 'ext', 'startwire', 'endwire', 'cost', 'markup', 'wh', 'whname', 'ref'];
         break;
@@ -935,38 +933,23 @@ class sj
 
         $column = ['action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref'];
         $sortcolumn = ['action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref'];
-        // foreach ($column as $key => $value) {
-        //   $$value = $key;
-        // }
         break;
       case 64: //excilin
         $column = ['action', 'barcode', 'isqty',  'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'consignpr', 'disc2', 'markup', 'wh', 'ref', 'rem'];
         $sortcolumn = ['action', 'barcode',  'isqty', 'uom', 'itemname', 'rem',  'isamt',  'disc', 'ext', 'cost', 'consignpr', 'disc2', 'markup', 'wh', 'ref', 'rem'];
-        // foreach ($column as $key => $value) {
-        //   $$value = $key;
-        // }
         break;
 
       case 65: //metrodragon
         $column = ['action', 'barcode', 'isqty', 'weight', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem'];
         $sortcolumn = ['action', 'barcode',  'isqty', 'weight', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem'];
-        // foreach ($column as $key => $value) {
-        //   $$value = $key;
-        // }
         break;
       case 67: //yulick
-        $column = ['action', 'barcode', 'isqty', 'isqty2', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem', 'loc', 'expiry'];
-        $sortcolumn = ['action', 'barcode',  'isqty', 'isqty2', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem', 'loc', 'expiry'];
-        // foreach ($column as $key => $value) {
-        //   $$value = $key;
-        // }
+        $column = ['action', 'barcode', 'isqty', 'isqty2', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem', 'loc', 'expiry', 'kgs', 'issp'];
+        $sortcolumn = ['action', 'barcode',  'isqty', 'isqty2', 'uom', 'itemname',  'isamt',  'disc', 'ext', 'cost', 'markup', 'wh', 'ref', 'rem', 'loc', 'expiry', 'kgs', 'issp'];
         break;
       case 72: //hahsy
         $column = ['action', 'itemdescription', 'serialno',  'isqty',   'uom',  'kgs',  'isamt', 'disc', 'ext', 'itemstatus', 'cost',  'markup', 'rebate', 'gprofit',  'itemdesc',  'wh', 'whname',  'ref', 'loc',  'expiry', 'rem', 'itemname', 'stock_projectname',  'noprint', 'barcode', 'issp', 'rem2', 'cbm'];
         $sortcolumn = ['action', 'itemdescription', 'serialno', 'isqty',  'uom', 'kgs', 'isamt', 'disc',  'ext', 'itemstatus',  'cost', 'markup',  'rebate', 'gprofit', 'itemdesc', 'wh', 'whname', 'ref',  'loc',  'expiry',  'rem', 'itemname', 'stock_projectname', 'noprint', 'barcode', 'issp', 'rem2', 'cbm'];
-        // foreach ($column as $key => $value) {
-        //   $$value = $key;
-        // }
         break;
     }
 
@@ -1080,9 +1063,9 @@ class sj
         $obj[0]['inventory']['columns'][$action]['style'] = 'text-align: left; width: 150px;whiteSpace: normal;min-width:150px';
         break;
     }
-    $obj[0]['inventory']['columns'][$kgs]['label'] = 'Selling Kgs';
+    if (isset($column['kgs'])) $obj[0]['inventory']['columns'][$kgs]['label'] = 'Selling Kgs';
     if (!$iskgs) {
-      $obj[0]['inventory']['columns'][$kgs]['type'] = 'coldel';
+      if (isset($column['kgs'])) $obj[0]['inventory']['columns'][$kgs]['type'] = 'coldel';
     }
 
     if ($viewcost == '0') {
@@ -1260,7 +1243,6 @@ class sj
         $obj[0]['inventory']['columns'][$rem]['label'] = 'Notes';
         $obj[0]['inventory']['columns'][$whname]['label'] = 'Whname';
         $obj[0]['inventory']['columns'][$whname]['readonly'] = true;
-        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
 
         $obj[0][$this->gridname]['descriptionrow'] = [];
         break;
@@ -1277,7 +1259,6 @@ class sj
         $obj[0]['inventory']['columns'][$rem]['style'] = 'text-align: left;width: 150px;whiteSpace: normal;min-width:150px;max-width:150px;';
         $obj[0]['inventory']['columns'][$rem]['type'] = 'input';
         $obj[0]['inventory']['columns'][$rem]['label'] = 'Notes';
-        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         $obj[0]['inventory']['descriptionrow'] = [];
         $this->modulename = 'SALES INVOICE';
         break;
@@ -1290,20 +1271,19 @@ class sj
         $obj[0]['inventory']['columns'][$disc2]['label'] = 'Customer Markup Discount';
         $obj[0]['inventory']['columns'][$disc2]['style'] = 'width:150px;whiteSpace: normal;min-width:150px;max-width:150px;';
         $obj[0]['inventory']['columns'][$disc2]['align'] = 'text-right';
-        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         $obj[0][$this->gridname]['descriptionrow'] = [];
         break;
       case 65: //metrodragon
         $obj[0]['inventory']['columns'][$weight]['label'] = 'Weight';
         $obj[0]['inventory']['columns'][$weight]['readonly'] = false;
-        $obj[0]['inventory']['columns'][$barcode]['type'] = 'coldel';
-        $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$barcode]['type'] = 'coldel';;
         break;
       case 67: //yulick
         $obj[0]['inventory']['columns'][$isqty]['label'] = 'Dispatch Qty';
         $obj[0]['inventory']['columns'][$isqty2]['label'] = 'Customer Qty';
-        $obj[0]['inventory']['columns'][$isqty2]['readonly'] = true;
+        $obj[0]['inventory']['columns'][$isqty2]['readonly'] = false;
         $obj[0]['inventory']['columns'][$barcode]['type'] = 'coldel';
+        $obj[0]['inventory']['columns'][$kgs]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$issp]['type'] = 'coldel';
         $obj[0]['inventory']['columns'][$rem]['type'] = 'lookup';
         $obj[0]['inventory']['columns'][$rem]['readonly'] = true;
@@ -1607,6 +1587,9 @@ class sj
       case 19: //hosegem
         $fields = [['dateid', 'terms'], 'due', 'dacnoname', 'dwhname', 'deldate', 'crref'];
         break;
+      case 21: //kinggeorge
+        $fields = [['dateid', 'terms'], ['due', 'pricegroup'], 'dacnoname', 'dwhname'];
+        break;
       case 69: //cemphil
       case 24: //goofound
         array_push($fields, 'statname', ['plateno', 'licenseno'], ['weightout', 'weightouttime']);
@@ -1766,9 +1749,9 @@ class sj
       case 67: //yulick
         data_set($col3, 'yourref.label', 'PO#');
         data_set($col3, 'vendorname.label', 'Vendor Code');
-        data_set($col3, 'vendorname.readonly', true);
+        data_set($col3, 'vendorname.class', 'sbccsreadonly');
         data_set($col3, 'clientpref.label', 'Requestor');
-        data_set($col3, 'clientpref.readonly', true);
+        data_set($col3, 'clientpref.class', 'sbccsreadonly');
         break;
       default:
         data_set($col3, 'yourref.label', 'PO#');
@@ -1928,6 +1911,9 @@ class sj
       $data[0]['dewt'] = '';
       $data[0]['ewtrate'] = 0;
     }
+    if ($params['companyid'] == 21) { //kinggeorge
+      $data[0]['class'] = '';
+    }
     return $data;
   }
 
@@ -1951,7 +1937,8 @@ class sj
       date_add($newdate, date_interval_create_from_date_string($totalDays . " days"));
       $data[0]['dateid'] = date_format($newdate, "Y-m-d");
       $data[0]['due'] = date_format($newdate, "Y-m-d");
-    } else {
+      $data[0]['class'] = '';
+      } else {
       $data[0]['dateid'] = $this->othersClass->getCurrentDate();
       $data[0]['due'] = $this->othersClass->getCurrentDate();
     }
@@ -2010,13 +1997,23 @@ class sj
     $name = $this->coreFunctions->getfieldvalue('client', 'clientname', 'client=?', [$data[0]['wh']]);
     $data[0]['whname'] = $name;
     $data[0]['dwhname'] = '';
+
+
     $data[0]['projectid'] = '0';
+    $data[0]['projectcode'] = '';
+    $data[0]['projectname'] = '';
+
+    if (isset($params['dataparams']['projectid'])) { //used in yulick
+      Logger('projectid: ' . $params['dataparams']['projectid']);
+      $data[0]['projectid'] = $params['dataparams']['projectid'];
+      $data[0]['projectcode'] = $this->coreFunctions->getfieldvalue('projectmasterfile', 'code', 'line=?', [$data[0]['projectid']]);
+      $data[0]['projectname'] = $params['dataparams']['selectprefix']['label'];
+    }
+
     $data[0]['billid'] = '0';
     $data[0]['shipid'] = '0';
     $data[0]['billcontactid'] = '0';
     $data[0]['shipcontactid'] = '0';
-    $data[0]['projectcode'] = '';
-    $data[0]['projectname'] = '';
     $data[0]['branchcode'] = '';
     $data[0]['branchname'] = '';
     $data[0]['dbranchname'] = '';
@@ -2130,6 +2127,11 @@ class sj
       $plateno = ",ifnull(hinfo.plateno,'') as plateno";
     }
 
+    $addfield = "";
+    if ($companyid == 21) { //kinggeorge
+      $addfield = ", hinfo.pricegrp as class";
+    }
+
     $qryselect = "select
          num.center,
          head.trno,
@@ -2185,7 +2187,7 @@ class sj
          hinfo.interestrate,hinfo.downpayment,  head.phaseid, ps.code as phase,  head.modelid, hm.model as housemodel, head.blklotid, 
            bl.blk as blklot,  bl.lot, amen.line as amenityid, amen.description as amenityname, 
            subamen.line as subamenityid, subamen.description as subamenityname, head.isreported,
-           head.bpo, head.ctnsno, head.invoiceno, head.rfno, head.conaddr $plateno, head.ismarkup, hinfo.strdate1 as received";
+           head.bpo, head.ctnsno, head.invoiceno, head.rfno, head.conaddr $plateno, head.ismarkup, hinfo.strdate1 as received, ifnull(client.vendorname,'') as vendorname, ifnull(client.clientpref,'') as clientpref $addfield";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -2517,6 +2519,18 @@ class sj
           $info['editdate'] = $this->othersClass->getCurrentTimeStamp();
           $this->coreFunctions->sbcupdate('cntnuminfo', $info, ['trno' => $head['trno']]);
           break;
+        case 21: //kinggeorge
+          $info['trno'] = $head['trno'];
+          $info['pricegrp'] = isset($head['class']) ? $head['class'] : '';
+          $info['editby'] = $config['params']['user'];
+          $info['editdate'] = $this->othersClass->getCurrentTimeStamp();
+          $exist = $this->coreFunctions->getfieldvalue("cntnuminfo", "trno", "trno=?", [$head['trno']]);
+          if ($exist == '') {
+            $this->coreFunctions->sbcinsert('cntnuminfo', $info);
+          } else {
+            $this->coreFunctions->sbcupdate('cntnuminfo', $info, ['trno' => $head['trno']]);
+          }
+          break;
       }
     } else {
       $data['doc'] = $config['params']['doc'];
@@ -2572,6 +2586,12 @@ class sj
           $info = [];
           $info['trno'] = $head['trno'];
           $info['strdate1'] = $head['received'];
+          $this->coreFunctions->sbcinsert('cntnuminfo', $info);
+          break;
+        case 21: //kinggeorge
+          $info = [];
+          $info['trno'] = $head['trno'];
+          $info['pricegrp'] = isset($head['class']) ? $head['class'] : '';
           $this->coreFunctions->sbcinsert('cntnuminfo', $info);
           break;
       }
@@ -3750,9 +3770,47 @@ class sj
       case 'uploadexcel':
         return $this->othersClass->uploadexcel($config);
         break;
-      default:
-        return ['status' => 'false', 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];
+      case 'selectprefix':
+        return $this->createprefixfilter($config);
         break;
+      case 'newdocno':
+        return $this->newdocno($config);
+        break;
+      default:
+        return ['status' => false, 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];
+        break;
+    }
+  }
+
+  public function newdocno($config)
+  {
+    try {
+      $params = $config['params'];
+      $doctype = $params['dataparams']['print'];
+      $seq = $params['dataparams']['docno'];
+      $projectid = $params['dataparams']['projectid'];
+
+      if (!is_numeric($seq)) {
+        return ['status' => false, 'msg' => 'Please input valid ' . $doctype . ' series.'];
+      }
+
+      if ($projectid == 0) return ['status' => false, 'msg' => 'Please select valid Company.'];
+      if ($doctype == "") return ['status' => false, 'msg' => 'Please select valid print out format.'];
+
+      $prefixfield = '';
+      if ($doctype  == 'DR') {
+        $prefixfield = 'drprefix';
+      } else if ($doctype == 'SI') {
+        $prefixfield = 'siprefix';
+      }
+      $prefix = $this->coreFunctions->datareader("select " . $prefixfield . " as value from projectmasterfile where line=" . $projectid);
+
+      if ($prefix == "") return ['status' => false, 'msg' => 'Please input setup valid prefix.'];
+      $checkdocno  = $this->othersClass->PadJ($prefix . $seq, $this->companysetup->getdocumentlength($config['params']), 0);
+
+      return ['status' => true, 'docno' => $checkdocno, 'trno' => 0, 'actiontype' => 'searchdocno'];
+    } catch (Exception $e) {
+      return ['status' => false, 'msg' => $e->getMessage()];
     }
   }
 
@@ -4708,7 +4766,10 @@ class sj
 
         $weightin = isset($weightin) ? $weightin : 0;
         $weightout = isset($weightout) ? $weightout : 0;
-        $kilo = ($weightout - $weightin) / $qty;
+        $kilo = 0;
+        if ($qty) {
+          $kilo = ($weightout - $weightin) / $qty;
+        }
 
         $headinfo = [
           'kilo' => $kilo
@@ -7199,4 +7260,29 @@ class sj
     } //end foreach
     return ['row' => $rows, 'status' => true, 'msg' => 'Items were successfully added.', 'reloadhead' => true];
   } //end function
+
+
+  public function sbcscript($config)
+  {
+    if ($config['params']['companyid'] == 67) { //yulick
+      return [
+        'report' => '
+              if(payload.field == "selectprefix"){
+                state.reportobject.txtdata[0].projectid = payload.value.value
+              }
+              if(payload.field == "docno"){
+                var docno = String(payload.value || "").trim();
+
+                // digits only (no letters, spaces, symbols, decimals, negatives)
+                if (docno !== "" && !/^[0-9]+$/.test(docno)) {
+                  alert("Docno must be a valid number only.");
+                  state.reportobject.txtdata[0].docno = "";
+                }
+              }  
+        '
+      ];
+    } else {
+      return true;
+    }
+  }
 } //end class

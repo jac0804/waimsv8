@@ -122,7 +122,7 @@ class pendinglockedapv
         $adminid = $config['params']['adminid'];
 
         $qry = "select head.docno,m.modulename as doc,head.trno,date(head.dateid) as dateid,cl.clientname,m.sbcpendingapp,head.rem,
-        format(ifnull((select sum(cr) from ladetail where ladetail.trno=head.trno),0),2) as ext,'' as rem2,p.approver,
+        format(ifnull((select sum(cr) from ladetail where ladetail.trno=head.trno and ladetail.acnoid in (528,530)),0),2) as ext,'' as rem2,p.approver,
         '$url' as url,'DBTODO' as tabtype,'module' as moduletype
                 from lahead as head
                 left join pendingapp as p on p.trno=head.trno and p.doc='PV'

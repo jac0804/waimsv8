@@ -30,6 +30,7 @@ use App\Http\Classes\modules\customerservice\ca;
 use App\Http\Classes\selectClass;
 
 use Exception;
+use Illuminate\Support\Facades\Log;
 use phpDocumentor\Reflection\DocBlock\Tags\Var_;
 use Throwable;
 use Session;
@@ -1625,7 +1626,6 @@ class moduleClass
 						$this->config['params']['fixcenter'] = '001';
 						break;
 				}
-
 				$docno = trim($this->config['params']['docno']);
 				$this->checkdocno($docno, 'GETLASTSEQ');
 				$this->othersClass->setDefaultTimeZone();
@@ -2155,6 +2155,12 @@ class moduleClass
 						$message = ''; //'Please setup valid prefix for Branch ';
 						$this->config['return'] = ['trno' => 0, 'docno' => '', 'status' => true, 'msg' => $message, 'type' => ''];
 						return $this;
+					} else if ($this->config['params']['doc'] == 'SJ' || $this->config['params']['doc'] == 'CR') {
+						if ($this->config['params']['companyid'] == 67) { // yulick
+							$message = 'Please setup valid prefix in "Company List" module.';
+						} else {
+							$message = 'Please setup valid prefix in "MANAGE PREFIXES" module under Transaction Utilities.';
+						}
 					} else {
 						$message = 'Please setup valid prefix in "MANAGE PREFIXES" module under Transaction Utilities.';
 					}
@@ -2169,6 +2175,7 @@ class moduleClass
 						$message = 'Invalid prefix , Available prefixes are: [' . $prefix . ']';
 					}
 				}
+
 				$this->config['return'] = ['trno' => 0, 'docno' => '', 'status' => false, 'msg' => $message, 'type' => ''];
 			}
 			return $this;
@@ -2348,7 +2355,6 @@ class moduleClass
 					}
 				}
 
-
 				if ($this->config['params']['companyid'] == 36) { //rozlab
 					if ($this->config['params']['doc'] == 'AP') {
 						$arrOurref = $this->coreFunctions->opentable("select ourref from lahead where ourref='" . $this->config['params']['head']['ourref'] . "' and trno<>" . $this->config['params']['head']['trno'] . " union all select ourref from glhead where ourref='" . $this->config['params']['head']['ourref'] . "' and trno<>" . $this->config['params']['head']['trno']);
@@ -2467,11 +2473,24 @@ class moduleClass
 					}
 				}
 
+				if ($this->config['params']['companyid'] == 71) { //buenatech					
+					if ($this->config['params']['doc'] == 'UE') {
+						$joheadqty = floatval($this->coreFunctions->getfieldvalue("hpdhead", 'qty-prodqa', 'trno=?', [$this->config['params']['head']['pdtrno']]));
+						$pdqty = $this->config['params']['head']['qty'];
+						if ($pdqty > $joheadqty) {
+							$this->config['return'] = ['trno' => 0, 'docno' => '', 'msg' => 'Quantity Produce is greater that JO Qty. ', 'status' => false];
+							return $this;
+						}
+					}
+				}
+
 				$this->checkdocno($this->config['params']['head']['docno'], 'GET');
 				$this->config['params']['head']['docno'] = $this->config['newdocno'];
 				$this->isdocnoprefixvalid();
 				$blnExist = $this->config['isdocnoprefixvalid'];
 				if ($blnExist) {
+					Logger('--- savehead isdocnoprefixvalid succeed');
+
 					if ($this->config['params']['trno'] != 0) {
 						// update
 						$returnhead = $this->config['docmodule']->updatehead($this->config, true);
@@ -2488,6 +2507,8 @@ class moduleClass
 					// get the latest data
 					$this->loadheaddata();
 				} else {
+					Logger('--- savehead isdocnoprefixvalid failed');
+
 					$prefix = "/";
 					$prefixes = $this->othersClass->getPrefixes($this->config['params']['doc'], $this->config);
 					if (empty($prefixes)) {
@@ -2902,6 +2923,7 @@ class moduleClass
 		return $this;
 	} //end function
 
+
 	public function getmoduleaccess($attrib)
 	{
 		$access = $this->config['access'];
@@ -3288,46 +3310,50 @@ class moduleClass
 
 	public function execute()
 	{
-		if (isset($this->config['allowlogin'])) {
-			if (!$this->config['allowlogin']) {
+		try {
+			if (isset($this->config['allowlogin'])) {
+				if (!$this->config['allowlogin']) {
 
-				return response()->json(['status' => 'ipdenied', 'msg' => 'Sorry, Please contact your Network Administrator.'], 200);
+					return response()->json(['status' => 'ipdenied', 'msg' => 'Sorry, Please contact your Network Administrator.'], 200);
+				}
 			}
-		}
 
-		if (isset($this->config['loginexpired'])) {
-			if (!$this->config['loginexpired']) {
+			if (isset($this->config['loginexpired'])) {
+				if (!$this->config['loginexpired']) {
 
-				return response()->json(['status' => 'invalid', 'msg' => 'Sorry, you are not allowed to access at this moment.'], 200);
+					return response()->json(['status' => 'invalid', 'msg' => 'Sorry, you are not allowed to access at this moment.'], 200);
+				}
 			}
-		}
 
-		if (isset($this->config['isposted'])) {
-			if ($this->config['isposted']) {
-				return response()->json(['status' => false, 'msg' => 'Already posted. Please wait while connecting to the server.', 'checkposted' => true], 200);
-			} else if ($this->config['islocked']) {
-				if (isset($this->config['return']['islocked'])) {
-					if (!$this->config['return']['islocked']) {
-						return response()->json(['status' => false, 'msg' => 'Document unlocked.', 'checkposted' => true], 200);
+			if (isset($this->config['isposted'])) {
+				if ($this->config['isposted']) {
+					return response()->json(['status' => false, 'msg' => 'Already posted. Please wait while connecting to the server.', 'checkposted' => true], 200);
+				} else if ($this->config['islocked']) {
+					if (isset($this->config['return']['islocked'])) {
+						if (!$this->config['return']['islocked']) {
+							return response()->json(['status' => false, 'msg' => 'Document unlocked.', 'checkposted' => true], 200);
+						} else {
+							return response()->json(['status' => false, 'msg' => $this->config['return']['msg'], 'checkposted' => true], 200);
+						}
+					}
+					return response()->json(['status' => false, 'msg' => 'Already locked. Please wait while connecting to the server.', 'checkposted' => true], 200);
+				} else {
+					$request = Request();
+					if ($request->isMethod('get')) {
+						return $this->config['return'];
 					} else {
-						return response()->json(['status' => false, 'msg' => $this->config['return']['msg'], 'checkposted' => true], 200);
+						return response()->json($this->config['return'], 200);
 					}
 				}
-				return response()->json(['status' => false, 'msg' => 'Already locked. Please wait while connecting to the server.', 'checkposted' => true], 200);
 			} else {
-				$request = Request();
-				if ($request->isMethod('get')) {
+				if (Request::isMethod('get')) {
 					return $this->config['return'];
 				} else {
 					return response()->json($this->config['return'], 200);
 				}
 			}
-		} else {
-			if (Request::isMethod('get')) {
-				return $this->config['return'];
-			} else {
-				return response()->json($this->config['return'], 200);
-			}
+		} catch (Exception $e) {
+			return response()->json(['status' => false, 'msg' => 'Failed to execute the request process. <br>' . $e->getMessage(), 'checkposted' => true], 200);
 		}
 	} // end function
 

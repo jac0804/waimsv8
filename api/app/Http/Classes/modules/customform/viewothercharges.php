@@ -62,7 +62,7 @@ class viewothercharges
         $isposted = $this->othersClass->isposted2($trno, "cntnum");
         $fields = ['ied', 'bankcharges', 'interest', 'brokerfee', 'arrastre'];
         if ($companyid == 71) {
-            $fields = ['ied', 'bankcharges', 'brokerfee', 'brokerage', 'interest', 'arrastre', 'percentsales'];
+            $fields = ['ied', 'bankcharges', 'bclient', 'brokerfee', 'brokerage', 'interest', 'arrastre', 'percentsales'];
         }
         $col1 = $this->fieldClass->create($fields);
         if ($isposted) {
@@ -70,6 +70,7 @@ class viewothercharges
             data_set($col1, 'bankcharges.readonly', true);
             data_set($col1, 'interest.readonly', true);
             data_set($col1, 'brokerfee.readonly', true);
+            data_set($col1, 'brokerage.readonly', true);
             data_set($col1, 'arrastre.readonly', true);
             if ($companyid == 71) {
                 data_set($col1, 'percentsales.readonly', true);
@@ -92,6 +93,10 @@ class viewothercharges
         data_set($col1, 'interest.label', 'Interest');
 
         if ($companyid == 71) { // buenatech
+            data_set($col1, 'bclient.label', 'Supplier');
+            data_set($col1, 'bclient.lookupclass', 'lookupsupplier');
+            data_set($col1, 'bclient.action', 'lookupsupplier');
+            data_set($col1, 'bclient.class', 'csbclient sbccsreadonly');
             data_set($col1, 'ied.label', 'BOC'); // ied in DB
             data_set($col1, 'interest.label', 'VAT'); // interest in DB
             data_set($col1, 'arrastre.label', 'Purchase'); // arrastre in DB
@@ -112,16 +117,20 @@ class viewothercharges
 
         $qryselect = '';
         $extraFields = '';
+        $join ='';
         if ($companyid == 71) {
-            $qryselect = ', format(charges, 6) as percentsales, format(overdue, 2) as totalcharges, forex, format(brokerage, 2) as brokerage';
-            $extraFields = ', charges, overdue, forex, brokerage';
+            $qryselect = ', format(charges, 5) as percentsales, format(overdue, 2) as totalcharges, forex, format(brokerage, 2) as brokerage, 
+            t.supplierid as bclientid, c.client as bclient, c.clientname as bclientname';
+            $extraFields = ', charges, overdue, forex, brokerage, supplierid';
+            $join = ' left join client as c on c.clientid = t.supplierid ';
         }
 
-        return $this->coreFunctions->opentable("select trno, format(ied, 2) as ied, format(bankcharges, 2) as bankcharges, format(interest, 2) as interest, format(brokerfee, 2) as brokerfee, format(arrastre, 2) as arrastre" . $qryselect . " from (
+        return $this->coreFunctions->opentable("select trno, format(ied, 2) as ied, format(bankcharges, 2) as bankcharges, format(interest, 2) as interest, 
+        format(brokerfee, 2) as brokerfee, format(arrastre, 2) as arrastre" . $qryselect . " from (
         select trno, ied, bankcharges, interest, brokerfee, arrastre" . $extraFields . " from " . $this->head . " where trno=" . $trno . "
         union all
         select trno, ied, bankcharges, interest, brokerfee, arrastre" . $extraFields . " from " . $this->hhead . " where trno=" . $trno . "
-        ) as t limit 1");
+        ) as t " . $join . " limit 1");
     }
 
     public function data()
@@ -129,32 +138,14 @@ class viewothercharges
         return [];
     }
 
-    // public function loaddata($config)
-    // {
-    //     $dataparams = $config['params']['dataparams'];
-    //     $companyid = $config['params']['companyid'];
-    //     $isposted = $this->othersClass->isposted2($dataparams['trno'], "cntnum");
-    //     if ($isposted)
-    //     return ['status' => false, 'msg' => 'Transaction already posted.'];
-
-    //     $qry = "update " . $this->head . " set ied='" . $dataparams['ied'] . "', bankcharges='" . $dataparams['bankcharges'] . "', interest='" . $dataparams['interest'] . "', brokerfee='" . $dataparams['brokerfee'] . "', arrastre='" . $dataparams['arrastre'] . "'";
-
-    //     if ($companyid == 71) {
-    //         $qry .= ", percentsales='" . $dataparams['percentsales'] . "', totalcharges='" . $dataparams['totalcharges'] . "'";
-    //     }
-
-    //     $qry .= " where trno=" . $dataparams['trno'];
-
-    //     if ($this->coreFunctions->execqry($qry, 'update')) {
-    //         return ['status' => true, 'msg' => 'Record updated', 'closecustomform' => true];
-    //     }
-    //     return ['status' => false, 'msg' => 'Error updating record'];
-    // }
-
     public function loaddata($config)
     {
         $dataparams = $config['params']['dataparams'];
         $companyid = $config['params']['companyid'];
+        $supplierid =0;
+        if ($companyid == 71) {
+            $supplierid = isset($dataparams['bclientid']) ? intval($dataparams['bclientid']) : 0;
+        }
         $isposted = $this->othersClass->isposted2($dataparams['trno'], "cntnum");
         if ($isposted) return ['status' => false, 'msg' => 'Transaction already posted.'];
 
@@ -191,6 +182,7 @@ class viewothercharges
             $denominator = $arrastreVal * $forex;
             $percentsales = $denominator != 0 ? ((($boc + $bankchargesVal + $brokerfeeVal) - $vat) / $denominator) : 0;
             $charges = $this->othersClass->sanitizekeyfieldFast('charges', $percentsales, $lookups);
+            $qry .= ", supplierid=" . $supplierid;
             $qry .= ", charges='" . $charges . "'";
         }
 

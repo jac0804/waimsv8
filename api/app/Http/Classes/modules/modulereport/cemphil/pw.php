@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Classes\modules\modulereport\goodfound;
+namespace App\Http\Classes\modules\modulereport\cemphil;
 
 use Illuminate\Http\Request;
 use App\Http\Requests;

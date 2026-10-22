@@ -1162,7 +1162,11 @@ class othersClass
 
   public function getPrefixes($doc, $config)
   {
-    return $this->commonsbc->getPrefixes($doc, $config);
+    if ($config['params']['companyid'] == 67 && ($doc == 'SJ' || $doc == 'CR')) {
+      return $this->commonsbc->getPrefixesYulick($doc, $config);
+    } else {
+      return $this->commonsbc->getPrefixes($doc, $config);
+    }
   }
 
   public function Prefixes($pref, $config)
@@ -1610,6 +1614,10 @@ class othersClass
         break;
       case 71: //buenatech
         switch ($config['params']['doc']) {
+          case 'RR':
+            $addedfield = ",ied, bankcharges, interest, brokerfee, brokerage, arrastre, charges, supplierid";
+            $selectaddedfield = ",head.ied, head.bankcharges, head.interest, head.brokerfee, head.brokerage, head.arrastre, head.charges, head.supplierid";
+            break;
           case 'ST':
             $addedfield = ",pdtrno";
             $selectaddedfield = ",head.pdtrno";
@@ -1729,7 +1737,7 @@ class othersClass
                 tsline,fcost,rebate,rem,stageid,locid,palletid,locid2,palletid2,isextract,pickerid,pickerstart,pickerend,whmanid,whmandate,forkliftid,suppid,itemstatus, 
                 projectid,sorefx,solinex,sgdrate,poref, podate,isqty2,original_qty,reqtrno,reqline,agentid,kgs,insurance,sortline,freight,invid,expid,iscomponent,isqty3,
                 prevqty,ckrefx,cklinex,ckqa,color,rtrefx,rtlinex,phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,
-                charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex,poqa,rrqa, custdisc, consignpr, cbm)
+                charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex,poqa,rrqa, custdisc, consignpr, cbm,ewtrate,ewtcode)
 
                 SELECT stock.trno, stock.line ,ifnull(item.itemid,0) as itemid, stock.uom,stock.whid,stock.loc,stock.loc2,stock.expiry,stock.ref,stock.disc,stock.cost,
                 stock.qty,stock.void,stock.rrcost, stock.rrqty, stock.ext, stock.encodeddate,stock.qa,
@@ -1740,7 +1748,7 @@ class othersClass
                 stock.podate,stock.isqty2,stock.original_qty,stock.reqtrno,stock.reqline,stock.agentid,stock.kgs,stock.insurance,stock.sortline,stock.freight,stock.invid,stock.expid,stock.iscomponent,isqty3,prevqty,ckrefx,cklinex,ckqa,stock.color,stock.rtrefx,stock.rtlinex,
                 stock.phaseid,stock.modelid,stock.blklotid,stock.amenityid,stock.subamenityid,stock.reasonid,stock.charges,
                 stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck,stock.taskline,stock.jobline,stock.sjrefx,stock.sjlinex,
-                stock.rrrefx,stock.rrlinex,stock.poqa,stock.rrqa, stock.custdisc, stock.consignpr,stock.cbm
+                stock.rrrefx,stock.rrlinex,stock.poqa,stock.rrqa, stock.custdisc, stock.consignpr,stock.cbm,stock.ewtrate,stock.ewtcode
                 FROM " . $config['docmodule']->stock . " as stock left join item on item.itemid=stock.itemid
                 where stock.trno =?";
         break;
@@ -2522,6 +2530,10 @@ class othersClass
         break;
       case 71: //buenatech
         switch ($config['params']['doc']) {
+          case 'RR':
+            $addedfield = ",ied, bankcharges, interest, brokerfee, brokerage, arrastre, charges, supplierid";
+            $selectaddedfield = ",head.ied, head.bankcharges, head.interest, head.brokerfee, head.brokerage, head.arrastre, head.charges, head.supplierid";
+            break;
           case 'ST': //transfer material
             $addedfield = ",pdtrno";
             $selectaddedfield = ",head.pdtrno";
@@ -2647,7 +2659,7 @@ class othersClass
                 rem,comm,icomm,tstrno,tsline,iss2,isqty2,iscomponent,outputid,msako,tsako,itemhandling,itemcomm,
                 agent,kgs,isfromjo,fcost,rebate,stageid,palletid,locid,palletid2,locid2,isextract,pickerid,pickerstart,pickerend,whmanid,whmandate,forkliftid,suppid,itemstatus, projectid,sorefx,solinex,sgdrate,
                 poref, podate,original_qty,reqtrno,reqline,agentid,insurance,sortline,freight,invid,expid,isqty3,prevqty,color,rtrefx,rtlinex,
-                phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex, custdisc, consignpr, cbm)
+                phaseid,modelid,blklotid,amenityid,subamenityid,reasonid,charges,noprint,agentamt,startwire, endwire, porefx, polinex,cline,limitcheck,taskline,jobline,sjrefx,sjlinex,rrrefx,rrlinex, custdisc, consignpr, cbm,ewtrate,ewtcode)
                 SELECT stock.trno, stock.line, stock.refx, stock.linex ,ifnull(item.itemid,0) as itemid,stock.uom, stock.whid,stock.loc,stock.loc2,stock.expiry,
                 stock.disc, stock.cost, stock.qty, stock.rrcost, stock.rrqty, stock.ext, stock.isqty, stock.iss, stock.amt,
                 stock.isamt, stock.qa, stock.ref, encodeddate, encodedby, stock.editdate,stock.editby,stock.rem,stock.comm,stock.icomm,stock.tstrno,stock.tsline,
@@ -2657,7 +2669,7 @@ class othersClass
                 stock.poref, stock.podate,stock.original_qty,stock.reqtrno,stock.reqline,stock.agentid,stock.insurance,stock.sortline,stock.freight,stock.invid,stock.expid,isqty3,prevqty,stock.color,stock.rtrefx,stock.rtlinex,
                 stock.phaseid,stock.modelid,stock.blklotid,stock.amenityid,stock.subamenityid,stock.reasonid,stock.charges,
                 stock.noprint,stock.agentamt,stock.startwire, stock.endwire, stock.porefx, stock.polinex,stock.cline,stock.limitcheck,stock.taskline,stock.jobline,stock.sjrefx,stock.sjlinex,
-                stock.rrrefx,stock.rrlinex, stock.custdisc, stock.consignpr,stock.cbm
+                stock.rrrefx,stock.rrlinex, stock.custdisc, stock.consignpr,stock.cbm,stock.ewtrate,stock.ewtcode
                 FROM glstock as stock
                 left join item on item.itemid=stock.itemid
                 left join client on client.clientid=stock.whid
@@ -3604,6 +3616,31 @@ class othersClass
           }
         }
         break;
+      case 67: // yulick
+        // IN Transactions
+        $catchwt = $this->coreFunctions->opentable("select item.itemname, s.rrqty, ifnull(sum(weight),0) as wt from lastock as s left join item on item.itemid=s.itemid 
+                      left join serialin as ser on ser.trno=s.trno and ser.line=s.line where s.trno=" . $trno . " and item.iscatchwt=1 and s.qty<>0
+                      group by item.itemname,s.rrqty having s.rrqty<>ifnull(sum(weight),0)");
+        if (!empty($catchwt)) {
+          $pendingitems = '';
+          foreach ($catchwt as $cwkey => $cwval) {
+            $pendingitems = ($pendingitems == '' ? '' : ', ') . $cwval->itemname;
+          }
+          return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. catch items weight is not tally in the receive qty, ' . $pendingitems];
+        }
+
+        // OUT Transactions
+        $catchwt = $this->coreFunctions->opentable("select item.itemname, s.isqty, ifnull(sum(weight),0) as wt from lastock as s left join item on item.itemid=s.itemid 
+                      left join serialout as ser on ser.trno=s.trno and ser.line=s.line where s.trno=" . $trno . " and item.iscatchwt=1 and s.iss<>0
+                      group by item.itemname,s.isqty having s.isqty<>ifnull(sum(weight),0)");
+        if (!empty($catchwt)) {
+          $pendingitems = '';
+          foreach ($catchwt as $cwkey => $cwval) {
+            $pendingitems = ($pendingitems == '' ? '' : ', ') . $cwval->itemname;
+          }
+          return ['trno' => $trno, 'status' => false, 'msg' => 'Posting failed. catch items weight is not tally in the issuance qty, ' . $pendingitems];
+        }
+        break;
     }
 
     $docno = $this->coreFunctions->datareader('select docno as value from ' . $config['docmodule']->tablenum . ' where trno=?', [$trno]);
@@ -4256,14 +4293,21 @@ class othersClass
     $doc = $config['params']['doc'];
     $loc = 'stock.loc2';
 
+    $leftjoin = "";
+    $addselect = "";
+    if ($config['params']['companyid'] == 67) { //yulick
+      $leftjoin = ' join item on item.itemid=stock.itemid';
+      $addselect = ",item.iscatchwt ";
+    }
+
+
     $qry = "delete from " . $config['docmodule']->stock . " where tstrno<>0 and trno=?";
     if ($this->coreFunctions->execqry($qry, "delete", [$trno])) {
 
       $qry = "select trno,stock.line,refx,linex,tstrno,tsline,stock.itemid, stock.uom,stock.whid,stock.loc,
         stock.disc, stock.cost, stock.qty,stock.rrcost,stock.rrqty, stock.ext, stock.isqty,stock.iss,stock.amt,stock.isamt,
-        stock.qa, stock.ref,stock.encodeddate,stock.encodedby,stock.editdate,stock.editby,stock.rem,stock.comm,stock.icomm,stock.expiry,stock.palletid,stock.locid,stock.stageid
-         FROM lastock as stock
-       where trno=? and tstrno=0";
+        stock.qa, stock.ref,stock.encodeddate,stock.encodedby,stock.editdate,stock.editby,stock.rem,stock.comm,stock.icomm,stock.expiry,stock.palletid,stock.locid,stock.stageid" . $addselect . "
+         FROM lastock as stock " . $leftjoin . " where trno=? and tstrno=0";
 
       $data = $this->coreFunctions->opentable($qry, [$trno]);
       $last_line = $this->coreFunctions->datareader("select line as value from " . $config['docmodule']->stock . " where trno=? order by line desc limit 1", [$trno]);
@@ -4288,8 +4332,14 @@ class othersClass
           where stock.trno=? and stock.line=?";
 
         if ($this->coreFunctions->execqry($qryc, "insert", [$trno, $itmdata->line])) {
+
+          if (isset($itmdata->iscatchwt)) {
+            if ($itmdata->iscatchwt) goto insertSerialInHere;
+          }
+
           if ($this->companysetup->getserial($config['params'])) {
-            $serialout = $this->coreFunctions->opentable('select serial,chassis,color from serialout where trno=? and line=?', [$itmdata->trno, $itmdata->line]);
+            insertSerialInHere:
+            $serialout = $this->coreFunctions->opentable('select serial,chassis,color,weight from serialout where trno=? and line=?', [$itmdata->trno, $itmdata->line]);
             foreach ($serialout as $key => $value) {
               $serial['trno'] = $trno;
               $serial['line'] = $last_line;
@@ -4297,6 +4347,7 @@ class othersClass
               $serial['serial'] = $value->serial;
               $serial['chassis'] = $value->chassis;
               $serial['color'] = $value->color;
+              $serial['weight'] = $value->weight;
               $this->coreFunctions->sbcinsert('serialin', $serial);
             }
           }
@@ -4407,12 +4458,18 @@ class othersClass
   public function postcntnuminfo($config, $post)
   {
     $systemtype = $this->companysetup->getsystemtype($config['params']);
+    $companyid = $config['params']['companyid'];
     $trno = $config['params']['trno'];
     $status = 1;
     $msg = '';
 
     $table = 'cntnuminfo';
     $htable = 'hcntnuminfo';
+
+    $addfield = "";
+    if ($companyid == 21) { //kinggeorge
+      $addfield = ",pricegrp";
+    }
 
     if (!$post) {
       $table = 'hcntnuminfo';
@@ -4425,7 +4482,7 @@ class othersClass
     freight, reportedby, reportedby2, sdate1, sdate2, rem3,odometer,carrier,waybill,interestrate,downpayment, finterestrate, termsmonth, termspercentdp, termspercent, reservationdate, dueday, 
     reservationfee, farea, fpricesqm, ftcplot, ftcphouse, fsellingpricegross, fdiscount, fsellingpricenet, fcontractprice, fmiscfee, fmonthlydp, fmonthlyamortization, ffi, fmri, fma1, fma2, fma3,loanamt,transtype,
     isconfirmed,isacknowledged,ischqreleased,ispaid,penalty,rebate, strdate1, strdate2, tripdate, jotrno,
-    whfromid, whtoid, loadedby, vessel, voyageno, sealno, unit,weight, valamt,cumsmt,delivery,depcr,depdb,commamt,commvat,recomm,complaints,kmno)
+    whfromid, whtoid, loadedby, vessel, voyageno, sealno, unit,weight, valamt,cumsmt,delivery,depcr,depdb,commamt,commvat,recomm,complaints,kmno" . $addfield . ")
 
     select trno, status, checkerdate, checkerby, dispatchdate, dispatchby, logisticdate, logisticby, checkerid, checkerlocid, truckid, receivedate, receiveby, scheddate, checkerrcvdate, forloadby, forloaddate, checkerdone, 
     editby, editdate, rem2, releasedate, sono,instructions, itemid, uom2, batchsize, yield, lotno,dropoffwh,trnxtype, plateno, driverid, helperid, packdate, licenseno, hauler,termsyear, batchno,cwano,cwatime,
@@ -4433,7 +4490,7 @@ class othersClass
     ordate,orno,freight, reportedby, reportedby2, sdate1, sdate2, rem3,odometer,carrier,waybill,interestrate,downpayment,finterestrate, termsmonth, termspercentdp, termspercent, reservationdate, dueday, 
     reservationfee, farea, fpricesqm, ftcplot, ftcphouse, fsellingpricegross, fdiscount, fsellingpricenet, fcontractprice, fmiscfee, fmonthlydp, fmonthlyamortization, ffi, fmri, fma1, fma2, fma3,loanamt,transtype,
     isconfirmed,isacknowledged,ischqreleased,ispaid,penalty,rebate, strdate1, strdate2, tripdate, jotrno,
-    whfromid, whtoid, loadedby, vessel, voyageno, sealno, unit,weight, valamt,cumsmt,delivery,depcr,depdb,commamt,commvat,recomm,complaints,kmno
+    whfromid, whtoid, loadedby, vessel, voyageno, sealno, unit,weight, valamt,cumsmt,delivery,depcr,depdb,commamt,commvat,recomm,complaints,kmno" . $addfield . "
     from " . $table . " where trno=?";
 
     if (!$this->coreFunctions->execqry($qry, "insert", [$trno])) {
@@ -6202,7 +6259,7 @@ class othersClass
                 default:
                   $head['agent'] = $data[0]->agent;
                   $head['position'] = $data[0]->position;
-                  $head['industry'] = $data[0]->industry;
+                  $head['industryid'] = $data[0]->industryid;
                   $head['optrno'] = $data[0]->trno;
                   $head['billid'] = $data[0]->billid;
                   $head['shipid'] = $data[0]->shipid;
@@ -6291,7 +6348,7 @@ class othersClass
             $viewall = $this->checkAccess($config['params']['user'], 2232);
             if ($viewall == '0') {
               $pid = $this->coreFunctions->getfieldvalue("useraccess", "project", "username=?", [$config['params']['user']]);
-              $head['projectid'] = $this->coreFunctions->getfieldvalue("projectmasterfile", "line", "code=?", [$pid]);
+              $head['projectid'] = $this->coreFunctions->getfieldvalue("projectmasterfile", "line", "code=?", [$pid], '', true);
             }
           }
 
@@ -6683,7 +6740,7 @@ class othersClass
                       $config['params']['data']['uom'] = $data[$key2]->uom;
                       $config['params']['data']['qty'] = $data[$key2]->pending;
                       $config['params']['data']['wh'] = $head['wh'];
-                      $config['params']['data']['loc'] = '';
+                      $config['params']['data']['loc'] = isset($data[$key2]->loc) ? $data[$key2]->loc : '';
                       $config['params']['data']['expiry'] = '';
                       $config['params']['data']['rem'] = '';
                       if ($action == 'MAKEJO') {
@@ -6895,7 +6952,7 @@ class othersClass
                   $config['params']['trno'] = $trno;
                   $config['params']['data']['disc'] = $data[$key2]->disc;
                   $config['params']['data']['wh'] = $data[$key2]->wh2;
-                  $config['params']['data']['loc'] = '';
+                  $config['params']['data']['loc'] = isset($data[$key2]->loc) ? $data[$key2]->loc : '';
                   $config['params']['data']['expiry'] = '';
                   $config['params']['data']['rem'] = $data[$key2]->rem2;
                   $config['params']['data']['refx'] = $data[$key2]->trno;
@@ -7412,7 +7469,7 @@ class othersClass
                               }
 
                               if ($doc == 'QS') {
-                                $this->coreFunctions->execqry("update attendee set optrno = ? where optrno =?", 'update', [$trno, $data[$key2]->trno]);
+                                $this->coreFunctions->execqry("update attendee set curtrno = ? where optrno =?", 'update', [$trno, $data[$key2]->trno]);
                                 $rem = $this->coreFunctions->getfieldvalue("hstockinfotrans", "rem", "trno=? and line =?", [$data[$key2]->trno, $data[$key2]->line]);
                                 if (strlen($rem) != 0) {
                                   $this->coreFunctions->sbcinsert("stockinfotrans", ["rem" => $rem, "trno" => $trno, "line" => $line]);
@@ -7780,16 +7837,26 @@ class othersClass
   public function unpostingheadinfotrans($config)
   {
     $trno = $config['params']['trno'];
-    $qry = "insert into headinfotrans (trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,disc,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno) 
-    select trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,disc,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno from hheadinfotrans where trno=?";
+    $companyid = $config['params']['companyid'];
+    $addfield = "";
+    if ($companyid == 21) { //kinggeorge
+      $addfield = ", pricegrp";
+    }
+    $qry = "insert into headinfotrans (trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,disc,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno" . $addfield . ") 
+    select trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,disc,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno" . $addfield . " from hheadinfotrans where trno=?";
     return  $this->coreFunctions->execqry($qry, 'insert', [$trno]);
   }
 
   public function postingheadinfotrans($config)
   {
     $trno = $config['params']['trno'];
-    $qry = "insert into hheadinfotrans (trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,disc,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno) 
-    select trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid, reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,disc,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno from headinfotrans where trno=?";
+    $companyid = $config['params']['companyid'];
+    $addfield = "";
+    if ($companyid == 21) { //kinggeorge
+      $addfield = ", pricegrp";
+    }
+    $qry = "insert into hheadinfotrans (trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid,reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,disc,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno" . $addfield . ") 
+    select trno, inspo, deldate, ispartial, instructions, period, isvalid, ovaliddate, termsdetails, proformainvoice, proformadate,leadfrom,leadto,leaddur,advised,taxdef, department, prepared, tmpref,dp,cod,outstanding,isadv,paymentid, reqtypeid, mop1, mop2, deadline, sentdate, pickupdate, pdeadline,truckid, plateno, helperid, helperid2, checkerid, driverid, isro, printdate, rem2, categoryid,isshipmentnotif,shipmentnotif,trnxtype,approvalreason,wh2,waybill,carrier,isinvoice,sdate1,sdate2,strdate1,disc,strdate2,assessedid,nodays,mileage,itemid,gendercaller,loaddate,dtctrno" . $addfield . " from headinfotrans where trno=?";
     return  $this->coreFunctions->execqry($qry, 'insert', [$trno]);
   }
 
@@ -11074,8 +11141,96 @@ class othersClass
   }
 
 
+  //common grid setup for all issuance modules
+  public function yulick_boxcountCol(&$obj, $gridname, $action, $boxcount, $entryweighdetails)
+  {
+    $obj[0][$gridname]['columns'][$boxcount]['type'] = 'chip';
+    $obj[0][$gridname]['columns'][$boxcount]['label'] = 'BOX';
+    $obj[0][$gridname]['columns'][$boxcount]['color'] = 'primary';
+    $obj[0][$gridname]['columns'][$boxcount]['textcolor'] = 'white';
 
+    $obj[0][$gridname]['columns'][$action]['btns'][$entryweighdetails]['checkfield'] = 'iscatchwt';
+    $obj[0][$gridname]['columns'][$boxcount]['checkfield'] = 'iscatchwt';
 
+    return $obj;
+  }
+
+  //common function for all issuance modules
+  public function yulick_addboxtogrid($config)
+  {
+
+    $msg = '';
+    $status = true;
+
+    try {
+
+      $docPath = '';
+      switch ($config['params']['doc']) {
+        case 'TS':
+          $docPath = 'App\Http\Classes\modules\inventory\\' . strtolower($config['params']['doc']);
+          break;
+        case 'DM':
+          $docPath = 'App\Http\Classes\modules\purchase\\' . strtolower($config['params']['doc']);
+          break;
+      }
+
+      if (!empty($config['params']['rows'])) {
+
+        $trno = $config['params']['rows'][0]['trno'];
+        $line = $config['params']['rows'][0]['line'];
+        $itemid = $config['params']['rows'][0]['itemid'];
+
+        $dinsert = [];
+        foreach ($config['params']['rows'] as $row) {
+          $dinsert['trno'] = $trno;
+          $dinsert['line'] = $line;
+
+          $dinsert['weight'] = $row['weight'];
+          $outline = $this->coreFunctions->insertGetId('serialout', $dinsert);
+
+          if ($outline != 0) {
+            $this->coreFunctions->execqry("update serialin set outline=? where sline=? and outline=0", 'update', [$outline, $row['sline']]);
+          }
+        }
+        $config['params']['trno'] = $trno;
+        $config['params']['line'] = $line;
+        $stockline = app($docPath)->openstockline($config);
+
+        if (!empty($stockline)) {
+          $totalqty = $this->coreFunctions->datareader("select ifnull(sum(weight),0) as value from serialout where trno=? and line=?", [$trno, $line], '', true);
+
+          $config['params']['data']['trno'] = $trno;
+          $config['params']['data']['line'] = $line;
+          $config['params']['data']['itemid'] = $itemid;
+          $config['params']['data']['uom'] =  $stockline[0]->uom;
+          $config['params']['data']['wh'] =  $stockline[0]->wh;
+          $config['params']['data']['isamt'] =  $stockline[0]->isamt;
+          $config['params']['data']['expiry'] = $config['params']['rows'][0]['expiry'];
+          $config['params']['data']['loc'] = $config['params']['rows'][0]['loc'];
+          $config['params']['trno'] = $trno;
+          $config['params']['data']['isqty'] = $totalqty;
+          $return = app($docPath)->additem('update', $config);
+          if ($return) {
+          } else {
+            $status = false;
+            $msg .= "Failed to update update.<br>";
+          }
+        }
+      }
+    } catch (Exception $e) {
+      $status = false;
+      $msg .= "Line: " . $e->getLine() . ". Exception error " . $e->getMessage();
+    }
+
+    $path = 'App\Http\Classes\modules\tableentry\\entryweighdetails_out';
+    $data = app($path)->loaddata($config);
+
+    if ($msg == '') {
+      $msg = 'Box(es) successfully added!';
+    }
+
+    return ['status' => $status, 'msg' =>  $msg, 'tableentrydata' => $data, 'reloadtableentry' => true, 'reloadhead' => true];
+  }
 
 
 

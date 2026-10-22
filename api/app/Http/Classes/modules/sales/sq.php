@@ -735,7 +735,7 @@ class sq
 			if ($this->coreFunctions->sbcinsert($this->head, $data)) {
 				$this->coreFunctions->sbcupdate('hqshead', ['sotrno' => $head['trno']], ['trno' => $head['qtrno']]);
 				$qtrno = $this->coreFunctions->getfieldvalue("hqshead", "trno", "sotrno=?", [$head['trno']]);
-				$this->coreFunctions->execqry("update attendee set optrno = ? where optrno =?", 'update', [$head['trno'], $qtrno]);
+				$this->coreFunctions->execqry("update attendee set curtrno = ? where curtrno =?", 'update', [$head['trno'], $qtrno]);
 				$this->logger->sbcwritelog($head['trno'], $config, 'CREATE', $head['docno'] . ' - ' . $head['client'] . ' - ' . $head['clientname']);
 			}
 		}
@@ -756,7 +756,7 @@ class sq
 		$this->coreFunctions->execqry('delete from ' . $this->head . " where trno=?", 'delete', [$trno]);
 		$this->coreFunctions->execqry('delete from ' . $this->tablenum . " where trno=?", 'delete', [$trno]);
 		$this->othersClass->deleteattachments($config);
-		$this->coreFunctions->execqry('update attendee set optrno=? where optrno=?', 'update', [$qtrno, $trno]);
+		$this->coreFunctions->execqry('update attendee set curtrno=? where curtrno=?', 'update', [$qtrno, $trno]);
 		$this->logger->sbcdel_log($trno, $config, $docno);
 		return ['trno' => $trno2, 'status' => true, 'msg' => 'Successfully deleted.'];
 	} //end function
@@ -1436,7 +1436,7 @@ class sq
 		$qtrno = $this->coreFunctions->datareader("select trno as value from hqshead where sotrno = ? ", [$trno]);
 		$this->coreFunctions->execqry('update hqshead set sotrno = 0 where sotrno = ?', 'update', [$trno]);
 		$this->logger->sbcwritelog($trno, $config, 'STOCK', 'REMOVED QOUTATION REFERENCE');
-		$this->coreFunctions->execqry('update attendee set optrno=? where optrno=?', 'update', [$qtrno, $trno]);
+		$this->coreFunctions->execqry('update attendee set curtrno=? where curtrno=?', 'update', [$qtrno, $trno]);
 		$this->loadheaddata($config);
 		return ['status' => true, 'msg' => 'Successfully deleted.', 'inventory' => [], 'reloadhead' => true];
 	}

@@ -117,6 +117,9 @@ class setreportlist
     $rep_salesjournal = "";
     $rep_debit_memo = "";
     $rep_credit_memo = "";
+    $rep_apv_journal = "";
+
+
 
     switch ($this->companysetup->getsystemtype($params)) {
       case 'HRIS':
@@ -142,6 +145,10 @@ class setreportlist
           $rep_salesjournal = "('','\\901','','','',0,1,0,'Sales Journal','\\90105',3006,'0'," . $params['levelid'] . ")";
           $rep_debit_memo = "('','\\901','','','',0,1,0,'Debit Memo','\\90106',3404,'0'," . $params['levelid'] . ")";
           $rep_credit_memo = "('','\\901','','','',0,1,0,'Credit Memo','\\90107',3405,'0'," . $params['levelid'] . ")";
+          
+          if ($this->hasdoc($allowmenus, 'PV')) {
+            $rep_apv_journal =  "('','\\901','','','',0,1,0,'Accounts Payable Voucher journal','\\90110',6066,'0'," . $params['levelid'] . ")";
+          }
 
           if ($params['companyid'] == 10 || $params['companyid'] == 12) { // afti,afti usd
             $rep_general_ledger = "('','\\901','','','',0,1,0,'General Ledger','\\90108',3747,'0'," . $params['levelid'] . ")";
@@ -303,6 +310,10 @@ class setreportlist
     $rep_item_sales_report = "";
     $rep_inventory_vs_receiving_report = "";
     $rep_inventory_valuation = "";
+    $rep_sales_inventory_report = "";
+
+    // AIMSPOS
+    $rep_item_history_per_supplier = "";
 
 
 
@@ -381,6 +392,9 @@ class setreportlist
               $rep_item_sales_report = "('','\\904','','','',0,1,0,'Item Sales Report','\\90454',5457,'0'," . $params['levelid'] . ")";
               $rep_inventory_valuation = "('','\\904','','','',0,1,0,'Inventory Valuation','\\90456',6030,'0'," . $params['levelid'] . ")";
               break;
+            case 60:
+              $rep_sales_inventory_report = "('','\\904','','','',0,1,0,'Sales Inventory Report','\\90457',6065,'0'," . $params['levelid'] . ")";
+              break;
             default: // UNIHOME
               if ($this->companysetup->getsystemtype($params) == 'AIMS') {
                 $rep_sales_summary_per_item = "";
@@ -410,6 +424,10 @@ class setreportlist
 
           if ($params['companyid'] == 59) { //roosevelt
             $rep_item_sales_report = "('','\\904','','','',0,1,0,'Item Sales Report','\\90454',5457,'0'," . $params['levelid'] . ")";
+          }
+
+          if ($params['companyid'] == 56) {
+            $rep_item_history_per_supplier = "('','\\904','','','',0,1,0,'Item History Per Supplier','\\90457',6064,'0'," . $params['levelid'] . ")";
           }
         }
 
@@ -1249,8 +1267,8 @@ class setreportlist
     $rep_apvoucherreport = "";
     $rep_cashcheckvoucherreport = "";
     $rep_payable_summary = "";
-    $rep_dailypieceratereport=""; 
-    $rep_dailypayrollratebyempsemi="";
+    $rep_dailypieceratereport = "";
+    $rep_dailypayrollratebyempsemi = "";
     $rep_dpayable_emp_weekly_report = "";
 
 
@@ -1284,6 +1302,7 @@ class setreportlist
     $rep_item_by_category_comparison = "";
     $rep_item_summary_report = "";
     $rep_item_summary_comparison = "";
+    $rep_dispatch_qty = "";
 
 
     //AFLI
@@ -1714,6 +1733,7 @@ class setreportlist
           case 39: //CBBSI
           case 49: //hotmix
           case 65: //metro dragon
+          case 68: //jda
             // SALES parent
             $rep_material_issuance_report = "('','\\90902','','\\\\909','',0,1,0,'Material Issuance Report','\\9090218',3450,'0'," . $params['levelid'] . ")";
             $rep_material_request_report = "('','\\90902','','\\\\909','',0,1,0,'Material Request Report','\\9090219',3528,'0'," . $params['levelid'] . ")";
@@ -1802,6 +1822,8 @@ class setreportlist
             $rep_item_summary_report = "('','\\904','','','',0,1,0,'Item Summary Report','\\90459',6039,'0'," . $params['levelid'] . ")";
             $rep_item_summary_comparison = "('','\\904','','','',0,1,0,'Item Summary Comparison','\\90460',6055,'0'," . $params['levelid'] . ")";
             break;
+          case 67: //yulick
+            $rep_dispatch_qty = "('','\\904','','','',0,1,0,'Dispatch Qty Report','\\90461',6068,'0'," . $params['levelid'] . ")";
         }
 
         break;
@@ -2848,6 +2870,9 @@ class setreportlist
           $rep_item_by_category_comparison,
           $rep_item_summary_report,
           $rep_item_summary_comparison,
+          $rep_sales_inventory_report,
+          $rep_dispatch_qty,
+
 
           // CUSTOMER
           $parent_customers,
@@ -4165,6 +4190,14 @@ class setreportlist
           $rep_stockrequestreport = '';
         }
 
+        if (!$this->hasdoc($allowmenus, 'MI')) {
+          $rep_material_issuance_report = '';
+        }
+
+        if (!$this->hasdoc($allowmenus, 'MR')) {
+          $rep_material_request_report = '';
+        }
+
         $report_sysmenu = [
           //AIMS
           $masterfile,
@@ -4182,6 +4215,8 @@ class setreportlist
           $rep_purchasejournal,
           $rep_salesjournal,
           $rep_general_ledger,
+          $rep_apv_journal,
+          
           // CHECK MONITORING REPORTS
           $parent_checkmonitoringreports,
           $rep_bouncedchecks,
@@ -4678,6 +4713,7 @@ class setreportlist
           $rep_salesjournal,
           $rep_debit_memo,
           $rep_credit_memo,
+          $rep_apv_journal,
           // CHECK MONITORING REPORTS
           $parent_checkmonitoringreports,
           $rep_bouncedchecks,
@@ -4738,6 +4774,9 @@ class setreportlist
           $rep_inventory_balance_per_engine,
           $rep_item_list_with_id,
           $rep_fixedassetlist,
+
+          //AIMSPOS
+          $rep_item_history_per_supplier,
 
           // CUSTOMER
           $parent_customers,
@@ -5091,5 +5130,4 @@ class setreportlist
 
     return false;
   }
-
 }//end class

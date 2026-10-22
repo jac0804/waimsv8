@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\URL;
 
 use DB;
 use Session;
+use Exception;
 
 use App\Http\Classes\builder\buttonClass;
 use App\Http\Classes\builder\txtfieldClass;
@@ -491,6 +492,11 @@ class cr
       $this->labelposted = "APPROVED!";
     }
 
+    if ($config['params']['companyid'] == 67) { //yulick
+      $buttons['new']['action'] = 'selectprefix';
+      $buttons['new']['access'] = 'save';
+    }
+
     $step1 = $this->helpClass->getFields(['btnnew', 'customer', 'dateid', 'yourref', 'cur', 'csrem', 'btnsave']);
     $step2 = $this->helpClass->getFields(['btnedit', 'customer', 'dateid', 'yourref', 'cur', 'csrem', 'btnsave']);
     $step3 = $this->helpClass->getFields(['btnaddaccount', 'db', 'cr', 'rem', 'btnstocksaveaccount', 'btnsaveaccount']);
@@ -959,10 +965,18 @@ class cr
     $data[0]['terms'] = '';
     $data[0]['forex'] = 1;
     $data[0]['cur'] = $this->companysetup->getdefaultcurrency($params);
-    $data[0]['projectid'] = '0';
     $data[0]['qttrno'] = '0';
+    $data[0]['projectid'] = '0';
     $data[0]['projectcode'] = '';
     $data[0]['projectname'] = '';
+
+    if (isset($params['dataparams']['projectid'])) { //used in yulick
+      Logger('projectid: ' . $params['dataparams']['projectid']);
+      $data[0]['projectid'] = $params['dataparams']['projectid'];
+      $data[0]['projectcode'] = $this->coreFunctions->getfieldvalue('projectmasterfile', 'code', 'line=?', [$data[0]['projectid']]);
+      $data[0]['projectname'] = $params['dataparams']['selectprefix']['label'];
+    }
+
     $data[0]['agent'] = '';
     $data[0]['agentname'] = '';
     $data[0]['dagentname'] = '';
@@ -1614,9 +1628,68 @@ class cr
       case 'voidtrans':
         return $this->voidtrans($config);
         break;
+      case 'selectprefix':
+        return $this->createprefixfilter($config);
+        break;
+      case 'newdocno':
+        return $this->newdocno($config);
+        break;
       default:
         return ['status' => 'false', 'msg' => 'Please check stockstatusposted (' . $config['params']['action'] . ')'];
         break;
+    }
+  }
+
+  public function createprefixfilter($config)
+  {
+
+    $center = $this->coreFunctions->opentable("select name, line from projectmasterfile order by code");
+    $list = array();
+    foreach ($center as $key => $value) {
+      array_push($list, ['label' => $value->name, 'value' => $value->line]);
+    }
+
+    $txtdata = $this->coreFunctions->opentable("select '' as selectprefix, '' as docno, 0 as projectid");
+
+    $fields = ['selectprefix', ['docno',], 'print'];
+    $col1 = $this->fieldClass->create($fields);
+    data_set($col1, 'selectprefix.label', 'Select company');
+    data_set($col1, 'selectprefix.options', $list);
+    data_set($col1, 'print.action', 'newdocno');
+    data_set($col1, 'print.label', 'Create transaction');
+    data_set($col1, 'print.style', 'width:100%;');
+    data_set($col1, 'docno.label', 'Document Series');
+    data_set($col1, 'docno.type', 'input');
+    data_set($col1, 'docno.required', true);
+
+    $txtfield =  array('col1' => $col1);
+
+    $style = 'width:400px;max-width:400px;';
+    return ['status' => true, 'msg' => 'Loaded Success', 'modulename' => 'Select company', 'data' => [], 'txtfield' => $txtfield, 'txtdata' => $txtdata, 'style' => $style];
+  }
+
+  public function newdocno($config)
+  {
+    try {
+      $params = $config['params'];
+      $seq = $params['dataparams']['docno'];
+      $projectid = $params['dataparams']['projectid'];
+
+      if ($projectid == 0) return ['status' => false, 'msg' => 'Please select valid Company.'];
+
+      if (!is_numeric($seq)) {
+        return ['status' => false, 'msg' => 'Please input valid document series.'];
+      }
+
+      $prefix = $this->coreFunctions->datareader("select crprefix as value from projectmasterfile where line=" . $projectid);
+
+      if ($prefix == "") return ['status' => false, 'msg' => 'Please input setup valid prefix.'];
+
+      $checkdocno  = $this->othersClass->PadJ($prefix . $seq, $this->companysetup->getdocumentlength($config['params']), 0);
+
+      return ['status' => true, 'docno' => $checkdocno, 'trno' => 0, 'actiontype' => 'searchdocno'];
+    } catch (Exception $e) {
+      return ['status' => false, 'msg' => $e->getMessage()];
     }
   }
 
@@ -3294,6 +3367,30 @@ class cr
       $config['params']['trno'] =  $trno;
       $this->loadheaddata($config);
       return ['status' => true, 'msg' => 'Void successfully', 'reloadhead' => true, 'trno' => $trno, 'moduletype' => 'module'];
+    }
+  }
+
+  public function sbcscript($config)
+  {
+    if ($config['params']['companyid'] == 67) { //yulick
+      return [
+        'report' => '
+              if(payload.field == "selectprefix"){
+                state.reportobject.txtdata[0].projectid = payload.value.value
+              }
+              if(payload.field == "docno"){
+                var docno = String(payload.value || "").trim();
+
+                // digits only (no letters, spaces, symbols, decimals, negatives)
+                if (docno !== "" && !/^[0-9]+$/.test(docno)) {
+                  alert("Docno must be a valid number only.");
+                  state.reportobject.txtdata[0].docno = "";
+                }
+              }  
+        '
+      ];
+    } else {
+      return true;
     }
   }
 } //end class

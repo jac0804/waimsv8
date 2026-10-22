@@ -92,7 +92,7 @@ class viewcustomerinv
       $obj[0][$this->gridname]['columns'][$barcode]['label'] = 'BARCODE';
       $obj[0][$this->gridname]['columns'][$itemdesc]['label'] = 'ITEM NAME';
 
-      $obj[0][$this->gridname]['columns'][$rem]['style'] = 'text-align:left; width:100px;whiteSpace: normal;min-width:100px;';
+      $obj[0][$this->gridname]['columns'][$rem]['style'] = 'text-align:left; width:200px;whiteSpace: normal;min-width:200px;';
       $obj[0][$this->gridname]['columns'][$itemdesc]['style'] = 'width:200px;whiteSpace: normal;min-width:200px;';
       $obj[0][$this->gridname]['columns'][$uom]['style'] = 'text-align:center; width:80px;whiteSpace: normal;min-width:80px;';
       $obj[0][$this->gridname]['columns'][$disc]['style'] = 'text-align:center; width:100px;whiteSpace: normal;min-width:100px;';
@@ -150,12 +150,17 @@ class viewcustomerinv
 
     $orderby = "";
     $centerfilter = "";
+    // default rem from gl/lahead
+    $glrem = "glhead.rem"; 
+    $larem = "lahead.rem";
     if ($config['params']['companyid'] != 60) {
       $centerfilter = " and cntnum.center ='$center'";
     }
 
     if ($config['params']['companyid'] == 60) { //transpower
       $orderby = " order by dateid desc";
+      $glrem = "glstock.rem";
+      $larem = "lastock.rem";
     }
 
     $qry = "select `glhead`.`trno` as `trno`,`glhead`.`doc` as `doc`,`glhead`.`clientid` as `clientid`,
@@ -166,7 +171,7 @@ class viewcustomerinv
           client.client,client.clientname,client.addr,client.tel,client.email,client.tin,
           client.mobile,client.contact,client.rem,client.fax, glstock.kgs, 
           (glstock.kgs * glstock.isamt) AS unitprice, (glstock.kgs * glstock.cost) AS unitcost,
-          format(glstock.agentamt,2) as agentamt,glhead.ourref, glstock.ref,glhead.rem,glstock.disc,format(glstock.iss,2) as iss,format(glstock.qty,2) as qty,glhead.users as user
+          format(glstock.agentamt,2) as agentamt,glhead.ourref, glstock.ref," . $glrem . " as rem, glstock.disc,format(glstock.iss,2) as iss,format(glstock.qty,2) as qty,glhead.users as user
           from ((`glstock` 
           left join `glhead` on((`glstock`.`trno` = `glhead`.`trno`)))
           left join `item` on((`item`.`itemid` = `glstock`.`itemid`)))
@@ -183,7 +188,7 @@ class viewcustomerinv
           client.client,client.clientname,client.addr,client.tel,client.email,
           client.tin,client.mobile,client.contact,client.rem,client.fax, lastock.kgs, 
           (lastock.kgs * lastock.isamt) AS unitprice, (lastock.kgs * lastock.cost) AS unitcost,
-          format(lastock.agentamt,2) as agentamt,lahead.ourref, lastock.ref,lahead.rem,lastock.disc,format(lastock.iss,2) as iss,format(lastock.qty,2) as qty,lahead.users as user
+          format(lastock.agentamt,2) as agentamt,lahead.ourref, lastock.ref," . $larem . " as rem,lastock.disc,format(lastock.iss,2) as iss,format(lastock.qty,2) as qty,lahead.users as user
           from ((`lastock` 
           left join `lahead` on((`lastock`.`trno` = `lahead`.`trno`)))
           left join `client` on((`client`.`client` = `lahead`.`client`))) 

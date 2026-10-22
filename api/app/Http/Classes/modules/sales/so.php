@@ -1084,7 +1084,7 @@ class so
         break;
 
       case 21: //kinggeorge
-        $fields = [['yourref', 'ourref'], ['cur', 'forex']];
+        $fields = [['yourref', 'ourref'], ['cur', 'forex'], ['pricegroup']];
         $col3 = $this->fieldClass->create($fields);
         break;
 
@@ -1253,6 +1253,9 @@ class so
       $data[0]['received'] = '';
       $data[0]['disc'] = '';
     }
+    if ($params['companyid'] == 21) { //kinggeorge
+      $data[0]['class'] = '';
+    }
 
     if ($params['companyid'] == 24 || $params['companyid'] == 69) { //goodfound, cemphil
       $data[0]['wh'] = 'WH0000000000002';
@@ -1330,6 +1333,10 @@ class so
     $addfield = "";
     if ($companyid == 64) { //excilin
       $addfield = ",head.ismarkup";
+    }
+
+    if ($companyid == 21) { //kinggeorge
+      $addfield = ",info.pricegrp as class";
     }
 
     $tablenum = $this->tablenum;
@@ -1614,24 +1621,26 @@ class so
     if ($companyid == 39) { //cbbsi
       $info['trnxtype'] = $head['trnxtype'];
       $info['approvalreason'] = $head['approvalreason'];
-      $info['editdate'] = $this->othersClass->getCurrentTimeStamp();
-      $info['editby'] = $config['params']['user'];
     }
 
     if ($companyid == 72) { //hahsy
       $info['strdate1'] = isset($head['received']) ? $head['received'] : '';
       $info['disc'] = isset($head['disc']) ? $head['disc'] : '';
-      $info['editdate'] = $this->othersClass->getCurrentTimeStamp();
-      $info['editby'] = $config['params']['user'];
+    }
+
+    if ($companyid == 21) { //kinggeorge
+      $info['pricegrp'] = isset($head['class']) ? $head['class'] : '';
     }
 
     if ($isupdate) {
       $this->coreFunctions->sbcupdate($this->head, $data, ['trno' => $head['trno']]);
       $this->othersClass->getcreditinfo($config, $this->head);
 
-      if ($companyid == 39 || $companyid == 72) { //cbbsi, hahsy
+      if ($companyid == 39 || $companyid == 72 || $companyid == 21) { //cbbsi, hahsy, kinggeorge
         $exist = $this->coreFunctions->getfieldvalue('headinfotrans', 'trno', 'trno=?', [$head['trno']]);
         if ($exist != 0) {
+          $info['editdate'] = $this->othersClass->getCurrentTimeStamp();
+          $info['editby'] = $config['params']['user'];
           $this->coreFunctions->sbcupdate('headinfotrans', $info, ['trno' => $head['trno']]);
         } else {
           $this->coreFunctions->sbcinsert('headinfotrans', $info);
@@ -1677,6 +1686,7 @@ class so
 
       switch ($companyid) {
         case 19: //housegem
+        case 21: //kinggeorge
         case 39: //cbbsi
         case 72: //hahsy
           $this->coreFunctions->sbcinsert('headinfotrans', $info);

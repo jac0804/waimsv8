@@ -571,7 +571,7 @@ class lq
         } //end if
       }
     }
-    // $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+    //  $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
     $data['due'] = $this->othersClass->computeterms(
       isset($data['dateid']) ? $data['dateid'] : null,
       isset($data['due']) ? $data['due'] : null,

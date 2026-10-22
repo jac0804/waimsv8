@@ -732,6 +732,11 @@ class rr
     $column = ['action', 'itemdescription', 'serialno', 'rrqty', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
     $sortcolumn =  ['action', 'itemdescription', 'serialno', 'rrqty', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
 
+    if ($companyid == 67) { //yulick
+      $column = ['action', 'itemdescription', 'serialno', 'rrqty', 'boxcount', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'isbo', 'qa', 'void'];
+      $sortcolumn =  ['action', 'itemdescription', 'serialno', 'rrqty', 'boxcount', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'isbo', 'qa', 'void'];
+    }
+
     if ($companyid == 40) { //cdo
       $column = ['action', 'itemdescription', 'rrqty', 'uom', 'serialno', 'pnp', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
       $sortcolumn =  ['action', 'itemdescription', 'rrqty', 'uom', 'serialno', 'pnp', 'kgs', 'rrcost', 'disc', 'cost', 'ext', 'freight', 'wh', 'whname', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
@@ -745,10 +750,6 @@ class rr
     if ($companyid == 72) { // HAHSY
       $column = ['action', 'itemdescription', 'serialno', 'rrqty', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'charges', 'freight', 'ext', 'wh', 'whname', 'cbm', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
       $sortcolumn =  ['action', 'itemdescription', 'serialno', 'rrqty', 'uom', 'kgs', 'rrcost', 'disc', 'cost', 'charges', 'freight', 'ext', 'wh', 'whname', 'cbm', 'ref', 'poref', 'rem', 'loc', 'expiry', 'stage', 'pallet', 'location', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount', 'isbo', 'qa', 'void'];
-    }
-
-    foreach ($column as $key => $value) {
-      $$value = $key;
     }
 
     switch ($systype) {
@@ -816,6 +817,10 @@ class rr
 
     if ($iskgs) {
       $computefield['kgs'] = 'kgs';
+    }
+
+    foreach ($column as $key => $value) {
+      $$value = $key;
     }
 
     $tab = [
@@ -891,6 +896,10 @@ class rr
 
     if ($config['params']['companyid'] == 60) { //transpower
       array_push($stockbuttons, 'itemhistory', 'poitemhistory');
+    }
+
+    if ($companyid == 67) { //yulick
+      array_push($stockbuttons, 'entryweighdetails');
     }
 
 
@@ -1088,6 +1097,10 @@ class rr
       $obj[0]['inventory']['columns'][$boxcount]['type'] = 'coldel';
     }
 
+    if ($companyid == 67) { //yulick
+      $obj = $this->othersClass->yulick_boxCountCol($obj, $this->gridname, $action, $boxcount, 'entryweighdetails');
+    }
+
     $obj[0]['inventory']['columns'][$serialno]['style'] = 'width: 150px;whiteSpace: normal;min-width:150px;max-width:150px; text-align;left;';
 
 
@@ -1204,7 +1217,7 @@ class rr
         break;
 
       default:
-        if ($isserial) {
+        if ($isserial && $companyid != 67) { // yulick
           $tbuttons = ['poserial', 'pendingpo', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
         } else {
           $tbuttons = ['pendingpo', 'additem', 'quickadd', 'saveitem', 'deleteallitem'];
@@ -2020,7 +2033,7 @@ class rr
     return ['trno' => $trno2, 'status' => true, 'msg' => 'Successfully deleted.'];
   } //end function
 
-  public function posttrans($config)
+  public function  posttrans($config)
   {
     // var_dump($config['params']);
     // break;
@@ -2239,6 +2252,8 @@ class rr
     $costfield = 'stock.cost';
     $poqty = '';
     $hahsyfields = '';
+    $defaultfields = ", round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount, 'true' as iscatchwt";
+
     if ($companyid == 10 || $companyid == 12) { //afti, afti usd
       $qty_dec = 0;
       $serialfield = ",ifnull(group_concat(rr.serial separator '\\n\\r'),'') as serialno";
@@ -2266,6 +2281,10 @@ class rr
 
     if ($companyid == 72) { //hahsy
       $hahsyfields = ', stock.charges, stock.cbm';
+    }
+
+    if ($companyid == 67) { // yulick
+      $defaultfields = ", ifnull((select count(sline) from serialin where trno=stock.trno and line=stock.line),0) as boxcount, if(item.iscatchwt,'false','true') as iscatchwt ";
     }
 
     $sqlselect = "select item.brand as brand,
@@ -2321,10 +2340,10 @@ class rr
     subam.line as subamenity,
     subam.description as subamenityname,
 
-    item.subcode, item.partno, round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount,stock.poref,stock.sgdrate,
+    item.subcode, item.partno,stock.poref,stock.sgdrate,
     concat(item.itemname,'\\n',ifnull(brand.brand_desc,''),'\\r\\n',ifnull(mm.model_name,''),'\\r\\n',ifnull(i.itemdescription,'')) as itemdescription
     " . $serialfield . " ,case when sit.isbo=1 then 'true' else 'false' end as isbo,ifnull(group_concat(concat('PNP#: ',rr.pnp,' / CSR#: ',rr.csr,'\\n','Remarks: ',rr.remarks) separator '\\n\\r'),'') as pnp,stock.rtrefx,
-    stock.rtlinex, stock.sjrefx, stock.sjlinex " . $poqty . $hahsyfields . " ";
+    stock.rtlinex, stock.sjrefx, stock.sjlinex " . $poqty . $hahsyfields . $defaultfields . " ";
 
     return $sqlselect;
   }

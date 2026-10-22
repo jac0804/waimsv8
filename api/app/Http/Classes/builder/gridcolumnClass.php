@@ -1624,51 +1624,6 @@ class gridcolumnClass
                             'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
                             'readonly' => false
                      ),
-                     'a' => array(
-                            'name' => 'a',
-                            'type' => 'input',
-                            'label' => 'A',
-                            'field' => 'a',
-                            'align' => 'text-left',
-                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
-                            'readonly' => false
-                     ),
-                     'b' => array(
-                            'name' => 'b',
-                            'type' => 'input',
-                            'label' => 'B',
-                            'field' => 'b',
-                            'align' => 'text-left',
-                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
-                            'readonly' => false
-                     ),
-                     'c' => array(
-                            'name' => 'c',
-                            'type' => 'input',
-                            'label' => 'C',
-                            'field' => 'c',
-                            'align' => 'text-left',
-                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
-                            'readonly' => false
-                     ),
-                     'd' => array(
-                            'name' => 'd',
-                            'type' => 'input',
-                            'label' => 'D',
-                            'field' => 'd',
-                            'align' => 'text-left',
-                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
-                            'readonly' => false
-                     ),
-                     'e' => array(
-                            'name' => 'e',
-                            'type' => 'input',
-                            'label' => 'E',
-                            'field' => 'e',
-                            'align' => 'text-left',
-                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
-                            'readonly' => false
-                     ),
                      'ans' => array(
                             'name' => 'ans',
                             'type' => 'input',
@@ -3370,51 +3325,6 @@ class gridcolumnClass
                             'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
                             'readonly' => false
                      ),
-                     'part_code' => array(
-                            'name' => 'part_code',
-                            'field' => 'part_code',
-                            'type' => 'input',
-                            'label' => 'Code',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'part_name' => array(
-                            'name' => 'part_name',
-                            'field' => 'part_name',
-                            'type' => 'input',
-                            'label' => 'Part Name',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'stockgrp_code' => array(
-                            'name' => 'stockgrp_code',
-                            'field' => 'stockgrp_code',
-                            'type' => 'input',
-                            'label' => 'Code',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'stockgrp_name' => array(
-                            'name' => 'stockgrp_name',
-                            'field' => 'stockgrp_name',
-                            'type' => 'input',
-                            'label' => 'Group Name',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'brand_desc' => array(
-                            'name' => 'brand_desc',
-                            'field' => 'brand_desc',
-                            'type' => 'input',
-                            'label' => 'Brand Name',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
                      'brand' => array(
                             'name' => 'brand',
                             'field' => 'brand',
@@ -3424,24 +3334,6 @@ class gridcolumnClass
                             'style' => 'width: 120px;whiteSpace: normal;min-width:120px;max-width:130px;text-align:left;',
                             'readonly' => false
                      ),
-                     'cl_name' => array(
-                            'name' => 'cl_name',
-                            'field' => 'cl_name',
-                            'type' => 'input',
-                            'label' => 'Class Name',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'cat_name' => array(
-                            'name' => 'cat_name',
-                            'field' => 'cat_name',
-                            'type' => 'input',
-                            'label' => 'Category Name',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
                      'subcat_name' => array(
                             'name' => 'subcat_name',
                             'field' => 'subcat_name',
@@ -3449,125 +3341,6 @@ class gridcolumnClass
                             'label' => 'Sub Category',
                             'align' => 'text-left',
                             'style' => 'width: 200px;whiteSpace: normal;min-width:200px;max-width:200px;',
-                            'readonly' => false
-                     ),
-                     'name' => array(
-                            'name' => 'name',
-                            'field' => 'name',
-                            'type' => 'input',
-                            'label' => 'Name',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'code' => array(
-                            'name' => 'code',
-                            'field' => 'code',
-                            'type' => 'input',
-                            'label' => 'Code',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'min' => array(
-                            'name' => 'min',
-                            'field' => 'min',
-                            'type' => 'input',
-                            'label' => 'Minimum',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'max' => array(
-                            'name' => 'max',
-                            'field' => 'max',
-                            'type' => 'input',
-                            'label' => 'Maximum',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'address' => array(
-                            'name' => 'address',
-                            'field' => 'address',
-                            'type' => 'input',
-                            'label' => 'Address',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'tel' => array(
-                            'name' => 'tel',
-                            'field' => 'tel',
-                            'type' => 'input',
-                            'label' => 'Telephone',
-                            'align' => 'text-left',
-                            'style' => 'width: 50px;whiteSpace: normal;min-width:50px;max-width:50px;',
-                            'readonly' => false
-                     ),
-                     'tin' => array(
-                            'name' => 'tin',
-                            'field' => 'tin',
-                            'type' => 'input',
-                            'label' => 'Tin #',
-                            'align' => 'text-left',
-                            'style' => 'width: 100px;whiteSpace: normal;min-width:100px;max-width:100px;',
-                            'readonly' => false
-                     ),
-                     'zipcode' => array(
-                            'name' => 'zipcode',
-                            'field' => 'zipcode',
-                            'type' => 'input',
-                            'label' => 'Zipcode',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'station' => array(
-                            'name' => 'station',
-                            'field' => 'station',
-                            'type' => 'input',
-                            'label' => 'Station',
-                            'align' => 'text-left',
-                            'style' => 'width: 150px;whiteSpace: normal;min-width:150px;max-width:180px;',
-                            'readonly' => false
-                     ),
-                     'warehouse' => array(
-                            'name' => 'warehouse',
-                            'type' => 'lookup',
-                            'label' => 'Warehouse',
-                            'field' => 'warehouse',
-                            'align' => 'text-left',
-                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
-                            'readonly' => true,
-                            'lookupclass' => 'whstock',
-                            'action' => 'lookupclient'
-                     ),
-                     'pvalue' => array(
-                            'name' => 'pvalue',
-                            'field' => 'pvalue',
-                            'type' => 'input',
-                            'label' => 'Prefix',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'psection' => array(
-                            'name' => 'psection',
-                            'field' => 'psection',
-                            'type' => 'input',
-                            'label' => 'Module',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => true
-                     ),
-                     'rate' => array(
-                            'name' => 'rate',
-                            'field' => 'rate',
-                            'type' => 'input',
-                            'label' => "Rates (%) [Note: Please enter rate in numbers / decimals]",
-                            'align' => 'text-right',
-                            'style' => 'width:15%;whiteSpace: normal;min-width:20px;max-width:30px;table-layout: fixed;',
                             'readonly' => false
                      ),
                      'userid' => array(
@@ -3968,15 +3741,6 @@ class gridcolumnClass
                             'field' => 'roomcode',
                             'type' => 'input',
                             'label' => 'Room Code',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'roomname' => array(
-                            'name' => 'roomname',
-                            'field' => 'roomname',
-                            'type' => 'input',
-                            'label' => 'Room Name',
                             'align' => 'text-left',
                             'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
                             'readonly' => false
@@ -5917,15 +5681,6 @@ class gridcolumnClass
                             'style' => 'width:120px;whiteSpace: normal;min-width:120px;',
                             'readonly' => false
                      ),
-                     'duration' => array(
-                            'name' => 'duration',
-                            'type' => 'input',
-                            'label' => 'Duration',
-                            'field' => 'duration',
-                            'align' => 'text-left',
-                            'style' => 'width:120px;whiteSpace: normal;min-width:120px;',
-                            'readonly' => false
-                     ),
                      'skill' => array(
                             'name' => 'skill',
                             'type' => 'input',
@@ -6123,24 +5878,6 @@ class gridcolumnClass
                             'field' => 'bracket',
                             'type' => 'input',
                             'label' => 'Bracket',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'range1' => array(
-                            'name' => 'range1',
-                            'field' => 'range1',
-                            'type' => 'input',
-                            'label' => 'Range 1',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
-                            'readonly' => false
-                     ),
-                     'range2' => array(
-                            'name' => 'range2',
-                            'field' => 'range2',
-                            'type' => 'input',
-                            'label' => 'Range 2',
                             'align' => 'text-left',
                             'style' => 'width: 20px;whiteSpace: normal;min-width:20px;max-width:30px;',
                             'readonly' => false
@@ -6617,15 +6354,6 @@ class gridcolumnClass
                             'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
                             'readonly' => false
                      ),
-                     'type' => array(
-                            'name' => 'type',
-                            'type' => 'input',
-                            'label' => 'Type',
-                            'field' => 'type',
-                            'align' => 'text-left',
-                            'style' => 'width:150px;whiteSpace: normal;min-width:150px;',
-                            'readonly' => false
-                     ),
                      'effdate' => array(
                             'name' => 'effdate',
                             'field' => 'effdate',
@@ -6851,15 +6579,6 @@ class gridcolumnClass
                             'align' => 'text-left',
                             'style' => 'width:150px;whiteSpace: normal;min-width:100px;',
                             'readonly' => false
-                     ),
-                     'effdate' => array(
-                            'name' => 'effdate',
-                            'field' => 'effdate',
-                            'type' => 'input',
-                            'label' => 'Effectivity Date',
-                            'align' => 'text-left',
-                            'style' => 'width:150px;whiteSpace: normal;min-width:100px;',
-                            'readonly' => true
                      ),
                      'scode' => array(
                             'name' => 'scode',
@@ -7349,15 +7068,6 @@ class gridcolumnClass
                             'field' => 'ndiffot',
                             'type' => 'input',
                             'label' => 'N-Diff OT Hrs',
-                            'align' => 'text-left',
-                            'style' => 'width:150px;whiteSpace: normal;min-width:100px;',
-                            'readonly' => false
-                     ),
-                     'othrs' => array(
-                            'name' => 'othrs',
-                            'field' => 'othrs',
-                            'type' => 'input',
-                            'label' => 'OT Hours',
                             'align' => 'text-left',
                             'style' => 'width:150px;whiteSpace: normal;min-width:100px;',
                             'readonly' => false
@@ -8022,15 +7732,6 @@ class gridcolumnClass
                             'type' => 'label',
                             'label' => 'Delivery Type',
                             'field' => 'deliverytypename',
-                            'align' => 'text-left',
-                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
-                            'readonly' => false
-                     ),
-                     'boxno' => array(
-                            'name' => 'boxno',
-                            'type' => 'label',
-                            'label' => 'Box No',
-                            'field' => 'boxno',
                             'align' => 'text-left',
                             'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
                             'readonly' => false
@@ -8816,15 +8517,6 @@ class gridcolumnClass
                             'style' => 'width:100px;whiteSpace:normal;min-width:100px;max-width:150px;',
                             'readonly' => true
                      ),
-                     'name' => array(
-                            'name' => 'name',
-                            'type' => 'input',
-                            'label' => 'Name',
-                            'field' => 'name',
-                            'align' => 'text-left',
-                            'style' => 'width:100px;whiteSpace:normal;min-width:100px;max-width:150px;',
-                            'readonly' => false
-                     ),
                      'picture' => array(
                             'name' => 'picture',
                             'type' => 'image',
@@ -9287,25 +8979,6 @@ class gridcolumnClass
                             'align' => 'text-left',
                             'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
                             'required' => true
-                     ),
-                     'starttime' => array(
-                            'name' => 'starttime',
-                            'field' => 'starttime',
-                            'type' => 'input',
-                            'label' => 'Start Time',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal;
-                                  min-width:20px;max-width:30px;',
-                            'readonly' => true,
-                     ),
-                     'endtime' => array(
-                            'name' => 'endtime',
-                            'field' => 'endtime',
-                            'type' => 'input',
-                            'label' => 'End Time',
-                            'align' => 'text-left',
-                            'style' => 'width: 20px;whiteSpace: normal; min-width:20px;max-width:30px;',
-                            'readonly' => true,
                      ),
                      'salutation' => array(
                             'name' => 'salutation',
@@ -9902,24 +9575,6 @@ class gridcolumnClass
                             'field' => 'cardtype',
                             'align' => 'text-left',
                             'style' => 'min-width:200px;',
-                            'readonly' => false
-                     ),
-                     'type' => array(
-                            'name' => 'type',
-                            'type' => 'input',
-                            'label' => 'Payment Type',
-                            'field' => 'type',
-                            'align' => 'text-left',
-                            'style' => 'min-width:200px;',
-                            'readonly' => false
-                     ),
-                     'inactive' => array(
-                            'name' => 'inactive',
-                            'type' => 'toggle',
-                            'label' => 'Inactive',
-                            'field' => 'inactive',
-                            'align' => 'text-left',
-                            'style' => 'width:20px;whiteSpace: normal;min-width:30px;',
                             'readonly' => false
                      ),
                      'dlock' => array(
@@ -10831,15 +10486,6 @@ class gridcolumnClass
                             'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
                             'readonly' => false
                      ),
-                     'rebate' => array(
-                            'name' => 'rebate',
-                            'type' => 'input',
-                            'label' => 'Rebate (%)',
-                            'field' => 'rebate',
-                            'align' => 'text-left',
-                            'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
-                            'readonly' => false
-                     ),
                      'rtv' => array(
                             'name' => 'rtv',
                             'type' => 'input',
@@ -10848,26 +10494,6 @@ class gridcolumnClass
                             'align' => 'text-left',
                             'style' => 'width:100px;whiteSpace: normal;min-width:100px;',
                             'readonly' => false
-                     ),
-                     'interest' => array(
-                            'name' => 'interest',
-                            'field' => 'interest',
-                            'type' => 'input',
-                            'label' => 'Interest',
-                            'align' => 'text-right',
-                            'style' => 'width: 20px;whiteSpace: normal;
-                                  min-width:20px;max-width:30px;',
-                            'readonly' => false,
-                     ),
-                     'principal' => array(
-                            'name' => 'principal',
-                            'field' => 'principal',
-                            'type' => 'input',
-                            'label' => 'Principal',
-                            'align' => 'text-right',
-                            'style' => 'width: 20px;whiteSpace: normal;
-                                  min-width:20px;max-width:30px;',
-                            'readonly' => false,
                      ),
                      'principal' => array(
                             'name' => 'principal',
@@ -12175,6 +11801,33 @@ class gridcolumnClass
                             'align' => 'text-right',
                             'style' => 'text-align:right;width:130px;whiteSpace: normal;min-width:130px;',
                             'readonly' => true
+                     ),
+                     'drprefix' => array(
+                            'name' => 'drprefix',
+                            'type' => 'input',
+                            'label' => 'DR Prefix',
+                            'field' => 'drprefix',
+                            'align' => 'text-right',
+                            'style' => 'text-align:right;width:100px;whiteSpace: normal;min-width:100px;',
+                            'readonly' => false
+                     ),
+                     'siprefix' => array(
+                            'name' => 'siprefix',
+                            'type' => 'input',
+                            'label' => 'SI Prefix',
+                            'field' => 'siprefix',
+                            'align' => 'text-right',
+                            'style' => 'text-align:right;width:100px;whiteSpace: normal;min-width:100px;',
+                            'readonly' => false
+                     ),
+                     'crprefix' => array(
+                            'name' => 'crprefix',
+                            'type' => 'input',
+                            'label' => 'CR Prefix',
+                            'field' => 'crprefix',
+                            'align' => 'text-right',
+                            'style' => 'text-align:right;width:100px;whiteSpace: normal;min-width:100px;',
+                            'readonly' => false
                      )
 
               );

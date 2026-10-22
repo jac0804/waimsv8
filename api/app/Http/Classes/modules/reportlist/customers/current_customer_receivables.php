@@ -122,11 +122,15 @@ class current_customer_receivables
 
           default:
             array_push($fields, 'dclientname', 'dcentername', 'contra');
+            if ($companyid == 67) array_push($fields, 'project'); //yulick
             $col1 = $this->fieldClass->create($fields);
             data_set($col1, 'contra.lookupclass', 'AR');
             data_set($col1, 'dclientname.lookupclass', 'lookupclient');
             data_set($col1, 'dclientname.label', 'Customer');
-
+            if ($companyid == 67) { //yulick
+              data_set($col1, 'project.required', false);
+              data_set($col1, 'project.label', 'Company');
+            }
             break;
         }
         switch ($companyid) {
@@ -187,7 +191,7 @@ class current_customer_receivables
                       adddate(left(now(),10),-360) as start, left(now(),10) as end,
 
                       '' as dagentname,'' as agent,'' as agentname,'' as agentid,'0' as posttype,
-
+                      '' as project, '' as projectname, '0' as projectid,
                       '' as category_name, '' as category_id, '' as customerfilter, '' as terms
                       ";
 
@@ -380,7 +384,8 @@ class current_customer_receivables
     $companyid = $config['params']['companyid'];
     $contra       = $config['params']['dataparams']['contra'];
     $terms       = $config['params']['dataparams']['terms'];
-
+    $project  = $config['params']['dataparams']['project'];
+    $projectid  = $config['params']['dataparams']['projectid'];
 
 
 
@@ -396,6 +401,12 @@ class current_customer_receivables
     if ($contra != '') {
       $acnoid       = $config['params']['dataparams']['acnoid'];
       $filter .= " and coa.acnoid='$acnoid'";
+    }
+
+    if ($companyid == 67) {
+      if ($project != '') {
+        $filter .= " and project.line='$projectid'";
+      }
     }
 
 
@@ -429,6 +440,9 @@ class current_customer_receivables
       case 21: //kinggeorge
         $addfield = ",head.terms as terms";
         $addfield2 = ',terms';
+        break;
+      case 67:
+         $addleftjoin .= " left join projectmasterfile as project on project.line = head.projectid " ;
         break;
       case 68: //jda
         $addfield .= ",head.rem as notes";
@@ -506,6 +520,9 @@ class current_customer_receivables
     $companyid = $config['params']['companyid'];
     $contra       = $config['params']['dataparams']['contra'];
     $terms       = $config['params']['dataparams']['terms'];
+    $project  = $config['params']['dataparams']['project'];
+    $projectid  = $config['params']['dataparams']['projectid'];
+
 
     $filter = "";
     $filter1 = "";
@@ -525,6 +542,12 @@ class current_customer_receivables
     }
     if ($companyid == 21) { //kinggoerge
       if ($terms != '') $filter1 .= " and head.terms='" . $terms . "'";
+    }
+
+    if ($companyid == 67) {
+      if ($project != '') {
+        $filter .= " and project.line='$projectid'";
+      }
     }
 
     $addfield = "";
@@ -547,6 +570,9 @@ class current_customer_receivables
         if ($terms != '') $filter1 .= " and head.terms='" . $terms . "'";
         $addfield = ",head.terms as terms";
         $addfield2 = ',terms';
+        break;
+      case 67:
+         $addleftjoin .= " left join projectmasterfile as project on project.line = head.projectid " ;
         break;
       case 68: //jda
         $addfield .= ",head.rem as notes";
@@ -634,7 +660,8 @@ class current_customer_receivables
     $companyid = $config['params']['companyid'];
     $contra       = $config['params']['dataparams']['contra'];
     $terms      = $config['params']['dataparams']['terms'];
-
+    $project  = $config['params']['dataparams']['project'];
+    $projectid  = $config['params']['dataparams']['projectid'];
 
 
     $filter = "";
@@ -656,6 +683,12 @@ class current_customer_receivables
 
     if ($companyid == 21) { //kinggoerge
       if ($terms != '') $filter1 .= " and head.terms='" . $terms . "'";
+    }
+
+    if ($companyid == 67) {
+      if ($project != '') {
+        $filter .= " and project.line='$projectid'";
+      }
     }
 
     switch ($companyid) {
@@ -695,6 +728,10 @@ class current_customer_receivables
       case 21: //kinggeorge
         $addfield = ",head.terms as terms";
         $addfield2 = ',terms';
+        break;
+      case 67:
+         $addleftjoin .= " left join projectmasterfile as project on project.line = head.projectid " ;
+         $addleftjoin2 .= " left join projectmasterfile as project on project.line = head.projectid " ;
         break;
       case 68: //jda
         $addfield .= ",head.rem as notes";

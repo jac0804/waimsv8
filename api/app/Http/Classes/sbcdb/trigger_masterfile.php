@@ -3061,7 +3061,7 @@ class trigger_masterfile
 			'Misc. Fee'      => ['miscfee' => []],
 			'Rebate'      => ['rebate' => []]
 		];
-		$this->settriggermasterfilelogs($config, $doc, 'mcfinancerate', 'masterfile_log', $fields, 'line');
+		$this->settriggermasterfilelogs($config, $doc, 'mcfinancerate', 'masterfile_log', $fields, 'itemid');
 	}
 
 	private function citemdesc_triggers($config)

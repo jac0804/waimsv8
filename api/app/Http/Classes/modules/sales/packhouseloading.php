@@ -291,7 +291,7 @@ class packhouseloading
         where num.statid=19 and head.doc=? and num.center = ? and CONVERT(head.dateid,DATE)>=? and CONVERT(head.dateid,DATE)<=? " . $condition . $addparams . " $filtersearch
         and num.bref <> 'SJS' and info.packdate is null $group
         $orderby $limit";
-        $data = $this->coreFunctions->opentable($qry, [$doc, $center, $date1, $date2, $doc, $center, $date1, $date2]);
+        $data = $this->coreFunctions->opentable($qry, [$doc, $center, $date1, $date2]);
         return ['data' => $data, 'status' => true, 'msg' => 'Listing successfully loaded.'];
     }
 
@@ -856,7 +856,7 @@ class packhouseloading
         where head.trno = ? and num.doc=? and num.center = ? and num.bref <> 'SJS'
         and head.lockdate is not null and num.postdate is null and num.statid=19 ";
 
-        $head = $this->coreFunctions->opentable($qry, [$trno, $doc, $center, $trno, $doc, $center]);
+        $head = $this->coreFunctions->opentable($qry, [$trno, $doc, $center]);
 
         if (!empty($head)) {
             $stock = $this->openstock($trno, $config);
@@ -912,7 +912,7 @@ class packhouseloading
                 } //end if
             }
         }
-        $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+        $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
         $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
         $data['editby'] = $config['params']['user'];
 
@@ -1150,7 +1150,7 @@ class packhouseloading
     pallet.name,location.loc,uom.factor,head.forex,stock.rebate,
     prj.name,stock.projectid,stock.sgdrate,stock.noprint,brand.brand_desc,i.itemdescription order by sortline, line";
 
-        $stock = $this->coreFunctions->opentable($qry, [$trno, $trno]);
+        $stock = $this->coreFunctions->opentable($qry, [$trno]);
         return $stock;
     } //end function
 
@@ -1747,7 +1747,7 @@ class packhouseloading
         $trno = $config['params']['trno'];
         $user = $config['params']['user'];
         $qry = "SELECT ic.itemid, c.barcode, sum(c.isqty) AS cqty, c.uom AS cuom, s.isqty, s.uom, s.whid, c.isloc
-                FROM lastock AS s LEFT JOIN component AS c ON c.itemid=s.itemid LEFT JOIN item AS ic ON ic.barcode=c.barcode
+                FROM lastock AS s JOIN component AS c ON c.itemid=s.itemid LEFT JOIN item AS ic ON ic.barcode=c.barcode
                 WHERE s.trno=? GROUP BY ic.itemid, c.barcode, c.uom, s.isqty, s.uom, s.whid, c.isloc";
         $comp = $this->coreFunctions->opentable($qry, [$trno]);
 
@@ -1841,7 +1841,7 @@ class packhouseloading
                 }
             }
         } catch (Exception $e) {
-            $msg = json_encode($e);
+            $msg = "Line: " . $e->getLine() . ". " . json_encode($e->getMessage());
             $status = false;
         }
 

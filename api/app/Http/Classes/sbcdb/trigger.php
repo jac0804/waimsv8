@@ -562,6 +562,7 @@ class trigger
       'Ship date' => ['shipdate' => []],
       'Trip Date' => ['tripdate' => []],
       'Received Date' => ['receivedate' => []],
+      'Price Group' => ['pricegrp' => []],
     ];
     $this->settriggerlogs('cntnuminfo_update', 'AFTER UPDATE', 'cntnuminfo', 'table_log', $fields, 'trno', 'HEAD');
 
@@ -635,7 +636,9 @@ class trigger
       'LC No.' => ['orderno' => []],
       'rfno' => ['rfno' => []],
       'conaddr' => ['conaddr' => []],
-      'JO docno' => ['pdtrno' => [true, "docno", "hpdhead", "trno"]]
+      'JO docno' => ['pdtrno' => [true, "docno", "hpdhead", "trno"]],
+      'lot' => ['lot' => []],
+      'expiry' => ['expiry' => []]
     ];
 
     $this->settriggerlogs('lahead_update', 'AFTER UPDATE', 'lahead', 'table_log', $fields, 'trno', 'HEAD');
@@ -4199,6 +4202,7 @@ class trigger
       'Cheker' => ['checkerid' => [true, 'clientname', 'client', 'clientid']],
       'internal notes' => ['rem2' => []],
       'Approval Reason' => ['approvalreason' => []],
+      'Price Group' => ['pricegrp' => []],
     ];
     $this->settriggerlogs('headinfotrans_update', 'AFTER UPDATE', 'headinfotrans', 'transnum_log', $fields, 'trno', 'HEADINFO');
   }

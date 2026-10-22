@@ -511,79 +511,36 @@ class dm
     $allowviewbalance = $this->othersClass->checkAccess($config['params']['user'], 5451); //kinggeorge
     $islocation = $this->companysetup->getislocation($config['params']);
     $locname = $this->companysetup->getlocname($config['params']);
-    $action = 0;
-    $isqty = 1;
-    $uom = 2;
-    $kgs = 3;
-    $isamt  = 4;
-    $disc = 5;
-    $ext = 6;
-    $wh = 7;
-    $whname = 8;
-    $ref = 9;
-    $loc = 10;
-    $expiry = 11;
-    $pallet = 12;
-    $location = 13;
-    $stage = 14;
-    $rem = 15;
-    $itemname = 16;
-    $barcode = 17;
-    $stock_projectname = 18;
-    $partno = 19;
-    $subcode = 20;
-    $boxcount = 21;
+    // $action = 0;
+    // $isqty = 1;
+    // $uom = 2;
+    // $kgs = 3;
+    // $isamt  = 4;
+    // $disc = 5;
+    // $ext = 6;
+    // $wh = 7;
+    // $whname = 8;
+    // $ref = 9;
+    // $loc = 10;
+    // $expiry = 11;
+    // $pallet = 12;
+    // $location = 13;
+    // $stage = 14;
+    // $rem = 15;
+    // $itemname = 16;
+    // $barcode = 17;
+    // $stock_projectname = 18;
+    // $partno = 19;
+    // $subcode = 20;
+    // $boxcount = 21;
 
-    $column = [
-      'action',
-      'isqty',
-      'uom',
-      'kgs',
-      'isamt',
-      'disc',
-      'ext',
-      'wh',
-      'whname',
-      'ref',
-      'loc',
-      'expiry',
-      'pallet',
-      'location',
-      'stage',
-      'rem',
-      'itemname',
-      'barcode',
-      'stock_projectname',
-      'partno',
-      'subcode',
-      'boxcount'
-    ];
+    $column = ['action', 'isqty',  'uom', 'kgs', 'isamt', 'disc', 'ext', 'wh', 'whname', 'ref', 'loc', 'expiry', 'pallet',  'location', 'stage', 'rem', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount'];
+    $sortcolumn = ['action', 'isqty',  'uom', 'kgs', 'isamt', 'disc', 'ext', 'wh', 'whname', 'ref', 'loc', 'expiry', 'pallet',  'location', 'stage', 'rem', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode', 'boxcount'];
 
-    $sortcolumn =  [
-      'action',
-      'isqty',
-      'uom',
-      'kgs',
-      'isamt',
-      'disc',
-      'ext',
-      'wh',
-      'whname',
-      'ref',
-      'loc',
-      'expiry',
-      'pallet',
-      'location',
-      'stage',
-      'rem',
-      'itemname',
-      'barcode',
-      'stock_projectname',
-      'partno',
-      'subcode',
-      'boxcount'
-    ];
-
+    if ($companyid == 67) { //yulick
+      $column = ['action', 'isqty', 'boxcount', 'uom', 'kgs', 'isamt', 'disc', 'ext', 'wh', 'whname', 'ref', 'loc', 'expiry', 'pallet',  'location', 'stage', 'rem', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode'];
+      $sortcolumn = ['action', 'isqty', 'boxcount', 'uom', 'kgs', 'isamt', 'disc', 'ext', 'wh', 'whname', 'ref', 'loc', 'expiry', 'pallet',  'location', 'stage', 'rem', 'itemname', 'barcode', 'stock_projectname', 'partno', 'subcode'];
+    }
 
     switch ($systype) {
       case 'REALESTATE':
@@ -615,6 +572,10 @@ class dm
 
     if ($iskgs) {
       $computefield['kgs'] = 'kgs';
+    }
+
+    foreach ($column as $key => $value) {
+      $$value = $key;
     }
 
     $tab = [
@@ -668,11 +629,13 @@ class dm
     }
 
 
+    if ($companyid == 67) array_push($stockbuttons, 'entryweighdetails_out'); //yulick
+
+    $obj = $this->tabClass->createtab($tab, $stockbuttons);
+
     if ($companyid != 19) { //not housegem
       $obj[0]['inventory']['columns'][$rem]['type'] = 'coldel';
     }
-
-    $obj = $this->tabClass->createtab($tab, $stockbuttons);
 
     switch ($companyid) {
       case 59: //ROOSEVELT
@@ -778,6 +741,10 @@ class dm
           $obj[0]['inventory']['columns'][$loc]['type'] = 'coldel';
           break;
       }
+    }
+
+    if ($companyid == 67) { //yulick
+      $obj = $this->othersClass->yulick_boxCountCol($obj, $this->gridname, $action, $boxcount, 'entryweighdetails_out');
     }
 
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
@@ -1335,6 +1302,12 @@ class dm
       $qty_dec = 0;
     }
 
+    $defaultfields = ", round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount, 'true' as iscatchwt";
+
+    if ($companyid == 67) { // yulick
+      $defaultfields = ", ifnull((select count(sline) from serialout where trno=stock.trno and line=stock.line),0) as boxcount, if(item.iscatchwt,'false','true') as iscatchwt ";
+    }
+
     $sqlselect = "select item.brand as brand,
     ifnull(mm.model_name,'') as model,
     item.itemid,
@@ -1387,7 +1360,7 @@ class dm
     subam.line as subamenity,
     subam.description as subamenityname,
     
-    item.subcode, item.partno, round(item.dqty, " . $this->companysetup->getdecimal('qty', $config['params']) . ") as boxcount ";
+    item.subcode, item.partno" . $defaultfields;
     return $sqlselect;
   }
 
@@ -1501,6 +1474,9 @@ class dm
         break;
       case 'getitem':
         return $this->othersClass->getmultiitem($config);
+        break;
+      case 'addboxtogrid':
+        return $this->othersClass->yulick_addboxtogrid($config);
         break;
       default:
         return ['status' => 'false', 'msg' => 'Please check stockstatus (' . $config['params']['action'] . ')'];

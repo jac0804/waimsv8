@@ -459,14 +459,31 @@ class viewleaveapplication
   {
     $trno = $config['params']['row']['trno'];
     $line = $config['params']['row']['line'];
+    $companyid = $config['params']['companyid'];
 
     $leavelabel = $this->companysetup->getleavelabel($config['params']);
+    $allowtocancel = $this->othersClass->checkAccess($config['params']['user'], 6069);
 
 
     $msg = '';
     $success = true;
     $res = $this->isapproved($trno, $line);
     if ($res['status']) {
+        if($companyid == 58){ //cdohris
+          if($res['status'] == 'A'){
+            if($allowtocancel){
+              $postdate = $this->coreFunctions->datareader("select postdate as value from batch where line = ?",[$res['batchid']],'',true);
+              if($postdate){
+                  $msg = 'Cannot modify, Batch is already posted';
+                  $success = false;
+                  goto returnHere;
+              }else{
+                  goto continueEditHere;
+              }
+            }
+
+          }
+        }
       if ($res['batchid'] != 0) {
         $success = false;
         $msg = 'Cannot modify APPROVED Leave.';
@@ -512,6 +529,12 @@ class viewleaveapplication
           }
         }
       }
+      $this->logger->sbcmasterlog(
+      $trno,
+      $config,
+      "UPDATE DETAILS - LINE: ". $line . " DATE: ". $row['dateid'] . ", EFFECTIVITY: " . $row['effectivity']. ", HOURS: " . $row['adays'] . ", STATUS: " . $prevstatus .' => '. $row['status'],
+      1 // isedit
+    );
     } else {
       if ($bal == 0) {
         $msg = 'You have ' . (float) $bal . ' remaining ' . $leavelabel;

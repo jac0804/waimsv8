@@ -42,7 +42,7 @@ class op
   public $hqty = 'iss';
   public $damt = 'isamt';
   public $hamt = 'amt';
-  public $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'tel', 'forex', 'cur', 'wh', 'address', 'agent', 'creditinfo', 'branch', 'deptid', 'compname', 'designation', 'contactname', 'contactno', 'email', 'source', 'sourceid', 'industry', 'shipid', 'billid', 'shipcontactid', 'billcontactid', 'participantid'];
+  public $fields = ['trno', 'docno', 'dateid', 'due', 'client', 'clientname', 'yourref', 'ourref', 'rem', 'terms', 'tel', 'forex', 'cur', 'wh', 'address', 'agent', 'creditinfo', 'branch', 'deptid', 'compname', 'designation', 'contactname', 'contactno', 'email', 'source', 'sourceid', 'industryid', 'shipid', 'billid', 'shipcontactid', 'billcontactid', 'participantid'];
   public $except = ['trno', 'dateid', 'due'];
   public $showfilteroption = true;
   public $showfilter = true;
@@ -459,8 +459,12 @@ class op
     $col3 = $this->fieldClass->create($fields);
     data_set($col3, 'dbranchname.required', true);
     data_set($col3, 'dagentname.label', 'Sales Person');
-    data_set($col3, 'industry.type', 'cinput');
-    data_set($col3, 'industry.maxlength', '100');
+    // data_set($col3, 'industry.type', 'cinput');
+    // data_set($col3, 'industry.maxlength', '100');
+    data_set($col3, 'industry.type', 'lookup');
+    data_set($col3, 'industry.class', 'sbccsreadonly');
+    data_set($col3, 'industry.lookupclass', 'lookupindustry');
+    data_set($col3, 'industry.action', 'lookuprandom');
 
     $fields = [['cur', 'forex'], 'rem'];
     $col4 = $this->fieldClass->create($fields);
@@ -529,6 +533,7 @@ class op
     $data[0]['dbranchname'] = '';
     $data[0]['ddeptname'] = '';
     $data[0]['deptid'] = '0';
+    $data[0]['industryid'] = '0';
     $data[0]['dept'] = '';
     $data[0]['compname'] = '';
     $data[0]['contactname'] = '';
@@ -610,7 +615,7 @@ class op
          head.projectid,ifnull(project.code,'') as projectcode,
          ifnull(project.name,'') as projectname,
          '' as dprojectname,ifnull(b.client,'') as branchcode ,ifnull(b.clientname,'') as branchname, head.branch,'' as dbranchname,ifnull(d.client,'') as dept,ifnull(d.clientname,'') as deptname,head.deptid,'' as ddeptname,
-         head.industry,head.billid,head.shipid,head.billcontactid,head.shipcontactid,
+         head.industryid,head.billid,head.shipid,head.billcontactid,head.shipcontactid,
          head.participantid,
          case 
           when att.clientid = 0 then ifnull(att.companyname, ' ')
@@ -621,7 +626,7 @@ class op
 
                               (select trno from qshead where qshead.optrno=head.trno
                                union all
-                               select trno from hqshead where hqshead.optrno=head.trno) as quotation";
+                               select trno from hqshead where hqshead.optrno=head.trno) as quotation,ifnull(concat(rc.category, '~',rc.reqtype),'') as industry";
 
     $qry = $qryselect . " from $table as head
         left join $tablenum as num on num.trno = head.trno
@@ -638,6 +643,7 @@ class op
         left join attendee as att on head.participantid = att.line
         left join client as partici on partici.clientid = att.clientid
         left join qshead as quotation on quotation.optrno=head.trno 
+        left join reqcategory as rc on head.industryid = rc.line  
         where head.trno = ? and num.center = ? 
         union all " . $qryselect . " from $htable as head
         left join $tablenum as num on num.trno = head.trno
@@ -654,6 +660,7 @@ class op
         left join attendee as att on head.participantid = att.line
         left join client as partici on partici.clientid = att.clientid
         left join hqshead as quotation on quotation.optrno=head.trno
+        left join reqcategory as rc on head.industryid = rc.line  
         where head.trno = ? and num.center=? ";
     $head = $this->coreFunctions->opentable($qry, [$trno, $center, $trno, $center]);
     if (!empty($head)) {
@@ -697,7 +704,7 @@ class op
       }
     }
 
-    // $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['due'], $data['terms']);
+    //  $data['due'] = $this->othersClass->computeterms($data['dateid'], $data['dateid'], $data['terms']);
     $data['editdate'] = $this->othersClass->getCurrentTimeStamp();
     $data['editby'] = $config['params']['user'];
     if ($isupdate) {
@@ -880,13 +887,13 @@ class op
     //for glhead
     $qry = "insert into " . $this->hhead . "(trno,doc,docno,client,clientname,address,shipto,dateid,
       terms,rem,forex,yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,agent,wh,due,cur,creditinfo,crline,overdue, projectid,branch,deptid,tel,compname,designation,contactname,contactno,email,source,sourceid,industry,
-      billid,shipid,shipcontactid,billcontactid, participantid)
+      billid,shipid,shipcontactid,billcontactid, participantid,industryid)
       SELECT head.trno,head.doc, head.docno,head.client, head.clientname, head.address,head.shipto,
       head.dateid as dateid, head.terms, head.rem, head.forex,head.yourref, head.ourref,
       head.createdate,head.createby,head.editby,head.editdate, head.lockdate,head.lockuser,head.agent,head.wh,
       head.due,head.cur,head.creditinfo,head.crline,head.overdue, head.projectid,head.branch,head.deptid, head.tel,
       head.compname,head.designation,head.contactname,head.contactno,head.email,head.source,head.sourceid,head.industry,
-      head.billid,head.shipid,head.shipcontactid,head.billcontactid, head.participantid
+      head.billid,head.shipid,head.shipcontactid,head.billcontactid, head.participantid,head.industryid
       FROM " . $this->head . " as head left join cntnum on cntnum.trno=head.trno
       where head.trno=? limit 1";
     $posthead = $this->coreFunctions->execqry($qry, 'insert', [$trno]);
@@ -936,13 +943,13 @@ class op
 
     $qry = "insert into " . $this->head . "(trno,doc,docno,client,clientname,address,shipto,dateid,terms,rem,forex,
   yourref,ourref,createdate,createby,editby,editdate,lockdate,lockuser,wh,due,cur,creditinfo,crline,overdue,agent, projectid,branch,deptid, tel, compname,designation,contactname,contactno,email,source,sourceid,industry,
-  billid, shipid,shipcontactid,billcontactid, participantid)
+  billid, shipid,shipcontactid,billcontactid, participantid,industryid)
   select head.trno, head.doc, head.docno, client.client, head.clientname, head.address, head.shipto,
   head.dateid as dateid, head.terms, head.rem, head.forex, head.yourref, head.ourref, head.createdate,
   head.createby, head.editby, head.editdate, head.lockdate, head.lockuser,head.wh,head.due,head.cur,head.creditinfo,
   head.crline,head.overdue,head.agent,head.projectid,head.branch,head.deptid, head.tel,head.compname,head.designation,
   head.contactname,head.contactno,head.email,head.source,head.sourceid,head.industry,
-  head.billid,head.shipid,head.shipcontactid,head.billcontactid, head.participantid
+  head.billid,head.shipid,head.shipcontactid,head.billcontactid, head.participantid,head.industryid
   from (" . $this->hhead . " as head left join " . $this->tablenum . " as cntnum on cntnum.trno=head.trno)left join client on client.client=head.client
   where head.trno=? limit 1";
     //head
