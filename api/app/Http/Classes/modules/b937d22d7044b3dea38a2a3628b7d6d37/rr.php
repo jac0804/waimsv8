@@ -657,7 +657,7 @@ class rr
       $obj[0]['inventory']['columns'][$loc]['type'] = 'input';
     }
 
-    $obj[0][$this->gridname]['addfieldtotal'] = [['field' => 'totalcost', 'fields' => ['qty', '*', $this->hamt], 'label' => 'Total Landed Cost:']];
+    $obj[0][$this->gridname]['addfieldtotal'] = [['field' => 'totalcost', 'fields' => ['qty', '*', 'cost2'], 'label' => 'Total Landed Cost:']];
     $obj[0]['inventory']['columns'] = $this->tabClass->delcol($obj, $this->gridname);
     return $obj;
   }
@@ -1413,6 +1413,7 @@ class rr
     stock.uom,
     stock.kgs,
    " . $costfield . " as " . $this->hamt . ",
+   stock.cost as cost2,
     stock." . $this->hqty . " as qty,
     FORMAT(stock." . $this->damt . "," . $this->companysetup->getdecimal('price', $config['params']) . ") as " . $this->damt . ",
     FORMAT(stock." . $this->dqty . "," . $qty_dec . ")  as " . $this->dqty . ",
@@ -2966,11 +2967,15 @@ class rr
             left join client as s on s.clientid = head.supplierid
             where head.trno=?';
 
+    $itemcount = $this->coreFunctions->datareader("select count(line) as value from ".$this->stock." where trno = ?",[$trno]);
+
     $stock = $this->coreFunctions->opentable($qry, [$trno]);
     $tax = 0;
     $ewt = 0;
     $excesstax = 0;
-    $totalap = 0;
+    $bocperitem = 0;
+    $vatperitem = 0;
+    $brokerperitem =0;
     $delcharge = 0;
     $cost = 0;
     $lcost = 0;
@@ -2991,6 +2996,20 @@ class rr
         $ewt = $stock[0]->ewtrate / 100;
       }
 
+      if(($stock[0]->boc + $stock[0]->bankcharges) !=0){
+        $bocperitem = ($stock[0]->boc + $stock[0]->bankcharges)/$itemcount;
+      }
+
+      if(($stock[0]->vatamt) !=0){
+        $vatperitem = ($stock[0]->vatamt)/$itemcount;
+      }
+
+      if(($stock[0]->brokerfee) !=0){
+        $brokerperitem = ($stock[0]->brokerfee)/$itemcount;
+      }
+      
+       
+       
       foreach ($stock as $key => $value) {
         $params = [];
         if ($this->companysetup->getisdiscperqty($config['params'])) {
@@ -3013,8 +3032,10 @@ class rr
 
         
         
-        $cost = number_format($stock[$key]->cost * $stock[$key]->qty, 6, '.', '');
+        $cost =$stock[$key]->cost * $stock[$key]->qty;// number_format($stock[$key]->cost * $stock[$key]->qty, $this->companysetup->getdecimal('price',$config['params']), '.', '');
         $tcost = $tcost + $cost;
+        
+
         $params = [
           'client' => $stock[$key]->client,
           'acno' => $stock[$key]->contra,
@@ -3032,8 +3053,9 @@ class rr
           'projectid' => $stock[$key]->projectid,
           'subproject' => $stock[$key]->subproject,
           'stageid' => $stock[$key]->stageid,
-          'freight' => $stock[$key]->freight,
-          'lcost' => $lcost
+          'vatperitem' => $vatperitem,
+          'brokerperitem' => $brokerperitem,
+          'bocperitem' => $bocperitem
         ];
 
         //add new fields here
@@ -3230,11 +3252,19 @@ class rr
 
     //AP
     if (!$suppinvoice) {
-      if (floatval($ext) != 0) {
+      if($forex==1){
+        if (floatval($ext) != 0) {
+          $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['acno']]);
+          $entry = ['acnoid' => $acnoid, 'client' => $params['client'], 'db' => 0, 'cr' => ($ext * $forex), 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fdb' => 0, 'fcr' => floatval($forex) == 1 ? 0 : $ext, 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
+          $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
+        }
+      }else{//import
+        $ap = $params['vatperitem'] + ($params['cost']-$params['brokerperitem']-$params['bocperitem']);
         $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['acno']]);
-        $entry = ['acnoid' => $acnoid, 'client' => $params['client'], 'db' => 0, 'cr' => ($ext * $forex), 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fdb' => 0, 'fcr' => floatval($forex) == 1 ? 0 : $ext, 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
+        $entry = ['acnoid' => $acnoid, 'client' => $params['client'], 'db' => 0, 'cr' => $ap, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fdb' => 0, 'fcr' => floatval($forex) == 1 ? 0 : $ap, 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
         $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
       }
+      
 
       //disc
       if ($periodic) {
@@ -3277,17 +3307,9 @@ class rr
 
     //INV
     if (floatval($invamt) != 0) {
-      if ($companyid == 65) { //metro dragon
-        $freight = 0; //set to zero since they input freight as part of the cost
-      } else {
-        $freight = $params['freight'];
-      }
-
       $acnoid = $this->coreFunctions->getfieldvalue('coa', 'acnoid', 'acno=?', [$params['inventory']]);
-      $entry = ['acnoid' => $acnoid, 'client' => $params['wh'], 'db' => $invamt + $freight, 'cr' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($invamt / $forex), 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
-      $this->coreFunctions->LogConsole('INV ' . ($invamt + $freight));
-
-
+      $entry = ['acnoid' => $acnoid, 'client' => $params['wh'], 'db' => $invamt , 'cr' => 0, 'postdate' => $params['date'], 'cur' => $cur, 'forex' => $forex, 'fcr' => 0, 'fdb' => floatval($forex) == 1 ? 0 : ($invamt / $forex), 'projectid' => $params['projectid'], 'subproject' => $params['subproject'], 'stageid' => $params['stageid']];
+ 
       $this->acctg = $this->othersClass->upsertdetail($this->acctg, $entry, $config);
 
       if ($suppinvoice) {
